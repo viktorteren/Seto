@@ -1,6 +1,13 @@
-#include <iostream>
+#include <boost/graph/edge_list.hpp>
+#include <fstream>
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+typedef std::pair<int,int> Edge;
+typedef std::vector<Edge> EdgeList;
+typedef boost::edge_list<EdgeList::iterator> Graph;
+
+
+
+int main()
+{
+
 }
