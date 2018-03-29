@@ -22,7 +22,7 @@ typedef adjacency_list<vecS, vecS, bidirectionalS> Graph;
 int main()
 {
     // Open the file:
-    std::ifstream fin("input.txt");
+    std::ifstream fin("../input.txt");
 
     assert(fin);
 // Declare variables:
@@ -51,17 +51,25 @@ int main()
 
     //Transaction* transaction_array = new Transaction[num_transazioni];
 
-    Vertex* vertex_array=new Vertex[num_stati];
+    Vertex* vertex_array=new Vertex[num_stati+1];
 
-    for(int i =0; i<num_stati;i++){
+
+
+    for(int i = 1; i <= num_stati; i++){
         vertex_array[i]=boost::add_vertex(g);
     }
 
+    int src, dst, ev;
+
     //aggiungo gli archi al grafo
-    for (int i = 0; i < num_transazioni; ++i)
+    for (int i = 0; i < num_transazioni; ++i) {
         //add_edge(get<0>(transaction_array[i]), get<1>(transaction_array[i]),event(10), g);
         //add_edge(vertex_array[], vertex_array[],event(100), g);
-        add_edge(vertex_array[0], vertex_array[1],event(100), g);
+        fin >> src;
+        fin >> dst;
+        fin >> ev;
+        add_edge(vertex_array[src], vertex_array[dst], event(ev), g);
+    }
 
     property_map<Graph, edge_name_t>::type
             eventMap = get(edge_name_t(), g);
