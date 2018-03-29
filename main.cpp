@@ -7,13 +7,10 @@
 #include <iostream>
 #include <cassert>
 
-#include <boost/msm/back/state_machine.hpp>
-#include <boost/msm/front/state_machine_def.hpp>
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
-
-namespace msm = boost::msm;
-namespace mpl = boost::mpl;
+#include <boost/graph/properties.hpp>
+#include <tuple>
 
 typedef std::pair<int,int> Edge;
 
@@ -29,92 +26,54 @@ int main()
 
     assert(fin);
 // Declare variables:
-    int num_stati, num_etichette, stato_iniziale;
+    int num_stati, num_transazioni, stato_iniziale;
 
 // Read defining parameters:
     fin >> num_stati ;
     fin >> num_transazioni;
     fin >> stato_iniziale;
 
-    cout << num_stati << endl;
-    cout << num_etichette << endl;
-    cout << stato_iniziale << endl;
+   /* cout << num_stati << endl;
+    cout << num_transazioni << endl;
+    cout << stato_iniziale << endl;*/
 
-    for(int i = 0; i < num_etichette;i++){
+    typedef property<edge_name_t, int> event;
+    typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
 
-    }
+    typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
 
     // declare a graph object
-    Graph g(num_stati);
+    Graph g(0);
 
-    typedef std::pair<int, int> Edge;
-    Edge edge_array[] = new Edge[num_transazioni];
 
+   // typedef int Vertex_id;
+   // typedef std::pair<Vertex_id , Vertex_id> Transaction;
+
+    //Transaction* transaction_array = new Transaction[num_transazioni];
+
+    Vertex* vertex_array=new Vertex[num_stati];
+
+    for(int i =0; i<num_stati;i++){
+        vertex_array[i]=boost::add_vertex(g);
+    }
 
     //aggiungo gli archi al grafo
     for (int i = 0; i < num_transazioni; ++i)
-        add_edge(edge_array[i].first, edge_array[i].second, g);
+        //add_edge(get<0>(transaction_array[i]), get<1>(transaction_array[i]),event(10), g);
+        //add_edge(vertex_array[], vertex_array[],event(100), g);
+        add_edge(vertex_array[0], vertex_array[1],event(100), g);
+
+    property_map<Graph, edge_name_t>::type
+            eventMap = get(edge_name_t(), g);
+
+    boost::graph_traits< Graph >::edge_iterator e_it, e_end;
+    for(std::tie(e_it, e_end) = boost::edges(g); e_it != e_end; ++e_it)
+    {
+        std::cout << boost::source(*e_it, g) << " "
+                  << boost::target(*e_it, g) << " "
+                  << eventMap[*e_it] << std::endl;
+    }
+
 
     fin.close();
 }
-
-
-/*int main () {
-    string line;
-    fstream myfile ("input.txt");
-    if (myfile.is_open())
-    {
-        while ( getline (myfile,line) )
-        {
-            cout << line << '\n';
-        }
-        myfile.close();
-    }
-    else cout << "Unable to open file";
-
-    return 0;
-}*/
-
-/*int main () {
-    char data[100];
-
-    // open a file in write mode.
-    ofstream outfile;
-    outfile.open("afile.dat");
-
-    cout << "Writing to the file" << endl;
-    cout << "Enter your name: ";
-    cin.getline(data, 100);
-
-    // write inputted data into the file.
-    outfile << data << endl;
-
-    cout << "Enter your age: ";
-    cin >> data;
-    cin.ignore();
-
-    // again write inputted data into the file.
-    outfile << data << endl;
-
-    // close the opened file.
-    outfile.close();
-
-    // open a file in read mode.
-    ifstream infile;
-    infile.open("afile.dat");
-
-    cout << "Reading from the file" << endl;
-    infile >> data;
-
-    // write the data at the screen.
-    cout << data << endl;
-
-    // again read the data from the file and display it.
-    infile >> data;
-    cout << data << endl;
-
-    // close the opened file.
-    infile.close();
-
-    return 0;
-}*/

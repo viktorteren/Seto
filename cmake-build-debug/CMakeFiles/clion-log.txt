@@ -1,5 +1,5 @@
-/home/viktor/clion-2018.1/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/viktor/CLionProjects/progetto_sse
+/home/ciuchino/clion-2017.3.4/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/ciuchino/CLionProjects/progetto_sse
 -- Boost version: 1.66.0
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/viktor/CLionProjects/progetto_sse/cmake-build-debug
+-- Build files have been written to: /home/ciuchino/CLionProjects/progetto_sse/cmake-build-debug
