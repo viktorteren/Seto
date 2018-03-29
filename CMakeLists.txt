@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Progetto_SSE main.cpp)
 
+include_directories( ~/boost_1_66_0 )
+
 set(BOOST_ROOT "~/boost_1_66_0")
 set(BOOSTROOT "~/boost_1_66_0")
 find_package(Boost 1.60.0)
