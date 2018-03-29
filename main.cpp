@@ -11,6 +11,7 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/properties.hpp>
 #include <tuple>
+#include <map>
 
 typedef std::pair<int,int> Edge;
 
@@ -45,6 +46,12 @@ int main()
     // declare a graph object
     Graph g(0);
 
+    //map: evento -> lista di coppie: (srcId, dstId)
+    typedef vector<pair<int, int>> Lista_archi;
+    typedef std::map<event, Lista_archi> Mappa;
+
+    Mappa mappa;
+
 
    // typedef int Vertex_id;
    // typedef std::pair<Vertex_id , Vertex_id> Transaction;
@@ -69,6 +76,14 @@ int main()
         fin >> dst;
         fin >> ev;
         add_edge(vertex_array[src], vertex_array[dst], event(ev), g);
+        //non c'è l'entry relativa all'evento ev
+        if (mappa.find(ev) == mappa.end()){
+            mappa[ev] = Lista_archi();
+            //mappa.insert(Mappa::value_type(ev, Lista_archi()));
+        }
+        mappa.at(ev).push_back(std::make_pair(1, 2);
+
+
     }
 
     property_map<Graph, edge_name_t>::type
