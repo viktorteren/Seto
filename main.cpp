@@ -12,6 +12,7 @@
 #include <boost/graph/properties.hpp>
 #include <tuple>
 #include <map>
+#include <queue>
 
 typedef std::pair<int,int> Edge;
 
@@ -25,22 +26,32 @@ typedef std::map<int, Lista_archi> Mappa;
 typedef property<edge_name_t, int> event;
 typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
 
+#define OK 0
+#define NOCROSS 1
+#define EXIT_NOCROSS 2
+#define ENTER_NOCROSS 3
+
+int num_stati, num_transazioni, stato_iniziale, num_eventi;
+
 typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
 
 Mappa* mappa = new Mappa();
 // declare a graph object
 Graph g(0);
 Vertex* vertex_array;
-vector<set<int>*>* ER_set = new  vector<set<int>*>;
-vector<set<int>*>* pre_regions = new vector<set<int>*>;
+
+typedef set<int>* Region;
+typedef set<int>* ER;
+vector<ER>* ER_set = new  vector<ER>;
+vector<Region>* pre_regions = new vector<Region>;
+
+deque<Region> *queue_temp_regions;
 
 void parser(){
     // Open the file:
     std::ifstream fin("../input.txt");
 
     assert(fin);
-// Declare variables:
-    int num_stati, num_transazioni, stato_iniziale;
 
 // Read defining parameters:
     fin >> num_stati ;
@@ -74,8 +85,9 @@ void parser(){
         }
         (*mappa).at(ev).push_back(std::make_pair(src, dst));
 
-
     }
+
+    num_eventi = (*mappa).size();
 
     property_map<Graph, edge_name_t>::type
             eventMap = get(edge_name_t(), g);
@@ -92,21 +104,92 @@ void parser(){
     fin.close();
 }
 
-set<int>* createER(int event){
-    set<int>* er = new set<int>;
+ER createER(int event){
+    ER er = new set<int>;
     for(auto edge: (*mappa)[event]){
         (*er).insert(edge.first);
     }
+    return er;
+}
+
+int event_type(Lista_archi* list){
+ // quale ramo devo prendere tra ok, nocross oppure 2 rami?
+}
+
+void expand(Region region, int event){
+    int* event_types = new int[num_eventi];
+    for(auto e: *mappa){
+        //controllo tutti, non è un ER
+        if(e.first == -1)
+            event_types[e.first] = event_type(&e.second);
+        //è un ER non controllo l'evento relativo all'ER
+        else if(e.first != event && e.first != -1) {
+            event_types[event] = OK;
+            event_types[e.first] = event_type(&e.second);
+        }
+    }
+    int branch = OK;
+    int pos;
+    int type;
+    for(int i = 0; i < num_eventi; i ++){
+        type=event_types[i];
+        if(type == NOCROSS){
+            branch = NOCROSS;
+
+            break;
+        }
+        if(type == EXIT_NOCROSS){
+            if(branch == OK)
+                branch = EXIT_NOCROSS;
+        }
+        else if(type == ENTER_NOCROSS){
+            if(branch == OK)
+                branch = ENTER_NOCROSS;
+        }
+
+    }
+    if(branch == OK){
+        (*pre_regions).push_back(region); //aggiunta pre-regione giusta
+    }
+    else if (branch == NOCROSS){
+        //capire gli stati da aggiungere
+        //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
+        //mettere l'unico ramo (regione successiva)
+    }
+    else{
+        //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
+    }
+
 }
 
 
 int main()
 {
-
+    bool first;
     parser();
 
+    queue_temp_regions = new deque<Region>;
+
     for(auto e : *mappa){
-        (*ER_set).push_back(createER(e.first));
+        ER er_temp = createER(e.first);
+        (*ER_set).push_back(er_temp);
+        first = true;
+
+        while(!queue_temp_regions->empty()){
+            //expand(); //sulla stessa regione  MA devo espandere su tutti se non è la prima volta!!!
+            if(first){
+                expand(er_temp, e.first);
+                first = false;
+            }
+            else{
+                expand(queue_temp_regions->front(), e.first);
+                //tolgo l'elemento espanso dalla coda
+                queue_temp_regions->pop_front();
+            }
+
+
+        }
+
     }
 
 
