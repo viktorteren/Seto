@@ -18,10 +18,23 @@ typedef std::pair<int,int> Edge;
 using namespace std;
 using namespace boost;
 
-typedef adjacency_list<vecS, vecS, bidirectionalS> Graph;
+//map: evento -> lista di coppie: (srcId, dstId)
+typedef vector<Edge> Lista_archi;
+typedef std::map<int, Lista_archi> Mappa;
 
-int main()
-{
+typedef property<edge_name_t, int> event;
+typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
+
+typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
+
+Mappa* mappa = new Mappa();
+// declare a graph object
+Graph g(0);
+Vertex* vertex_array;
+vector<set<int>*>* ER_set = new  vector<set<int>*>;
+vector<set<int>*>* pre_regions = new vector<set<int>*>;
+
+void parser(){
     // Open the file:
     std::ifstream fin("../input.txt");
 
@@ -34,35 +47,13 @@ int main()
     fin >> num_transazioni;
     fin >> stato_iniziale;
 
-   /* cout << num_stati << endl;
-    cout << num_transazioni << endl;
-    cout << stato_iniziale << endl;*/
+    /* cout << num_stati << endl;
+     cout << num_transazioni << endl;
+     cout << stato_iniziale << endl;*/
 
-    typedef property<edge_name_t, int> event;
-    typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
+    vertex_array = new Vertex[num_stati];
 
-    typedef typename boost::graph_traits<Graph>::vertex_descriptor Vertex;
-
-    // declare a graph object
-    Graph g(0);
-
-    //map: evento -> lista di coppie: (srcId, dstId)
-    typedef vector<pair<int, int>> Lista_archi;
-    typedef std::map<event, Lista_archi> Mappa;
-
-    Mappa mappa;
-
-
-   // typedef int Vertex_id;
-   // typedef std::pair<Vertex_id , Vertex_id> Transaction;
-
-    //Transaction* transaction_array = new Transaction[num_transazioni];
-
-    Vertex* vertex_array=new Vertex[num_stati+1];
-
-
-
-    for(int i = 1; i <= num_stati; i++){
+    for(int i = 0; i < num_stati; i++){
         vertex_array[i]=boost::add_vertex(g);
     }
 
@@ -77,11 +68,11 @@ int main()
         fin >> ev;
         add_edge(vertex_array[src], vertex_array[dst], event(ev), g);
         //non c'è l'entry relativa all'evento ev
-        if (mappa.find(ev) == mappa.end()){
-            mappa[ev] = Lista_archi();
+        if (mappa->find(ev) == mappa->end()){
+            (*mappa)[ev] = Lista_archi();
             //mappa.insert(Mappa::value_type(ev, Lista_archi()));
         }
-        mappa.at(ev).push_back(std::make_pair(1, 2);
+        (*mappa).at(ev).push_back(std::make_pair(src, dst));
 
 
     }
@@ -99,4 +90,25 @@ int main()
 
 
     fin.close();
+}
+
+set<int>* createER(int event){
+    set<int>* er = new set<int>;
+    for(auto edge: (*mappa)[event]){
+        (*er).insert(edge.first);
+    }
+}
+
+
+int main()
+{
+
+    parser();
+
+    for(auto e : *mappa){
+        (*ER_set).push_back(createER(e.first));
+    }
+
+
+
 }
