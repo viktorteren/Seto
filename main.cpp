@@ -41,7 +41,7 @@ My_Map* ts_map = new My_Map();
 Graph g(0);
 Vertex* vertex_array;
 
-typedef set<int>* Region;
+typedef set<int> Region;
 typedef set<int>* ER;
 
 vector<ER>* ER_set = new  vector<ER>;
@@ -50,7 +50,7 @@ vector<Region>* pre_regions = new vector<Region>;
 vector<Region> *queue_temp_regions= new vector<Region>;
 
 
-map< int , vector< set<int>* > * > *map_states_to_add= new map();
+map< int , vector< set<int>* > * > *map_states_to_add= new map< int , vector< set<int>* > * > ();
 vector< set<int>* > *vec_states_to_add;
 set<int>* states_to_add_enter;
 set<int>* states_to_add_nocross;
@@ -126,7 +126,7 @@ ER createER(int event){
     return er;
 }
 
-int event_type(Lista_archi* list, Region region, int event){
+int event_type(Lista_archi* list, Region *region, int event){
  // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
 
@@ -141,6 +141,8 @@ int event_type(Lista_archi* list, Region region, int event){
     const int enter=3;
 
     (*map_states_to_add)[event]= vec_states_to_add;
+
+
 
     for(auto t: *list){
         if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
@@ -159,14 +161,14 @@ int event_type(Lista_archi* list, Region region, int event){
                 cout<< t.first << "->" <<t.second << " ENTER" << endl;
                 //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
                 //mappa di int(evento) e vettore di puntatori a insiemi di stati da aggiungere
-                (*states_to_add_nocross).insert(t.first);
+                (*states_to_add_nocross).insert(states_to_add_nocross-> begin(), t.first);
                 cout<< "inserisco " << t.first << " per nocross " << endl;
             }
             else {
                 (*trans)[out]++;
                 cout<< t.first << "->" <<t.second << " OUT" << endl;
                 //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
-                (*states_to_add_enter).insert(t.first);
+                (*states_to_add_enter).insert(states_to_add_enter-> begin(), t.second);
                 cout<< "inserisco " << t.second << " per enter " <<endl;
             }
         }
@@ -207,7 +209,7 @@ int event_type(Lista_archi* list, Region region, int event){
 
 }
 
-void expand(Region region, int event){
+void expand(Region *region, int event){
     int* event_types = new int[num_eventi];
     int last_event_2braches=-1;
     Region* expanded_region = new Region();
@@ -247,21 +249,22 @@ void expand(Region region, int event){
                 branch = EXIT_NOCROSS;
                 last_event_2braches=i;
             }
-            cout<<"2 rami" <<endl;
+            cout<<"2 rami exit" <<endl;
         }
         else if(type == ENTER_NOCROSS){
             if(branch == OK) {
                 branch = ENTER_NOCROSS;
                 last_event_2braches=i;
             }
-            cout<<"2 rami" <<endl;
+            cout<<"2 rami enter" <<endl;
+            cout << "branch: " << branch << endl;
         }
 
     }
 
     if(branch == OK){
         cout<<"OK" <<endl;
-        (*pre_regions).push_back(region); //aggiunta pre-regione giusta
+        (*pre_regions).push_back(*region); //aggiunta pre-regione giusta
     }
     else if (branch == NOCROSS){
         cout<<"NO CROSS" <<endl;
@@ -271,19 +274,44 @@ void expand(Region region, int event){
     }
     else{
         //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
-        if(branch=ENTER_NOCROSS){
+        if(branch==ENTER_NOCROSS){
             //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
             //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
 
+            cout<< "qui " << endl;
+            (*region).insert(region->begin(), 1);
+            cout << "dim region " << (*region).size() << endl;
+            /*set<int>::iterator it;
+
+            for(it = region->begin(); it != region->end();it++){
+                (*expanded_region)->insert(*it);
+                cout<< "inserisco nella extended Reg: " << *it << endl;
+
+            }*/
 
             for(auto state: *region){
-                (*expanded_region)->insert(state);
+                (expanded_region)->insert(expanded_region->begin(), state);
+                cout<< "inserisco nella extended Reg: " << state << endl;
             }
+
+            /*for(auto i: *region){
+                cout << "Stati region " << i <<endl ;
+            }*/
+
+
             auto vec=(*map_states_to_add)[last_event_2braches];
+
             for(auto set : *vec ){
                 for(auto state : *set )
-                    (*expanded_region)->insert(state);
+                    expanded_region->insert(expanded_region->begin(), state);
             }
+
+
+            for(auto i: *expanded_region){
+                cout << "Stati " << i <<endl ;
+            }
+
+
 
         }
     }
@@ -305,7 +333,7 @@ int main()
         expand(er_temp, e.first);
 
         while(pos!=queue_temp_regions->size()){
-                expand((*queue_temp_regions)[pos], -1);
+                expand(&((*queue_temp_regions)[pos]), -1);
                 pos++;
                 //tolgo l'elemento espanso dalla coda
                // queue_temp_regions->pop_front();
