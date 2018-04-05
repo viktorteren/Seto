@@ -188,16 +188,17 @@ int event_type(Lista_archi* list, Region *region, int event){
         cout<<"return no cross"<<endl;
         return NOCROSS;
     }
-    else if( (*trans)[exit]>0 ){ //(exit-out)
+    else if( (*trans)[exit]>0  && (*trans)[out]>0 ){ //(exit-out)
         cout<<"return exit_no cross"<<endl;
         return EXIT_NOCROSS;
     }
-    else if( (*trans)[enter]>0  ){ //(enter-out)
+    else if( (*trans)[enter]>0 && (*trans)[out]>0 ){ //(enter-out)
         cout<<"return enter_no cross"<<endl;
 
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
         vec_states_to_add->push_back(states_to_add_enter);
         vec_states_to_add->push_back(states_to_add_nocross);
+
 
         return ENTER_NOCROSS;
     }
@@ -212,11 +213,12 @@ int event_type(Lista_archi* list, Region *region, int event){
 void expand(Region *region, int event){
     int* event_types = new int[num_eventi];
     int last_event_2braches=-1;
-    vector<Region*> * expanded_regions = new vector<Region*>();
+    Region* expanded_regions = new Region[2];
 
-
-    for(auto i: (*region))
-        cout<< "Regione: "<< i << endl;
+    cout << "Regione " ;
+    for(auto i: (*region)) {
+        cout << i << endl;
+    }
 
 
     for(auto e: *ts_map){
@@ -280,19 +282,15 @@ void expand(Region *region, int event){
             //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
 
             cout<< "RAMO ENTER_NOCROSS " << endl;
-            (*region).insert(region->begin(), 1);
+           // (*region).insert(region->begin(), 1);
             cout << "dim region " << (*region).size() << endl;
-            /*set<int>::iterator it;
 
-            for(it = region->begin(); it != region->end();it++){
-                (*expanded_region)->insert(*it);
-                cout<< "inserisco nella extended Reg: " << *it << endl;
+            cout<< "point reg " << region;
+            //cout << "pint exp " << (*expanded_regions)[0];
 
-            }*/
-
+            //RAMO 1
             for(auto state: *region){
-
-                (expanded_regions)[0].insert((expanded_regions)[0].begin(), state);
+                (*expanded_regions).insert(state);
                 cout<< "inserisco nella extended Reg: " << state << endl;
             }
 
@@ -308,23 +306,45 @@ void expand(Region *region, int event){
                 cout << "valore: " << key.second << endl;
             }
 
-            auto vec=(*map_states_to_add).at(last_event_2braches);
+            vector< set<int>*> *vec=(*map_states_to_add).at(last_event_2braches);
 
-
-            cout << "dim primo set vettore: " << (*vec).front()->size() << endl;
-
-            //for(auto set : *vec ){
-            for(auto state : (vec)[0] )
-                (expanded_regions)[0].insert((expanded_regions)[0].begin(), state);
-            for(auto state : (vec)[1] )
-                (expanded_regions)[1].insert((expanded_regions)[1].begin(), state);
-            //}
-
-
-            for(auto i: expanded_regions[0]){
-                cout << "Stato della regione espansa " << i <<endl ;
+            cout << "dim primo set vettore: " << (*vec)[0]->size() << endl;
+            for(auto state : *(*vec)[0] ) {
+                cout << "stati vet: " << state <<endl;
             }
 
+           for(auto state : *(*vec)[0] ) {
+               expanded_regions[0].insert(state);
+           }
+
+            for(auto i: expanded_regions[0]){
+                cout << "Stato della regione espansa NOCROSS" << i <<endl ;
+            }
+
+            queue_temp_regions->push_back(*expanded_regions);
+
+            for(auto i: *queue_temp_regions){
+                cout << "coda:"  <<endl ;
+                for(auto state : i)
+                cout << "stati" << state <<endl ;
+            }
+
+            //RAMO 2
+
+            for(auto state: *region){
+                (*(expanded_regions+1)).insert(state);
+                cout<< "inserisco nella extended Reg: " << state << endl;
+            }
+
+            for(auto state : *(*vec)[1] ) {
+                expanded_regions[1].insert(state);
+            }
+
+            for(auto i: expanded_regions[1]){
+                cout << "Stato della regione espansa ENTER" << i <<endl ;
+            }
+
+            queue_temp_regions->push_back(*(expanded_regions+1));
 
 
         }
@@ -339,21 +359,28 @@ int main()
     parser();
     int pos=0;
 
-    for(auto e : *ts_map){
-        ER er_temp = createER(e.first);
+   // for(auto e : *ts_map){
+       // ER er_temp = createER(e.first);
+        ER er_temp = createER(0);
         (*ER_set).push_back(er_temp);
 
         //espando la prima volta - la regione coincide con ER
-        expand(er_temp, e.first);
+        //expand(er_temp, e.first);
+        expand(er_temp, 0);
 
-        while(pos!=queue_temp_regions->size()){
+        while(pos<= (queue_temp_regions->size()-1) /*&& queue_temp_regions->size()<2*/){
+
                 expand(&((*queue_temp_regions)[pos]), -1);
+            cout<< "POSIZIONEEEE**********************************: ";
+            cout<< "POSIZIONEEEE**********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
                 pos++;
+
                 //tolgo l'elemento espanso dalla coda
                // queue_temp_regions->pop_front();
         }
+        queue_temp_regions->clear();
 
-    }
+    //}
 
     delete ER_set;
     delete map_states_to_add;
