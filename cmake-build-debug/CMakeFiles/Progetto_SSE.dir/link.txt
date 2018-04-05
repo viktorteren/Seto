@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/Progetto_SSE.dir/main.cpp.o  -o Progetto_SSE 
