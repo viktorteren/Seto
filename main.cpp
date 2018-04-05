@@ -212,7 +212,7 @@ int event_type(Lista_archi* list, Region *region, int event){
 void expand(Region *region, int event){
     int* event_types = new int[num_eventi];
     int last_event_2braches=-1;
-    Region* expanded_region = new Region();
+    vector<Region*> * expanded_regions = new vector<Region*>();
 
 
     for(auto i: (*region))
@@ -223,14 +223,14 @@ void expand(Region *region, int event){
         cout<< "EVENTO: " <<e.first<<endl;
         //controllo tutti, non è un ER
         if(event == -1) {
-            event_types[e.first] = event_type(&e.second, region,event);
+            event_types[e.first] = event_type(&e.second, region, e.first);
             cout << "Non è ER" << endl;
         }
         //è un ER non controllo l'evento relativo all'ER
         else if(e.first != event && event != -1) {
             cout << " è un ER di " << event <<endl;
             event_types[event] = OK;
-            event_types[e.first] = event_type(&e.second,region,event);
+            event_types[e.first] = event_type(&e.second,region, e.first);
         }
     }
     int branch = OK;
@@ -275,10 +275,11 @@ void expand(Region *region, int event){
     else{
         //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
         if(branch==ENTER_NOCROSS){
+
             //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
             //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
 
-            cout<< "qui " << endl;
+            cout<< "RAMO ENTER_NOCROSS " << endl;
             (*region).insert(region->begin(), 1);
             cout << "dim region " << (*region).size() << endl;
             /*set<int>::iterator it;
@@ -290,25 +291,38 @@ void expand(Region *region, int event){
             }*/
 
             for(auto state: *region){
-                (expanded_region)->insert(expanded_region->begin(), state);
+
+                (expanded_regions)[0].insert((expanded_regions)[0].begin(), state);
                 cout<< "inserisco nella extended Reg: " << state << endl;
             }
 
-            /*for(auto i: *region){
+            for(auto i: *region){
                 cout << "Stati region " << i <<endl ;
-            }*/
-
-
-            auto vec=(*map_states_to_add)[last_event_2braches];
-
-            for(auto set : *vec ){
-                for(auto state : *set )
-                    expanded_region->insert(expanded_region->begin(), state);
             }
 
+            cout << "last evvent 2 branches index: " << last_event_2braches << endl;
+            cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
-            for(auto i: *expanded_region){
-                cout << "Stati " << i <<endl ;
+            for(auto key: (*map_states_to_add)){
+                cout << "chiave: " << key.first << " ";
+                cout << "valore: " << key.second << endl;
+            }
+
+            auto vec=(*map_states_to_add).at(last_event_2braches);
+
+
+            cout << "dim primo set vettore: " << (*vec).front()->size() << endl;
+
+            //for(auto set : *vec ){
+            for(auto state : (vec)[0] )
+                (expanded_regions)[0].insert((expanded_regions)[0].begin(), state);
+            for(auto state : (vec)[1] )
+                (expanded_regions)[1].insert((expanded_regions)[1].begin(), state);
+            //}
+
+
+            for(auto i: expanded_regions[0]){
+                cout << "Stato della regione espansa " << i <<endl ;
             }
 
 
