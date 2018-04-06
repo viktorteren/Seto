@@ -53,6 +53,7 @@ vector<Region> *queue_temp_regions= new vector<Region>;
 map< int , vector< set<int>* > * > *map_states_to_add= new map< int , vector< set<int>* > * > ();
 vector< set<int>* > *vec_states_to_add;
 set<int>* states_to_add_enter;
+set<int>* states_to_add_exit;
 set<int>* states_to_add_nocross;
 
 void parser(){
@@ -129,12 +130,15 @@ ER createER(int event){
 int event_type(Lista_archi* list, Region *region, int event){
  // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
-
+    //prima di allocare nuovo spazio elimino il vecchio contenuto puntato
+    delete vec_states_to_add;
     vec_states_to_add= new vector< set<int>* >;
+
     states_to_add_enter=new set<int>;
+    states_to_add_exit=new set<int>;
     states_to_add_nocross=new set<int>;
 
-//num in-out-exit-enter
+    //num in-out-exit-enter
     const int in=0;
     const int out=1;
     const int exit=2;
@@ -149,10 +153,15 @@ int event_type(Lista_archi* list, Region *region, int event){
             if(region->find(t.second) != region->end()) { //anche il secondo stato appartiene alla regione
                 (*trans)[in]++;
                 cout<< t.first << "->" <<t.second << " IN " <<endl;
+                //per no cross è ok, gli altri non si possono fare
             }
             else {
                 (*trans)[exit]++;
                 cout<< t.first << "->" <<t.second << " EXIT" <<endl;
+                //per exit è ok
+                //per no cross:
+                (*states_to_add_nocross).insert(states_to_add_nocross-> begin(), t.second);
+                cout<< "inserisco " << t.second << " per nocross " << endl;
             }
         }
         else {//il primo non ci appartiene
@@ -163,6 +172,8 @@ int event_type(Lista_archi* list, Region *region, int event){
                 //mappa di int(evento) e vettore di puntatori a insiemi di stati da aggiungere
                 (*states_to_add_nocross).insert(states_to_add_nocross-> begin(), t.first);
                 cout<< "inserisco " << t.first << " per nocross " << endl;
+                //per enter è già ok
+                //per exit non si può fare
             }
             else {
                 (*trans)[out]++;
@@ -170,6 +181,10 @@ int event_type(Lista_archi* list, Region *region, int event){
                 //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
                 (*states_to_add_enter).insert(states_to_add_enter-> begin(), t.second);
                 cout<< "inserisco " << t.second << " per enter " <<endl;
+                //per no cross è già ok
+                //per exit:
+                (*states_to_add_exit).insert(states_to_add_exit-> begin(), t.first);
+                cout<< "inserisco " << t.first << " per exit " <<endl;
             }
         }
     }
@@ -181,15 +196,26 @@ int event_type(Lista_archi* list, Region *region, int event){
         it++;
     }
 
-    //
-    //TODO: dealloca prima della return ????
     //gli Enter+in devono diventare per forza in(nocross)
     if( ( (*trans)[in]>0 && (*trans)[enter]>0) || ((*trans)[in]>0 && (*trans)[exit]>0) || ( (*trans)[enter]>0 && (*trans)[exit]>0 ) ) {
         cout<<"return no cross"<<endl;
+
+        vec_states_to_add->push_back(states_to_add_nocross);
+        delete states_to_add_enter;
+        delete states_to_add_exit;
+        delete states_to_add_nocross;
+        delete trans;
         return NOCROSS;
     }
     else if( (*trans)[exit]>0  && (*trans)[out]>0 ){ //(exit-out)
         cout<<"return exit_no cross"<<endl;
+
+        vec_states_to_add->push_back(states_to_add_exit);
+        vec_states_to_add->push_back(states_to_add_nocross);
+        delete states_to_add_enter;
+        delete states_to_add_exit;
+        delete states_to_add_nocross;
+        delete trans;
         return EXIT_NOCROSS;
     }
     else if( (*trans)[enter]>0 && (*trans)[out]>0 ){ //(enter-out)
@@ -199,11 +225,19 @@ int event_type(Lista_archi* list, Region *region, int event){
         vec_states_to_add->push_back(states_to_add_enter);
         vec_states_to_add->push_back(states_to_add_nocross);
 
-
+        delete states_to_add_enter;
+        delete states_to_add_exit;
+        delete states_to_add_nocross;
+        delete trans;
         return ENTER_NOCROSS;
     }
     else {
         cout<<"return ok"<<endl;
+        //devo fare QUI un salvataggio per il futuro???
+        delete states_to_add_enter;
+        delete states_to_add_exit;
+        delete states_to_add_nocross;
+        delete trans;
         return OK;
     }
 
@@ -236,7 +270,6 @@ void expand(Region *region, int event){
         }
     }
     int branch = OK;
-    int pos;
     int type;
     for(int i = 0; i < num_eventi; i ++){
         type=event_types[i];
@@ -349,7 +382,8 @@ void expand(Region *region, int event){
 
         }
     }
-
+    delete[] event_types;
+    delete[] expanded_regions;
 }
 
 
@@ -379,11 +413,11 @@ int main()
                // queue_temp_regions->pop_front();
         }
         queue_temp_regions->clear();
-
     //}
 
     delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
     delete pre_regions;
+    delete er_temp;
 }
