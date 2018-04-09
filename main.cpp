@@ -26,10 +26,16 @@ typedef std::map<int, Lista_archi> My_Map;
 typedef property<edge_name_t, int> event;
 typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
 
-#define OK 0
+/*#define OK 0
 #define NOCROSS 1
 #define EXIT_NOCROSS 2
-#define ENTER_NOCROSS 3
+#define ENTER_NOCROSS 3*/
+
+
+const int OK=0;
+const int NOCROSS= 1;
+const int EXIT_NOCROSS= 2;
+const int ENTER_NOCROSS= 3;
 
 int num_stati, num_transazioni, stato_iniziale, num_eventi;
 
@@ -50,14 +56,22 @@ vector<Region>* pre_regions = new vector<Region>;
 vector<Region> *queue_temp_regions= new vector<Region>;
 
 
-map< int , vector< set<int>* > * > *map_states_to_add= new map< int , vector< set<int>* > * > ();
-vector< set<int>* > *vec_states_to_add;
+struct Branches_states_to_add{
+    set<int>* states_to_add_exit_or_enter;
+    set<int>* states_to_add_nocross;
+};
+
+//map< int , vector< set<int>* > * > *map_states_to_add= new map< int , vector< set<int>* > * > ();
+map< int , Branches_states_to_add* > *map_states_to_add= new map< int , Branches_states_to_add* > ();
+Branches_states_to_add* struct_states_to_add;
 set<int>* states_to_add_enter;
 set<int>* states_to_add_exit;
 set<int>* states_to_add_nocross;
 
 void parser(){
+
     // Open the file:
+
     std::ifstream fin("../input.txt");
 
     assert(fin);
@@ -131,8 +145,8 @@ int event_type(Lista_archi* list, Region *region, int event){
  // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
     //prima di allocare nuovo spazio elimino il vecchio contenuto puntato
-    delete vec_states_to_add;
-    vec_states_to_add= new vector< set<int>* >;
+    delete struct_states_to_add;
+    struct_states_to_add= new Branches_states_to_add();
 
     states_to_add_enter=new set<int>;
     states_to_add_exit=new set<int>;
@@ -144,8 +158,7 @@ int event_type(Lista_archi* list, Region *region, int event){
     const int exit=2;
     const int enter=3;
 
-    (*map_states_to_add)[event]= vec_states_to_add;
-
+    (*map_states_to_add)[event]= struct_states_to_add;
 
 
     for(auto t: *list){
@@ -200,21 +213,21 @@ int event_type(Lista_archi* list, Region *region, int event){
     if( ( (*trans)[in]>0 && (*trans)[enter]>0) || ((*trans)[in]>0 && (*trans)[exit]>0) || ( (*trans)[enter]>0 && (*trans)[exit]>0 ) ) {
         cout<<"return no cross"<<endl;
 
-        vec_states_to_add->push_back(states_to_add_nocross);
-        delete states_to_add_enter;
-        delete states_to_add_exit;
-        delete states_to_add_nocross;
+        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+       // delete states_to_add_enter;
+       // delete states_to_add_exit;
+       // delete states_to_add_nocross;
         delete trans;
         return NOCROSS;
     }
     else if( (*trans)[exit]>0  && (*trans)[out]>0 ){ //(exit-out)
         cout<<"return exit_no cross"<<endl;
 
-        vec_states_to_add->push_back(states_to_add_exit);
-        vec_states_to_add->push_back(states_to_add_nocross);
-        delete states_to_add_enter;
+        struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
+        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+      /*  delete states_to_add_enter;
         delete states_to_add_exit;
-        delete states_to_add_nocross;
+        delete states_to_add_nocross;*/ //NON POSSO DEALLOCARE PERCHé DOPO CI PUNTO E DA SEGFAULT (ma da memoryLeak--booo)
         delete trans;
         return EXIT_NOCROSS;
     }
@@ -222,21 +235,21 @@ int event_type(Lista_archi* list, Region *region, int event){
         cout<<"return enter_no cross"<<endl;
 
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
-        vec_states_to_add->push_back(states_to_add_enter);
-        vec_states_to_add->push_back(states_to_add_nocross);
+        struct_states_to_add->states_to_add_exit_or_enter=states_to_add_enter;
+        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
 
-        delete states_to_add_enter;
-        delete states_to_add_exit;
-        delete states_to_add_nocross;
+        //delete states_to_add_enter;
+        //delete states_to_add_exit;
+        //delete states_to_add_nocross;
         delete trans;
         return ENTER_NOCROSS;
     }
     else {
         cout<<"return ok"<<endl;
         //devo fare QUI un salvataggio per il futuro???
-        delete states_to_add_enter;
+       /* delete states_to_add_enter;
         delete states_to_add_exit;
-        delete states_to_add_nocross;
+        delete states_to_add_nocross;*/
         delete trans;
         return OK;
     }
@@ -258,15 +271,16 @@ void expand(Region *region, int event){
     for(auto e: *ts_map){
         cout<< "EVENTO: " <<e.first<<endl;
         //controllo tutti, non è un ER
-        if(event == -1) {
-            event_types[e.first] = event_type(&e.second, region, e.first);
+        if(e.first != event || event == -1) {
             cout << "Non è ER" << endl;
+            event_types[e.first] = event_type(&e.second, region, e.first);
+
         }
         //è un ER non controllo l'evento relativo all'ER
-        else if(e.first != event && event != -1) {
+        else if(e.first == event && event != -1) {
             cout << " è un ER di " << event <<endl;
             event_types[event] = OK;
-            event_types[e.first] = event_type(&e.second,region, e.first);
+            //event_types[e.first] = event_type(&e.second,region, e.first);
         }
     }
     int branch = OK;
@@ -309,12 +323,12 @@ void expand(Region *region, int event){
     }
     else{
         //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
-        if(branch==ENTER_NOCROSS){
+        //if(branch==ENTER_NOCROSS){
 
             //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
             //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
 
-            cout<< "RAMO ENTER_NOCROSS " << endl;
+            cout<< "RAMO EXIT/ENTER_NOCROSS " << endl;
            // (*region).insert(region->begin(), 1);
             cout << "dim region " << (*region).size() << endl;
 
@@ -334,19 +348,19 @@ void expand(Region *region, int event){
             cout << "last evvent 2 branches index: " << last_event_2braches << endl;
             cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
-            for(auto key: (*map_states_to_add)){
-                cout << "chiave: " << key.first << " ";
-                cout << "valore: " << key.second << endl;
-            }
 
-            vector< set<int>*> *vec=(*map_states_to_add).at(last_event_2braches);
+            cout<<"last event 2 branch"<< last_event_2braches;
+            //da segfault :(
+            Branches_states_to_add* branches=(*map_states_to_add).at(last_event_2braches);
 
-            cout << "dim primo set vettore: " << (*vec)[0]->size() << endl;
-            for(auto state : *(*vec)[0] ) {
+            cout<<"qui";
+
+            cout << "dim primo set vettore: " << branches->states_to_add_nocross->size() << endl;
+            for(auto state : *branches->states_to_add_nocross) {
                 cout << "stati vet: " << state <<endl;
             }
 
-           for(auto state : *(*vec)[0] ) {
+           for(auto state : *branches->states_to_add_nocross ) {
                expanded_regions[0].insert(state);
            }
 
@@ -369,7 +383,7 @@ void expand(Region *region, int event){
                 cout<< "inserisco nella extended Reg: " << state << endl;
             }
 
-            for(auto state : *(*vec)[1] ) {
+            for(auto state : *branches->states_to_add_exit_or_enter ) {
                 expanded_regions[1].insert(state);
             }
 
@@ -379,8 +393,8 @@ void expand(Region *region, int event){
 
             queue_temp_regions->push_back(*(expanded_regions+1));
 
+        //}
 
-        }
     }
     delete[] event_types;
     delete[] expanded_regions;
@@ -395,16 +409,17 @@ int main()
 
    // for(auto e : *ts_map){
        // ER er_temp = createER(e.first);
-        ER er_temp = createER(0);
+        ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);
 
         //espando la prima volta - la regione coincide con ER
         //expand(er_temp, e.first);
-        expand(er_temp, 0);
+        expand(er_temp, 2);
 
-        while(pos<= (queue_temp_regions->size()-1) /*&& queue_temp_regions->size()<2*/){
+    cout<< "*********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
+        while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/){
 
-                expand(&((*queue_temp_regions)[pos]), -1);
+                expand( &((*queue_temp_regions)[pos]), -1 );
             cout<< "POSIZIONEEEE**********************************: ";
             cout<< "POSIZIONEEEE**********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
                 pos++;
@@ -413,11 +428,15 @@ int main()
                // queue_temp_regions->pop_front();
         }
         queue_temp_regions->clear();
-    //}
+
+        delete er_temp;
+   // }
 
     delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
     delete pre_regions;
-    delete er_temp;
+    delete states_to_add_enter;
+    delete states_to_add_exit;
+    delete states_to_add_nocross;
 }
