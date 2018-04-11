@@ -62,7 +62,7 @@ struct Branches_states_to_add{
 };
 
 //map< int , vector< set<int>* > * > *map_states_to_add= new map< int , vector< set<int>* > * > ();
-map< int , Branches_states_to_add* > *map_states_to_add= new map< int , Branches_states_to_add* > ();
+map< int , Branches_states_to_add > *map_states_to_add= new map< int , Branches_states_to_add > ();
 Branches_states_to_add* struct_states_to_add;
 set<int>* states_to_add_enter;
 set<int>* states_to_add_exit;
@@ -158,7 +158,7 @@ int event_type(Lista_archi* list, Region *region, int event){
     const int exit=2;
     const int enter=3;
 
-    (*map_states_to_add)[event]= struct_states_to_add;
+
 
 
     for(auto t: *list){
@@ -203,7 +203,7 @@ int event_type(Lista_archi* list, Region *region, int event){
     }
 
     int it=0;
-    cout<< "IN/OUT/EXIT/ENTER" << endl;
+    cout<< ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
     for(auto i: *trans){
         cout<<"num trans "<< it <<": " << i <<endl ;
         it++;
@@ -214,6 +214,7 @@ int event_type(Lista_archi* list, Region *region, int event){
         cout<<"return no cross"<<endl;
 
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+        (*map_states_to_add)[event]= *struct_states_to_add;
        // delete states_to_add_enter;
        // delete states_to_add_exit;
        // delete states_to_add_nocross;
@@ -225,6 +226,7 @@ int event_type(Lista_archi* list, Region *region, int event){
 
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+        (*map_states_to_add)[event]= *struct_states_to_add;
       /*  delete states_to_add_enter;
         delete states_to_add_exit;
         delete states_to_add_nocross;*/ //NON POSSO DEALLOCARE PERCHé DOPO CI PUNTO E DA SEGFAULT (ma da memoryLeak--booo)
@@ -237,6 +239,7 @@ int event_type(Lista_archi* list, Region *region, int event){
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_enter;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+        (*map_states_to_add)[event]= *struct_states_to_add;
 
         //delete states_to_add_enter;
         //delete states_to_add_exit;
@@ -262,14 +265,15 @@ void expand(Region *region, int event){
     int last_event_2braches=-1;
     Region* expanded_regions = new Region[2];
 
-    cout << "Regione " ;
+    cout << "|||REGIONE: " ;
     for(auto i: (*region)) {
-        cout << i << endl;
+        cout << i << " ";
     }
+    cout << endl;
 
 
     for(auto e: *ts_map){
-        cout<< "EVENTO: " <<e.first<<endl;
+        cout<< "EVENTO: " << e.first << endl;
         //controllo tutti, non è un ER
         if(e.first != event || event == -1) {
             cout << "Non è ER" << endl;
@@ -277,7 +281,7 @@ void expand(Region *region, int event){
 
         }
         //è un ER non controllo l'evento relativo all'ER
-        else if(e.first == event && event != -1) {
+        else if(e.first == event) {
             cout << " è un ER di " << event <<endl;
             event_types[event] = OK;
             //event_types[e.first] = event_type(&e.second,region, e.first);
@@ -290,7 +294,6 @@ void expand(Region *region, int event){
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
             branch = NOCROSS;
-
             break;
         }
         if(type == EXIT_NOCROSS){
@@ -332,7 +335,7 @@ void expand(Region *region, int event){
            // (*region).insert(region->begin(), 1);
             cout << "dim region " << (*region).size() << endl;
 
-            cout<< "point reg " << region;
+            cout<< "point reg " << region << endl;
             //cout << "pint exp " << (*expanded_regions)[0];
 
             //RAMO 1
@@ -345,22 +348,20 @@ void expand(Region *region, int event){
                 cout << "Stati region " << i <<endl ;
             }
 
-            cout << "last evvent 2 branches index: " << last_event_2braches << endl;
             cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
+            cout<<"last event 2 branch "<< last_event_2braches << endl;
 
-            cout<<"last event 2 branch"<< last_event_2braches;
-            //da segfault :(
-            Branches_states_to_add* branches=(*map_states_to_add).at(last_event_2braches);
+            Branches_states_to_add branches=(*map_states_to_add)[last_event_2braches];
 
             cout<<"qui";
 
-            cout << "dim primo set vettore: " << branches->states_to_add_nocross->size() << endl;
-            for(auto state : *branches->states_to_add_nocross) {
+            cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
+            for(auto state : *branches.states_to_add_nocross) {
                 cout << "stati vet: " << state <<endl;
             }
 
-           for(auto state : *branches->states_to_add_nocross ) {
+           for(auto state : *branches.states_to_add_nocross ) {
                expanded_regions[0].insert(state);
            }
 
@@ -383,7 +384,7 @@ void expand(Region *region, int event){
                 cout<< "inserisco nella extended Reg: " << state << endl;
             }
 
-            for(auto state : *branches->states_to_add_exit_or_enter ) {
+            for(auto state : *branches.states_to_add_exit_or_enter ) {
                 expanded_regions[1].insert(state);
             }
 
@@ -416,7 +417,7 @@ int main()
         //expand(er_temp, e.first);
         expand(er_temp, 2);
 
-    cout<< "*********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
+    cout<< "*********************************: pos: " << pos <<" reg queue size " << queue_temp_regions->size() << endl;
         while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/){
 
                 expand( &((*queue_temp_regions)[pos]), -1 );
