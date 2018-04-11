@@ -254,8 +254,26 @@ int event_type(Lista_archi* list, Region *region, int event){
         delete trans;
         return OK;
     }
+}
 
-
+bool minimal_pre_region(Region& new_region) {
+    int cont;
+    for (auto region: *pre_regions) {
+        cont = 0;
+        if(region.size() <= new_region.size()){
+            for (auto state: region) {
+                if(new_region.find(state) == new_region.end()){
+                    break;
+                }
+                else{
+                    cont ++;
+                }
+            }
+            if(cont == region.size())
+                return false;
+        }
+    }
+    return true;
 }
 
 void expand(Region *region, int event){
@@ -318,7 +336,13 @@ void expand(Region *region, int event){
 
     if(branch == OK){
         cout<<"OK" <<endl;
-        (*pre_regions).push_back(*region); //aggiunta pre-regione giusta
+        if(minimal_pre_region(*region)) {
+            cout << "adding minimal pre-region" << endl;
+            (*pre_regions).push_back(*region); //aggiunta pre-regione giusta
+        }
+        else{
+            cout << "not adding pre-region" << endl;
+        }
     }
     else if (branch == NOCROSS){
         cout<<"RAMO UNICO NO CROSS" <<endl;
