@@ -159,8 +159,6 @@ int event_type(Lista_archi* list, Region *region, int event){
     const int enter=3;
 
 
-
-
     for(auto t: *list){
         if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
             if(region->find(t.second) != region->end()) { //anche il secondo stato appartiene alla regione
@@ -215,8 +213,8 @@ int event_type(Lista_archi* list, Region *region, int event){
 
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
-       // delete states_to_add_enter;
-       // delete states_to_add_exit;
+        delete states_to_add_enter;
+        delete states_to_add_exit;
        // delete states_to_add_nocross;
         delete trans;
         return NOCROSS;
@@ -227,9 +225,9 @@ int event_type(Lista_archi* list, Region *region, int event){
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
-      /*  delete states_to_add_enter;
-        delete states_to_add_exit;
-        delete states_to_add_nocross;*/ //NON POSSO DEALLOCARE PERCHé DOPO CI PUNTO E DA SEGFAULT (ma da memoryLeak--booo)
+        delete states_to_add_enter;
+      //  delete states_to_add_exit;
+        //delete states_to_add_nocross; //NON POSSO DEALLOCARE PERCHé DOPO CI PUNTO E DA SEGFAULT (ma da memoryLeak--booo)
         delete trans;
         return EXIT_NOCROSS;
     }
@@ -243,13 +241,13 @@ int event_type(Lista_archi* list, Region *region, int event){
 
         //delete states_to_add_enter;
         //delete states_to_add_exit;
-        //delete states_to_add_nocross;
+        delete states_to_add_nocross;
         delete trans;
         return ENTER_NOCROSS;
     }
     else {
         cout<<"return ok"<<endl;
-        //devo fare QUI un salvataggio per il futuro???
+        //se DEALLOCO DA INVALID FREE ALTIRMENTI MEMLEAK ???!!!
        /* delete states_to_add_enter;
         delete states_to_add_exit;
         delete states_to_add_nocross;*/
@@ -263,6 +261,7 @@ int event_type(Lista_archi* list, Region *region, int event){
 void expand(Region *region, int event){
     int* event_types = new int[num_eventi];
     int last_event_2braches=-1;
+    int last_event_nocross=-1;
     Region* expanded_regions = new Region[2];
 
     cout << "|||REGIONE: " ;
@@ -279,6 +278,8 @@ void expand(Region *region, int event){
             cout << "Non è ER" << endl;
             event_types[e.first] = event_type(&e.second, region, e.first);
 
+            //se è no cross non controllo gli altri eventi
+            if(event_types[e.first]==NOCROSS) break;
         }
         //è un ER non controllo l'evento relativo all'ER
         else if(e.first == event) {
@@ -294,6 +295,7 @@ void expand(Region *region, int event){
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
             branch = NOCROSS;
+            last_event_nocross=i;
             break;
         }
         if(type == EXIT_NOCROSS){
@@ -332,28 +334,32 @@ void expand(Region *region, int event){
 
 
         //todo: qui dovrei aggiungere gli stati giusti
-        //Branches_states_to_add branches=(*map_states_to_add)[];
 
-        /*for(auto state : *branches.states_to_add_nocross) {
+        Branches_states_to_add branches=(*map_states_to_add)[last_event_nocross];
+
+        cout<<"qui";
+
+        cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
+       /* for(auto state : *branches.states_to_add_nocross) {
             cout << "stati vet: " << state <<endl;
-        }
+        }*/
 
         for(auto state : *branches.states_to_add_nocross ) {
             expanded_regions[0].insert(state);
-        }*/
+        }
 
         for(auto i: expanded_regions[0]){
             cout << "Stato della regione espansa NOCROSS " << i <<endl ;
         }
 
         //todo: il seguente push_back dovregge aggiungere l'elemento mancante nella coda che deve essere preparato nel modo giusto
-        //queue_temp_regions->push_back(*expanded_regions);
+        queue_temp_regions->push_back(*expanded_regions);
 
-        /*for(auto i: *queue_temp_regions){
+        for(auto i: *queue_temp_regions){
             cout << "coda:"  <<endl ;
             for(auto state : i)
                 cout << "stati" << state <<endl ;
-        }*/
+        }
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
@@ -442,19 +448,22 @@ int main()
     parser();
     int pos=0;
 
-   // for(auto e : *ts_map){
-       // ER er_temp = createER(e.first);
-        ER er_temp = createER(2);
+    for(auto e : *ts_map){
+        ER er_temp = createER(e.first);
+        //ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);
 
         //espando la prima volta - la regione coincide con ER
-        //expand(er_temp, e.first);
-        expand(er_temp, 2);
+        expand(er_temp, e.first);
+        //expand(er_temp, 2);
 
     cout<< "*********************************: pos: " << pos <<" reg queue size " << queue_temp_regions->size() << endl;
         while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/){
 
+            if((*queue_temp_regions)[pos].size()!=num_stati)
                 expand( &((*queue_temp_regions)[pos]), -1 );
+            else  (*pre_regions).push_back((*queue_temp_regions)[pos]);
+
             cout<< "POSIZIONEEEE**********************************: ";
             cout<< "POSIZIONEEEE**********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
                 pos++;
@@ -465,7 +474,14 @@ int main()
         queue_temp_regions->clear();
 
         delete er_temp;
-   // }
+    }
+
+    for(auto pre_reg: *pre_regions){
+        cout<< "PREGEGION ER di : " << endl;
+        for(auto state: pre_reg){
+            cout<<" State: "<< state<<endl;
+        }
+    }
 
     delete ER_set;
     delete map_states_to_add;
