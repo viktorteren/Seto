@@ -82,7 +82,7 @@ void parser(){
 
     // Open the file:
 
-    std::ifstream fin("../input.txt");
+    std::ifstream fin("../input2.txt");
 
     assert(fin);
 
@@ -152,6 +152,7 @@ ER createER(int event){
 }
 
 bool is_pre_region(Lista_archi *list, Region *region, int event) {
+
     for(auto t: *list){
         if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
             if(region->find(t.second) == region->end()) { //il secondo stato non appartiene alla regione
@@ -565,20 +566,23 @@ void create_pre_regions(){
             //guardo se è una pre-regione per tale evento
                 //se si aggiungo alla mappa
 
+    vector<Region>::iterator it;
     for(auto record: *ts_map){
         //cout << "evento: " << record.first << endl;
-        for(auto region: *regions){
-            if(is_pre_region(&record.second, &region, record.first)){
+
+        for(it=regions->begin(); it!=regions->end();++it){
+            Region* region= &(*it);
+        //for(auto region: *regions){
+           // cout<< "reg poin " << &region;
+            //printRegion(region);
+            if(is_pre_region(&record.second, region, record.first)){
                 //aggiungo la regione alla mappa
                 if (pre_regions->find(record.first) == pre_regions->end()){
                     (*pre_regions)[record.first] = new vector<Region *> ();
                     //mappa.insert(Mappa::value_type(ev, Lista_archi()));
                 }
-                (*pre_regions)[record.first]->push_back(&region);
-                for(auto region: *((*pre_regions)[record.first])){
-                    cout << "Evento: " << record.first << endl;
-                    printRegion(*region);
-                }
+                (*pre_regions)[record.first]->push_back(region);
+
             }
         }
 
