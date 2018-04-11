@@ -319,7 +319,41 @@ void expand(Region *region, int event){
         (*pre_regions).push_back(*region); //aggiunta pre-regione giusta
     }
     else if (branch == NOCROSS){
-        cout<<"NO CROSS" <<endl;
+        cout<<"RAMO UNICO NO CROSS" <<endl;
+        for(auto state: *region){
+            (*expanded_regions).insert(state);
+            cout<< "inserisco nella extended Reg: " << state << endl;
+        }
+        for(auto i: *region){
+            cout << "Stati region " << i <<endl ;
+        }
+
+        cout << "map states to add size: " << (*map_states_to_add).size() << endl;
+
+
+        //todo: qui dovrei aggiungere gli stati giusti
+        //Branches_states_to_add branches=(*map_states_to_add)[];
+
+        /*for(auto state : *branches.states_to_add_nocross) {
+            cout << "stati vet: " << state <<endl;
+        }
+
+        for(auto state : *branches.states_to_add_nocross ) {
+            expanded_regions[0].insert(state);
+        }*/
+
+        for(auto i: expanded_regions[0]){
+            cout << "Stato della regione espansa NOCROSS " << i <<endl ;
+        }
+
+        //todo: il seguente push_back dovregge aggiungere l'elemento mancante nella coda che deve essere preparato nel modo giusto
+        //queue_temp_regions->push_back(*expanded_regions);
+
+        /*for(auto i: *queue_temp_regions){
+            cout << "coda:"  <<endl ;
+            for(auto state : i)
+                cout << "stati" << state <<endl ;
+        }*/
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
@@ -338,7 +372,7 @@ void expand(Region *region, int event){
             cout<< "point reg " << region << endl;
             //cout << "pint exp " << (*expanded_regions)[0];
 
-            //RAMO 1
+            //RAMO 1 (NO_CROSS)
             for(auto state: *region){
                 (*expanded_regions).insert(state);
                 cout<< "inserisco nella extended Reg: " << state << endl;
@@ -366,7 +400,7 @@ void expand(Region *region, int event){
            }
 
             for(auto i: expanded_regions[0]){
-                cout << "Stato della regione espansa NOCROSS" << i <<endl ;
+                cout << "Stato della regione espansa NOCROSS " << i <<endl ;
             }
 
             queue_temp_regions->push_back(*expanded_regions);
@@ -377,7 +411,7 @@ void expand(Region *region, int event){
                 cout << "stati" << state <<endl ;
             }
 
-            //RAMO 2
+            //RAMO 2 (EXIT/ENTER)
 
             for(auto state: *region){
                 (*(expanded_regions+1)).insert(state);
@@ -389,7 +423,7 @@ void expand(Region *region, int event){
             }
 
             for(auto i: expanded_regions[1]){
-                cout << "Stato della regione espansa ENTER" << i <<endl ;
+                cout << "Stato della regione espansa ENTER " << i <<endl ;
             }
 
             queue_temp_regions->push_back(*(expanded_regions+1));
