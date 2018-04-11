@@ -51,7 +51,7 @@ typedef set<int> Region;
 typedef set<int>* ER;
 
 vector<ER>* ER_set = new  vector<ER>;
-vector<Region>* pre_regions = new vector<Region>;
+vector<Region>* regions = new vector<Region>;
 
 vector<Region> *queue_temp_regions= new vector<Region>;
 
@@ -67,6 +67,8 @@ Branches_states_to_add* struct_states_to_add;
 set<int>* states_to_add_enter;
 set<int>* states_to_add_exit;
 set<int>* states_to_add_nocross;
+
+map<int, vector<Region*> * > *pre_regions= new map < int , vector<Region*>* > ();
 
 void parser(){
 
@@ -258,7 +260,7 @@ int event_type(Lista_archi* list, Region *region, int event){
 
 bool minimal_pre_region(Region& new_region) {
     int cont;
-    for (auto region: *pre_regions) {
+    for (auto region: *regions) {
         cont = 0;
         if(region.size() <= new_region.size()){
             for (auto state: region) {
@@ -274,6 +276,26 @@ bool minimal_pre_region(Region& new_region) {
         }
     }
     return true;
+}
+
+bool region_in_queue(Region& new_region){
+    int cont=0;
+    for (auto region: *queue_temp_regions) {
+        cont = 0;
+        if(region.size() == new_region.size()){
+            for (auto state: region) {
+                if(new_region.find(state) == new_region.end()){
+                    break;
+                }
+                else{
+                    cont ++;
+                }
+            }
+            if(cont == region.size())
+                return true;
+        }
+    }
+    return false;
 }
 
 void expand(Region *region, int event){
@@ -338,7 +360,7 @@ void expand(Region *region, int event){
         cout<<"OK" <<endl;
         if(minimal_pre_region(*region)) {
             cout << "adding minimal pre-region" << endl;
-            (*pre_regions).push_back(*region); //aggiunta pre-regione giusta
+            (*regions).push_back(*region); //aggiunta pre-regione giusta
         }
         else{
             cout << "not adding pre-region" << endl;
@@ -357,8 +379,6 @@ void expand(Region *region, int event){
         cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
 
-        //todo: qui dovrei aggiungere gli stati giusti
-
         Branches_states_to_add branches=(*map_states_to_add)[last_event_nocross];
 
         cout<<"qui";
@@ -376,8 +396,14 @@ void expand(Region *region, int event){
             cout << "Stato della regione espansa NOCROSS " << i <<endl ;
         }
 
-        //todo: il seguente push_back dovregge aggiungere l'elemento mancante nella coda che deve essere preparato nel modo giusto
-        queue_temp_regions->push_back(*expanded_regions);
+        //TODO se la temp regione da inserire c'è già non la inserisco
+        if( !region_in_queue(*expanded_regions) ) {
+            queue_temp_regions->push_back(*expanded_regions);
+            cout<<"Regione aggiunta alla coda"<<endl;
+        }
+        else {
+            cout<<"Regione non aggiunta alla coda(già presente)"<<endl;
+        }
 
         for(auto i: *queue_temp_regions){
             cout << "coda:"  <<endl ;
@@ -433,7 +459,13 @@ void expand(Region *region, int event){
                 cout << "Stato della regione espansa NOCROSS " << i <<endl ;
             }
 
-            queue_temp_regions->push_back(*expanded_regions);
+            if( !region_in_queue(*expanded_regions) ) {
+                queue_temp_regions->push_back(*expanded_regions);
+                cout<<"Ramo1: Regione aggiunta alla coda"<<endl;
+            }
+            else {
+                cout<<"Ramo1: Regione non aggiunta alla coda(già presente)"<<endl;
+            }
 
             for(auto i: *queue_temp_regions){
                 cout << "coda:"  <<endl ;
@@ -456,7 +488,15 @@ void expand(Region *region, int event){
                 cout << "Stato della regione espansa ENTER " << i <<endl ;
             }
 
-            queue_temp_regions->push_back(*(expanded_regions+1));
+
+            if( !region_in_queue( *(expanded_regions+1) ) ) {
+                queue_temp_regions->push_back( *(expanded_regions+1) );
+                cout<<"Ramo2: Regione aggiunta alla coda"<<endl;
+            }
+            else {
+                cout<<"Ramo 2 :Regione non aggiunta alla coda(già presente)"<<endl;
+            }
+
 
         //}
 
@@ -474,7 +514,7 @@ int main()
 
     for(auto e : *ts_map){
         ER er_temp = createER(e.first);
-        //ER er_temp = createER(2);
+       // ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);
 
         //espando la prima volta - la regione coincide con ER
@@ -486,7 +526,7 @@ int main()
 
             if((*queue_temp_regions)[pos].size()!=num_stati)
                 expand( &((*queue_temp_regions)[pos]), -1 );
-            else  (*pre_regions).push_back((*queue_temp_regions)[pos]);
+            else  (*regions).push_back((*queue_temp_regions)[pos]);
 
             cout<< "POSIZIONEEEE**********************************: ";
             cout<< "POSIZIONEEEE**********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
@@ -500,8 +540,8 @@ int main()
         delete er_temp;
     }
 
-    for(auto pre_reg: *pre_regions){
-        cout<< "PREGEGION ER di : " << endl;
+    for(auto pre_reg: *regions){
+        cout<< "PREREGION ER di : " << endl;
         for(auto state: pre_reg){
             cout<<" State: "<< state<<endl;
         }
@@ -510,7 +550,7 @@ int main()
     delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
-    delete pre_regions;
+    delete regions;
     delete states_to_add_enter;
     delete states_to_add_exit;
     delete states_to_add_nocross;
