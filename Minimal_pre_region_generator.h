@@ -26,8 +26,8 @@ namespace pre_region_gen {
     typedef std::pair<int, int> Edge;
     typedef set<int> Region;
     typedef set<int> *ER;
-    typedef vector<Edge> Lista_archi;
-    typedef std::map<int, Lista_archi> My_Map;
+    typedef vector<Edge> List_edges;
+    typedef std::map<int, List_edges> My_Map;
 
 
     const int OK = 0;
@@ -37,16 +37,14 @@ namespace pre_region_gen {
     const int EXIT = 2;
     const int ENTER = 3;
 
-    int stati, eventi;
-
     class Minimal_pre_region_generator {
 
     public:
 
-        Minimal_pre_region_generator(int num_stati,int num_eventi);
+        Minimal_pre_region_generator(My_Map* map,int num_events, int num_states);
         ~Minimal_pre_region_generator();
 
-        map<int, vector<Region *> *> *generate();
+        void generate();
 
         vector<ER> *ER_set;
         vector<Region> *regions;
@@ -65,14 +63,16 @@ namespace pre_region_gen {
         set<int> *states_to_add_nocross;
         map<int, vector<Region *> *> *pre_regions;
 
+    private:
+        int events,states;
 
         void printRegion(const Region &region);
 
         ER createER(int event);
 
-        bool is_pre_region(Lista_archi *list, Region *region, int event);
+        bool is_pre_region(List_edges *list, Region *region, int event);
 
-        int branch_selection(Lista_archi *list, Region *region, int event);
+        int branch_selection(List_edges *list, Region *region, int event);
 
         bool minimal_region(Region &new_region);
 

@@ -5,19 +5,34 @@
 
 using namespace pre_region_gen;
 
-Minimal_pre_region_generator::Minimal_pre_region_generator(int num_stati,int num_eventi) {
-    ts_map = new My_Map();
+Minimal_pre_region_generator::Minimal_pre_region_generator(My_Map* input_map,int num_events, int num_states) {
+    ts_map = input_map;
     ER_set = new  vector<ER>;
     regions = new vector<Region>;
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add > ();
     pre_regions= new map < int , vector<Region*>* > ();
-    stati = num_stati;
-    eventi = num_eventi;
+    states = num_states;
+    events = num_events;
 
 }
 
-Minimal_pre_region_generator::~Minimal_pre_region_generator() {}
+Minimal_pre_region_generator::~Minimal_pre_region_generator() {
+
+    delete ts_map;
+    delete ER_set;
+    delete map_states_to_add;
+    delete queue_temp_regions;
+    delete regions;
+    delete struct_states_to_add;
+
+    //dealloco tutti i vettori della mappa delle preregions
+    for(auto record : *pre_regions){
+        delete[] record.second;
+    }
+
+        delete pre_regions;
+}
 
 struct Branches_states_to_add {
     set<int> *states_to_add_exit_or_enter;
@@ -39,7 +54,7 @@ ER Minimal_pre_region_generator::createER(int event){
     return er;
 }
 
-bool Minimal_pre_region_generator::is_pre_region(Lista_archi *list, Region *region, int event) {
+bool Minimal_pre_region_generator::is_pre_region(List_edges *list, Region *region, int event) {
     for(auto t: *list){
         if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
             if(region->find(t.second) == region->end()) { //il secondo stato non appartiene alla regione
@@ -61,7 +76,7 @@ void Minimal_pre_region_generator::printRegion(const Region& region){
     cout << endl;
 }
 
-int Minimal_pre_region_generator::branch_selection(Lista_archi *list, Region *region, int event){
+int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *region, int event){
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
     //prima di allocare nuovo spazio elimino il vecchio contenuto puntato
@@ -134,6 +149,9 @@ int Minimal_pre_region_generator::branch_selection(Lista_archi *list, Region *re
 
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
+        states_to_add_exit= nullptr;
+        states_to_add_enter= nullptr;
+
         delete states_to_add_enter;
         delete states_to_add_exit;
         // delete states_to_add_nocross;
@@ -146,9 +164,10 @@ int Minimal_pre_region_generator::branch_selection(Lista_archi *list, Region *re
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
+        states_to_add_enter= nullptr;
         delete states_to_add_enter;
         //  delete states_to_add_exit;
-        //delete states_to_add_nocross; //NON POSSO DEALLOCARE PERCHé DOPO CI PUNTO E DA SEGFAULT (ma da memoryLeak--booo)
+        //delete states_to_add_nocross;
         delete trans;
         return EXIT_NOCROSS;
     }
@@ -162,16 +181,22 @@ int Minimal_pre_region_generator::branch_selection(Lista_archi *list, Region *re
 
         //delete states_to_add_enter;
         //delete states_to_add_exit;
+        states_to_add_nocross= nullptr;
         delete states_to_add_nocross;
         delete trans;
         return ENTER_NOCROSS;
     }
     else {
         cout<<"return ok"<<endl;
-        //se DEALLOCO DA INVALID FREE ALTIRMENTI MEMLEAK ???!!!
-        /* delete states_to_add_enter;
+
+
+        if(states_to_add_enter!= nullptr)
+            delete states_to_add_enter;
+        if(states_to_add_exit!= nullptr)
          delete states_to_add_exit;
-         delete states_to_add_nocross;*/
+        if(states_to_add_nocross!= nullptr)
+            delete states_to_add_nocross;
+
         delete trans;
         return OK;
     }
@@ -246,7 +271,7 @@ bool Minimal_pre_region_generator::region_in_queue(Region& new_region){
 }
 
 void Minimal_pre_region_generator::expand(Region *region, int event){
-    int* event_types = new int[eventi];
+    int* event_types = new int[events];
     int last_event_2braches=-1;
     int last_event_nocross=-1;
     Region* expanded_regions = new Region[2];
@@ -277,7 +302,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     }
     int branch = OK;
     int type;
-    for(int i = 0; i < eventi; i ++){
+    for(int i = 0; i < events; i ++){
         type=event_types[i];
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
@@ -451,6 +476,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
         //}
 
     }
+
     delete[] event_types;
     delete[] expanded_regions;
 }
@@ -462,21 +488,23 @@ void Minimal_pre_region_generator::create_pre_regions(){
     //guardo se è una pre-regione per tale evento
     //se si aggiungo alla mappa
 
-
-
+    vector<Region>::iterator it;
     for(auto record: *ts_map){
         //cout << "evento: " << record.first << endl;
-        for(auto region: *regions){
+        /*for(auto region: *regions){
             //printRegion(region);
-            if(is_pre_region(&record.second, &region, record.first)){
-                //aggiungo la regione alla mappa
-                if (pre_regions->find(record.first) == pre_regions->end()){
-                    (*pre_regions)[record.first] = new vector<Region *> ();
+            if(is_pre_region(&record.second, &region, record.first)){*/
+        for(it=regions->begin(); it!=regions->end();++it){
+            Region* region= &(*it);
+                if(is_pre_region(&record.second, region, record.first)){
+                    //aggiungo la regione alla mappa
+                    if (pre_regions->find(record.first) == pre_regions->end()){
+                        (*pre_regions)[record.first] = new vector<Region *> ();
                 }
 
                 cout << &region << endl;
                 //cout << ((*pre_regions)[record.first]) << endl;
-                (*pre_regions)[record.first]->push_back(&region);
+                (*pre_regions)[record.first]->push_back(region);
                 cout << "pre_regions size " << (*pre_regions).size() << endl;
                 for(auto region: *((*pre_regions)[record.first])){
                     cout << "Evento: " << record.first << endl;
@@ -496,7 +524,7 @@ void Minimal_pre_region_generator::create_pre_regions(){
 
 }
 
-map<int, vector<Region *> *> * Minimal_pre_region_generator::generate(){
+void Minimal_pre_region_generator::generate(){
 
     int pos=0;
 
@@ -512,7 +540,7 @@ map<int, vector<Region *> *> * Minimal_pre_region_generator::generate(){
         cout<< "*********************************: pos: " << pos <<" reg queue size " << queue_temp_regions->size() << endl;
         while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
 
-            if ((*queue_temp_regions)[pos].size() != stati)
+            if ((*queue_temp_regions)[pos].size() != states)
                 expand(&((*queue_temp_regions)[pos]), -1);
             else  (*regions).push_back((*queue_temp_regions)[pos]);
 
@@ -539,11 +567,4 @@ map<int, vector<Region *> *> * Minimal_pre_region_generator::generate(){
     //creazione delle pre-regioni
     create_pre_regions();
 
-    delete ER_set;
-    delete map_states_to_add;
-    delete queue_temp_regions;
-    delete regions;
-    delete states_to_add_enter;
-    delete states_to_add_exit;
-    delete states_to_add_nocross;
 };
