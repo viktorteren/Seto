@@ -29,11 +29,6 @@ typedef std::map<int, Lista_archi> My_Map;
 typedef property<edge_name_t, int> event;
 typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
 
-/*#define OK 0
-#define NOCROSS 1
-#define EXIT_NOCROSS 2
-#define ENTER_NOCROSS 3*/
-
 
 const int OK=0;
 const int NOCROSS= 1;
@@ -85,7 +80,7 @@ void parser(){
 
     // Open the file:
 
-    std::ifstream fin("../input.txt");
+    std::ifstream fin("../input2.txt");
 
     assert(fin);
 
@@ -570,24 +565,23 @@ void create_pre_regions(){
 
 
 
+    vector<Region>::iterator it;
     for(auto record: *ts_map){
         //cout << "evento: " << record.first << endl;
-        for(auto region: *regions){
+
+        for(it=regions->begin(); it!=regions->end();++it){
+            Region* region= &(*it);
+            //for(auto region: *regions){
+            // cout<< "reg poin " << &region;
             //printRegion(region);
-            if(is_pre_region(&record.second, &region, record.first)){
+            if(is_pre_region(&record.second, region, record.first)){
                 //aggiungo la regione alla mappa
                 if (pre_regions->find(record.first) == pre_regions->end()){
                     (*pre_regions)[record.first] = new vector<Region *> ();
+                    //mappa.insert(Mappa::value_type(ev, Lista_archi()));
                 }
+                (*pre_regions)[record.first]->push_back(region);
 
-                cout << &region << endl;
-                //cout << ((*pre_regions)[record.first]) << endl;
-                (*pre_regions)[record.first]->push_back(&region);
-                cout << "pre_regions size " << (*pre_regions).size() << endl;
-                for(auto region: *((*pre_regions)[record.first])){
-                    cout << "Evento: " << record.first << endl;
-                    printRegion(*region);
-                }
             }
         }
 
@@ -610,5 +604,5 @@ int main()
     int pos=0;
 
     Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
-    generate();
+    //generate();
 }
