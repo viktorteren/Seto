@@ -37,6 +37,7 @@ namespace pre_region_gen {
     const int EXIT = 2;
     const int ENTER = 3;
 
+    int stati, eventi;
 
     class Minimal_pre_region_generator {
 

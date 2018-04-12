@@ -30,12 +30,6 @@ typedef property<edge_name_t, int> event;
 typedef adjacency_list<mapS, vecS, undirectedS,no_property,event> Graph;
 
 
-const int OK=0;
-const int NOCROSS= 1;
-const int EXIT_NOCROSS= 2;
-const int ENTER_NOCROSS= 3;
-const int EXIT = 2;
-const int ENTER = 3;
 
 int num_stati, num_transazioni, stato_iniziale, num_eventi;
 
@@ -602,7 +596,7 @@ int main()
     bool first;
     parser();
     int pos=0;
-
-    Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
-    //generate();
+    Minimal_pre_region_generator* mg = new Minimal_pre_region_generator(num_stati, num_eventi);
+    //Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
+    mg->generate();
 }

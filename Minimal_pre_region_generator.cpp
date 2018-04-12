@@ -12,6 +12,8 @@ Minimal_pre_region_generator::Minimal_pre_region_generator(int num_stati,int num
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add > ();
     pre_regions= new map < int , vector<Region*>* > ();
+    stati = num_stati;
+    eventi = num_eventi;
 
 }
 
@@ -244,7 +246,7 @@ bool Minimal_pre_region_generator::region_in_queue(Region& new_region){
 }
 
 void Minimal_pre_region_generator::expand(Region *region, int event){
-    int* event_types = new int[num_eventi];
+    int* event_types = new int[eventi];
     int last_event_2braches=-1;
     int last_event_nocross=-1;
     Region* expanded_regions = new Region[2];
@@ -275,7 +277,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     }
     int branch = OK;
     int type;
-    for(int i = 0; i < num_eventi; i ++){
+    for(int i = 0; i < eventi; i ++){
         type=event_types[i];
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
@@ -510,7 +512,7 @@ map<int, vector<Region *> *> * Minimal_pre_region_generator::generate(){
         cout<< "*********************************: pos: " << pos <<" reg queue size " << queue_temp_regions->size() << endl;
         while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
 
-            if ((*queue_temp_regions)[pos].size() != num_stati)
+            if ((*queue_temp_regions)[pos].size() != stati)
                 expand(&((*queue_temp_regions)[pos]), -1);
             else  (*regions).push_back((*queue_temp_regions)[pos]);
 
