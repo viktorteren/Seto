@@ -2,24 +2,25 @@
 // Created by viktor on 12/04/18.
 //
 #include "Minimal_pre_region_generator.h"
+#include "TS_parser.h"
 
 using namespace pre_region_gen;
 
-Minimal_pre_region_generator::Minimal_pre_region_generator(My_Map* input_map,int num_events, int num_states) {
-    ts_map = input_map;
+Minimal_pre_region_generator::Minimal_pre_region_generator() {
+    //ts_map = input_map;
     ER_set = new  vector<ER>;
     regions = new vector<Region>;
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add > ();
     pre_regions= new map < int , vector<Region*>* > ();
-    states = num_states;
-    events = num_events;
+    //states = num_states;
+    //events = num_events;
 
 }
 
 Minimal_pre_region_generator::~Minimal_pre_region_generator() {
 
-    delete ts_map;
+    //delete ts_map;
     delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
@@ -42,7 +43,7 @@ struct Branches_states_to_add {
 ER Minimal_pre_region_generator::createER(int event){
 
     ER er = new set<int>;
-    for(auto edge: (*ts_map)[event]){
+    for(auto edge: (*TS_parser::ts_map)[event]){
         (*er).insert(edge.first);
         cout<< "CREATE ER: Insert state: " << edge.first <<endl;
     }
@@ -283,7 +284,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     cout << endl;
 
 
-    for(auto e: *ts_map){
+    for(auto e: *TS_parser::ts_map){
         cout<< "EVENTO: " << e.first << endl;
         //controllo tutti, non è un ER
         if(e.first != event || event == -1) {
@@ -489,7 +490,7 @@ void Minimal_pre_region_generator::create_pre_regions(){
     //se si aggiungo alla mappa
 
     vector<Region>::iterator it;
-    for(auto record: *ts_map){
+    for(auto record: *TS_parser::ts_map){
         //cout << "evento: " << record.first << endl;
         /*for(auto region: *regions){
             //printRegion(region);
@@ -528,7 +529,8 @@ void Minimal_pre_region_generator::generate(){
 
     int pos=0;
 
-    for(auto e : *ts_map){
+
+    for(auto e : *TS_parser::ts_map ){
         ER er_temp = createER(e.first);
         // ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);

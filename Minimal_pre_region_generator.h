@@ -8,9 +8,7 @@
 #endif //PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
 
 #include <fstream>
-
 #include <vector>
-
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -18,6 +16,7 @@
 #include <map>
 #include <string>
 #include <set>
+
 
 namespace pre_region_gen {
 
@@ -27,21 +26,19 @@ namespace pre_region_gen {
     typedef set<int> Region;
     typedef set<int> *ER;
     typedef vector<Edge> List_edges;
-    typedef std::map<int, List_edges> My_Map;
+   // typedef std::map<int, List_edges> My_Map;
 
 
     const int OK = 0;
     const int NOCROSS = 1;
     const int EXIT_NOCROSS = 2;
     const int ENTER_NOCROSS = 3;
-    const int EXIT = 2;
-    const int ENTER = 3;
 
     class Minimal_pre_region_generator {
 
     public:
 
-        Minimal_pre_region_generator(My_Map* map,int num_events, int num_states);
+        Minimal_pre_region_generator();
         ~Minimal_pre_region_generator();
 
         void generate();
@@ -55,7 +52,7 @@ namespace pre_region_gen {
             set<int> *states_to_add_nocross;
         };
 
-        My_Map* ts_map;
+        //My_Map* ts_map;
         map<int, Branches_states_to_add> *map_states_to_add;
         Branches_states_to_add *struct_states_to_add;
         set<int> *states_to_add_enter;

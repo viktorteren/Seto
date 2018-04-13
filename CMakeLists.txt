@@ -3,7 +3,7 @@ project(Progetto_SSE)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Progetto_SSE main.cpp Minimal_pre_region_generator.cpp Minimal_pre_region_generator.h)
+add_executable(Progetto_SSE main.cpp Minimal_pre_region_generator.cpp Minimal_pre_region_generator.h Label_splitting_module.h Label_splitting_module.cpp TS_parser.h TS_parser.cpp)
 
 include_directories( ~/boost_1_66_0 )
 
