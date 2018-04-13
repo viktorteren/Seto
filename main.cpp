@@ -7,8 +7,8 @@
 #include <iostream>
 #include <cassert>
 
-#include "Minimal_pre_region_generator.h"
 #include "TS_parser.h"
+#include "Label_splitting_module.h"
 
     typedef std::pair<int, int> Edge;
 
@@ -38,10 +38,20 @@ Vertex* vertex_array;*/
         int pos = 0;
         Minimal_pre_region_generator *mg = new Minimal_pre_region_generator();
         //Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
-        mg->generate();
+        map<int, vector<Region*> *>* pre_regions= mg->generate();
 
-        //la generate non ritorna la mappa che è pubblica(visibile) alle altre classi e dovrà essere deallocata alla fine
+        delete mg; //dealloco tutto tranne il campo pre_regions che sopravvive fino alla fine e viene passato
+        Label_splitting_module *ls=new Label_splitting_module(pre_regions);
+
+        ls->is_exitation_closed();
+
+        delete ls;
+
+        //dealloco pre_regions e tutti i suoi vettori
+        for(auto record:*pre_regions){
+            delete record.second;
+        }
+        delete pre_regions;
 
 
-        delete mg;
     }

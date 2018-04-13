@@ -4,6 +4,9 @@
 
 #include "TS_parser.h"
 
+My_Map* ts_map;
+int num_states, num_transactions, initial_state,num_events;
+
 void TS_parser::parse() {
 
     // Open the file:

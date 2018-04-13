@@ -25,9 +25,10 @@ using namespace std;
 typedef vector<Edge> Lista_archi;
 typedef std::map<int, Lista_archi> My_Map;
 
+extern My_Map* ts_map;
+extern int num_states, num_transactions, initial_state,num_events;
+
 class TS_parser{
 public:
-    static int num_states, num_transactions, initial_state,num_events;
-    static My_Map* ts_map;
     static void parse();
 };

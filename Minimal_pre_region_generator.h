@@ -28,7 +28,6 @@ namespace pre_region_gen {
     typedef vector<Edge> List_edges;
    // typedef std::map<int, List_edges> My_Map;
 
-
     const int OK = 0;
     const int NOCROSS = 1;
     const int EXIT_NOCROSS = 2;
@@ -41,16 +40,25 @@ namespace pre_region_gen {
         Minimal_pre_region_generator();
         ~Minimal_pre_region_generator();
 
-        void generate();
+        map<int, vector<Region*> *>* generate();
 
         vector<ER> *ER_set;
         vector<Region> *regions;
         vector<Region> *queue_temp_regions;
 
         struct Branches_states_to_add {
-            set<int> *states_to_add_exit_or_enter;
-            set<int> *states_to_add_nocross;
+            set<int> *states_to_add_exit_or_enter= nullptr;
+            set<int> *states_to_add_nocross= nullptr;
+
+            /*~Branches_states_to_add(){
+                if(states_to_add_exit_or_enter!= nullptr) delete states_to_add_exit_or_enter;
+                if(states_to_add_nocross!= nullptr) delete states_to_add_nocross;
+            }*/
         };
+
+
+    private:
+        //int events,states;
 
         //My_Map* ts_map;
         map<int, Branches_states_to_add> *map_states_to_add;
@@ -58,10 +66,7 @@ namespace pre_region_gen {
         set<int> *states_to_add_enter;
         set<int> *states_to_add_exit;
         set<int> *states_to_add_nocross;
-        map<int, vector<Region *> *> *pre_regions;
-
-    private:
-        int events,states;
+        map<int, vector<Region*> *> *pre_regions;
 
         void printRegion(const Region &region);
 

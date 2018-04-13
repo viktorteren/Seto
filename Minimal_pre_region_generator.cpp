@@ -25,14 +25,7 @@ Minimal_pre_region_generator::~Minimal_pre_region_generator() {
     delete map_states_to_add;
     delete queue_temp_regions;
     delete regions;
-    delete struct_states_to_add;
 
-    //dealloco tutti i vettori della mappa delle preregions
-    for(auto record : *pre_regions){
-        delete[] record.second;
-    }
-
-        delete pre_regions;
 }
 
 struct Branches_states_to_add {
@@ -43,7 +36,7 @@ struct Branches_states_to_add {
 ER Minimal_pre_region_generator::createER(int event){
 
     ER er = new set<int>;
-    for(auto edge: (*TS_parser::ts_map)[event]){
+    for(auto edge: (*ts_map)[event]){
         (*er).insert(edge.first);
         cout<< "CREATE ER: Insert state: " << edge.first <<endl;
     }
@@ -80,9 +73,8 @@ void Minimal_pre_region_generator::printRegion(const Region& region){
 int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *region, int event){
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
-    //prima di allocare nuovo spazio elimino il vecchio contenuto puntato
 
-    delete struct_states_to_add;
+   //delete struct_states_to_add;
     struct_states_to_add= new Branches_states_to_add();
 
     states_to_add_enter=new set<int>;
@@ -150,8 +142,6 @@ int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *reg
 
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
-        states_to_add_exit= nullptr;
-        states_to_add_enter= nullptr;
 
         delete states_to_add_enter;
         delete states_to_add_exit;
@@ -165,7 +155,7 @@ int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *reg
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
         (*map_states_to_add)[event]= *struct_states_to_add;
-        states_to_add_enter= nullptr;
+
         delete states_to_add_enter;
         //  delete states_to_add_exit;
         //delete states_to_add_nocross;
@@ -181,22 +171,21 @@ int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *reg
         (*map_states_to_add)[event]= *struct_states_to_add;
 
         //delete states_to_add_enter;
-        //delete states_to_add_exit;
-        states_to_add_nocross= nullptr;
-        delete states_to_add_nocross;
+        delete states_to_add_exit;
+
+        //delete states_to_add_nocross;
         delete trans;
         return ENTER_NOCROSS;
     }
     else {
         cout<<"return ok"<<endl;
 
+        //non ho aggiunto alla struttura - elimino per non perdere
+        delete states_to_add_nocross;
+        delete states_to_add_exit;
+        delete states_to_add_enter;
 
-        if(states_to_add_enter!= nullptr)
-            delete states_to_add_enter;
-        if(states_to_add_exit!= nullptr)
-         delete states_to_add_exit;
-        if(states_to_add_nocross!= nullptr)
-            delete states_to_add_nocross;
+        delete struct_states_to_add;
 
         delete trans;
         return OK;
@@ -272,7 +261,7 @@ bool Minimal_pre_region_generator::region_in_queue(Region& new_region){
 }
 
 void Minimal_pre_region_generator::expand(Region *region, int event){
-    int* event_types = new int[events];
+    int* event_types = new int[num_events];
     int last_event_2braches=-1;
     int last_event_nocross=-1;
     Region* expanded_regions = new Region[2];
@@ -284,7 +273,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     cout << endl;
 
 
-    for(auto e: *TS_parser::ts_map){
+    for(auto e: *ts_map){
         cout<< "EVENTO: " << e.first << endl;
         //controllo tutti, non è un ER
         if(e.first != event || event == -1) {
@@ -303,7 +292,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     }
     int branch = OK;
     int type;
-    for(int i = 0; i < events; i ++){
+    for(int i = 0; i < num_events; i ++){
         type=event_types[i];
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
@@ -341,6 +330,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
         else{
             cout << "not adding region" << endl;
         }
+
     }
     else if (branch == NOCROSS){
         cout<<"RAMO UNICO NO CROSS" <<endl;
@@ -389,6 +379,7 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
+
     }
     else{
         //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
@@ -473,7 +464,6 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
             cout<<"Ramo 2 :Regione non aggiunta alla coda(già presente)"<<endl;
         }
 
-
         //}
 
     }
@@ -490,7 +480,7 @@ void Minimal_pre_region_generator::create_pre_regions(){
     //se si aggiungo alla mappa
 
     vector<Region>::iterator it;
-    for(auto record: *TS_parser::ts_map){
+    for(auto record: *ts_map){
         //cout << "evento: " << record.first << endl;
         /*for(auto region: *regions){
             //printRegion(region);
@@ -501,17 +491,17 @@ void Minimal_pre_region_generator::create_pre_regions(){
                     //aggiungo la regione alla mappa
                     if (pre_regions->find(record.first) == pre_regions->end()){
                         (*pre_regions)[record.first] = new vector<Region *> ();
-                }
+                    }
 
                 cout << &region << endl;
                 //cout << ((*pre_regions)[record.first]) << endl;
                 (*pre_regions)[record.first]->push_back(region);
                 cout << "pre_regions size " << (*pre_regions).size() << endl;
-                for(auto region: *((*pre_regions)[record.first])){
+               /* for(auto region: *((*pre_regions)[record.first])){
                     cout << "Evento: " << record.first << endl;
                     printRegion(*region);
+                }*/
                 }
-            }
         }
 
     }
@@ -525,12 +515,11 @@ void Minimal_pre_region_generator::create_pre_regions(){
 
 }
 
-void Minimal_pre_region_generator::generate(){
+map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
 
     int pos=0;
 
-
-    for(auto e : *TS_parser::ts_map ){
+    for(auto e : *ts_map ){
         ER er_temp = createER(e.first);
         // ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);
@@ -542,7 +531,7 @@ void Minimal_pre_region_generator::generate(){
         cout<< "*********************************: pos: " << pos <<" reg queue size " << queue_temp_regions->size() << endl;
         while(pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
 
-            if ((*queue_temp_regions)[pos].size() != states)
+            if ((*queue_temp_regions)[pos].size() != num_transactions)
                 expand(&((*queue_temp_regions)[pos]), -1);
             else  (*regions).push_back((*queue_temp_regions)[pos]);
 
@@ -569,4 +558,11 @@ void Minimal_pre_region_generator::generate(){
     //creazione delle pre-regioni
     create_pre_regions();
 
+    for(auto item: *pre_regions){
+        for(auto item1: *item.second){
+            cout << "prova" << item1 <<endl;
+        }
+    }
+
+    return pre_regions;
 };
