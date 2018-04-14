@@ -475,9 +475,9 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
 void Minimal_pre_region_generator::create_pre_regions(){
     cout << "--------------------------------------------------- CREATING OF PRE-REGIONS --------------------------------------------" << endl;
     //per ogni evento
-    //per ogni regione
-    //guardo se è una pre-regione per tale evento
-    //se si aggiungo alla mappa
+        //per ogni regione
+            //guardo se è una pre-regione per tale evento
+                //se si aggiungo alla mappa
 
     vector<Region>::iterator it;
     for(auto record: *ts_map){
