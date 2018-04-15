@@ -5,7 +5,7 @@
 #ifndef PROGETTO_SSE_LABEL_SPLITTING_MODULE_H
 #define PROGETTO_SSE_LABEL_SPLITTING_MODULE_H
 
-#endif //PROGETTO_SSE_LABEL_SPLITTING_MODULE_H
+
 
 
 #include <fstream>
@@ -43,3 +43,5 @@ private:
     //bool is_exitation_closed();
 
 };
+
+#endif

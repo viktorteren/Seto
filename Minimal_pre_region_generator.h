@@ -5,7 +5,7 @@
 #ifndef PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
 #define PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
 
-#endif //PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
+
 
 #include <fstream>
 #include <vector>
@@ -90,3 +90,5 @@
     };
 
 //}
+
+#endif
