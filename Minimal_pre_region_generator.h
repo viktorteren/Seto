@@ -18,7 +18,7 @@
 #include <set>
 
 
-namespace pre_region_gen {
+//namespace pre_region_gen {
 
     using namespace std;
 
@@ -88,4 +88,4 @@ namespace pre_region_gen {
 
     };
 
-}
+//}

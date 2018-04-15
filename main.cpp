@@ -10,13 +10,14 @@
 #include "TS_parser.h"
 #include "Label_splitting_module.h"
 #include "essential_region_search.h"
+#include "Minimal_pre_region_generator.h"
 
 typedef std::pair<int, int> Edge;
 
     using namespace std;
 //using namespace boost;
-    using namespace pre_region_gen;
-    using namespace essential_regions;
+    //using namespace pre_region_gen;
+   // using namespace essential_regions;
 
 //map: evento -> lista di coppie: (srcId, dstId)
     typedef vector<Edge> Lista_archi;
@@ -49,7 +50,7 @@ Vertex* vertex_array;*/
 
         //Inizio modulo: ricerca di set irridondanti di regioni
         Essential_regions_search *ers = new Essential_regions_search(pre_regions);
-        ers->search();
+        //ers->search();
 
         delete ls;
 

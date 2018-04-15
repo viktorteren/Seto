@@ -4,7 +4,7 @@
 #include "Minimal_pre_region_generator.h"
 #include "TS_parser.h"
 
-using namespace pre_region_gen;
+//using namespace pre_region_gen;
 
 Minimal_pre_region_generator::Minimal_pre_region_generator() {
     //ts_map = input_map;

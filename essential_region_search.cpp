@@ -4,7 +4,7 @@
 
 #include "essential_region_search.h"
 
-using namespace essential_regions;
+//using namespace essential_regions;
 
 Essential_regions_search::Essential_regions_search(map<int, vector<Region*> *>* pre_reg){
     pre_regions=pre_reg;
