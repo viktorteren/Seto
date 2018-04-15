@@ -33,12 +33,13 @@ const int ENTER_NOCROSS = 3;*/
 
 class Label_splitting_module{
 public:
-    Label_splitting_module(map<int, vector<Region*> *>* pre_regions);
+    Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER> *er_set);
     ~Label_splitting_module();
     bool is_exitation_closed();
 
 private:
     map<int, vector<Region*> *> * pre_regions;
+    vector<ER> *ER_set;
     //bool is_exitation_closed();
 
 };

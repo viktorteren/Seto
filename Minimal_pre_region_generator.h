@@ -42,9 +42,7 @@
 
         map<int, vector<Region*> *>* generate();
 
-        vector<ER> *ER_set;
-        vector<Region> *regions;
-        vector<Region> *queue_temp_regions;
+        vector<ER>* get_ER_set();
 
         struct Branches_states_to_add {
             set<int> *states_to_add_exit_or_enter= nullptr;
@@ -56,9 +54,12 @@
             }*/
         };
 
-
     private:
         //int events,states;
+
+        vector<ER> *ER_set;
+        vector<Region> *regions;
+        vector<Region> *queue_temp_regions;
 
         //My_Map* ts_map;
         map<int, Branches_states_to_add> *map_states_to_add;

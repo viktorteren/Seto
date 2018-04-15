@@ -43,8 +43,7 @@ Vertex* vertex_array;*/
         //Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
         map<int, vector<Region*> *>* pre_regions= mg->generate();
 
-        delete mg; //dealloco tutto tranne il campo pre_regions che sopravvive fino alla fine e viene passato
-        Label_splitting_module *ls=new Label_splitting_module(pre_regions);
+        Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set());
 
         ls->is_exitation_closed();
 
@@ -53,6 +52,7 @@ Vertex* vertex_array;*/
         //ers->search();
 
         delete ls;
+        delete mg; //dealloco tutto tranne il campo pre_regions
 
         //dealloco pre_regions e tutti i suoi vettori
         for(auto record:*pre_regions){
