@@ -50,7 +50,8 @@ Vertex* vertex_array;*/
 
         //Inizio modulo: ricerca di set irridondanti di regioni
         Essential_regions_search *ers = new Essential_regions_search(pre_regions);
-        //ers->search();
+        ers->search();
+        cout << "fine ricerca " << endl;
 
         delete ls;
 

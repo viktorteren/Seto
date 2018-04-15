@@ -5,7 +5,7 @@
 #ifndef PROGETTO_SSE_TS_PARSER_H
 #define PROGETTO_SSE_TS_PARSER_H
 
-#endif //PROGETTO_SSE_TS_PARSER_H
+
 
 #include <fstream>
 
@@ -32,3 +32,5 @@ class TS_parser{
 public:
     static void parse();
 };
+
+#endif
