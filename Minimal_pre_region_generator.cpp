@@ -21,7 +21,7 @@ Minimal_pre_region_generator::Minimal_pre_region_generator() {
 Minimal_pre_region_generator::~Minimal_pre_region_generator() {
 
     //delete ts_map;
-    delete ER_set;
+    //delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
     delete regions;
@@ -32,6 +32,10 @@ struct Branches_states_to_add {
     set<int> *states_to_add_exit_or_enter;
     set<int> *states_to_add_nocross;
 };
+
+vector<ER>* Minimal_pre_region_generator::get_ER_set(){
+    return ER_set;
+}
 
 ER Minimal_pre_region_generator::createER(int event){
 
@@ -544,7 +548,7 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
         }
         queue_temp_regions->clear();
 
-        delete er_temp;
+        //delete er_temp;
     }
 
     for(auto pre_reg: *regions){
@@ -558,11 +562,7 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
     //creazione delle pre-regioni
     create_pre_regions();
 
-    for(auto item: *pre_regions){
-        for(auto item1: *item.second){
-            cout << "prova" << item1 <<endl;
-        }
-    }
 
     return pre_regions;
 };
+
