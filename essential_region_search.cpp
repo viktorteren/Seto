@@ -26,24 +26,17 @@ set<Region *> Essential_regions_search::search(){
 
     //per ogni evento
     cout << "num eventi: " << pre_regions->size() << endl;
-    int cont = 0;
     for(auto record: *pre_regions){
-        cont ++;
-        cout << "cont: " << cont << endl;
-        if(cont == 3){
-            cout << endl;
-        }
+        cout << endl <<  "evento: " << record.first << endl;
 
+		Region::iterator it2;
         //regions = *record.second;
         /*for(it=regions.begin(); it!=regions.end();++it){
             Region* region= *it;
         }*/
         //unisco tutte le pre-regioni
-        temp_union = regions_union(record.second, cont);
-        if(cont == 3){
-        	//per debug
-            cout << endl;
-        }
+        temp_union = regions_union(record.second);
+
         //per ogni stato dell'unione
         for(auto state: temp_union){
             counter = 0;
@@ -63,7 +56,18 @@ set<Region *> Essential_regions_search::search(){
             }
             //se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
             if(counter == 1){
-                cout << "trovato region essenziale"<< endl;
+                cout << "trovato regione essenziale: "<< endl;
+                //aggiungendo il ciclo for seguente il codice torna a non essere funzionante per colpa di auto che probabilmente utilizza un iteratore in comune con altri cicli
+                /*for(auto state: *last_essential_candidate){
+                	cout << state << " ";
+                }*/
+                it2 = last_essential_candidate->begin();
+                int size = last_essential_candidate->size();
+	            for(int i = 0; i < size; ++i) {
+		            cout  << *it2 << " ";
+		            ++it2;
+	            }
+	            cout << endl;
                 essential_regions->insert(last_essential_candidate);
             }
         }
@@ -73,45 +77,27 @@ set<Region *> Essential_regions_search::search(){
     return *essential_regions;
 }
 
-Region getUnion(Region& a, Region& b) {
-    Region result = a;
-    //todo: questa riga fa impallare l'esecuzione senza dare core dump
-    result.insert(b.begin(), b.end());
-
-	return result;
-}
-
 //Region = set<int> ->ritorna un insieme di stati
-set<int> Essential_regions_search::regions_union(vector<Region *>* vec, int cont){
-    if(cont == 2){
-    	//per debug
-        cout << endl;
-    }
+set<int> Essential_regions_search::regions_union(vector<Region *>* vec){
     cout << "region union" << endl;
     Region* all_states = new Region();
-    //Region* temp_ptr = new Region();
-    //int state;
+	int size;
     Region::iterator it;
     for(Region* region: *vec){
         //cout << "region with size: " << region->size() << endl;
-	    /*it=region->begin();
-	    while(it!=region->end()){
-            //state = *it;
-        //for(auto state: *region){
-		    cout << "region begin: " << &*(region->begin()) << endl;
-		    cout << "region end: " << &*(region->end()) << endl;
-		    cout << "region size: " << region-> size() << endl;
-            cout << "it pointer: " << &(*it) << endl;
-            cout << "it pointer: " << &(*it) << endl;
-		    all_states.insert(*it);
-		    //cout << "it pointer: " << &(*it) << endl;
-	        //cout << "it pointer: " << &(*it) << endl;
-		    it = next(it, 1);
-        }*/
-	    *all_states = getUnion(*all_states, *region);
-	    //*all_states = *temp_ptr;
-        cout << "region size: " << region-> size() << endl;
-
+	    it=region->begin();
+	    size = region->size();
+	    for(int i = 0; i < size; ++i) {
+	    	//cout << "Stato: " << *it << endl;
+		    all_states->insert(*it);
+		    ++it;
+	    }
+        //cout << "region size: " << region-> size() << endl;
+    }
+    //controllo per debug
+    //cout << "unione: " << endl;
+	for(auto state: *all_states){
+    	cout << "st: " << state << endl;
     }
     return *all_states;
 }
