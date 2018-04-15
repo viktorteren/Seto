@@ -30,6 +30,7 @@ public:
 private:
 	map<int, vector<Region*> *> * pre_regions;
 	set<int> regions_union(vector<Region*>* vec, int);
+	//Region getUnion(Region& a, Region& b);
 };
 
 

@@ -73,6 +73,13 @@ set<Region *> Essential_regions_search::search(){
     return *essential_regions;
 }
 
+Region getUnion(Region& a, Region& b) {
+    Region result = a;
+    //todo: questa riga fa impallare l'esecuzione senza dare core dump
+    result.insert(b.begin(), b.end());
+
+	return result;
+}
 
 //Region = set<int> ->ritorna un insieme di stati
 set<int> Essential_regions_search::regions_union(vector<Region *>* vec, int cont){
@@ -81,28 +88,34 @@ set<int> Essential_regions_search::regions_union(vector<Region *>* vec, int cont
         cout << endl;
     }
     cout << "region union" << endl;
-    set<int> all_states = {};
-    int state;
+    Region* all_states = new Region();
+    //Region* temp_ptr = new Region();
+    //int state;
     Region::iterator it;
     for(Region* region: *vec){
         //cout << "region with size: " << region->size() << endl;
-
-	    for(it=region->begin(); it!=region->end();++it){
-            state = *it;
+	    /*it=region->begin();
+	    while(it!=region->end()){
+            //state = *it;
         //for(auto state: *region){
-		    /*cout << "region begin: " << &*(region->begin()) << endl;
+		    cout << "region begin: " << &*(region->begin()) << endl;
 		    cout << "region end: " << &*(region->end()) << endl;
 		    cout << "region size: " << region-> size() << endl;
-            cout << "it pointer: " << &(*it) << endl;*/
-            cout << "state: " << state << endl;
-	        cout << "it pointer: " << &(*it) << endl;
-		    //todo: QUI ciclo infinito, it contiene sempre 5 o 6 a causa dell'aggiunta che non adovrebbe avere niente a che fare con le variabili del ciclo
-		    all_states.insert(state);
-		    cout << "it pointer: " << &(*it) << endl;
+            cout << "it pointer: " << &(*it) << endl;
+            cout << "it pointer: " << &(*it) << endl;
+		    all_states.insert(*it);
+		    //cout << "it pointer: " << &(*it) << endl;
 	        //cout << "it pointer: " << &(*it) << endl;
-        }
+		    it = next(it, 1);
+        }*/
+	    *all_states = getUnion(*all_states, *region);
+	    //*all_states = *temp_ptr;
+        cout << "region size: " << region-> size() << endl;
+
     }
-    return all_states;
+    return *all_states;
 }
+
+
 
 
