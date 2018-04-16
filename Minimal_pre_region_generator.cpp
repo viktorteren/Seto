@@ -550,8 +550,8 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
             //tolgo l'elemento espanso dalla coda
             // queue_temp_regions->pop_front();
         }
-        queue_temp_regions->clear();
-        pos=0;
+        //queue_temp_regions->clear();
+        //pos=0;
 
         //delete er_temp;
     }
