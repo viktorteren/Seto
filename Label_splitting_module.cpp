@@ -21,12 +21,59 @@ void printRegion(const Region& region){
 }
 
 
+bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
+    cout<<"ER";
+    printRegion(*er);
+    cout << "INTER";
+    printRegion(*intersection);
+
+
+    if(er->size()!=intersection->size()) {
+        cout<<"if"<<endl;
+        return false;
+    }
+    else {
+         cout<<"else"<<endl;
+        for (auto state_er : *er) {
+             if(intersection->find(state_er) == intersection->end()) {   //non l'ho trovato
+                return false;
+             }
+        }
+    }
+
+    return true;
+}
+
+
 bool Label_splitting_module::is_exitation_closed() {
+
+    map<int, set<int>* > *pre_regions_intersection=regions_intersection();
+
+    cout<<"trovata intersezione" <<endl;
+
+    //per ogni evento
+    //se per un evento non vale che l'intersezione è uguale all'er la TS non è exitation-closed
+
+    for(auto item: *pre_regions) {
+        cout<<"event: " <<item.first;
+        auto event=item.first;
+        auto er=ER_set->at((event));
+        auto intersec=pre_regions_intersection->at(event);
+        if( ! (is_equal_to(er, intersec) )){
+             return false;
+        }
+    }
+
+return true;
+
+}
+
+
+map<int, set<int>* > * Label_splitting_module::regions_intersection(){
 
     map<int, set<int>* > *pre_regions_intersection=new map<int,set<int>*>;
 
     std::vector<Region*>::iterator it;
-
 
     //per ogni evento
     for(auto item: *pre_regions) {
@@ -87,9 +134,7 @@ bool Label_splitting_module::is_exitation_closed() {
         }
     }
 
-
-
-
+    return pre_regions_intersection;
 
 
 }

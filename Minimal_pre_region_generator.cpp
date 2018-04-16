@@ -399,9 +399,10 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
         cout<< "point reg " << region << endl;
         //cout << "pint exp " << (*expanded_regions)[0];
 
-        //RAMO 1 (NO_CROSS)
+
         for(auto state: *region){
             (*expanded_regions).insert(state);
+            (*(expanded_regions+1)).insert(state);
             cout<< "inserisco nella extended Reg: " << state << endl;
         }
 
@@ -409,6 +410,8 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
             cout << "Stati region " << i <<endl ;
         }
 
+
+        //RAMO 1 (NO_CROSS)
         cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
         cout<<"last event 2 branch "<< last_event_2braches << endl;
@@ -438,18 +441,13 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
             cout<<"Ramo1: Regione non aggiunta alla coda(già presente)"<<endl;
         }
 
-        for(auto i: *queue_temp_regions){
-            cout << "coda:"  <<endl ;
-            for(auto state : i)
-                cout << "stati" << state <<endl ;
-        }
 
         //RAMO 2 (EXIT/ENTER)
 
-        for(auto state: *region){
+        /*for(auto state: *region){
             (*(expanded_regions+1)).insert(state);
             cout<< "inserisco nella extended Reg: " << state << endl;
-        }
+        }*/
 
         for(auto state : *branches.states_to_add_exit_or_enter ) {
             expanded_regions[1].insert(state);
@@ -466,6 +464,12 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
         }
         else {
             cout<<"Ramo 2 :Regione non aggiunta alla coda(già presente)"<<endl;
+        }
+
+        for(auto i: *queue_temp_regions){
+            cout << "coda:"  <<endl ;
+            for(auto state : i)
+                cout << "stati" << state <<endl ;
         }
 
         //}
@@ -547,6 +551,7 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
             // queue_temp_regions->pop_front();
         }
         queue_temp_regions->clear();
+        pos=0;
 
         //delete er_temp;
     }

@@ -45,12 +45,14 @@ Vertex* vertex_array;*/
 
         Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set());
 
-        ls->is_exitation_closed();
+        bool exitation_closure=ls->is_exitation_closed();
+
+        cout<< "Exitation closed: " << exitation_closure;
 
         //Inizio modulo: ricerca di set irridondanti di regioni
-        Essential_regions_search *ers = new Essential_regions_search(pre_regions);
-        ers->search();
-        cout << "fine ricerca " << endl;
+        //Essential_regions_search *ers = new Essential_regions_search(pre_regions);
+        //ers->search();
+        //cout << "fine ricerca " << endl;
 
         delete ls;
         delete mg; //dealloco tutto tranne il campo pre_regions

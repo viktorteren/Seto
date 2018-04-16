@@ -41,6 +41,8 @@ private:
     map<int, vector<Region*> *> * pre_regions;
     vector<ER> *ER_set;
     //bool is_exitation_closed();
+    map<int, set<int>* > * regions_intersection();
+    bool is_equal_to(ER er,set<int>* intersection);
 
 };
 
