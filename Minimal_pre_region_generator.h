@@ -34,6 +34,8 @@
             }*/
         };
 
+        map<int, vector<Region*> *>* get_middle_set_of_states();
+
     private:
         //int events,states;
 
@@ -48,6 +50,7 @@
         set<int> *states_to_add_exit;
         set<int> *states_to_add_nocross;
         map<int, vector<Region*> *> *pre_regions;
+        map<int, vector<Region*> *>* middle_set_of_states;
 
         void printRegion(const Region &region);
 
@@ -66,6 +69,8 @@
         void expand(Region *region, int event);
 
         void create_pre_regions();
+
+        void set_middle_set_of_states(map<int,int>* queue_event_index);
 
     };
 

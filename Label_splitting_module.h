@@ -27,7 +27,7 @@ public:
     Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER> *er_set);
     ~Label_splitting_module();
     bool is_excitation_closed();
-    void do_label_splitting();
+    void do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states);
 
 private:
     map<int, vector<Region*> *> * pre_regions;

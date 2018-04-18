@@ -12,6 +12,7 @@ Minimal_pre_region_generator::Minimal_pre_region_generator() {
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add > ();
     pre_regions= new map < int , vector<Region*>* > ();
+    middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
 
@@ -525,6 +526,7 @@ void Minimal_pre_region_generator::create_pre_regions(){
 map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
 
     int pos=0;
+    map<int,int>* queue_event_index=new map<int,int>;
 
     for(auto e : *ts_map ){
         ER er_temp = createER(e.first);
@@ -549,6 +551,7 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
             //tolgo l'elemento espanso dalla coda
             // queue_temp_regions->pop_front();
         }
+        (*queue_event_index)[e.first]=pos;
         //queue_temp_regions->clear();
         //pos=0;
 
@@ -566,7 +569,35 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
     //creazione delle pre-regioni
     create_pre_regions();
 
+    set_middle_set_of_states(queue_event_index);
 
     return pre_regions;
 };
+
+map<int, vector<Region*> *>* Minimal_pre_region_generator::get_middle_set_of_states(){
+    return middle_set_of_states;
+}
+
+void Minimal_pre_region_generator::set_middle_set_of_states( map<int,int>* queue_event_index){
+
+    for(auto record:*queue_event_index){
+        (*middle_set_of_states)[record.first] = new vector<Region*>();
+    }
+
+    int init=0;
+    int end=0;
+
+    for(auto record:*queue_event_index){
+        if((*middle_set_of_states)[record.first] == nullptr)
+            (*middle_set_of_states)[record.first] = new vector<Region*>();
+        init=end+1;
+        end=(*queue_event_index)[record.first];
+        for(int i=init;i<end;i++){
+            (*middle_set_of_states).at(record.first)->push_back( &(*queue_temp_regions)[i] );
+        }
+
+    }
+}
+
+
 

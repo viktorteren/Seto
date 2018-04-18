@@ -68,6 +68,16 @@ return true;
 }
 
 
-void Label_splitting_module::do_label_splitting(){
+void Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states){
+
+    //per ogni stato intermedio se è compreso nel set delle intersezioni
+    //prendilo per label splitting
+    cout<<"middle: " <<endl;
+    for(auto middle: *(*middle_set_of_states).at(0))
+        cout<<"S: " << middle<<endl;
+    cout<<"intesection"<<endl;
+    for(auto inte: *(regions_intersection(pre_regions)->at(0)) ){
+        cout<<"S:" << inte<<endl;
+    }
 
 }
