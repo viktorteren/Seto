@@ -2,8 +2,7 @@
 // Created by viktor on 14/04/18.
 //
 
-#include "essential_region_search.h"
-#include <algorithm>
+#include "Essential_region_search.h"
 
 Essential_regions_search::Essential_regions_search(map<int, vector<Region*> *>* pre_reg){ pre_regions = pre_reg; };
 
@@ -18,6 +17,7 @@ set<Region *> Essential_regions_search::search(){
      *      controllo le regioni che non hanno tale stato
      *      se c'è una sola regione che non ha tale stato allora la regione è essenziale
      */
+
 
     set<int> temp_union;
     auto essential_regions = new set<Region *> ();
@@ -75,31 +75,6 @@ set<Region *> Essential_regions_search::search(){
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
     return *essential_regions;
-}
-
-//Region = set<int> ->ritorna un insieme di stati
-set<int> Essential_regions_search::regions_union(vector<Region *>* vec){
-    cout << "region union" << endl;
-    Region* all_states = new Region();
-	int size;
-    Region::iterator it;
-    for(Region* region: *vec){
-        //cout << "region with size: " << region->size() << endl;
-	    it=region->begin();
-	    size = region->size();
-	    for(int i = 0; i < size; ++i) {
-	    	//cout << "Stato: " << *it << endl;
-		    all_states->insert(*it);
-		    ++it;
-	    }
-        //cout << "region size: " << region-> size() << endl;
-    }
-    //controllo per debug
-    //cout << "unione: " << endl;
-	for(auto state: *all_states){
-    	cout << "st: " << state << endl;
-    }
-    return *all_states;
 }
 
 

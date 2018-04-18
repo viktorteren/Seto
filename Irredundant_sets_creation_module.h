@@ -5,13 +5,8 @@
 #ifndef PROGETTO_SSE_IRREDUNDANT_SETS_CREATION_MODULE_H
 #define PROGETTO_SSE_IRREDUNDANT_SETS_CREATION_MODULE_H
 
-#include <set>
-#include <vector>
-#include <map>
-
+#include "Utilities.h"
 using namespace std;
-
-typedef set<int> Region;
 
 class Irredundant_sets_creation_module {
 public:

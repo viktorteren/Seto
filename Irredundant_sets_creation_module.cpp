@@ -3,7 +3,7 @@
 //
 
 #include "Irredundant_sets_creation_module.h"
-#include "essential_region_search.h"
+#include "Essential_region_search.h"
 
 Irredundant_sets_creation_module::Irredundant_sets_creation_module(map<int, vector<Region*> *>* pre_reg){
 	pre_regions = pre_reg;

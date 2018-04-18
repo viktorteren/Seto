@@ -16,10 +16,11 @@
 #include <map>
 #include <string>
 #include <set>
+#include "Utilities.h"
+#include "Label_splitting_module.h"
 
 using namespace std;
-
-typedef set<int> Region;
+using namespace Utilities;
 
 class Essential_regions_search{
 public:
@@ -29,7 +30,6 @@ public:
 
 private:
 	map<int, vector<Region*> *> * pre_regions;
-	set<int> regions_union(vector<Region*>* vec);
 };
 
 

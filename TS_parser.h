@@ -6,22 +6,12 @@
 #define PROGETTO_SSE_TS_PARSER_H
 
 
-
-#include <fstream>
-
-#include <vector>
-
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include "assert.h"
-
+#include "Utilities.h"
 
 typedef std::pair<int, int> Edge;
 
 using namespace std;
 
-//map: evento -> lista di coppie: (srcId, dstId)
 typedef vector<Edge> Lista_archi;
 typedef std::map<int, Lista_archi> My_Map;
 

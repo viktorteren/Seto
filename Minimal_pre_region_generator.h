@@ -6,32 +6,12 @@
 #define PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
 
 
-
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-#include <cassert>
-#include <tuple>
-#include <map>
-#include <string>
-#include <set>
+#include "Utilities.h"
 
 
 //namespace pre_region_gen {
 
     using namespace std;
-
-    typedef std::pair<int, int> Edge;
-    typedef set<int> Region;
-    typedef set<int> *ER;
-    typedef vector<Edge> List_edges;
-   // typedef std::map<int, List_edges> My_Map;
-
-    const int OK = 0;
-    const int NOCROSS = 1;
-    const int EXIT_NOCROSS = 2;
-    const int ENTER_NOCROSS = 3;
 
     class Minimal_pre_region_generator {
 

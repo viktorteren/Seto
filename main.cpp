@@ -9,7 +9,7 @@
 
 #include "TS_parser.h"
 #include "Label_splitting_module.h"
-#include "essential_region_search.h"
+#include "Essential_region_search.h"
 #include "Minimal_pre_region_generator.h"
 #include "Irredundant_sets_creation_module.h"
 
@@ -46,9 +46,11 @@ Vertex* vertex_array;*/
 
         Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set());
 
-        bool exitation_closure=ls->is_exitation_closed();
+        bool excitation_closure=ls->is_excitation_closed();
+        if(!excitation_closure)
+            ls->do_label_splitting();
 
-        cout<< "Exitation closed: " << exitation_closure;
+        cout<< "Exitation closed: " << excitation_closure;
 
         //Inizio modulo: ricerca di set irridondanti di regioni
 		Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
