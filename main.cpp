@@ -11,6 +11,7 @@
 #include "Label_splitting_module.h"
 #include "essential_region_search.h"
 #include "Minimal_pre_region_generator.h"
+#include "Irredundant_sets_creation_module.h"
 
 typedef std::pair<int, int> Edge;
 
@@ -50,8 +51,8 @@ Vertex* vertex_array;*/
         cout<< "Exitation closed: " << exitation_closure;
 
         //Inizio modulo: ricerca di set irridondanti di regioni
-        //Essential_regions_search *ers = new Essential_regions_search(pre_regions);
-        //ers->search();
+		Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
+
         //cout << "fine ricerca " << endl;
 
         delete ls;
