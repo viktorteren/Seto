@@ -35,6 +35,7 @@
         };
 
         map<int, vector<Region*> *>* get_middle_set_of_states();
+        vector< pair<int,Region*> >* get_number_of_bad_events();
 
     private:
         //int events,states;
@@ -51,6 +52,8 @@
         set<int> *states_to_add_nocross;
         map<int, vector<Region*> *> *pre_regions;
         map<int, vector<Region*> *>* middle_set_of_states;
+        //coppia numero eventi che violano la regione e ptr_regione
+        vector< pair<int,Region*> >* number_of_bad_events;
 
         void printRegion(const Region &region);
 
@@ -71,6 +74,7 @@
         void create_pre_regions();
 
         void set_middle_set_of_states(map<int,int>* queue_event_index);
+        void set_number_of_bad_events(int* event_type,int l);
 
     };
 

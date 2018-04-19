@@ -46,7 +46,7 @@ bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
 
 bool Label_splitting_module::is_excitation_closed() {
 
-    map<int, set<int>* > *pre_regions_intersection=regions_intersection(pre_regions);
+    pre_regions_intersection=regions_intersection(pre_regions);
 
     cout<<"trovata intersezione" <<endl;
 
@@ -67,17 +67,63 @@ return true;
 
 }
 
+bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersection){
+
+   if(region->size() > intersection->size()){
+       return false;
+   }
+
+   for(auto elem: *intersection){
+       //nella regione non trovo un elem delll'intersez
+       if( region->find(elem) != region->end()){
+           return false;
+       }
+   }
+
+    //nell'intersezione trovo tutti gli stati della regione
+   return true;
+}
+
 
 void Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states){
 
+    //per ogni evento
     //per ogni stato intermedio se è compreso nel set delle intersezioni
     //prendilo per label splitting
-    cout<<"middle: " <<endl;
-    for(auto middle: *(*middle_set_of_states).at(0))
-        cout<<"S: " << middle<<endl;
-    cout<<"intesection"<<endl;
-    for(auto inte: *(regions_intersection(pre_regions)->at(0)) ){
-        cout<<"S:" << inte<<endl;
+
+    cout<<"middle TOT: " <<endl;
+    vector<Region*>::iterator it;
+    //per ogni evento
+    for(auto e: *middle_set_of_states) {
+
+        //auto set_forced_to_be_a_region;
+        auto event=e.first;
+        for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
+            cout << "middle" << endl;
+            if (is_bigger_than(*it, pre_regions_intersection->at(event))) {
+                cout << "erase" << endl;
+                *middle_set_of_states->at(event)->erase(it, middle_set_of_states->at(event)->end());
+            }
+            else { //lo stato mi va bene
+                //cache e ricalcolo solo se non c'è(avevo fatto break per no cross) mi prendo una coppia evento che viola e vettore di
+                // transazioni e anche il numero di eventi che violano per ogni set di stati!!
+            }
+            for (auto el:**it)
+                cout << "S: " << el << endl;
+        }
+        cout << "intesection" << endl;
+        for (auto inte: *pre_regions_intersection->at(event)) {
+            cout << "S:" << inte << endl;
+        }
+
+
+        // aggiungo set_forced_to_be_a_region alle regioni del mio evento
+        //e splitto l'etichetta(modifico il grafo originale?)
+
+
     }
+
+
+
 
 }
