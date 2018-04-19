@@ -53,7 +53,7 @@ Vertex* vertex_array;*/
         cout<< "Exitation closed: " << excitation_closure;
 
         //Inizio modulo: ricerca di set irridondanti di regioni
-		//Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
+		Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
 
         //cout << "fine ricerca " << endl;
 

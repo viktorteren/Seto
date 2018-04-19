@@ -8,7 +8,7 @@ namespace Utilities {
 
 //Region = set<int> ->ritorna un insieme di stati
     set<int> regions_union(vector<Region *> *vec) {
-        cout << "region union" << endl;
+        //cout << "region union" << endl;
         Region *all_states = new Region();
         int size;
         Region::iterator it;
@@ -25,11 +25,36 @@ namespace Utilities {
         }
         //controllo per debug
         //cout << "unione: " << endl;
-        for (auto state: *all_states) {
+        /*for (auto state: *all_states) {
             cout << "st: " << state << endl;
-        }
+        }*/
         return *all_states;
     }
+
+    set<int> regions_union(set<Region *> *vec) {
+        //cout << "region union" << endl;
+        Region *all_states = new Region();
+        int size;
+        Region::iterator it;
+        for (Region *region: *vec) {
+            //cout << "region with size: " << region->size() << endl;
+            it = region->begin();
+            size = region->size();
+            for (int i = 0; i < size; ++i) {
+                //cout << "Stato: " << *it << endl;
+                all_states->insert(*it);
+                ++it;
+            }
+            //cout << "region size: " << region-> size() << endl;
+        }
+        //controllo per debug
+        //cout << "unione: " << endl;
+        /*for (auto state: *all_states) {
+            cout << "st: " << state << endl;
+        }*/
+        return *all_states;
+    }
+
 
 
     map<int, set<int>* > * regions_intersection(map<int, vector<Region*> *> * pre_regions){
@@ -100,6 +125,23 @@ namespace Utilities {
         return pre_regions_intersection;
 
 
+    }
+
+    void print(Region& region){
+        for(auto state : region){
+            cout << state << ",";
+        }
+        cout << endl;
+    }
+
+    set<int> region_difference(set<int>& first, set<int>& second){
+        set<int> *s = new set<int>();
+        for(auto state: first){
+            if(second.find(state) == second.end()){
+                s->insert(state);
+            }
+        }
+        return *s;
     }
 
 }

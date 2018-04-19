@@ -28,7 +28,10 @@ const int ENTER_NOCROSS = 3;
 
 namespace Utilities {
     set<int> regions_union(vector<Region*>* vec);
+	set<int> regions_union(set<Region*>* vec);
     map<int, set<int>* > * regions_intersection(map<int, vector<Region*> *> * pre_regions);
+    void print(Region& region);
+	set<int> region_difference(set<int>& first, set<int>& second);
 };
 
 

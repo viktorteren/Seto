@@ -17,6 +17,7 @@ private:
 	set<Region *> essential_regions;
 	void search_events_with_not_essential_regions();
 	map<int, vector<Region*> *> * not_essential_regions;
+	void search_not_covered_states_per_event();
 };
 
 
