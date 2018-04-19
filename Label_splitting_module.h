@@ -34,6 +34,8 @@ private:
     vector<ER> *ER_set;
     //bool is_exitation_closed();
     bool is_equal_to(ER er,set<int>* intersection);
+    bool is_bigger_than(Region*,set<int>*);
+    map<int, set<int>* > *pre_regions_intersection;
 
 };
 

@@ -276,6 +276,9 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     }
     cout << endl;
 
+    for(int i=0;i<num_events;i++){
+        event_types[i]=-1;
+    }
 
     for(auto e: *ts_map){
         cout<< "EVENTO: " << e.first << endl;
@@ -296,6 +299,11 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     }
     int branch = OK;
     int type;
+
+    //qui ho l'array che dice per ogni evento il tipo di ramo tranne per gli eventi dopo il no cross
+    //dove ho -1 vuol dire che ho fatto il break
+    set_number_of_bad_events(event_types,num_events);
+
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
         if(type == NOCROSS){
@@ -580,8 +588,10 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::get_middle_set_of_sta
 
 void Minimal_pre_region_generator::set_middle_set_of_states( map<int,int>* queue_event_index){
 
+    //ER è compreso
     for(auto record:*queue_event_index){
         (*middle_set_of_states)[record.first] = new vector<Region*>();
+        (*middle_set_of_states).at(record.first)->push_back(ER_set->at(record.first));
     }
 
     int init=0;
@@ -598,6 +608,15 @@ void Minimal_pre_region_generator::set_middle_set_of_states( map<int,int>* queue
 
     }
 }
+
+
+void Minimal_pre_region_generator::set_number_of_bad_events(int* event_type,int l){
+//conta per ogni set di stati gli eventi bad
+}
+
+vector< pair<int,Region*> >* Minimal_pre_region_generator::get_number_of_bad_events(){
+    return number_of_bad_events;
+};
 
 
 

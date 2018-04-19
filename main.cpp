@@ -50,7 +50,7 @@ Vertex* vertex_array;*/
         if(!excitation_closure)
             ls->do_label_splitting(mg->get_middle_set_of_states());
 
-        cout<< "Exitation closed: " << excitation_closure;
+        //cout<< "Exitation closed: " << excitation_closure;
 
         //Inizio modulo: ricerca di set irridondanti di regioni
 		Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
