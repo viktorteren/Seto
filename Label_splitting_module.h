@@ -24,7 +24,7 @@ using namespace Utilities;
 
 class Label_splitting_module{
 public:
-    Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER> *er_set);
+    Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER> *er_set,vector<pair<int,Region*>>* number_of_bad_events );
     ~Label_splitting_module();
     bool is_excitation_closed();
     void do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states);
@@ -36,6 +36,8 @@ private:
     bool is_equal_to(ER er,set<int>* intersection);
     bool is_bigger_than(Region*,set<int>*);
     map<int, set<int>* > *pre_regions_intersection;
+    //coppia numero eventi che violano la regione e ptr_regione
+    vector< pair<int,Region*> >* number_of_bad_events;
 
 };
 

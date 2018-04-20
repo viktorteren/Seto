@@ -4,9 +4,10 @@
 
 #include "Label_splitting_module.h"
 
-Label_splitting_module::Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER>* er_set){
+Label_splitting_module::Label_splitting_module(map<int, vector<Region*> *>* pre_regions,vector<ER>* er_set,vector<pair<int,Region*>>* number_of_bad_events){
     this->pre_regions=pre_regions;
     this->ER_set=er_set;
+    this->number_of_bad_events=number_of_bad_events;
 };
 
 Label_splitting_module::~Label_splitting_module(){
