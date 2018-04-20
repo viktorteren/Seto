@@ -295,7 +295,7 @@ void Region_generator::expand(Region *region, int event){
 
     //qui ho l'array che dice per ogni evento il tipo di ramo tranne per gli eventi dopo il no cross
     //dove ho -1 vuol dire che ho fatto il break
-    set_number_of_bad_events(event_types,num_events);
+    set_number_of_bad_events(event_types,num_events, region);
 
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
@@ -603,8 +603,26 @@ void Region_generator::set_middle_set_of_states( map<int,int>* queue_event_index
 }
 
 
-void Region_generator::set_number_of_bad_events(int* event_type,int l){
-//conta per ogni set di stati gli eventi bad
+void Region_generator::set_number_of_bad_events(int* event_type,int l, set<int>* set){
+    //conta per ogni set di stati gli eventi bad
+    pair<int,Region*> *bad_events=new pair<int,Region*>;
+    number_of_bad_events=new vector<pair<int,Region*>>;
+
+    int counter=0;
+    for(int i=0;i<l;i++) {
+        if (event_type[i] != OK && event_type[i] != -1) {
+            counter++;
+        }
+        else if (event_type[i] == -1) {//ho fatto il break per no cross
+            counter=-1;
+            break;
+        }
+    }
+
+    bad_events->first=counter;
+    bad_events->second=set;
+
+    number_of_bad_events->push_back(*bad_events);
 }
 
 vector< pair<int,Region*> >* Region_generator::get_number_of_bad_events(){
