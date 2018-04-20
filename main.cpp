@@ -44,7 +44,7 @@ Vertex* vertex_array;*/
         //Region_generator::Region_generator(num_stati,num_eventi);
         map<int, vector<Region*> *>* pre_regions= mg->generate();
 
-        Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set());
+        Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set(),mg->get_number_of_bad_events());
 
         bool excitation_closure=ls->is_excitation_closed();
         if(!excitation_closure)

@@ -73,7 +73,7 @@
         void create_pre_regions();
 
         void set_middle_set_of_states(map<int,int>* queue_event_index);
-        void set_number_of_bad_events(int* event_type,int l);
+        void set_number_of_bad_events(int* event_type,int l,set<int>* set);
 
     };
 
