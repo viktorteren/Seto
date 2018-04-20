@@ -8,7 +8,7 @@
 Irredundant_sets_creation_module::Irredundant_sets_creation_module(map<int, vector<Region*> *>* pre_reg){
 	pre_regions = pre_reg;
 	not_essential_regions = new map<int, vector<Region*> *>();
-	Essential_regions_search *ers = new Essential_regions_search(pre_regions);
+	auto *ers = new Essential_regions_search(pre_regions);
 	essential_regions = ers->search();
 	search_events_with_not_essential_regions();
 	search_not_covered_states_per_event();
@@ -48,7 +48,7 @@ void Irredundant_sets_creation_module::search_not_covered_states_per_event() {
 	set<int> essential_states;
 	set<int> uncovered_states;
 	vector<Region*> *regions;
-	vector<Region*> *essential_regions_of_event = new vector<Region*>();
+	auto essential_regions_of_event = new vector<Region*>();
 	//per ogni evento che ha regioni non essenziali:
 	for(auto record: *not_essential_regions){
 		event = record.first;
@@ -89,8 +89,8 @@ void Irredundant_sets_creation_module::search_not_covered_states_per_event() {
 		essential_regions_of_event->erase(essential_regions_of_event->begin(), essential_regions_of_event->end());
 	}
 
-	//2. trovare le coperture irridondanti (moltiplicando tra loro le parti dell'equazioni trovate nel ciclo for precedente): la funzione teorica da 1
-	//3. trovare la copertura che
+	//2. trovare le coperture irridondanti (moltiplicando tra loro le parti delle equazioni trovate nel ciclo for precedente): la funzione teorica che dà 1 come risultato
+	//3. trovare la copertura che ha il costo minimo considerando sia le pre-regioni che le post-regioni
 
 }
 

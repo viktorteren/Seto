@@ -1,11 +1,11 @@
 //
 // Created by viktor on 12/04/18.
 //
-#include "Minimal_pre_region_generator.h"
+#include "Region_generator.h"
 #include "TS_parser.h"
 
 
-Minimal_pre_region_generator::Minimal_pre_region_generator() {
+Region_generator::Region_generator() {
     //ts_map = input_map;
     ER_set = new  vector<ER>;
     regions = new vector<Region>;
@@ -15,10 +15,9 @@ Minimal_pre_region_generator::Minimal_pre_region_generator() {
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
-
 }
 
-Minimal_pre_region_generator::~Minimal_pre_region_generator() {
+Region_generator::~Region_generator() {
 
     //delete ts_map;
     //delete ER_set;
@@ -28,16 +27,11 @@ Minimal_pre_region_generator::~Minimal_pre_region_generator() {
 
 }
 
-struct Branches_states_to_add {
-    set<int> *states_to_add_exit_or_enter;
-    set<int> *states_to_add_nocross;
-};
-
-vector<ER>* Minimal_pre_region_generator::get_ER_set(){
+vector<ER>* Region_generator::get_ER_set(){
     return ER_set;
 }
 
-ER Minimal_pre_region_generator::createER(int event){
+ER Region_generator::createER(int event){
 
     ER er = new set<int>;
     for(auto edge: (*ts_map)[event]){
@@ -48,11 +42,10 @@ ER Minimal_pre_region_generator::createER(int event){
     for(auto i: *er){
         cout<< "S: " << i <<endl;
     }
-
     return er;
 }
 
-bool Minimal_pre_region_generator::is_pre_region(List_edges *list, Region *region, int event) {
+bool Region_generator::is_pre_region(List_edges *list, Region *region, int event) {
     for(auto t: *list){
         if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
             if(region->find(t.second) == region->end()) { //il secondo stato non appartiene alla regione
@@ -67,14 +60,14 @@ bool Minimal_pre_region_generator::is_pre_region(List_edges *list, Region *regio
 }
 
 
-void Minimal_pre_region_generator::printRegion(const Region& region){
+void Region_generator::printRegion(const Region& region){
     for(auto state: region){
         cout << state << ", ";
     }
     cout << endl;
 }
 
-int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *region, int event){
+int Region_generator::branch_selection(List_edges *list, Region *region, int event){
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
 
@@ -196,7 +189,7 @@ int Minimal_pre_region_generator::branch_selection(List_edges *list, Region *reg
     }
 }
 
-bool Minimal_pre_region_generator::minimal_region(Region& new_region) {
+bool Region_generator::minimal_region(Region& new_region) {
     int cont;
     for (auto region: *regions) {
         cont = 0;
@@ -217,7 +210,7 @@ bool Minimal_pre_region_generator::minimal_region(Region& new_region) {
 }
 
 
-void Minimal_pre_region_generator::remove_bigger_regions(Region& new_region){
+void Region_generator::remove_bigger_regions(Region& new_region){
     int cont;
     Region region;
 
@@ -244,7 +237,7 @@ void Minimal_pre_region_generator::remove_bigger_regions(Region& new_region){
         }
     }
 }
-bool Minimal_pre_region_generator::region_in_queue(Region& new_region){
+bool Region_generator::region_in_queue(Region& new_region){
     int cont=0;
     for (auto region: *queue_temp_regions) {
         cont = 0;
@@ -264,7 +257,7 @@ bool Minimal_pre_region_generator::region_in_queue(Region& new_region){
     return false;
 }
 
-void Minimal_pre_region_generator::expand(Region *region, int event){
+void Region_generator::expand(Region *region, int event){
     int* event_types = new int[num_events];
     int last_event_2braches=-1;
     int last_event_nocross=-1;
@@ -488,8 +481,8 @@ void Minimal_pre_region_generator::expand(Region *region, int event){
     delete[] expanded_regions;
 }
 
-void Minimal_pre_region_generator::create_pre_regions(){
-    cout << "--------------------------------------------------- CREATING OF PRE-REGIONS --------------------------------------------" << endl;
+void Region_generator::create_pre_regions(){
+    cout << "--------------------------------------------------- CREATION OF PRE-REGIONS --------------------------------------------" << endl;
     //per ogni evento
         //per ogni regione
             //guardo se è una pre-regione per tale evento
@@ -531,7 +524,7 @@ void Minimal_pre_region_generator::create_pre_regions(){
 
 }
 
-map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
+map<int, vector<Region*> *>* Region_generator::generate(){
 
     int pos=0;
     map<int,int>* queue_event_index=new map<int,int>;
@@ -582,11 +575,11 @@ map<int, vector<Region*> *>* Minimal_pre_region_generator::generate(){
     return pre_regions;
 };
 
-map<int, vector<Region*> *>* Minimal_pre_region_generator::get_middle_set_of_states(){
+map<int, vector<Region*> *>* Region_generator::get_middle_set_of_states(){
     return middle_set_of_states;
 }
 
-void Minimal_pre_region_generator::set_middle_set_of_states( map<int,int>* queue_event_index){
+void Region_generator::set_middle_set_of_states( map<int,int>* queue_event_index){
 
     //ER è compreso
     for(auto record:*queue_event_index){
@@ -610,11 +603,11 @@ void Minimal_pre_region_generator::set_middle_set_of_states( map<int,int>* queue
 }
 
 
-void Minimal_pre_region_generator::set_number_of_bad_events(int* event_type,int l){
+void Region_generator::set_number_of_bad_events(int* event_type,int l){
 //conta per ogni set di stati gli eventi bad
 }
 
-vector< pair<int,Region*> >* Minimal_pre_region_generator::get_number_of_bad_events(){
+vector< pair<int,Region*> >* Region_generator::get_number_of_bad_events(){
     return number_of_bad_events;
 };
 

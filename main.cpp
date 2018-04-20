@@ -10,7 +10,7 @@
 #include "TS_parser.h"
 #include "Label_splitting_module.h"
 #include "Essential_region_search.h"
-#include "Minimal_pre_region_generator.h"
+#include "Region_generator.h"
 #include "Irredundant_sets_creation_module.h"
 
 typedef std::pair<int, int> Edge;
@@ -40,8 +40,8 @@ Vertex* vertex_array;*/
         bool first;
         TS_parser::parse();
         int pos = 0;
-        Minimal_pre_region_generator *mg = new Minimal_pre_region_generator();
-        //Minimal_pre_region_generator::Minimal_pre_region_generator(num_stati,num_eventi);
+        Region_generator *mg = new Region_generator();
+        //Region_generator::Region_generator(num_stati,num_eventi);
         map<int, vector<Region*> *>* pre_regions= mg->generate();
 
         Label_splitting_module *ls=new Label_splitting_module(pre_regions,mg->get_ER_set());

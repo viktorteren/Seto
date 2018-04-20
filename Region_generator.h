@@ -13,12 +13,12 @@
 
     using namespace std;
 
-    class Minimal_pre_region_generator {
+    class Region_generator {
 
     public:
 
-        Minimal_pre_region_generator();
-        ~Minimal_pre_region_generator();
+        Region_generator();
+        ~Region_generator();
 
         map<int, vector<Region*> *>* generate();
 
@@ -27,7 +27,6 @@
         struct Branches_states_to_add {
             set<int> *states_to_add_exit_or_enter= nullptr;
             set<int> *states_to_add_nocross= nullptr;
-
             /*~Branches_states_to_add(){
                 if(states_to_add_exit_or_enter!= nullptr) delete states_to_add_exit_or_enter;
                 if(states_to_add_nocross!= nullptr) delete states_to_add_nocross;
