@@ -13,6 +13,7 @@
 #include <set>
 #include <fstream>
 #include <assert.h>
+#include "TS_parser.h"
 
 using namespace std;
 

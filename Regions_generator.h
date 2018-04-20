@@ -9,6 +9,7 @@
 #include "Utilities.h"
 
 
+
 //namespace pre_region_gen {
 
     using namespace std;
@@ -21,6 +22,7 @@
         ~Region_generator();
 
         map<int, vector<Region*> *>* generate();
+		vector<Region>* generate_vector();
 
         vector<ER>* get_ER_set();
 
@@ -43,35 +45,21 @@
         vector<Region> *regions;
         vector<Region> *queue_temp_regions;
 
-        //My_Map* ts_map;
         map<int, Branches_states_to_add> *map_states_to_add;
         Branches_states_to_add *struct_states_to_add;
         set<int> *states_to_add_enter;
         set<int> *states_to_add_exit;
         set<int> *states_to_add_nocross;
-        map<int, vector<Region*> *> *pre_regions;
+
         map<int, vector<Region*> *>* middle_set_of_states;
         //coppia numero eventi che violano la regione e ptr_regione
         vector< pair<int,Region*> >* number_of_bad_events;
 
         void printRegion(const Region &region);
-
         ER createER(int event);
-
-        bool is_pre_region(List_edges *list, Region *region, int event);
-
         int branch_selection(List_edges *list, Region *region, int event);
-
-        bool minimal_region(Region &new_region);
-
-        void remove_bigger_regions(Region &new_region);
-
         bool region_in_queue(Region &new_region);
-
         void expand(Region *region, int event);
-
-        void create_pre_regions();
-
         void set_middle_set_of_states(map<int,int>* queue_event_index);
         void set_number_of_bad_events(int* event_type,int l,set<int>* set);
 
