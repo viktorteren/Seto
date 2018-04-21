@@ -21,7 +21,7 @@
         Region_generator();
         ~Region_generator();
 
-        map<int, vector<Region*> *>* generate();
+        map<int, vector<Region> *>* generate();
 		vector<Region>* generate_vector();
 
         vector<ER>* get_ER_set();
@@ -36,13 +36,13 @@
         };
 
         map<int, vector<Region*> *>* get_middle_set_of_states();
-        vector< pair<int,Region*> >* get_number_of_bad_events();
+        map<int,vector< pair<int,Region*> >*>* get_number_of_bad_events();
 
     private:
         //int events,states;
 
         vector<ER> *ER_set;
-        vector<Region> *regions;
+        map<int,vector<Region>*> *regions;
         vector<Region> *queue_temp_regions;
 
         map<int, Branches_states_to_add> *map_states_to_add;
@@ -52,16 +52,16 @@
         set<int> *states_to_add_nocross;
 
         map<int, vector<Region*> *>* middle_set_of_states;
-        //coppia numero eventi che violano la regione e ptr_regione
-        vector< pair<int,Region*> >* number_of_bad_events;
+        //per ogni evento vector di coppie numero eventi che violano la regione e ptr_regione
+        map<int,vector< pair<int,Region*> >*> *number_of_bad_events;
 
         void printRegion(const Region &region);
         ER createER(int event);
         int branch_selection(List_edges *list, Region *region, int event);
         bool region_in_queue(Region &new_region);
-        void expand(Region *region, int event);
+        void expand(Region *region, int event,bool is_ER);
         void set_middle_set_of_states(map<int,int>* queue_event_index);
-        void set_number_of_bad_events(int* event_type,int l,set<int>* set);
+        void set_number_of_bad_events(int* event_type,int l,set<int>* set,int event);
 
     };
 

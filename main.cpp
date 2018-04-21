@@ -41,19 +41,29 @@ Vertex* vertex_array;*/
         bool first;
         TS_parser::parse();
         int pos = 0;
+        vector<Region>* regions_vec;
+
+
         Region_generator *rg = new Region_generator();
         //Region_generator::Region_generator(num_stati,num_eventi);
-        map<int, vector<Region*> *>* regions= rg->generate();
+        map<int, vector<Region> *>* regions= rg->generate();
 
-        Label_splitting_module *ls=new Label_splitting_module(regions,rg->get_ER_set(),rg->get_number_of_bad_events());
+        Label_splitting_module *ls=new Label_splitting_module(regions,rg->get_ER_set());
 
         bool excitation_closure=ls->is_excitation_closed();
-        if(!excitation_closure)
-            ls->do_label_splitting(rg->get_middle_set_of_states());
+        if(!excitation_closure) {
+            cout<<" not exitation closed " <<endl;
+            regions_vec = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events());
+        }
+        //else{ //TODO: test questo ramo se concatena giusto
+            //creo il vettore dalla mappa di regioni per creare le preregioni!!
+            regions_vec=new vector<Region>;
+            for(auto record:*regions){
+                regions_vec->insert(regions_vec->end(), record.second->begin(),record.second->end());
+            }
+      /// }
 
-        //cout<< "Exitation closed: " << excitation_closure;
-
-        Pre_regions_generator *prg = new Pre_regions_generator(rg->generate_vector());
+        Pre_regions_generator *prg = new Pre_regions_generator(regions_vec);
 		map<int, vector<Region*> *> * pre_regions = prg->create_pre_regions();
 
         //Inizio modulo: ricerca di set irridondanti di regioni
@@ -62,14 +72,14 @@ Vertex* vertex_array;*/
         //cout << "fine ricerca " << endl;
 
         delete ls;
-        delete prg;
+        //delete prg;
         delete rg; //dealloco tutto tranne il campo pre_regions
 
-        //dealloco pre_regions e tutti i suoi vettori
-        for(auto record:*pre_regions){
+        //dealloco regions e tutti i suoi vettori
+        for(auto record:*regions){
             delete record.second;
         }
-        delete pre_regions;
+        delete regions;
 
 
     }
