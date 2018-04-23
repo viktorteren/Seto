@@ -6,8 +6,8 @@
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg){
 	regions = reg;
-	pre_regions= new map < int , vector<Region*>* > ();
-	post_regions= new map < int , vector<Region*>* > ();
+	pre_regions= new map < int , set<Region*>* > ();
+	post_regions= new map < int , set<Region*>* > ();
 	create_pre_and_post_regions();
 }
 
@@ -109,13 +109,13 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 			if(is_pre_region(&record.second, region, record.first)){
 				//aggiungo la regione alla mappa
 				if (pre_regions->find(record.first) == pre_regions->end()){
-					(*pre_regions)[record.first] = new vector<Region *> ();
+					(*pre_regions)[record.first] = new set<Region *> ();
 				}
 
-				cout << &region << endl;
+				//cout << &region << endl;
 				//cout << ((*pre_regions)[record.first]) << endl;
-				(*pre_regions)[record.first]->push_back(region);
-				cout << "pre_regions size " << (*pre_regions).size() << endl;
+				(*pre_regions)[record.first]->insert(region);
+				//cout << "pre_regions size " << (*pre_regions).size() << endl;
 				/* for(auto region: *((*pre_regions)[record.first])){
 					 cout << "Evento: " << record.first << endl;
 					 printRegion(*region);
@@ -124,12 +124,12 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 			if(is_post_region(&record.second, region, record.first)){
 				//aggiungo la regione alla mappa
 				if (post_regions->find(record.first) == post_regions->end()){
-					(*post_regions)[record.first] = new vector<Region *> ();
+					(*post_regions)[record.first] = new set<Region *> ();
 				}
 
 				//cout << &region << endl;
 				//cout << ((*pre_regions)[record.first]) << endl;
-				(*post_regions)[record.first]->push_back(region);
+				(*post_regions)[record.first]->insert(region);
 				//cout << "post_regions size " << (*post_regions).size() << endl;
 				/* for(auto region: *((*pre_regions)[record.first])){
 					 cout << "Evento: " << record.first << endl;
@@ -149,10 +149,10 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 }
 
-map<int, vector<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
+map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
 	return post_regions;
 }
 
-map<int, vector<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
+map<int, set<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
 	return pre_regions;
 }

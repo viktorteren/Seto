@@ -12,7 +12,7 @@
 #include <map>
 #include <set>
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include "TS_parser.h"
 
 using namespace std;
@@ -30,8 +30,11 @@ const int ENTER_NOCROSS = 3;
 namespace Utilities {
     set<int> regions_union(vector<Region*>* vec);
 	set<int> regions_union(set<Region*>* vec);
+	set<int> regions_union(Region* first, Region* second);
+	set<int> regions_intersection(Region* first, Region* second);
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions);
     void print(Region& region);
+	void println(Region& region);
 	set<int> region_difference(set<int>& first, set<int>& second);
 };
 

@@ -55,6 +55,26 @@ namespace Utilities {
         return *all_states;
     }
 
+    set<int> regions_union(Region * first, Region* second) {
+        Region *all_states = new Region();
+        int size;
+        Region::iterator it;
+        //for (Region *region: *vec) {
+        //cout << "region with size: " << region->size() << endl;
+        it = first->begin();
+        size = first->size();
+        for (int i = 0; i < size; ++i) {
+            all_states->insert(*it);
+            ++it;
+        }
+        it = second->begin();
+        size = second->size();
+        for (int i = 0; i < size; ++i) {
+            all_states->insert(*it);
+            ++it;
+        }
+        return *all_states;
+    }
 
 
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions){
@@ -127,10 +147,24 @@ namespace Utilities {
 
     }
 
+    set<int> regions_intersection(Region* first, Region* second){
+        auto intersection = new set<int>();
+        for (auto state: *first) {
+            if (second->find(state) != second->end()) {//trovo lo stato (appartiene a entrambe)
+                intersection->insert(state);
+            }
+        }
+        return *intersection;
+    }
+
     void print(Region& region){
         for(auto state : region){
             cout << state << ",";
         }
+    }
+
+    void println(Region& region){
+        print(region);
         cout << endl;
     }
 

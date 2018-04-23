@@ -64,8 +64,8 @@ Vertex* vertex_array;*/
       	// }
 
         Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(regions_vec);
-		map<int, vector<Region*> *> * pre_regions = pprg->get_pre_regions();
-		map<int, vector<Region*> *> * post_regions = pprg->get_post_regions();
+		map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
+		map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 
 
         //Inizio modulo: ricerca di set irridondanti di regioni
