@@ -6,7 +6,7 @@
 
 namespace Utilities {
 
-//Region = set<int> ->ritorna un insieme di stati
+    //Region = set<int> ->ritorna un insieme di stati
     set<int> regions_union(vector<Region *> *vec) {
         //cout << "region union" << endl;
         Region *all_states = new Region();

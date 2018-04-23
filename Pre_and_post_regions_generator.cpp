@@ -2,16 +2,18 @@
 // Created by Viktor on 20/04/2018.
 //
 
-#include "Pre_regions_generator.h"
+#include "Pre_and_post_regions_generator.h"
 
-Pre_regions_generator::Pre_regions_generator(vector<Region> * reg){
+Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg){
 	regions = reg;
 	pre_regions= new map < int , vector<Region*>* > ();
+	post_regions= new map < int , vector<Region*>* > ();
+	create_pre_and_post_regions();
 }
 
-Pre_regions_generator::~Pre_regions_generator(){}
+Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){}
 
-bool Pre_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
+bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
 	for(auto t: *list){
 		if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
 			if(region->find(t.second) == region->end()) { //il secondo stato non appartiene alla regione
@@ -25,7 +27,21 @@ bool Pre_regions_generator::is_pre_region(List_edges *list, Region *region, int 
 	return false;
 }
 
-bool Pre_regions_generator::minimal_region(Region& new_region) {
+bool Pre_and_post_regions_generator::is_post_region(List_edges *list, Region *region, int event) {
+	for(auto t: *list){
+		if( region->find(t.first) == region->end()){ //il primo stato non appartiene alla regione
+			if(region->find(t.second) != region->end()) { //il secondo stato appartiene alla regione
+				return true;
+			}
+			else
+				return false;
+		} else
+			return false;
+	}
+	return false;
+}
+
+bool Pre_and_post_regions_generator::minimal_region(Region& new_region) {
 	int cont;
 	for (auto region: *regions) {
 		cont = 0;
@@ -45,7 +61,7 @@ bool Pre_regions_generator::minimal_region(Region& new_region) {
 	return true;
 }
 
-void Pre_regions_generator::remove_bigger_regions(Region& new_region){
+void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	int cont;
 	Region region;
 
@@ -73,12 +89,14 @@ void Pre_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
-map<int, vector<Region*> *> * Pre_regions_generator::create_pre_regions(){
-	cout << "--------------------------------------------------- CREATION OF PRE-REGIONS --------------------------------------------" << endl;
+void Pre_and_post_regions_generator::create_pre_and_post_regions(){
+	cout << "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------" << endl;
 	//per ogni evento
 	//per ogni regione
 	//guardo se è una pre-regione per tale evento
 	//se si aggiungo alla mappa
+
+	//todo: prima di creare le pre-regioni verificare se le regioni sono minime
 
 	vector<Region>::iterator it;
 	for(auto record: *ts_map){
@@ -103,15 +121,38 @@ map<int, vector<Region*> *> * Pre_regions_generator::create_pre_regions(){
 					 printRegion(*region);
 				 }*/
 			}
+			if(is_post_region(&record.second, region, record.first)){
+				//aggiungo la regione alla mappa
+				if (post_regions->find(record.first) == post_regions->end()){
+					(*post_regions)[record.first] = new vector<Region *> ();
+				}
+
+				//cout << &region << endl;
+				//cout << ((*pre_regions)[record.first]) << endl;
+				(*post_regions)[record.first]->push_back(region);
+				//cout << "post_regions size " << (*post_regions).size() << endl;
+				/* for(auto region: *((*pre_regions)[record.first])){
+					 cout << "Evento: " << record.first << endl;
+					 printRegion(*region);
+				 }*/
+			}
 		}
 
 	}
 
-	for(auto record: *pre_regions){
+	/*for(auto record: *pre_regions){
 		cout << "Event: " << record.first << endl;
 		for(auto region: *record.second){
 			Utilities::print(*region);
 		}
-	}
+	}*/
+
+}
+
+map<int, vector<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
+	return post_regions;
+}
+
+map<int, vector<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
 	return pre_regions;
 }
