@@ -427,7 +427,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //}
 
     }
-
+	cout << "---|||REGIONE: " << region << " --- ";
     delete[] event_types;
     delete[] expanded_regions;
 }
@@ -449,10 +449,11 @@ map<int, vector<Region> *>* Region_generator::generate(){
         init_pos=pos;
 
         queue_temp_regions->push_back(*er_temp);
+		cout<<"ptr expand prima: " << &((*queue_temp_regions)[pos]) <<endl;
         //espando la prima volta - la regione coincide con ER
         expand( &((*queue_temp_regions)[pos]), e.first , true, init_pos);
-        pos++;
         cout<<"ptr expand: " << &((*queue_temp_regions)[pos]) <<endl;
+		pos++;
         //expand(er_temp, 2);
         //aggiungi alla coda ER e sposta la posizione per avere l'albero completo
         //perchè voglio ER come middle _state
@@ -494,24 +495,28 @@ map<int, vector<Region> *>* Region_generator::generate(){
 
     set_middle_set_of_states(queue_event_index);
 
-        cout<<"evento coda "<<endl;
-       cout<< " " << &(  (*queue_temp_regions)[0] ) <<endl;
-        cout<< " " << &(*queue_temp_regions)[0] <<endl;
+    cout<<"evento coda "<<endl;
+    cout<< " " << &(  (*queue_temp_regions)[0] ) <<endl;
+    cout<< " " << &(*queue_temp_regions)[0] <<endl;
 
+    auto prova = new Region();
 
     cout<<"\n debug middle"<<endl;
     for(auto e : *ts_map ){
         cout<<"evento " << e.first<<endl;
         for(auto el_vec: *middle_set_of_states->at(e.first)){
             cout<<el_vec<<endl;
+            prova = el_vec;
+            break;
         }
     }
 
     cout<<"debug number bad: " <<endl;
     for(auto e : *ts_map ){
         //cout<<"evento " << e.first<<" " << (*number_of_bad_events->at(e.first))[0].second <<endl;
-        for(auto pairs: *number_of_bad_events->at(e.first)){
+        for(auto pairs: *(number_of_bad_events->at(e.first))){
             cout<<pairs.second<<endl;
+            break;
         }
     }
 

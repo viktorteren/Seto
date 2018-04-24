@@ -21,8 +21,15 @@ Minimal_and_irredundant_pn_creation_module::Minimal_and_irredundant_pn_creation_
 	cout << "uncovered states found" << endl;
 	set<int> states_to_cover = uncovered_states;
 	set<Region *> *used_regions = new set<Region *>();
+	last_solution = new set<Region *>();
+	computed_paths_cache = new set<set<Region *>>();
 	int min = minimal_cost_search(states_to_cover, used_regions, INT_MAX, 0);
 	cout << "min: " << min << endl;
+	cout << "insieme di regioni irridondante e di costo minimo: " << endl;
+	for(auto region: *last_solution){
+		cout << "[" << &(*region)  << "] ";
+		println(*region);
+	}
 }
 
 void Minimal_and_irredundant_pn_creation_module::search_not_essential_regions() {
@@ -110,9 +117,9 @@ set<int> Minimal_and_irredundant_pn_creation_module::search_not_covered_states_p
 }
 
 int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
-	cout << "chiamata ricorsiva" << endl;
+	//cout << "chiamata ricorsiva" << endl;
 	//per l'insieme degli stati non coperti devo trovare le possibili coperture irridondanti
-	//todo: 1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
+	//1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
 	//prendo una regione alla volta
 	//calcolo gli stati che rimangono da coprire, torno al punto precedente finchè non ho coperto tutti gli stati
 	//controllo se l'insieme che ho ricavato è irridondante
@@ -138,22 +145,33 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 	set<int> new_states_to_cover;
 	set<Region *> new_states_used = *used_regions;
 	auto chosen_candidates = new set<Region *>();
+	set<Region *> *temp_aggregation;
 	int new_best_cost = last_best_cost; //uno dei sotto-rami potrebbe aver migliorato il risultato, di conseguenza devo aggiornare la variabile e non utilizzare il parametro in ingresso alla funzione
 	//finchè ci sono candidati che aumentano la copertura
 	while(true){
 		cover_of_candidate = 0;
 		//scelta del prossimo candidato
-		//todo: devo marcare i candidati già scelti prima
 		//todo: utilizzare memoizzazione globale di insiemi di regioni con il relativo costo
 		for(auto region: *not_essential_regions){
 			//la regione nuova non può essere un vecchio candidato
 			if(chosen_candidates->find(region) == chosen_candidates->end()){
-				//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
-				temp_cover = regions_intersection(&states_to_cover, region).size();
-				if(temp_cover > cover_of_candidate){
-					cover_of_candidate = temp_cover;
-					candidate = region;
+				//controllo se l'insieme con il candidato è già stato calcolato o no [faccio prima questo controllo dato che lo ritengo più leggero dell'intersezione nella condizione successiva]
+				temp_aggregation = new set<Region *>(*used_regions);
+				temp_aggregation->insert(region);
+				if(computed_paths_cache->find(*temp_aggregation) == computed_paths_cache->end()) {
+					//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
+					temp_cover = regions_intersection(&states_to_cover, region).size();
+					if (temp_cover > cover_of_candidate) {
+						//cout << "candidato nuovo" << endl;
+						cover_of_candidate = temp_cover;
+						candidate = region;
+					}
 				}
+				else{
+					//cout << "elemento già presente nella cache" << endl;
+				}
+				//ogni volta che entro nell'if alloco un nuovo spazio di conseguenza devo deallocarlo
+				delete temp_aggregation;
 			}
 		}
 
@@ -165,36 +183,47 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 			chosen_candidates->insert(candidate);
 		}
 		cost_of_candidate = region_cost(candidate);
-		cout << "cost of candidate: " << cost_of_candidate << endl;
-		cout << "candidate cover: " << cover_of_candidate << endl;
+		//cout << "cost of candidate: " << cost_of_candidate << endl;
+		//cout << "candidate cover: " << cover_of_candidate << endl;
 		//non devo fare una chiamata ricorsiva se il costo è troppo grande oppure se ho completato la copertura
 
-		//non potrò trovare una soluuzione migliore con il seguente candidato
+		//non potrò trovare una soluzione migliore con il seguente candidato
 		int current_cost = cost_of_candidate + father_cost;
-		if(current_cost > last_best_cost){
+		//todo: il nuovo insieme di regioni ->  dovrei veedere prima se tale insieme non è presente nella cache
+		new_states_used.insert(candidate);
+		if(current_cost >= new_best_cost){
+			//salvo il percorso nella cache per non ripeterlo
+			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no, FORSE QUESTA AGGIUNTA NON SERVE
+			//computed_paths_cache->insert(new_states_used);
 			//break; -> non chiamare la chiamata ricorsiva ma non fare nemmeno break dato che i fratelli con copertura minore possono avere costo più basso
 		}
-		//ho completato la copertura e non è peggio di quella precedente
+		//ho completato la copertura ed è meglio di quella precedente
 		else if(states_to_cover.size() - cover_of_candidate == 0){
-			//todo: manca questo ramo per il caso in cui ho trovato il risultato giusto e quindi dovrei aggiornare le variabili senza fare ulteriori chiamate
+			new_best_cost = current_cost;
+			//salvo il percorso nella cache per non ripeterlo
+			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no
+			computed_paths_cache->insert(new_states_used);
+			//dealloco lo spazio vecchio per allocarne uno nuovo
+			delete last_solution;
+			last_solution = new set<Region *>(new_states_used);
 		}
 		//non ho completato la copertura e posso ancora trovare una soluzione migliore
 		else{
-			//essedo già stato scelto il candidato e sapendo che devo fare la chiamata ricorsiva posso calcolarmi:
-			//1. il nuovo insieme di stati da coprire
+			//essedo già stato scelto il candidato e sapendo che devo fare la chiamata ricorsiva devo calcolarmi il nuovo insieme di stati da coprire
 			new_states_to_cover = region_difference(states_to_cover, *candidate);
-			//2. il nuovo insieme di regioni -> in questo caso dovrei veedere prima se tale insieme non è presente nella cache
-			new_states_used.insert(candidate);
+
 			//chiamata ricorsiva per espandere ulteriormente la copertura con il candidato scelto
 			int cost = minimal_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
 			if(cost < new_best_cost){
 				new_best_cost = cost;
-				//inoltre devo salvarmi l'insieme come di poertura in una variabile globale
+				//non devo salvarmi il risultato migliore dato che è già stato salvato nella chiamata ricorsiva che ha fatto ritornare il costo minore
 			}
 		}
-
-		//todo: controllare le allocazioni di memoria soprattutto per la ricorsione
 	}
+
+	//salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i sottorami di questo nodo per questo sono arrivato al return
+	//todo: controllare se *used_regions sopravvivono dopo l'uscita o no
+	computed_paths_cache->insert(*used_regions);
 
 	return new_best_cost;
 

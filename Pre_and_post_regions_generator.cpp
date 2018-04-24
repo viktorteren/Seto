@@ -97,6 +97,7 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 	//se si aggiungo alla mappa
 
 	//todo: prima di creare le pre-regioni verificare se le regioni sono minime
+	//todo: eliminare i duplicati nelle pre-regioni
 
 	vector<Region>::iterator it;
 	for(auto record: *ts_map){
@@ -140,12 +141,20 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 	}
 
-	/*for(auto record: *pre_regions){
+	cout << "Pre regions:" << endl;
+	for(auto record: *pre_regions){
 		cout << "Event: " << record.first << endl;
 		for(auto region: *record.second){
-			Utilities::print(*region);
+			Utilities::println(*region);
 		}
-	}*/
+	}
+	cout  << "Post regions:" << endl;
+	for(auto record: *post_regions){
+		cout << "Event: " << record.first << endl;
+		for(auto region: *record.second){
+			Utilities::println(*region);
+		}
+	}
 
 }
 
