@@ -11,8 +11,8 @@
 #include "Label_splitting_module.h"
 #include "Essential_region_search.h"
 #include "Regions_generator.h"
-#include "Irredundant_sets_creation_module.h"
-#include "Pre_regions_generator.h"
+#include "Minimal_and_irredundant_pn_creation_module.h"
+#include "Pre_and_post_regions_generator.h"
 
 typedef std::pair<int, int> Edge;
 
@@ -61,13 +61,15 @@ Vertex* vertex_array;*/
             for(auto record:*regions){
                 regions_vec->insert(regions_vec->end(), record.second->begin(),record.second->end());
             }
-      /// }
+      	// }
 
-       // Pre_regions_generator *prg = new Pre_regions_generator(regions_vec);
-		//map<int, vector<Region*> *> * pre_regions = prg->create_pre_regions();
+        Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(regions_vec);
+		map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
+		map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
+
 
         //Inizio modulo: ricerca di set irridondanti di regioni
-		//Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
+		Minimal_and_irredundant_pn_creation_module *pn_module = new Minimal_and_irredundant_pn_creation_module(pre_regions, post_regions);
 
         //cout << "fine ricerca " << endl;
 

@@ -4,7 +4,7 @@
 
 #include "Essential_region_search.h"
 
-Essential_regions_search::Essential_regions_search(map<int, vector<Region*> *>* pre_reg){ pre_regions = pre_reg; };
+Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre_reg){ pre_regions = pre_reg; };
 
 Essential_regions_search::~Essential_regions_search() = default;
 
@@ -27,7 +27,7 @@ set<Region *> Essential_regions_search::search(){
     //per ogni evento
     cout << "num eventi: " << pre_regions->size() << endl;
     for(auto record: *pre_regions){
-        cout << endl <<  "evento: " << record.first << endl;
+        cout <<  "evento: " << record.first << endl;
 
 		Region::iterator it2;
         //regions = *record.second;
@@ -56,18 +56,8 @@ set<Region *> Essential_regions_search::search(){
             }
             //se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
             if(counter == 1){
-                cout << "trovato regione essenziale: "<< endl;
-                //aggiungendo il ciclo for seguente il codice torna a non essere funzionante per colpa di auto che probabilmente utilizza un iteratore in comune con altri cicli
-                /*for(auto state: *last_essential_candidate){
-                	cout << state << " ";
-                }*/
-                it2 = last_essential_candidate->begin();
-                int size = last_essential_candidate->size();
-	            for(int i = 0; i < size; ++i) {
-		            cout  << *it2 << " ";
-		            ++it2;
-	            }
-	            cout << endl;
+                cout << "trovato regione essenziale: ";
+                Utilities::println(*last_essential_candidate);
                 essential_regions->insert(last_essential_candidate);
             }
         }

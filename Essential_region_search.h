@@ -24,12 +24,12 @@ using namespace Utilities;
 
 class Essential_regions_search{
 public:
-	explicit Essential_regions_search(map<int, vector<Region*> *>* pre_reg);
+	explicit Essential_regions_search(map<int, set<Region*> *>* pre_reg);
 	~Essential_regions_search();
 	set<Region *> search();
 
 private:
-	map<int, vector<Region*> *> * pre_regions;
+	map<int, set<Region*> *> * pre_regions;
 };
 
 
