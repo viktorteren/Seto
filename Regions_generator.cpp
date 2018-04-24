@@ -15,7 +15,7 @@ Region_generator::Region_generator() {
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
-    number_of_bad_events= new map< int,vector< pair<int,Region*> >*>();
+    number_of_bad_events= new map< int,vector< int >*>();
 }
 
 Region_generator::~Region_generator() {
@@ -228,6 +228,10 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             cout << "Non è ER" << endl;
             event_types[e.first] = branch_selection(&e.second, region, e.first);
 
+            for(int i=0;i<num_events;i++){
+                cout<< "event_type: " <<event_types[i];
+            }
+
             //se è no cross non controllo gli altri eventi
             if(event_types[e.first]==NOCROSS) break;
         }
@@ -243,7 +247,8 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
     //qui ho l'array che dice per ogni evento il tipo di ramo tranne per gli eventi dopo il no cross
     //dove ho -1 vuol dire che ho fatto il break
-    set_number_of_bad_events(event_types,num_events, region,event);
+    cout<<"region pass:" <<region;
+    set_number_of_bad_events(event_types,num_events,event);
 
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
@@ -327,8 +332,12 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             cout<<"Regione non aggiunta alla coda(già presente)"<<endl;
         }
 
-        for(auto i: *queue_temp_regions){
-            cout << "coda:"  <<endl ;
+        vector<Region>::iterator it;
+        for(it=queue_temp_regions->begin();it!=queue_temp_regions->end();it++){
+            Region i=*it;
+            Region* i_ptr=&(*it);
+            //for(auto i: *queue_temp_regions){
+            cout << "coda:" <<i_ptr <<endl ;
             for(auto state : i)
                 cout << "stati" << state <<endl ;
         }
@@ -418,8 +427,12 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             cout<<"Ramo 2 :Regione non aggiunta alla coda(già presente)"<<endl;
         }
 
-        for(auto i: *queue_temp_regions){
-            cout << "coda:"  <<endl ;
+        vector<Region>::iterator it;
+        for(it=queue_temp_regions->begin();it!=queue_temp_regions->end();it++){
+            Region i=*it;
+            Region* i_ptr=&(*it);
+            //for(auto i: *queue_temp_regions){
+            cout << "coda:" <<i_ptr <<endl ;
             for(auto state : i)
                 cout << "stati" << state <<endl ;
         }
@@ -427,7 +440,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //}
 
     }
-	cout << "---|||REGIONE: " << region << " --- ";
+
     delete[] event_types;
     delete[] expanded_regions;
 }
@@ -449,11 +462,12 @@ map<int, vector<Region> *>* Region_generator::generate(){
         init_pos=pos;
 
         queue_temp_regions->push_back(*er_temp);
-		cout<<"ptr expand prima: " << &((*queue_temp_regions)[pos]) <<endl;
         //espando la prima volta - la regione coincide con ER
+        cout<<"ptr expand prima: " << &((*queue_temp_regions)[pos]) <<endl;
         expand( &((*queue_temp_regions)[pos]), e.first , true, init_pos);
         cout<<"ptr expand: " << &((*queue_temp_regions)[pos]) <<endl;
-		pos++;
+        pos++;
+
         //expand(er_temp, 2);
         //aggiungi alla coda ER e sposta la posizione per avere l'albero completo
         //perchè voglio ER come middle _state
@@ -487,36 +501,34 @@ map<int, vector<Region> *>* Region_generator::generate(){
     //creazione delle pre-regioni
     //create_pre_regions();
 
-    vector<Region>::iterator it;
+   /* vector<Region>::iterator it;
     for(it=queue_temp_regions->begin();it!=queue_temp_regions->end();it++) {
         cout << "elem ptr: " << &(*it) << endl;
-    }
+    }*/
 
 
     set_middle_set_of_states(queue_event_index);
 
-    cout<<"evento coda "<<endl;
-    cout<< " " << &(  (*queue_temp_regions)[0] ) <<endl;
-    cout<< " " << &(*queue_temp_regions)[0] <<endl;
+        cout<<"evento coda "<<endl;
+       cout<< " " << &(  (*queue_temp_regions)[0] ) <<endl;
+        cout<< " " << &(*queue_temp_regions)[0] <<endl;
 
-    auto prova = new Region();
 
     cout<<"\n debug middle"<<endl;
     for(auto e : *ts_map ){
         cout<<"evento " << e.first<<endl;
         for(auto el_vec: *middle_set_of_states->at(e.first)){
             cout<<el_vec<<endl;
-            prova = el_vec;
-            break;
+            printRegion(*el_vec);
         }
+
     }
 
     cout<<"debug number bad: " <<endl;
     for(auto e : *ts_map ){
-        //cout<<"evento " << e.first<<" " << (*number_of_bad_events->at(e.first))[0].second <<endl;
-        for(auto pairs: *(number_of_bad_events->at(e.first))){
-            cout<<pairs.second<<endl;
-            break;
+        cout<<"evento " << e.first<<endl;
+        for(auto n: *number_of_bad_events->at(e.first)){
+            cout<<n<<endl;
         }
     }
 
@@ -555,15 +567,15 @@ void Region_generator::set_middle_set_of_states( map<int,int>* queue_event_index
 }
 
 
-void Region_generator::set_number_of_bad_events(int* event_type,int l, set<int>* set,int event){
+void Region_generator::set_number_of_bad_events(int* event_type,int l,int event){
     //conta per ogni set di stati gli eventi bad
-    pair<int,Region*> *bad_events=new pair<int,Region*>;
+   // pair<int,Region*> *bad_events=new pair<int,Region*>;
 
     if(number_of_bad_events->find(event)==number_of_bad_events->end()) {
-        (*number_of_bad_events)[event] = new vector<pair<int, Region *>>;
+        (*number_of_bad_events)[event] = new vector<int>;
     }
 
-    cout<<"SET BAD NUMBER per " <<event<<"********"<<endl;
+    cout<<"\nSET BAD NUMBER per " <<event<<"********"<<endl;
 
     int counter=0;
     for(int i=0;i<l;i++) {
@@ -576,14 +588,16 @@ void Region_generator::set_number_of_bad_events(int* event_type,int l, set<int>*
         }
     }
 
-    bad_events->first=counter;
-    bad_events->second=set;
-    cout<<"indir set:" << set;
+    //bad_events->first=counter;
+   // bad_events->second=set;
 
-    number_of_bad_events->at(event)->push_back(*bad_events);
+   // cout<<"pair.second " << bad_events->second;
+    cout<<"counter:"<<counter<<endl;
+
+    number_of_bad_events->at(event)->push_back(counter);
 }
 
-map<int,vector< pair<int,Region*> >*>* Region_generator::get_number_of_bad_events(){
+map<int,vector< int >*>* Region_generator::get_number_of_bad_events(){
     return number_of_bad_events;
 };
 

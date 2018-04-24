@@ -142,6 +142,10 @@ namespace Utilities {
             }
         }
 
+
+        cout<<"intersezione****************" <<endl;
+        print(*(pre_regions_intersection->at(4)));
+
         return pre_regions_intersection;
 
 

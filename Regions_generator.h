@@ -36,7 +36,7 @@
         };
 
         map<int, vector<Region*> *>* get_middle_set_of_states();
-        map<int,vector< pair<int,Region*> >*>* get_number_of_bad_events();
+        map<int,vector< int >* >* get_number_of_bad_events();
 
     private:
         //int events,states;
@@ -53,7 +53,7 @@
 
         map<int, vector<Region*> *>* middle_set_of_states;
         //per ogni evento vector di coppie numero eventi che violano la regione e ptr_regione
-        map<int,vector< pair<int,Region*> >*> *number_of_bad_events;
+        map<int,vector< int > *> *number_of_bad_events;
 
         void printRegion(const Region &region);
         ER createER(int event);
@@ -61,7 +61,7 @@
         bool region_in_queue(Region &new_region,int init_pos);
         void expand(Region *region, int event,bool is_ER,int init_pos);
         void set_middle_set_of_states(map<int,int>* queue_event_index);
-        void set_number_of_bad_events(int* event_type,int l,set<int>* set,int event);
+        void set_number_of_bad_events(int* event_type,int l,int event);
 
     };
 
