@@ -13,7 +13,7 @@ void TS_parser::parse() {
 
     ts_map = new My_Map();
 
-    std::ifstream fin("../input2.txt");
+    std::ifstream fin("../input3.txt");
 
     assert(fin);
 
