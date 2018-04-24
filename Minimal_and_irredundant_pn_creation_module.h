@@ -38,7 +38,7 @@ private:
 	map<set<int>, set<set<Region *> >> *covering_map; //mappa tra insiemi di stati non coperti e l'insieme di insiemi di regioni che coprono completamente tali insiemi di stati
 	//insieme di stati -> insieme di insiemi di regioni: esistono diverse combinazioni irridondanti di regioni che possono coprire un insieme di stati
 	//ritorna il miglior risultato dei rami sottostanti
-	int minimal_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
+	int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
 	int region_cost(Region *reg);
 	set<Region *>* last_solution;
 	set<set<Region *>> *computed_paths_cache; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache

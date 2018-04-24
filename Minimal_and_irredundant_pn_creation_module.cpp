@@ -18,12 +18,12 @@ Minimal_and_irredundant_pn_creation_module::Minimal_and_irredundant_pn_creation_
 	search_not_essential_regions();
 	cost_map_filling();
 	uncovered_states = search_not_covered_states_per_event();
-	cout << "uncovered states found" << endl;
 	set<int> states_to_cover = uncovered_states;
 	set<Region *> *used_regions = new set<Region *>();
 	last_solution = new set<Region *>();
 	computed_paths_cache = new set<set<Region *>>();
-	int min = minimal_cost_search(states_to_cover, used_regions, INT_MAX, 0);
+	cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
+	int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
 	cout << "min: " << min << endl;
 	cout << "insieme di regioni irridondante e di costo minimo: " << endl;
 	for(auto region: *last_solution){
@@ -116,7 +116,7 @@ set<int> Minimal_and_irredundant_pn_creation_module::search_not_covered_states_p
 	return total_uncovered_states;
 }
 
-int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
+int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
 	//cout << "chiamata ricorsiva" << endl;
 	//per l'insieme degli stati non coperti devo trovare le possibili coperture irridondanti
 	//1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
@@ -140,19 +140,23 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 	int cover_of_candidate;
 	int temp_cover;
 	//coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme delle regioni del figlio
-	auto temp_regions = new set<Region *>(*used_regions);
 	int cost_of_candidate;
 	set<int> new_states_to_cover;
 	set<Region *> new_states_used = *used_regions;
 	auto chosen_candidates = new set<Region *>();
 	set<Region *> *temp_aggregation;
+	//todo: verificare se la cache è effettivamente utilizzata come si deve
+	//todo: non si può fare una vera verifica finchè si hanno dei duplicati con indirizzo diverso ma lo stesso contenuto
 	int new_best_cost = last_best_cost; //uno dei sotto-rami potrebbe aver migliorato il risultato, di conseguenza devo aggiornare la variabile e non utilizzare il parametro in ingresso alla funzione
 	//finchè ci sono candidati che aumentano la copertura
 	while(true){
 		cover_of_candidate = 0;
 		//scelta del prossimo candidato
-		//todo: utilizzare memoizzazione globale di insiemi di regioni con il relativo costo
 		for(auto region: *not_essential_regions){
+			/*if(used_regions->size() == 0){
+				cout << "	---candidate: ";
+				println(*region);
+			}*/
 			//la regione nuova non può essere un vecchio candidato
 			if(chosen_candidates->find(region) == chosen_candidates->end()){
 				//controllo se l'insieme con il candidato è già stato calcolato o no [faccio prima questo controllo dato che lo ritengo più leggero dell'intersezione nella condizione successiva]
@@ -173,7 +177,13 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 				//ogni volta che entro nell'if alloco un nuovo spazio di conseguenza devo deallocarlo
 				delete temp_aggregation;
 			}
+			/*else {
+				if(used_regions->size() == 0){
+					cout << "la regione è un vecchio candidato" << endl;
+				}
+			}*/
 		}
+		//cout << "cover of candidate: " << cover_of_candidate << endl;
 
 		//non posso migliorare la copertura
 		if(cover_of_candidate == 0)
@@ -189,8 +199,14 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 
 		//non potrò trovare una soluzione migliore con il seguente candidato
 		int current_cost = cost_of_candidate + father_cost;
-		//todo: il nuovo insieme di regioni ->  dovrei veedere prima se tale insieme non è presente nella cache
+		//todo: il nuovo insieme di regioni ->  dovrei vedere prima se tale insieme non è presente nella cache
 		new_states_used.insert(candidate);
+		/*cout << "prova con: ";
+		for(auto r: new_states_used){
+			print(*r);
+			cout << "|||";
+		}
+		cout << endl;*/
 		if(current_cost >= new_best_cost){
 			//salvo il percorso nella cache per non ripeterlo
 			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no, FORSE QUESTA AGGIUNTA NON SERVE
@@ -199,10 +215,20 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 		}
 		//ho completato la copertura ed è meglio di quella precedente
 		else if(states_to_cover.size() - cover_of_candidate == 0){
+
 			new_best_cost = current_cost;
+			/*cout << "trovato nuovo minimo: " << new_best_cost << endl;
+			for(auto r: new_states_used){
+				println(*r);
+			}
+			cout << "aggiungendo ";
+			println(*candidate);
+			cout << "costo precedente era: " << father_cost << endl;*/
+
 			//salvo il percorso nella cache per non ripeterlo
 			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no
 			computed_paths_cache->insert(new_states_used);
+
 			//dealloco lo spazio vecchio per allocarne uno nuovo
 			delete last_solution;
 			last_solution = new set<Region *>(new_states_used);
@@ -213,12 +239,13 @@ int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> sta
 			new_states_to_cover = region_difference(states_to_cover, *candidate);
 
 			//chiamata ricorsiva per espandere ulteriormente la copertura con il candidato scelto
-			int cost = minimal_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
+			int cost = minimum_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
 			if(cost < new_best_cost){
 				new_best_cost = cost;
 				//non devo salvarmi il risultato migliore dato che è già stato salvato nella chiamata ricorsiva che ha fatto ritornare il costo minore
 			}
 		}
+		new_states_used = *used_regions;
 	}
 
 	//salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i sottorami di questo nodo per questo sono arrivato al return
