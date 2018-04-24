@@ -63,11 +63,11 @@ Vertex* vertex_array;*/
             }
       /// }
 
-        Pre_regions_generator *prg = new Pre_regions_generator(regions_vec);
-		map<int, vector<Region*> *> * pre_regions = prg->create_pre_regions();
+       // Pre_regions_generator *prg = new Pre_regions_generator(regions_vec);
+		//map<int, vector<Region*> *> * pre_regions = prg->create_pre_regions();
 
         //Inizio modulo: ricerca di set irridondanti di regioni
-		Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
+		//Irredundant_sets_creation_module *is_module = new Irredundant_sets_creation_module(pre_regions);
 
         //cout << "fine ricerca " << endl;
 

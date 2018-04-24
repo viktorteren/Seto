@@ -15,6 +15,7 @@ Region_generator::Region_generator() {
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
+    number_of_bad_events= new map< int,vector< pair<int,Region*> >*>();
 }
 
 Region_generator::~Region_generator() {
@@ -561,7 +562,6 @@ void Region_generator::set_middle_set_of_states( map<int,int>* queue_event_index
 void Region_generator::set_number_of_bad_events(int* event_type,int l, set<int>* set,int event){
     //conta per ogni set di stati gli eventi bad
     pair<int,Region*> *bad_events=new pair<int,Region*>;
-    number_of_bad_events= new map< int,vector< pair<int,Region*> >*>();
     (*number_of_bad_events)[event] = new vector<pair<int,Region*>>;
     cout<<"SET BAD NUMBER per " <<event<<"********"<<endl;
 

@@ -95,15 +95,28 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     //per ogni stato intermedio se è compreso nel set delle intersezioni
     //prendilo per label splitting
 
+    cout<<"ordine:ptr regions:"<<endl;
+    auto vec_pt= number_of_bad_events->at(2);
+
+    for(auto reg: *vec_pt)
+        cout<<"C: "<< reg.second;
+
+
+    cout<<"ptr middle set"<<endl;
+    auto middle_vec_ptr=middle_set_of_states->at(2);
+    for(auto reg: * middle_vec_ptr)
+        cout<<" M: "<<reg;
+
+
     cout<<"middle TOT: " <<endl;
     vector<Region*>::iterator it;
     //per ogni evento
     for(auto e: *middle_set_of_states) {
-
+        cout<<"EVENTO: "<<e.first<<endl;
+        int pos=0;
         //auto set_forced_to_be_a_region;
         auto event=e.first;
         for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
-            int pos=0;
             cout << "middle" << endl;
             if (is_bigger_than(*it, regions_intersection->at(event))) {
                 cout << "erase" << endl;
@@ -113,14 +126,16 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                 //cache e ricalcolo solo se non c'è(avevo fatto break per no cross) mi prendo una coppia evento che viola e vettore di
                 // transazioni e anche il numero di eventi che violano per ogni set di stati!!
                 cout<<"eveent: " <<event << endl;
-                //auto vec_ptr= number_of_bad_events->at(event);
-                //auto pair= (*vec_ptr)[pos];
-                //if( pair.first ==-1 ) {
+                auto vec_ptr= number_of_bad_events->at(event);
+                auto pair= (*vec_ptr)[pos];
+                if( pair.first ==-1 ) {
                     //ricalcola
-                //}
+                }
+
             }
             for (auto el:**it)
                 cout << "S: " << el << endl;
+
             pos++;
         }
 
