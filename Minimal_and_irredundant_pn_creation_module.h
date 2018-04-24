@@ -24,7 +24,7 @@ private:
 	void search_not_essential_regions();
 	map<int, set<Region*> *> * not_essential_regions_map; //mappa: evento -> insieme di regioni non essenziali per quel evento
 
-	set<int>& search_not_covered_states_per_event();
+	set<int> search_not_covered_states_per_event();
 	map<Region* , int> *cost_map; //costo per ogni regione (dato da: numero eventi per i quali è una pre-regione + numero eventi per i quali è una post-regione + 1)
 	void cost_map_filling();
 	/*todo: in questa mappa bisognerebbe fare un ordinamento degli insiemi di regioni per il loro costo nella cost_map prima di utilizzarla
@@ -37,8 +37,10 @@ private:
 
 	map<set<int>, set<set<Region *> >> *covering_map; //mappa tra insiemi di stati non coperti e l'insieme di insiemi di regioni che coprono completamente tali insiemi di stati
 	//insieme di stati -> insieme di insiemi di regioni: esistono diverse combinazioni irridondanti di regioni che possono coprire un insieme di stati
-	void minimal_cost_search();
+	//ritorna il miglior risultato dei rami sottostanti
+	int minimal_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
 	int region_cost(Region *reg);
+	set<Region *>* last_solution;
 };
 
 

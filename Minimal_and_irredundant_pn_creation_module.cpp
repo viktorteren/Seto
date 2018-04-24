@@ -2,6 +2,7 @@
 // Created by viktor on 18/04/18.
 //
 
+#include <climits>
 #include "Minimal_and_irredundant_pn_creation_module.h"
 #include "Essential_region_search.h"
 
@@ -17,7 +18,11 @@ Minimal_and_irredundant_pn_creation_module::Minimal_and_irredundant_pn_creation_
 	search_not_essential_regions();
 	cost_map_filling();
 	uncovered_states = search_not_covered_states_per_event();
-	minimal_cost_search();
+	cout << "uncovered states found" << endl;
+	set<int> states_to_cover = uncovered_states;
+	set<Region *> *used_regions = new set<Region *>();
+	int min = minimal_cost_search(states_to_cover, used_regions, INT_MAX, 0);
+	cout << "min: " << min << endl;
 }
 
 void Minimal_and_irredundant_pn_creation_module::search_not_essential_regions() {
@@ -46,7 +51,7 @@ void Minimal_and_irredundant_pn_creation_module::search_not_essential_regions() 
 	}*/
 }
 
-set<int>& Minimal_and_irredundant_pn_creation_module::search_not_covered_states_per_event() {
+set<int> Minimal_and_irredundant_pn_creation_module::search_not_covered_states_per_event() {
 	//todo: si potrebbe migliorare questo metodo utilizzando essential_regions al posto di essential_regions_map facendo un solo calcolo senza cicli for
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
 	int event;
@@ -104,7 +109,8 @@ set<int>& Minimal_and_irredundant_pn_creation_module::search_not_covered_states_
 	return total_uncovered_states;
 }
 
-void Minimal_and_irredundant_pn_creation_module::minimal_cost_search(){
+int Minimal_and_irredundant_pn_creation_module::minimal_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
+	cout << "chiamata ricorsiva" << endl;
 	//per l'insieme degli stati non coperti devo trovare le possibili coperture irridondanti
 	//todo: 1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
 	//prendo una regione alla volta
@@ -122,18 +128,75 @@ void Minimal_and_irredundant_pn_creation_module::minimal_cost_search(){
 	//scelgo quella che copre più stati procedo con l'esecuzione
 	//mi serve una funzione che dato un insieme di stati e una regione ritorni il numero di stati coperti da quella regione: cardinalità dell'intersezione
 	//devo salvarmi tutte le regioni irridondanti insieme senza mappe
-	set<int> states_to_cover = uncovered_states;
+
 	Region *candidate;
-	int cover_of_candidate = 0;
+	int cover_of_candidate;
 	int temp_cover;
-	for(auto region: *not_essential_regions){
-		//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
-		temp_cover = regions_intersection(&states_to_cover, region).size();
-		if(temp_cover > cover_of_candidate){
-			cover_of_candidate = temp_cover;
-			candidate = region;
+	//coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme delle regioni del figlio
+	auto temp_regions = new set<Region *>(*used_regions);
+	int cost_of_candidate;
+	set<int> new_states_to_cover;
+	set<Region *> new_states_used = *used_regions;
+	auto chosen_candidates = new set<Region *>();
+	int new_best_cost = last_best_cost; //uno dei sotto-rami potrebbe aver migliorato il risultato, di conseguenza devo aggiornare la variabile e non utilizzare il parametro in ingresso alla funzione
+	//finchè ci sono candidati che aumentano la copertura
+	while(true){
+		cover_of_candidate = 0;
+		//scelta del prossimo candidato
+		//todo: devo marcare i candidati già scelti prima
+		//todo: utilizzare memoizzazione globale di insiemi di regioni con il relativo costo
+		for(auto region: *not_essential_regions){
+			//la regione nuova non può essere un vecchio candidato
+			if(chosen_candidates->find(region) == chosen_candidates->end()){
+				//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
+				temp_cover = regions_intersection(&states_to_cover, region).size();
+				if(temp_cover > cover_of_candidate){
+					cover_of_candidate = temp_cover;
+					candidate = region;
+				}
+			}
 		}
+
+		//non posso migliorare la copertura
+		if(cover_of_candidate == 0)
+			break;
+		else{
+			//salvo il nuovo candidato
+			chosen_candidates->insert(candidate);
+		}
+		cost_of_candidate = region_cost(candidate);
+		cout << "cost of candidate: " << cost_of_candidate << endl;
+		cout << "candidate cover: " << cover_of_candidate << endl;
+		//non devo fare una chiamata ricorsiva se il costo è troppo grande oppure se ho completato la copertura
+
+		//non potrò trovare una soluuzione migliore con il seguente candidato
+		int current_cost = cost_of_candidate + father_cost;
+		if(current_cost > last_best_cost){
+			//break; -> non chiamare la chiamata ricorsiva ma non fare nemmeno break dato che i fratelli con copertura minore possono avere costo più basso
+		}
+		//ho completato la copertura e non è peggio di quella precedente
+		else if(states_to_cover.size() - cover_of_candidate == 0){
+			//todo: manca questo ramo per il caso in cui ho trovato il risultato giusto e quindi dovrei aggiornare le variabili senza fare ulteriori chiamate
+		}
+		//non ho completato la copertura e posso ancora trovare una soluzione migliore
+		else{
+			//essedo già stato scelto il candidato e sapendo che devo fare la chiamata ricorsiva posso calcolarmi:
+			//1. il nuovo insieme di stati da coprire
+			new_states_to_cover = region_difference(states_to_cover, *candidate);
+			//2. il nuovo insieme di regioni -> in questo caso dovrei veedere prima se tale insieme non è presente nella cache
+			new_states_used.insert(candidate);
+			//chiamata ricorsiva per espandere ulteriormente la copertura con il candidato scelto
+			int cost = minimal_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
+			if(cost < new_best_cost){
+				new_best_cost = cost;
+				//inoltre devo salvarmi l'insieme come di poertura in una variabile globale
+			}
+		}
+
+		//todo: controllare le allocazioni di memoria soprattutto per la ricorsione
 	}
+
+	return new_best_cost;
 
 	//ho trovato il candidato, devo assegnarlo
 	//se scelgo le regioni per numero di stati coperti decrescente è possibile avere alla fine di un ramo di scelte uno stato ridondante??
