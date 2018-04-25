@@ -1,7 +1,7 @@
 
 #include "Label_splitting_module.h"
 #include "Regions_generator.h"
-#include "Minimal_and_irredundant_pn_creation_module.h"
+#include "Place_irredundant_pn_creation_module.h"
 #include "Pre_and_post_regions_generator.h"
 
 int main() {
@@ -38,7 +38,7 @@ int main() {
 
 
     //Inizio modulo: ricerca di set irridondanti di regioni
-    Minimal_and_irredundant_pn_creation_module *pn_module = new Minimal_and_irredundant_pn_creation_module(pre_regions, post_regions);
+    Place_irredundant_pn_creation_module *pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
 
     //cout << "fine ricerca " << endl;
 

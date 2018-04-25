@@ -3,36 +3,40 @@
 //
 
 #include <climits>
-#include "Minimal_and_irredundant_pn_creation_module.h"
+#include "Place_irredundant_pn_creation_module.h"
 #include "Essential_region_search.h"
 
-Minimal_and_irredundant_pn_creation_module::Minimal_and_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg){
+Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg){
 	pre_regions = pre_reg;
 	post_regions = post_reg;
 	cost_map = new map<Region* , int>();
-	covering_map = new map<set<int>, set<set<Region *> >>();
 	not_essential_regions_map = new map<int, set<Region*> *>();
 	not_essential_regions = new set<Region *>();
 	auto *ers = new Essential_regions_search(pre_regions);
 	essential_regions = ers->search();
 	search_not_essential_regions();
-	cost_map_filling();
-	uncovered_states = search_not_covered_states_per_event();
-	set<int> states_to_cover = uncovered_states;
-	set<Region *> *used_regions = new set<Region *>();
-	last_solution = new set<Region *>();
-	computed_paths_cache = new set<set<Region *>>();
-	cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
-	int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
-	cout << "min: " << min << endl;
-	cout << "insieme di regioni irridondante e di costo minimo: " << endl;
-	for(auto region: *last_solution){
-		cout << "[" << &(*region)  << "] ";
-		println(*region);
+	if(not_essential_regions->size() > 0){
+		cost_map_filling();
+		uncovered_states = search_not_covered_states_per_event();
+		set<int> states_to_cover = uncovered_states;
+		auto used_regions = new set<Region *>();
+		last_solution = new set<Region *>();
+		computed_paths_cache = new set<set<Region *>>();
+		cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
+		int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
+		cout << "min: " << min << endl;
+		cout << "insieme di regioni irridondante e di costo minimo: " << endl;
+		for(auto region: *last_solution){
+			cout << "[" << &(*region)  << "] ";
+			println(*region);
+		}
+	}
+	else{
+		cout << "ALL REGIONS ARE ESSENTIAL" << endl;
 	}
 }
 
-void Minimal_and_irredundant_pn_creation_module::search_not_essential_regions() {
+void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 	for(auto record: *pre_regions){
 
 		//cout << "nuovo evento: " << record.first << endl;
@@ -58,7 +62,7 @@ void Minimal_and_irredundant_pn_creation_module::search_not_essential_regions() 
 	}*/
 }
 
-set<int> Minimal_and_irredundant_pn_creation_module::search_not_covered_states_per_event() {
+set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
 	//todo: si potrebbe migliorare questo metodo utilizzando essential_regions al posto di essential_regions_map facendo un solo calcolo senza cicli for
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
 	int event;
@@ -116,7 +120,7 @@ set<int> Minimal_and_irredundant_pn_creation_module::search_not_covered_states_p
 	return total_uncovered_states;
 }
 
-int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
+int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
 	//cout << "chiamata ricorsiva" << endl;
 	//per l'insieme degli stati non coperti devo trovare le possibili coperture irridondanti
 	//1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
@@ -164,7 +168,7 @@ int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> sta
 				temp_aggregation->insert(region);
 				if(computed_paths_cache->find(*temp_aggregation) == computed_paths_cache->end()) {
 					//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
-					temp_cover = regions_intersection(&states_to_cover, region).size();
+					temp_cover = static_cast<int>(regions_intersection(&states_to_cover, region).size());
 					if (temp_cover > cover_of_candidate) {
 						//cout << "candidato nuovo" << endl;
 						cover_of_candidate = temp_cover;
@@ -254,34 +258,13 @@ int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> sta
 
 	return new_best_cost;
 
-	//ho trovato il candidato, devo assegnarlo
-	//se scelgo le regioni per numero di stati coperti decrescente è possibile avere alla fine di un ramo di scelte uno stato ridondante??
-	//suppongo di no oppure sono casi limite (probabilmente quelli succedono spesso)
-	//potrei non guardare le ridondanze finchè non trovo una soluzione e solo dopo eliminare stati ridondanti: probabilmente troppo complesso dato che possono essere diversi insiemi ridondanti
-
-	//per vedere le ridondanze: quando aggiungo una regione nuova guardo con quali regioni si interseca e vedo se togliendo le regioni la copertura rimane invariata
-	//i modi per togliere le regioni possono cambiare
-
-	//QUI: dovrei eseguire l'ordinamento degli elementi della covering_map secondo l'euristica scelta:
-	// per esempio la somma dei costi delle regioni dell'insieme di copertura nella cost_map in ordine crescente
-	// userò sort() avendo creato il mio comparator
-
-	//finchè non ho coperto tutto e non ho percorso tutti i rami
-	//euristica:
-	//1.2 scelgo una regione o un insiemee di regioni che coprono completamennte un evento [calcolato nel punto 1.1](tenendo salvate le altre scelte)
-	//faccio il punto 1.2 fino ad una copertura completa o finchè non supero il costo totale dell'ultimo miglior risultato trovato
-	//	CONTROLLANDO CHE AD OGNI AGGIUNTA LA COPERTURA NON DIVENTI RIDONDANTE !!!
-	//1.3 valuto se il nuovo risultato è meglio del precedente (considerando i costi relativi sia alle pre-regioni che alle post-regioni)
-
-	//alla fine troverò un insieme di regioni da aggiungere a quelle essenziali per completare la creazione della pn
 }
 
 //la mappa deve contenere solo i costi delle regioni non essenziali
-void Minimal_and_irredundant_pn_creation_module::cost_map_filling(){
+void Place_irredundant_pn_creation_module::cost_map_filling(){
 	cout << "--------------------------------------------------- COST MAP FILLING --------------------------------------------" << endl;
 
-	//funzione di costo per minimizzare sia il numero di posti che il numero di archi
-	/*for(auto record: *not_essential_regions_map){
+	for(auto record: *not_essential_regions_map){
 		for(Region* reg: *record.second){
 			//non è ancora stato calcolato il costo per la regione reg
 			if(cost_map->find(&(*reg)) == cost_map->end()){
@@ -291,24 +274,12 @@ void Minimal_and_irredundant_pn_creation_module::cost_map_filling(){
 				cout << "[" << &(*reg)  << "] con il costo: " << (*cost_map)[&(*reg)]  << endl;
 			}
 		}
-	}*/
-
-	//funzione di costo per minimizzare solo il numero di posti
-	for(auto record: *not_essential_regions_map){
-		for(Region* reg: *record.second){
-			//non è ancora stato calcolato il costo per la regione reg
-			if(cost_map->find(&(*reg)) == cost_map->end()){
-				(*cost_map)[&(*reg)] = (*reg).size();
-				cout << "Trovato regione non essenziale :";
-				Utilities::print(*reg);
-				cout << "[" << &(*reg)  << "] con il costo: " << (*cost_map)[&(*reg)]  << endl;
-			}
-		}
 	}
 }
 
-int Minimal_and_irredundant_pn_creation_module::region_cost(Region *reg) {
-	int cost = 1;
+int Place_irredundant_pn_creation_module::region_cost(Region *reg) {
+	//funzione di costo per minimizzare sia il numero di posti che il numero di archi
+	/*int cost = 1;
 	for(auto record: *pre_regions){
 		if(record.second->find(reg) != record.second->end()){
 			cost++;
@@ -319,7 +290,10 @@ int Minimal_and_irredundant_pn_creation_module::region_cost(Region *reg) {
 			cost++;
 		}
 	}
-	return cost;
+	return cost;*/
+
+	//funzione di costo per minimizzare solo il numero di posti
+	return reg->size();
 }
 
 

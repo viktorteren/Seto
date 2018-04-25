@@ -51,7 +51,7 @@ void TS_parser::parse() {
 
     }
 
-    num_events = (*ts_map).size();
+    num_events = static_cast<int>((*ts_map).size());
 
     /* property_map<Graph, edge_name_t>::type
              eventMap = get(edge_name_t(), g);*/
