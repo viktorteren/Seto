@@ -21,7 +21,6 @@ private:
 	void create_pre_and_post_regions();
 	bool is_pre_region(List_edges *list, Region *region, int event);
 	bool is_post_region(List_edges *list, Region *region, int event);
-	bool minimal_region(Region &new_region);
 	void remove_bigger_regions(Region &new_region);
 };
 

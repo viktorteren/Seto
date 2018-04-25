@@ -41,30 +41,9 @@ bool Pre_and_post_regions_generator::is_post_region(List_edges *list, Region *re
 	return false;
 }
 
-bool Pre_and_post_regions_generator::minimal_region(Region& new_region) {
-	int cont;
-	for (auto region: *regions) {
-		cont = 0;
-		if(region.size() <= new_region.size()){
-			for (auto state: region) {
-				if(new_region.find(state) == new_region.end()){
-					break;
-				}
-				else{
-					cont ++;
-				}
-			}
-			if(cont == region.size())
-				return false;
-		}
-	}
-	return true;
-}
-
 void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	int cont;
 	Region region;
-
 
 	for(int i = 0; i< regions->size(); i++){
 		region = regions->at(i);
@@ -90,6 +69,13 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 }
 
 void Pre_and_post_regions_generator::create_pre_and_post_regions(){
+	cout << "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------" << endl;
+	vector<Region>::iterator it;
+	for(it=regions->begin(); it!=regions->end();++it){
+		Region* region= &(*it);
+		remove_bigger_regions(*region);
+	}
+
 	cout << "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------" << endl;
 	//per ogni evento
 	//per ogni regione
@@ -97,9 +83,8 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 	//se si aggiungo alla mappa
 
 	//todo: prima di creare le pre-regioni verificare se le regioni sono minime
-	//todo: eliminare i duplicati nelle pre-regioni
 
-	vector<Region>::iterator it;
+
 	for(auto record: *ts_map){
 		//cout << "evento: " << record.first << endl;
 		for(it=regions->begin(); it!=regions->end();++it){
