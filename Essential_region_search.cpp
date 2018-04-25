@@ -9,6 +9,7 @@ Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre
 Essential_regions_search::~Essential_regions_search() = default;
 
 set<Region *> Essential_regions_search::search(){
+    //todo: fare debuf -> con input 4 ci sono problemi con la rilevazione di regioni essenziali: potrebbe essere collegato con i duplicati delle regioni (sicuramente)
 	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento

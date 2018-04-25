@@ -101,21 +101,23 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 	vector<Region>::iterator it;
 	for(auto record: *ts_map){
-		//cout << "evento: " << record.first << endl;
-		/*for(auto region: *regions){
-			//printRegion(region);
-			if(is_pre_region(&record.second, &region, record.first)){*/
+		cout << "evento: " << record.first << endl;
 		for(it=regions->begin(); it!=regions->end();++it){
 			Region* region= &(*it);
 			if(is_pre_region(&record.second, region, record.first)){
-				//aggiungo la regione alla mappa
+				//se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
 				if (pre_regions->find(record.first) == pre_regions->end()){
 					(*pre_regions)[record.first] = new set<Region *> ();
 				}
 
 				//cout << &region << endl;
 				//cout << ((*pre_regions)[record.first]) << endl;
-				(*pre_regions)[record.first]->insert(region);
+				//aggiungo la regione alla mappa
+				if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
+					(*pre_regions)[record.first]->insert(region);
+					cout << "inserisco " << &(*region) << endl;
+					Utilities::println(*region);
+				}
 				//cout << "pre_regions size " << (*pre_regions).size() << endl;
 				/* for(auto region: *((*pre_regions)[record.first])){
 					 cout << "Evento: " << record.first << endl;
@@ -127,15 +129,10 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 				if (post_regions->find(record.first) == post_regions->end()){
 					(*post_regions)[record.first] = new set<Region *> ();
 				}
+				if((*post_regions)[record.first]->find(region) == (*post_regions)[record.first]->end()){
+					(*post_regions)[record.first]->insert(region);
+				}
 
-				//cout << &region << endl;
-				//cout << ((*pre_regions)[record.first]) << endl;
-				(*post_regions)[record.first]->insert(region);
-				//cout << "post_regions size " << (*post_regions).size() << endl;
-				/* for(auto region: *((*pre_regions)[record.first])){
-					 cout << "Evento: " << record.first << endl;
-					 printRegion(*region);
-				 }*/
 			}
 		}
 
@@ -148,13 +145,13 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 			Utilities::println(*region);
 		}
 	}
-	cout  << "Post regions:" << endl;
+	/*cout  << "Post regions:" << endl;
 	for(auto record: *post_regions){
 		cout << "Event: " << record.first << endl;
 		for(auto region: *record.second){
 			Utilities::println(*region);
 		}
-	}
+	}*/
 
 }
 

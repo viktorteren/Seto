@@ -192,7 +192,7 @@ int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> sta
 			//salvo il nuovo candidato
 			chosen_candidates->insert(candidate);
 		}
-		cost_of_candidate = region_cost(candidate);
+		cost_of_candidate = (*cost_map)[&(*candidate)];
 		//cout << "cost of candidate: " << cost_of_candidate << endl;
 		//cout << "candidate cover: " << cover_of_candidate << endl;
 		//non devo fare una chiamata ricorsiva se il costo è troppo grande oppure se ho completato la copertura
@@ -280,12 +280,25 @@ int Minimal_and_irredundant_pn_creation_module::minimum_cost_search(set<int> sta
 void Minimal_and_irredundant_pn_creation_module::cost_map_filling(){
 	cout << "--------------------------------------------------- COST MAP FILLING --------------------------------------------" << endl;
 
+	//funzione di costo per minimizzare sia il numero di posti che il numero di archi
+	/*for(auto record: *not_essential_regions_map){
+		for(Region* reg: *record.second){
+			//non è ancora stato calcolato il costo per la regione reg
+			if(cost_map->find(&(*reg)) == cost_map->end()){
+				(*cost_map)[&(*reg)] = region_cost(&(*reg));
+				cout << "Trovato regione non essenziale :";
+				Utilities::print(*reg);
+				cout << "[" << &(*reg)  << "] con il costo: " << (*cost_map)[&(*reg)]  << endl;
+			}
+		}
+	}*/
+
+	//funzione di costo per minimizzare solo il numero di posti
 	for(auto record: *not_essential_regions_map){
 		for(Region* reg: *record.second){
 			//non è ancora stato calcolato il costo per la regione reg
 			if(cost_map->find(&(*reg)) == cost_map->end()){
-				//todo: bugfix -> con input2 ho 2 regioni con lo stesso contenuto ma indirizzi diversi
-				(*cost_map)[&(*reg)] = region_cost(&(*reg));
+				(*cost_map)[&(*reg)] = (*reg).size();
 				cout << "Trovato regione non essenziale :";
 				Utilities::print(*reg);
 				cout << "[" << &(*reg)  << "] con il costo: " << (*cost_map)[&(*reg)]  << endl;
