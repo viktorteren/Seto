@@ -9,7 +9,7 @@ Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre
 Essential_regions_search::~Essential_regions_search() = default;
 
 set<Region *> Essential_regions_search::search(){
-    //todo: fare debuf -> con input 4 ci sono problemi con la rilevazione di regioni essenziali: potrebbe essere collegato con i duplicati delle regioni (sicuramente)
+    //todo: fare debuf -> con input 4 non rileva come essenziale la region con solo lo stato 0
 	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
@@ -35,33 +35,46 @@ set<Region *> Essential_regions_search::search(){
         /*for(it=regions.begin(); it!=regions.end();++it){
             Region* region= *it;
         }*/
-        //unisco tutte le pre-regioni
-        temp_union = regions_union(record.second);
 
-        //per ogni stato dell'unione
-        for(auto state: temp_union){
-            counter = 0;
-            //per ogni regione
-            for(auto region: *record.second){
-                //controllo se la regione non contiene lo stato
-                if (region->find(state) == region->end()) {
-                    if(counter == 0) {
-                        last_essential_candidate = region;
-                        counter ++;
-                    }
-                    else{
-                        counter = -1;
-                        break;
-                    }
-                }
-            }
-            //se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
-            if(counter == 1){
-                cout << "trovato regione essenziale: ";
-                Utilities::println(*last_essential_candidate);
-                essential_regions->insert(last_essential_candidate);
-            }
-        }
+        //se ho una sola regione, tale regione è per forza essenziale
+		if(record.second->size() == 1) {
+			for (auto reg: *record.second) {
+				cout << "trovato regione essenziale: ";
+				Utilities::println(*reg);
+				essential_regions->insert(reg);
+			}
+		}
+		else{
+			//unisco tutte le pre-regioni
+			temp_union = regions_union(record.second);
+			cout << "union: ";
+			println(temp_union);
+
+			//per ogni stato dell'unione
+			for(auto state: temp_union){
+				counter = 0;
+				//per ogni regione
+				for(auto region: *record.second){
+					//controllo se la regione non contiene lo stato
+					if (region->find(state) == region->end()) {
+						if(counter == 0) {
+							last_essential_candidate = region;
+							counter ++;
+						}
+						else{
+							counter = -1;
+							break;
+						}
+					}
+				}
+				//se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
+				if(counter == 1){
+					cout << "trovato regione essenziale: ";
+					Utilities::println(*last_essential_candidate);
+					essential_regions->insert(last_essential_candidate);
+				}
+			}
+		}
     }
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali

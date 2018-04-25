@@ -30,7 +30,9 @@ int main() {
     // }
 
     //todo: controllare prima di questo punto: il vettore di regioni regions_vec contiene duplicati con indirizzi diversi
-    Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(regions_vec);
+	//todo: temporaneamente utilizzo la conversione di regions al posto di regions_vec: al completamento di label splittiing sarà da rimettere
+	vector<Region> temp_regions = copy_map_to_vector(regions);
+    Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(&temp_regions);
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 

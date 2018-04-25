@@ -182,5 +182,17 @@ namespace Utilities {
         return *s;
     }
 
+    vector<Region> copy_map_to_vector(map<int, vector<Region> *>* map){
+        set<Region> *input = new set<Region>();
+        for(auto record: *map){
+            for(auto region: *record.second){
+                input->insert(region);
+            }
+        }
+        vector<Region> vec(input->size());
+		std::copy(input->begin(), input->end(), vec.begin());
+        return vec;
+    }
+
 }
 

@@ -101,7 +101,7 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 	vector<Region>::iterator it;
 	for(auto record: *ts_map){
-		cout << "evento: " << record.first << endl;
+		//cout << "evento: " << record.first << endl;
 		for(it=regions->begin(); it!=regions->end();++it){
 			Region* region= &(*it);
 			if(is_pre_region(&record.second, region, record.first)){
@@ -115,14 +115,9 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 				//aggiungo la regione alla mappa
 				if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
 					(*pre_regions)[record.first]->insert(region);
-					cout << "inserisco " << &(*region) << endl;
-					Utilities::println(*region);
+					/*cout << "inserisco " << &(*region) << endl;
+					Utilities::println(*region);*/
 				}
-				//cout << "pre_regions size " << (*pre_regions).size() << endl;
-				/* for(auto region: *((*pre_regions)[record.first])){
-					 cout << "Evento: " << record.first << endl;
-					 printRegion(*region);
-				 }*/
 			}
 			if(is_post_region(&record.second, region, record.first)){
 				//aggiungo la regione alla mappa
@@ -138,13 +133,14 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 	}
 
-	cout << "Pre regions:" << endl;
+	//Per DEBUG:
+	/*cout << "Pre regions:" << endl;
 	for(auto record: *pre_regions){
 		cout << "Event: " << record.first << endl;
 		for(auto region: *record.second){
 			Utilities::println(*region);
 		}
-	}
+	}*/
 	/*cout  << "Post regions:" << endl;
 	for(auto record: *post_regions){
 		cout << "Event: " << record.first << endl;
