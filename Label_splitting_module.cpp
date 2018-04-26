@@ -45,14 +45,16 @@ bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
 }
 
 
-bool Label_splitting_module::is_excitation_closed() {
+vector<int>* Label_splitting_module::is_excitation_closed() {
 
     regions_intersection=do_regions_intersection(regions);
 
     cout<<"trovata intersezione" <<endl;
+    vector<int>* events_not_satisfy_EC=new vector<int>;
 
     //per ogni evento
     //se per un evento non vale che l'intersezione è uguale all'er la TS non è exitation-closed
+    //bool res=true;
 
     for(auto item: *regions) {
         cout<<"event: " <<item.first;
@@ -60,11 +62,17 @@ bool Label_splitting_module::is_excitation_closed() {
         auto er=ER_set->at((event));
         auto intersec=regions_intersection->at(event);
         if( ! (is_equal_to(er, intersec) )){
-             return false;
+             cout<<"regione delle'evento:"<<event;
+             events_not_satisfy_EC->push_back(event);
+             //res=false;
         }
     }
 
-return true;
+
+    // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
+    //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
+    return events_not_satisfy_EC;
+//return true;
 
 }
 
@@ -89,16 +97,19 @@ bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersecti
 }
 
 
-vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,map<int,vector< int >*>* number_of_bad_events) {
+vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,map<int,vector< int >*>* number_of_bad_events,vector<int>* events_not_satisfy_EC) {
 
     //per ogni evento
     //per ogni stato intermedio se è compreso nel set delle intersezioni
     //prendilo per label splitting
 
 
+    //todo modifica solo per gli eventi che non soddisfano EC
+    //modifica con mappa non vettore perchè per alcuni eventi faccio erase di tutto!!!
     vector<int>* events_type=new vector<int>(middle_set_of_states->size());
     Region* candidate_region= nullptr;
     int num_bad_event_min=-1;
+    vector<Region>* candidate_regions=new vector<Region>();
 
     cout << "middle TOT: " << endl;
     vector<Region *>::iterator it;
@@ -163,9 +174,20 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
             print(*candidate_region);
         cout<<"num: " << num_bad_event_min<<endl;
 
+        //un evento può non avere regione candidata quindi usa mappa non vettore
+        // per un evento il vettore può essere vuoto
+
+        //candidate_regions->push_back(*candidate_region);
 
     }
+
+
+    delete events_type;
+
+    return candidate_regions;
 }
+
+
 int Label_splitting_module::branch_selection(List_edges *list, Region *region, int event) {
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans = new vector<int>(4, 0);

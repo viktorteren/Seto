@@ -144,7 +144,7 @@ namespace Utilities {
 
 
         cout<<"intersezione****************" <<endl;
-        print(*(pre_regions_intersection->at(4)));
+        //print(*(pre_regions_intersection->at(4)));
 
         return pre_regions_intersection;
 
@@ -182,15 +182,15 @@ namespace Utilities {
         return *s;
     }
 
-    vector<Region> copy_map_to_vector(map<int, vector<Region> *>* map){
+    vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map){
         set<Region> *input = new set<Region>();
         for(auto record: *map){
             for(auto region: *record.second){
                 input->insert(region);
             }
         }
-        vector<Region> vec(input->size());
-		std::copy(input->begin(), input->end(), vec.begin());
+        vector<Region>* vec=new vector<Region>(input->size());
+		std::copy(input->begin(), input->end(), vec->begin());
         return vec;
     }
 

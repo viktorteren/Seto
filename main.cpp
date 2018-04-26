@@ -8,34 +8,49 @@ int main() {
     bool first;
     TS_parser::parse();
     int pos = 0;
-    vector<Region>* regions_vec;
+    vector<Region>* candidate_regions;
 
 
     Region_generator *rg = new Region_generator();
     map<int, vector<Region> *>* regions= rg->generate();
 
+    vector<Region>* temp_regions = copy_map_to_vector(regions);
+
     Label_splitting_module *ls=new Label_splitting_module(regions,rg->get_ER_set());
 
-    bool excitation_closure=ls->is_excitation_closed();
+    Pre_and_post_regions_generator *pprg;
+
+    bool excitation_closure;
+
+    vector<int>* events_not_satify_EC=ls->is_excitation_closed();
+
+    if(events_not_satify_EC->size()!=0){
+        excitation_closure=false;
+    }
+    else excitation_closure=true;
+
     if(!excitation_closure) {
         cout<<" not exitation closed " <<endl;
-        regions_vec = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events());
+        candidate_regions = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events(),events_not_satify_EC);
+        cout<<"___________label splitting ok"<<endl;
+        //chiamo il pre_region genertor passandogli anche le regioni nuove
+       // pprg = new Pre_and_post_regions_generator(temp_regions,candidate_regions);
+        pprg = new Pre_and_post_regions_generator(temp_regions);
     }
-    //else{ //TODO: test questo ramo se concatena giusto
-    //creo il vettore dalla mappa di regioni per creare le preregioni!!
-    regions_vec=new vector<Region>;
-    for(auto record:*regions){
-        regions_vec->insert(regions_vec->end(), record.second->begin(),record.second->end());
+    else{
+        pprg = new Pre_and_post_regions_generator(temp_regions);
     }
     // }
 
-    //todo: controllare prima di questo punto: il vettore di regioni regions_vec contiene duplicati con indirizzi diversi
-	//todo: temporaneamente utilizzo la conversione di regions al posto di regions_vec: al completamento di label splittiing sarà da rimettere
-	vector<Region> temp_regions = copy_map_to_vector(regions);
-    Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(&temp_regions);
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 
+
+    //DEBUG
+    cout<<"regioni DEBUG*****************"<<endl;
+    for(auto reg: *temp_regions){
+        println(reg);
+    }
 
     //Inizio modulo: ricerca di set irridondanti di regioni
     Place_irredundant_pn_creation_module *pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);

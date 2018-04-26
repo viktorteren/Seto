@@ -36,7 +36,7 @@ namespace Utilities {
     void print(Region& region);
 	void println(Region& region);
 	set<int> region_difference(set<int>& first, set<int>& second);
-	vector<Region> copy_map_to_vector(map<int, vector<Region> *>* map);
+	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
 };
 
 

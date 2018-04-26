@@ -11,6 +11,14 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	create_pre_and_post_regions();
 }
 
+
+Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions){
+	regions = reg;
+	pre_regions= new map < int , set<Region*>* > ();
+	post_regions= new map < int , set<Region*>* > ();
+	create_pre_and_post_regions_with_splitting(candidate_regions);
+}
+
 Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){}
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
@@ -54,11 +62,13 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 					break;
 				}
 				else{
-					cont ++;
+					cont++;
 				}
 			}
-			if(cont == region.size()){
+			if(cont == new_region.size()){
 				cout << "eliminazione regione vecchia" << endl;
+				Utilities::println(region);
+				Utilities::println(new_region);
 				//remove old too big region
 				regions->erase(regions->begin()+i);
 				i--;
@@ -71,8 +81,9 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 	cout << "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------" << endl;
 	vector<Region>::iterator it;
-	for(it=regions->begin(); it!=regions->end();++it){
+	for(it=regions->begin(); it<regions->end();++it){
 		Region* region= &(*it);
+		//todo :testare
 		remove_bigger_regions(*region);
 	}
 
@@ -134,6 +145,11 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 		}
 	}*/
 
+}
+
+
+void Pre_and_post_regions_generator::create_pre_and_post_regions_with_splitting(vector<Region>* candidate_regions){
+//todo
 }
 
 map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){

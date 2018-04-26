@@ -26,8 +26,9 @@ class Label_splitting_module{
 public:
     Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER> *er_set);
     ~Label_splitting_module();
-    bool is_excitation_closed();
-    vector<Region>* do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states, map<int,vector< int >*>* number_of_bad_events);
+    vector<int>* is_excitation_closed();
+    vector<Region>* do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,
+                                       map<int,vector< int >*>* number_of_bad_events,vector<int> * events_not_satisfy_EC);
 
 private:
     map<int, vector<Region> *> * regions;
