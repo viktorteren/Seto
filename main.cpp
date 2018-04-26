@@ -10,13 +10,12 @@ int main() {
     int pos = 0;
     vector<Region>* candidate_regions;
 
-
-    Region_generator *rg = new Region_generator();
+    auto rg = new Region_generator();
     map<int, vector<Region> *>* regions= rg->generate();
 
     vector<Region>* temp_regions = copy_map_to_vector(regions);
 
-    Label_splitting_module *ls=new Label_splitting_module(regions,rg->get_ER_set());
+    auto ls=new Label_splitting_module(regions,rg->get_ER_set());
 
     Pre_and_post_regions_generator *pprg;
 
@@ -24,10 +23,7 @@ int main() {
 
     vector<int>* events_not_satify_EC=ls->is_excitation_closed();
 
-    if(events_not_satify_EC->size()!=0){
-        excitation_closure=false;
-    }
-    else excitation_closure=true;
+	excitation_closure= events_not_satify_EC->empty();
 
     if(!excitation_closure) {
         cout<<" not exitation closed " <<endl;
@@ -53,7 +49,7 @@ int main() {
     }
 
     //Inizio modulo: ricerca di set irridondanti di regioni
-    Place_irredundant_pn_creation_module *pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
+    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
 
     //cout << "fine ricerca " << endl;
 

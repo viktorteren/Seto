@@ -4,7 +4,6 @@
 #include "Regions_generator.h"
 
 
-
 Region_generator::Region_generator() {
     //ts_map = input_map;
     ER_set = new  vector<ER>;
@@ -33,8 +32,7 @@ vector<ER>* Region_generator::get_ER_set(){
 }
 
 ER Region_generator::createER(int event){
-
-    ER er = new set<int>;
+    auto er = new set<int>;
     for(auto edge: (*ts_map)[event]){
         (*er).insert(edge .first);
         cout<< "CREATE ER di "<< event<<" Insert state: " << edge.first <<endl;
@@ -44,16 +42,6 @@ ER Region_generator::createER(int event){
         cout<< "S: " << i <<endl;
     }
     return er;
-}
-
-
-
-
-void Region_generator::printRegion(const Region& region){
-    for(auto state: region){
-        cout << state << ", ";
-    }
-    cout << endl;
 }
 
 int Region_generator::branch_selection(List_edges *list, Region *region, int event){
@@ -206,10 +194,10 @@ bool Region_generator::region_in_queue(Region& new_region,int init_pos){
 }
 
 void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos){
-    int* event_types = new int[num_events];
+    auto event_types = new int[num_events];
     int last_event_2braches=-1;
     int last_event_nocross=-1;
-    Region* expanded_regions = new Region[2];
+    auto expanded_regions = new Region[2];
 
     cout << "|||REGIONE: " << region << " --- ";
     for(auto i: (*region)) {
@@ -278,17 +266,6 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
     if(branch == OK){
         cout<<"OK" <<endl;
-        /*if(minimal_region(*region)) {
-            cout << "adding minimal region" << endl;
-            //metodo che elimina regioni che contengono la regione appena inserita (NON TESTATO)
-            //todo: fare dei test
-            remove_bigger_regions(*region);
-            (*regions).push_back(*region); //aggiunta regione giusta
-        }
-        else{
-            cout << "not adding region" << endl;
-        }*/
-
         regions->at(event)->push_back(*region);
         //cout<<"push ok"<<endl;
 
@@ -307,8 +284,6 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
 
         Branches_states_to_add branches=(*map_states_to_add)[last_event_nocross];
-
-        cout<<"qui";
 
         cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
         /* for(auto state : *branches.states_to_add_nocross) {
@@ -436,9 +411,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             for(auto state : i)
                 cout << "stati" << state <<endl ;
         }
-
         //}
-
     }
 
     delete[] event_types;
@@ -451,7 +424,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
 
     int pos=0;int init_pos=0;
     //evento e indice di fine
-    map<int,int>* queue_event_index=new map<int,int>;
+    auto queue_event_index=new map<int,int>;
 
     for(auto e : *ts_map ){
         ER er_temp = createER(e.first);
@@ -494,7 +467,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
     for(auto record: *regions){
         cout<< "REGION ER di " << record.first << endl;
         for(auto region: *record.second){
-            printRegion(region);
+            Utilities::println(region);
         }
     }
 
@@ -519,7 +492,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
         cout<<"evento " << e.first<<endl;
         for(auto el_vec: *middle_set_of_states->at(e.first)){
             cout<<el_vec<<endl;
-            printRegion(*el_vec);
+            Utilities::println(*el_vec);
         }
 
     }

@@ -21,17 +21,6 @@ void TS_parser::parse() {
     fin >> num_states;
     fin >> num_transactions;
     fin >> initial_state;
-
-    /* cout << num_stati << endl;
-     cout << num_transazioni << endl;
-     cout << stato_iniziale << endl;*/
-
-//    vertex_array = new Vertex[num_stati];
-
-    /*for(int i = 0; i < num_stati; i++){
-        vertex_array[i]=boost::add_vertex(g);
-    }*/
-
     int src, dst, ev;
 
     //aggiungo gli archi al grafo
@@ -50,20 +39,6 @@ void TS_parser::parse() {
         (*ts_map)[ev].push_back(std::make_pair(src, dst));
 
     }
-
     num_events = static_cast<int>((*ts_map).size());
-
-    /* property_map<Graph, edge_name_t>::type
-             eventMap = get(edge_name_t(), g);*/
-
-    /* boost::graph_traits< Graph >::edge_iterator e_it, e_end;
-     for(std::tie(e_it, e_end) = boost::edges(g); e_it != e_end; ++e_it)
-     {
-         std::cout << boost::source(*e_it, g) << " "
-                   << boost::target(*e_it, g) << " "
-                   << eventMap[*e_it] << std::endl;
-     }*/
-
-
     fin.close();
 }

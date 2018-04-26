@@ -149,8 +149,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 	set<Region *> new_states_used = *used_regions;
 	auto chosen_candidates = new set<Region *>();
 	set<Region *> *temp_aggregation;
-	//todo: verificare se la cache è effettivamente utilizzata come si deve
-	//todo: non si può fare una vera verifica finchè si hanno dei duplicati con indirizzo diverso ma lo stesso contenuto
 	int new_best_cost = last_best_cost; //uno dei sotto-rami potrebbe aver migliorato il risultato, di conseguenza devo aggiornare la variabile e non utilizzare il parametro in ingresso alla funzione
 	//finchè ci sono candidati che aumentano la copertura
 	while(true){
@@ -203,8 +201,8 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 
 		//non potrò trovare una soluzione migliore con il seguente candidato
 		int current_cost = cost_of_candidate + father_cost;
-		//todo: il nuovo insieme di regioni ->  dovrei vedere prima se tale insieme non è presente nella cache
 		new_states_used.insert(candidate);
+
 		/*cout << "prova con: ";
 		for(auto r: new_states_used){
 			print(*r);
@@ -213,7 +211,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 		cout << endl;*/
 		if(current_cost >= new_best_cost){
 			//salvo il percorso nella cache per non ripeterlo
-			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no, FORSE QUESTA AGGIUNTA NON SERVE
 			//computed_paths_cache->insert(new_states_used);
 			//break; -> non chiamare la chiamata ricorsiva ma non fare nemmeno break dato che i fratelli con copertura minore possono avere costo più basso
 		}
@@ -230,7 +227,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 			cout << "costo precedente era: " << father_cost << endl;*/
 
 			//salvo il percorso nella cache per non ripeterlo
-			//todo: controllare se new_states_used sopravvivono dopo l'uscita o no
 			computed_paths_cache->insert(new_states_used);
 
 			//dealloco lo spazio vecchio per allocarne uno nuovo
@@ -253,7 +249,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 	}
 
 	//salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i sottorami di questo nodo per questo sono arrivato al return
-	//todo: controllare se *used_regions sopravvivono dopo l'uscita o no
 	computed_paths_cache->insert(*used_regions);
 
 	return new_best_cost;

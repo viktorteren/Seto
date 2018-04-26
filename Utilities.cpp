@@ -5,70 +5,51 @@
 #include "Utilities.h"
 
 namespace Utilities {
-
     //Region = set<int> ->ritorna un insieme di stati
     set<int> regions_union(vector<Region *> *vec) {
-        //cout << "region union" << endl;
-        Region *all_states = new Region();
+        auto all_states = new Region();
         int size;
         Region::iterator it;
         for (Region *region: *vec) {
-            //cout << "region with size: " << region->size() << endl;
             it = region->begin();
-            size = region->size();
+            size = static_cast<int>(region->size());
             for (int i = 0; i < size; ++i) {
-                //cout << "Stato: " << *it << endl;
                 all_states->insert(*it);
                 ++it;
             }
-            //cout << "region size: " << region-> size() << endl;
         }
-        //controllo per debug
-        //cout << "unione: " << endl;
-        /*for (auto state: *all_states) {
-            cout << "st: " << state << endl;
-        }*/
         return *all_states;
     }
 
     set<int> regions_union(set<Region *> *vec) {
         //cout << "region union" << endl;
-        Region *all_states = new Region();
+        auto all_states = new Region();
         int size;
         Region::iterator it;
         for (Region *region: *vec) {
-            //cout << "region with size: " << region->size() << endl;
             it = region->begin();
-            size = region->size();
+            size = static_cast<int>(region->size());
             for (int i = 0; i < size; ++i) {
                 //cout << "Stato: " << *it << endl;
                 all_states->insert(*it);
                 ++it;
             }
-            //cout << "region size: " << region-> size() << endl;
         }
-        //controllo per debug
-        //cout << "unione: " << endl;
-        /*for (auto state: *all_states) {
-            cout << "st: " << state << endl;
-        }*/
         return *all_states;
     }
 
     set<int> regions_union(Region * first, Region* second) {
-        Region *all_states = new Region();
+        auto all_states = new Region();
         int size;
         Region::iterator it;
-        //for (Region *region: *vec) {
-        //cout << "region with size: " << region->size() << endl;
         it = first->begin();
-        size = first->size();
+        size = static_cast<int>(first->size());
         for (int i = 0; i < size; ++i) {
             all_states->insert(*it);
             ++it;
         }
         it = second->begin();
-        size = second->size();
+        size = static_cast<int>(second->size());
         for (int i = 0; i < size; ++i) {
             all_states->insert(*it);
             ++it;
@@ -79,7 +60,7 @@ namespace Utilities {
 
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions){
 
-        map<int, set<int>* > *pre_regions_intersection=new map<int,set<int>*>;
+        auto pre_regions_intersection=new map<int,set<int>*>;
 
         std::vector<Region>::iterator it;
 
@@ -173,7 +154,7 @@ namespace Utilities {
     }
 
     set<int> region_difference(set<int>& first, set<int>& second){
-        set<int> *s = new set<int>();
+        auto s = new set<int>();
         for(auto state: first){
             if(second.find(state) == second.end()){
                 s->insert(state);
@@ -183,9 +164,9 @@ namespace Utilities {
     }
 
     vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map){
-        set<Region> *input = new set<Region>();
+        auto input = new set<Region>();
         for(auto record: *map){
-            for(auto region: *record.second){
+            for(const auto &region: *record.second){
                 input->insert(region);
             }
         }

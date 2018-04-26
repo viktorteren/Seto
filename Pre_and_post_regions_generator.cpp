@@ -19,16 +19,12 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	create_pre_and_post_regions_with_splitting(candidate_regions);
 }
 
-Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){}
+Pre_and_post_regions_generator::~Pre_and_post_regions_generator() = default;
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
 	for(auto t: *list){
 		if( region->find(t.first) != region->end()){ //il primo stato appartiene alla regione
-			if(region->find(t.second) == region->end()) { //il secondo stato non appartiene alla regione
-				return true;
-			}
-			else
-				return false;
+			return region->find(t.second) == region->end();
 		} else
 			return false;
 	}
@@ -38,11 +34,7 @@ bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *reg
 bool Pre_and_post_regions_generator::is_post_region(List_edges *list, Region *region, int event) {
 	for(auto t: *list){
 		if( region->find(t.first) == region->end()){ //il primo stato non appartiene alla regione
-			if(region->find(t.second) != region->end()) { //il secondo stato appartiene alla regione
-				return true;
-			}
-			else
-				return false;
+			return region->find(t.second) != region->end();
 		} else
 			return false;
 	}
@@ -53,7 +45,7 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	int cont;
 	Region region;
 
-	for(int i = 0; i< regions->size(); i++){
+	for(unsigned int i = 0; i< regions->size(); i++){
 		region = regions->at(i);
 		cont = 0;
 		if(region.size() > new_region.size()){
@@ -66,8 +58,9 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 				}
 			}
 			if(cont == new_region.size()){
-				cout << "eliminazione regione vecchia" << endl;
-				Utilities::println(region);
+				cout << "eliminazione regione vecchia " ;
+				Utilities::print(region);
+				cout << " a causa di: ";
 				Utilities::println(new_region);
 				//remove old too big region
 				regions->erase(regions->begin()+i);
@@ -83,7 +76,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 	vector<Region>::iterator it;
 	for(it=regions->begin(); it<regions->end();++it){
 		Region* region= &(*it);
-		//todo :testare
 		remove_bigger_regions(*region);
 	}
 
@@ -92,10 +84,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 	//per ogni regione
 	//guardo se è una pre-regione per tale evento
 	//se si aggiungo alla mappa
-
-	//todo: prima di creare le pre-regioni verificare se le regioni sono minime
-
-
 	for(auto record: *ts_map){
 		//cout << "evento: " << record.first << endl;
 		for(it=regions->begin(); it!=regions->end();++it){
