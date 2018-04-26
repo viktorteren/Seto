@@ -172,5 +172,26 @@ namespace Utilities {
         return vec;
     }
 
+
+    bool is_bigger_than(Region* region ,set<int>* intersection){
+
+        if(region->size() >= intersection->size()){
+            cout<<"TRUE**************"<<endl;
+            return true;
+        }
+
+        for(auto elem: *intersection){
+            //nella regione non trovo un elem delll'intersez
+            if( region->find(elem) != region->end()){
+                cout<<"FALSE**************"<<endl;
+                return false;
+            }
+        }
+
+        //nella regione trovo tutti gli stati dell'intersezione
+        cout<<"TRUE**************"<<endl;
+        return true;
+    }
+
 }
 

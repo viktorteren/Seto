@@ -8,14 +8,15 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
 	post_regions= new map < int , set<Region*>* > ();
-	create_pre_and_post_regions();
+	create_pre_and_post_regions(nullptr);
 }
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
 	post_regions= new map < int , set<Region*>* > ();
-	create_pre_and_post_regions_with_splitting(candidate_regions);
+	//create_pre_and_post_regions_with_splitting(candidate_regions);
+	create_pre_and_post_regions(candidate_regions);
 }
 
 Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
@@ -73,7 +74,7 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
-void Pre_and_post_regions_generator::create_pre_and_post_regions(){
+void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>* candidate_regions){
 	cout << "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------" << endl;
 	vector<Region>::iterator it;
 	for(it=regions->begin(); it<regions->end();++it){
@@ -98,12 +99,43 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 				//cout << &region << endl;
 				//cout << ((*pre_regions)[record.first]) << endl;
-				//aggiungo la regione alla mappa
-				if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
-					(*pre_regions)[record.first]->insert(region);
-					/*cout << "inserisco " << &(*region) << endl;
-					Utilities::println(*region);*/
+
+				if(candidate_regions!= nullptr){
+					cout<<"candidate reg di:" <<record.first << endl;
+
+					for(auto cand_reg:*candidate_regions){
+						if(Utilities::is_bigger_than(region,&cand_reg) ){
+							//split region
+							auto difference=Utilities::region_difference(*region,cand_reg);
+							Region *new_region= &difference;
+
+							if ((*pre_regions)[record.first]->find(new_region) == (*pre_regions)[record.first]->end()) {
+								(*pre_regions)[record.first]->insert(new_region);
+							}
+							if ((*pre_regions)[record.first]->find(&cand_reg) == (*pre_regions)[record.first]->end()) {
+								(*pre_regions)[record.first]->insert(&cand_reg);
+							}
+						}
+					}
+
+					//aggiungo la regione alla mappa pechè nessuna regione me la splitta
+					if ((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()) {
+						(*pre_regions)[record.first]->insert(region);
+						/*cout << "inserisco " << &(*region) << endl;
+                        Utilities::println(*region);*/
+					}
+
 				}
+				else {
+					//aggiungo la regione alla mappa
+					if ((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()) {
+						(*pre_regions)[record.first]->insert(region);
+						/*cout << "inserisco " << &(*region) << endl;
+                        Utilities::println(*region);*/
+					}
+				}
+
+
 			}
 			if(is_post_region(&record.second, region, record.first)){
 				//aggiungo la regione alla mappa
@@ -137,10 +169,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(){
 
 }
 
-
-void Pre_and_post_regions_generator::create_pre_and_post_regions_with_splitting(vector<Region>* candidate_regions){
-//todo
-}
 
 map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
 	return post_regions;

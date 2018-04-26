@@ -76,26 +76,6 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
 
 }
 
-bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersection){
-
-   if(region->size() >= intersection->size()){
-       cout<<"TRUE**************"<<endl;
-       return true;
-   }
-
-   for(auto elem: *intersection){
-       //nella regione non trovo un elem delll'intersez
-       if( region->find(elem) != region->end()){
-           cout<<"FALSE**************"<<endl;
-           return false;
-       }
-   }
-
-    //nella regione trovo tutti gli stati dell'intersezione
-    cout<<"TRUE**************"<<endl;
-   return true;
-}
-
 
 vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,map<int,vector< int >*>* number_of_bad_events,vector<int>* events_not_satisfy_EC) {
 
@@ -103,8 +83,6 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     //per ogni stato intermedio se è compreso nel set delle intersezioni
     //prendilo per label splitting
 
-
-    //todo modifica solo per gli eventi che non soddisfano EC
     //modifica con mappa non vettore perchè per alcuni eventi faccio erase di tutto!!!
     vector<int>* events_type=new vector<int>(middle_set_of_states->size());
     Region* candidate_region= nullptr;
@@ -114,14 +92,13 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     cout << "middle TOT: " << endl;
     vector<Region *>::iterator it;
     //per ogni evento
-    for (auto e: *middle_set_of_states) {
-        cout << "EVENTO: " << e.first << "*************"<<endl;
+    for (auto event: *events_not_satisfy_EC) {
+        cout << "EVENTO: " << event << "*************"<<endl;
         int pos = 0;
         candidate_region= nullptr;
         num_bad_event_min=-1;
 
         //auto set_forced_to_be_a_region;
-        auto event = e.first;
         for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
             cout << "middle:" << endl;
             printRegion(**it);
@@ -129,8 +106,8 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                 cout << "erase" << endl;
                 *middle_set_of_states->at(event)->erase(it, it);
             } else { //lo stato mi va bene
-                //cache e ricalcolo solo se non c'è(avevo fatto break per no cross) mi prendo una coppia evento che viola e vettore di
-                // transazioni e anche il numero di eventi che violano per ogni set di stati!!
+                //cache e ricalcolo solo se non c'è(avevo fatto break per no cross)
+                // mi prendo il numero di eventi che violano per ogni set di stati!!
                 cout << "eveent: " << event << endl;
                 auto vec_ptr = number_of_bad_events->at(event);
                 if ((*vec_ptr)[pos] == -1) {
@@ -144,7 +121,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                 }
 
                 if( (*vec_ptr)[pos]!=0 ){
-                    if(candidate_region==nullptr || num_bad_event_min>(*vec_ptr)[pos]){
+                    if(candidate_region == nullptr || num_bad_event_min>(*vec_ptr)[pos]){
 
                         candidate_region= *it;
                         num_bad_event_min=(*vec_ptr)[pos];
@@ -159,30 +136,25 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                 }
 
                 cout<<"NUMBER candidate: "<< num_bad_event_min<<endl;
-
-                //qui una volta scenlto il candidato fai splitting
             }
 
             pos++;
         }
 
 
-        // aggiungo set_forced_to_be_a_region alle regioni del mio evento
-        //e splitto l'etichetta(modifico il grafo originale?)
+        // aggiungo candidate_region alle regioni del mio evento
         cout<<"___________________________REGIONE CANDIDATA__________________"<<endl;
         if(candidate_region!= nullptr)
             print(*candidate_region);
         cout<<"num: " << num_bad_event_min<<endl;
 
-        //un evento può non avere regione candidata quindi usa mappa non vettore
-        // per un evento il vettore può essere vuoto
-
-        //candidate_regions->push_back(*candidate_region);
+        candidate_regions->push_back(*candidate_region);
 
     }
 
-
     delete events_type;
+
+    cout<<"finish"<<endl;
 
     return candidate_regions;
 }
