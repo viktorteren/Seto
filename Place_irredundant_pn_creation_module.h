@@ -14,11 +14,11 @@ using namespace std;
 class Place_irredundant_pn_creation_module {
 public:
 	explicit Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg);
-	~Place_irredundant_pn_creation_module() = default;
+	~Place_irredundant_pn_creation_module();
 private:
 	map<int, set<Region*> *> * pre_regions;
 	map<int, set<Region*> *> * post_regions;
-	set<Region *> essential_regions;
+	set<Region *> *essential_regions;
 	set<Region *> *not_essential_regions;
 	set<int> uncovered_states;
 	void search_not_essential_regions();

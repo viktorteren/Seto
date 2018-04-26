@@ -11,7 +11,6 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	create_pre_and_post_regions();
 }
 
-
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
@@ -19,7 +18,10 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	create_pre_and_post_regions_with_splitting(candidate_regions);
 }
 
-Pre_and_post_regions_generator::~Pre_and_post_regions_generator() = default;
+Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
+	delete pre_regions;
+	delete post_regions;
+}
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
 	for(auto t: *list){

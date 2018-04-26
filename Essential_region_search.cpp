@@ -8,7 +8,7 @@ Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre
 
 Essential_regions_search::~Essential_regions_search() = default;
 
-set<Region *> Essential_regions_search::search(){
+set<Region *> *Essential_regions_search::search(){
 
 	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
@@ -82,7 +82,7 @@ set<Region *> Essential_regions_search::search(){
     }
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
-    return *essential_regions;
+    return essential_regions;
 }
 
 

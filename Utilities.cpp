@@ -122,14 +122,10 @@ namespace Utilities {
                 }
             }
         }
-
-
         cout<<"intersezione****************" <<endl;
         //print(*(pre_regions_intersection->at(4)));
 
         return pre_regions_intersection;
-
-
     }
 
     set<int> regions_intersection(Region* first, Region* second){
@@ -172,6 +168,7 @@ namespace Utilities {
         }
         vector<Region>* vec=new vector<Region>(input->size());
 		std::copy(input->begin(), input->end(), vec->begin());
+		delete input;
         return vec;
     }
 

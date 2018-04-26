@@ -11,6 +11,7 @@ Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regio
 };
 
 Label_splitting_module::~Label_splitting_module(){
+
 };
 
 void printRegion(const Region& region){
@@ -68,11 +69,10 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
         }
     }
 
-
     // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
     //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
     return events_not_satisfy_EC;
-//return true;
+	//return true;
 
 }
 

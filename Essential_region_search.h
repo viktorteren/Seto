@@ -26,7 +26,7 @@ class Essential_regions_search{
 public:
 	explicit Essential_regions_search(map<int, set<Region*> *>* pre_reg);
 	~Essential_regions_search();
-	set<Region *> search();
+	set<Region *> *search();
 
 private:
 	map<int, set<Region*> *> * pre_regions;

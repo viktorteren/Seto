@@ -14,17 +14,13 @@ Region_generator::Region_generator() {
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
-    number_of_bad_events= new map< int,vector< int >*>();
+    number_of_bad_events = new map< int,vector< int >*>();
 }
 
 Region_generator::~Region_generator() {
-
-    //delete ts_map;
-    //delete ER_set;
     delete map_states_to_add;
     delete queue_temp_regions;
-    delete regions;
-
+    delete ER_set;
 }
 
 vector<ER>* Region_generator::get_ER_set(){
@@ -48,7 +44,7 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
 
-   //delete struct_states_to_add;
+    //delete struct_states_to_add;
     struct_states_to_add= new Branches_states_to_add();
 
     states_to_add_enter=new set<int>;
@@ -119,6 +115,7 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
 
         delete states_to_add_enter;
         delete states_to_add_exit;
+        delete struct_states_to_add;
         // delete states_to_add_nocross;
         delete trans;
         return NOCROSS;
@@ -131,7 +128,8 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         (*map_states_to_add)[event]= *struct_states_to_add;
 
         delete states_to_add_enter;
-        //  delete states_to_add_exit;
+        delete struct_states_to_add;
+        //delete states_to_add_exit;
         //delete states_to_add_nocross;
         delete trans;
         return EXIT_NOCROSS;
@@ -146,6 +144,7 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
 
         //delete states_to_add_enter;
         delete states_to_add_exit;
+        delete struct_states_to_add;
 
         //delete states_to_add_nocross;
         delete trans;
@@ -428,7 +427,6 @@ map<int, vector<Region> *>* Region_generator::generate(){
 
     for(auto e : *ts_map ){
         ER er_temp = createER(e.first);
-        // ER er_temp = createER(2);
         (*ER_set).push_back(er_temp);
         (*regions)[e.first]=new vector<Region>();
 
@@ -460,7 +458,6 @@ map<int, vector<Region> *>* Region_generator::generate(){
             // queue_temp_regions->pop_front();
         }
         (*queue_event_index)[e.first]=pos-1;
-
         //delete er_temp;
     }
 
@@ -505,6 +502,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
         }
     }
 
+    delete queue_event_index;
     return regions;
 };
 

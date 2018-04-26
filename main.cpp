@@ -31,12 +31,13 @@ int main() {
         cout<<"___________label splitting ok"<<endl;
         //chiamo il pre_region genertor passandogli anche le regioni nuove
        // pprg = new Pre_and_post_regions_generator(temp_regions,candidate_regions);
-        pprg = new Pre_and_post_regions_generator(temp_regions);
+        pprg = new Pre_and_post_regions_generator(temp_regions, candidate_regions);
     }
     else{
         pprg = new Pre_and_post_regions_generator(temp_regions);
     }
-    // }
+    delete events_not_satify_EC;
+	delete ls;
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
@@ -48,20 +49,22 @@ int main() {
         println(reg);
     }
 
+	//dealloco regions e tutti i suoi vettori
+	for(auto record:*regions){
+		delete record.second;
+	}
+	delete regions;
+	delete rg;
+	delete temp_regions;
+
     //Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
 
     //cout << "fine ricerca " << endl;
 
-    delete ls;
-    //delete prg;
-    delete rg; //dealloco tutto tranne il campo pre_regions
+    delete pprg;
+	delete pn_module;
 
-    //dealloco regions e tutti i suoi vettori
-    for(auto record:*regions){
-        delete record.second;
-    }
-    delete regions;
 
 
 }
