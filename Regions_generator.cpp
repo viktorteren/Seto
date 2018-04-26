@@ -20,7 +20,6 @@ Region_generator::Region_generator() {
 Region_generator::~Region_generator() {
     delete map_states_to_add;
     delete queue_temp_regions;
-    delete ER_set;
 }
 
 vector<ER>* Region_generator::get_ER_set(){

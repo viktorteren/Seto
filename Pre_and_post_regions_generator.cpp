@@ -22,6 +22,7 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
 	delete pre_regions;
 	delete post_regions;
+
 }
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region, int event) {
@@ -74,98 +75,118 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
-void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>* candidate_regions){
-	cout << "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------" << endl;
+void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>* candidate_regions) {
+	cout
+			<< "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------"
+			<< endl;
 	vector<Region>::iterator it;
-	for(it=regions->begin(); it<regions->end();++it){
-		Region* region= &(*it);
+	for (it = regions->begin(); it < regions->end(); ++it) {
+		Region *region = &(*it);
 		remove_bigger_regions(*region);
 	}
 
-	cout << "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------" << endl;
+	cout
+			<< "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------"
+			<< endl;
 	//per ogni evento
 	//per ogni regione
 	//guardo se è una pre-regione per tale evento
 	//se si aggiungo alla mappa
-	for(auto record: *ts_map){
-		//cout << "evento: " << record.first << endl;
-		for(it=regions->begin(); it!=regions->end();++it){
-			Region* region= &(*it);
-			if(is_pre_region(&record.second, region, record.first)){
+	for (auto record: *ts_map) {
+		cout << "_______________evento: " << record.first << endl;
+		for (it = regions->begin(); it != regions->end(); ++it) {
+			Region *region = &(*it);
+			if (is_pre_region(&record.second, region, record.first)) {
+
 				//se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
-				if (pre_regions->find(record.first) == pre_regions->end()){
-					(*pre_regions)[record.first] = new set<Region *> ();
+				if (pre_regions->find(record.first) == pre_regions->end()) {
+					(*pre_regions)[record.first] = new set<Region *>();
 				}
 
-				//cout << &region << endl;
-				//cout << ((*pre_regions)[record.first]) << endl;
+				(*pre_regions)[record.first]->insert(region);
 
-				if(candidate_regions!= nullptr){
-					cout<<"candidate reg di:" <<record.first << endl;
+			}
+			if (is_post_region(&record.second, region, record.first)) {
+				//aggiungo la regione alla mappa
+				if (post_regions->find(record.first) == post_regions->end()) {
+					(*post_regions)[record.first] = new set<Region *>();
+				}
+				(*post_regions)[record.first]->insert(region);
+			}
+		}
 
-					for(auto cand_reg:*candidate_regions){
-						if(Utilities::is_bigger_than(region,&cand_reg) ){
-							//split region
-							auto difference=Utilities::region_difference(*region,cand_reg);
-							Region *new_region= &difference;
+	}
 
-							if ((*pre_regions)[record.first]->find(new_region) == (*pre_regions)[record.first]->end()) {
-								(*pre_regions)[record.first]->insert(new_region);
-							}
-							if ((*pre_regions)[record.first]->find(&cand_reg) == (*pre_regions)[record.first]->end()) {
-								(*pre_regions)[record.first]->insert(&cand_reg);
-							}
+	if (candidate_regions != nullptr) {
+
+		//auto to_erase= new set<Region*>();
+        //auto to_add= new set<Region*>();
+
+		//for (it = pre_regions->begin(); it < pre_regions->end(); it++) {
+        for(auto record: *pre_regions) {
+            auto event = record.first;
+            auto set_reg = record.second;
+            for (auto region: *set_reg) {
+                for (auto cand_reg: *candidate_regions) {
+                    if (Utilities::is_bigger_than(region, &cand_reg)) {
+                        Region *new_region =  new set<int>(*Utilities::region_difference(*region, cand_reg));
+
+                        (*pre_regions)[event]->insert(new_region);
+
+                        cout << "ho inserito new region(difference)" << endl;
+                        Utilities::println(*new_region);
+
+                        Region*candidate_region= new set<int>(cand_reg);
+                        (*pre_regions)[event]->insert(candidate_region);
+
+                        cout << "ho inserito new region(cand reg)" << endl;
+                        Utilities::println(cand_reg);
+
+                        (*pre_regions)[event]->erase(region);
+                    }
+                }
+            }
+        }
+
+			for (auto record: *post_regions) {
+				for (auto region: *record.second)
+					for (auto cand_reg: *candidate_regions) {
+						if (Utilities::is_bigger_than(region, &cand_reg)) {
+							//auto difference = Utilities::region_difference(*region, cand_reg);
+                            Region *new_region =  new set<int>(*Utilities::region_difference(*region, cand_reg));
+
+							(*post_regions)[record.first]->insert(new_region);
+
+							cout << "ho inserito new region(difference)" << endl;
+							Utilities::println(*new_region);
+
+                            Region*candidate_region= new set<int>(cand_reg);
+							(*post_regions)[record.first]->insert(candidate_region);
+
+							cout << "ho inserito new region(cand reg)" << endl;
+							Utilities::println(cand_reg);
+
+
+							(*post_regions)[record.first]->erase(region);
 						}
 					}
-
-					//aggiungo la regione alla mappa pechè nessuna regione me la splitta
-					if ((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()) {
-						(*pre_regions)[record.first]->insert(region);
-						/*cout << "inserisco " << &(*region) << endl;
-                        Utilities::println(*region);*/
-					}
-
-				}
-				else {
-					//aggiungo la regione alla mappa
-					if ((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()) {
-						(*pre_regions)[record.first]->insert(region);
-						/*cout << "inserisco " << &(*region) << endl;
-                        Utilities::println(*region);*/
-					}
-				}
-
-
-			}
-			if(is_post_region(&record.second, region, record.first)){
-				//aggiungo la regione alla mappa
-				if (post_regions->find(record.first) == post_regions->end()){
-					(*post_regions)[record.first] = new set<Region *> ();
-				}
-				if((*post_regions)[record.first]->find(region) == (*post_regions)[record.first]->end()){
-					(*post_regions)[record.first]->insert(region);
-				}
-
 			}
 		}
 
-	}
+		//Per DEBUG:
+		cout << "Pre regions:" << endl;
+		for (auto e: *pre_regions) {
+			for (auto r: *e.second)
+				Utilities::println(*r);
+		}
 
-	//Per DEBUG:
-	cout << "Pre regions:" << endl;
-	for(auto record: *pre_regions){
-		cout << "Event: " << record.first << endl;
-		for(auto region: *record.second){
-			Utilities::println(*region);
+
+		cout << "Post regions:" << endl;
+		for (auto record: *post_regions) {
+			for (auto region: *record.second) {
+				Utilities::println(*region);
+			}
 		}
-	}
-	/*cout  << "Post regions:" << endl;
-	for(auto record: *post_regions){
-		cout << "Event: " << record.first << endl;
-		for(auto region: *record.second){
-			Utilities::println(*region);
-		}
-	}*/
 
 }
 

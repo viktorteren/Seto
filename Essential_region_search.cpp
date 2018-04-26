@@ -28,7 +28,7 @@ set<Region *> *Essential_regions_search::search(){
     //per ogni evento
     //cout << "num eventi: " << pre_regions->size() << endl;
     for(auto record: *pre_regions){
-        //cout <<  "evento: " << record.first << endl;
+        cout <<  "evento: " << record.first << endl;
 
 		Region::iterator it2;
         //regions = *record.second;
@@ -75,7 +75,11 @@ set<Region *> *Essential_regions_search::search(){
 				}
 			}
 		}
+
     }
+
+    //delete &temp_union;
+
     cout << "Regioni essenziali: " << endl;
     for(auto reg: *essential_regions){
     	Utilities::println(*reg);

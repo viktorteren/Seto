@@ -39,26 +39,30 @@ int main() {
     delete events_not_satify_EC;
 	delete ls;
 
+    delete candidate_regions;
+
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 
 
     //DEBUG
-    cout<<"regioni DEBUG*****************"<<endl;
-    for(auto reg: *temp_regions){
-        println(reg);
+    cout<<"pre-regioni DEBUG*****************"<<endl;
+    for(auto set: *pre_regions){
+        for(auto reg: *set.second)
+            println(*reg);
     }
 
-	//dealloco regions e tutti i suoi vettori
-	for(auto record:*regions){
-		delete record.second;
-	}
-	delete regions;
-	delete rg;
-	delete temp_regions;
+    delete rg;
 
     //Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
+
+    //dealloco regions e tutti i suoi vettori
+    for(auto record:*regions){
+        delete record.second;
+    }
+    delete regions;
+    delete temp_regions;
 
     //cout << "fine ricerca " << endl;
 

@@ -11,7 +11,7 @@ Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regio
 };
 
 Label_splitting_module::~Label_splitting_module(){
-
+    delete ER_set;
 };
 
 void printRegion(const Region& region){
@@ -23,11 +23,6 @@ void printRegion(const Region& region){
 
 
 bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
-    cout<<"ER";
-    printRegion(*er);
-    cout << "INTER";
-    printRegion(*intersection);
-
 
     if(er->size()!=intersection->size()) {
         cout<<"if"<<endl;
@@ -44,7 +39,25 @@ bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
 
     return true;
 }
+bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersection){
 
+    if(region->size() >= intersection->size()){
+        cout<<"TRUE**************"<<endl;
+        return true;
+    }
+
+    for(auto elem: *intersection){
+        //nella regione non trovo un elem delll'intersez
+        if( region->find(elem) == region->end()){
+            cout<<"FALSE**************"<<endl;
+            return false;
+        }
+    }
+
+    //nella regione trovo tutti gli stati dell'intersezione
+    cout<<"TRUE**************"<<endl;
+    return true;
+}
 
 vector<int>* Label_splitting_module::is_excitation_closed() {
 
@@ -68,6 +81,9 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
              //res=false;
         }
     }
+
+
+    delete regions_intersection;
 
     // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
     //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
@@ -102,7 +118,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
         for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
             cout << "middle:" << endl;
             printRegion(**it);
-            if (is_bigger_than(*it, regions_intersection->at(event))) {
+            if ( is_bigger_than(*it, regions_intersection->at(event)) ) {
                 cout << "erase" << endl;
                 *middle_set_of_states->at(event)->erase(it, it);
             } else { //lo stato mi va bene
@@ -153,8 +169,18 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     }
 
     delete events_type;
+    delete middle_set_of_states;
 
-    cout<<"finish"<<endl;
+    for(auto elem:*number_of_bad_events){
+        delete elem.second;
+    }
+    delete number_of_bad_events;
+
+    cout<<"Regioni candidate******"<<endl;
+    for(auto reg: *candidate_regions){
+        printRegion(reg);
+    }
+    cout<<"******"<<endl;
 
     return candidate_regions;
 }

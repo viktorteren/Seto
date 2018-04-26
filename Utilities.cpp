@@ -123,7 +123,7 @@ namespace Utilities {
             }
         }
         cout<<"intersezione****************" <<endl;
-        //print(*(pre_regions_intersection->at(4)));
+
 
         return pre_regions_intersection;
     }
@@ -149,14 +149,14 @@ namespace Utilities {
         cout << endl;
     }
 
-    set<int> region_difference(set<int>& first, set<int>& second){
-        auto s = new set<int>();
+    set<int>* region_difference(set<int>& first, set<int>& second){
+        set<int>* s = new set<int>();
         for(auto state: first){
             if(second.find(state) == second.end()){
                 s->insert(state);
             }
         }
-        return *s;
+        return s;
     }
 
     vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map){
@@ -173,22 +173,21 @@ namespace Utilities {
     }
 
 
-    bool is_bigger_than(Region* region ,set<int>* intersection){
+    bool is_bigger_than(Region* region ,set<int>* region2){
 
-        if(region->size() >= intersection->size()){
-            cout<<"TRUE**************"<<endl;
-            return true;
-        }
-
-        for(auto elem: *intersection){
-            //nella regione non trovo un elem delll'intersez
-            if( region->find(elem) != region->end()){
-                cout<<"FALSE**************"<<endl;
-                return false;
+        if(region->size() > region2->size()) {
+            for (auto elem: *region2) {
+                //nella regione non trovo un elem
+                if (region->find(elem) == region->end()) {
+                    cout << "FALSE**************" << endl;
+                    return false;
+                }
             }
         }
+        else if(region->size() <= region2->size())
+            return false;
 
-        //nella regione trovo tutti gli stati dell'intersezione
+        //nella regione trovo tutti gli stati della reg2
         cout<<"TRUE**************"<<endl;
         return true;
     }

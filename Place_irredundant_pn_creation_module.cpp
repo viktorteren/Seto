@@ -42,6 +42,15 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	delete not_essential_regions;
 	delete cost_map;
 	delete not_essential_regions_map;
+
+	for(auto el:*pre_regions){
+		delete el.second;
+	}
+
+	for(auto el:*post_regions){
+		delete el.second;
+	}
+
 }
 
 void Place_irredundant_pn_creation_module::search_not_essential_regions() {
@@ -102,7 +111,7 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 
 		//calcolo gli stati non ancora coperti
 
-		uncovered_states = region_difference(event_states, essential_states);
+		uncovered_states = *region_difference(event_states, essential_states);
 		//cout << "---------------" << endl;
 		//cout << "evento: " << record.first << endl;
 		/*cout << "tutti gli stati degli eventi: ";
@@ -244,7 +253,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 		//non ho completato la copertura e posso ancora trovare una soluzione migliore
 		else{
 			//essedo già stato scelto il candidato e sapendo che devo fare la chiamata ricorsiva devo calcolarmi il nuovo insieme di stati da coprire
-			new_states_to_cover = region_difference(states_to_cover, *candidate);
+			new_states_to_cover = *region_difference(states_to_cover, *candidate);
 
 			//chiamata ricorsiva per espandere ulteriormente la copertura con il candidato scelto
 			int cost = minimum_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
