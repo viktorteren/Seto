@@ -9,7 +9,7 @@ Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre
 Essential_regions_search::~Essential_regions_search() = default;
 
 set<Region *> Essential_regions_search::search(){
-    //todo: fare debuf -> con input 4 non rileva come essenziale la region con solo lo stato 0
+
 	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
@@ -26,9 +26,9 @@ set<Region *> Essential_regions_search::search(){
     int counter;
 
     //per ogni evento
-    cout << "num eventi: " << pre_regions->size() << endl;
+    //cout << "num eventi: " << pre_regions->size() << endl;
     for(auto record: *pre_regions){
-        cout <<  "evento: " << record.first << endl;
+        //cout <<  "evento: " << record.first << endl;
 
 		Region::iterator it2;
         //regions = *record.second;
@@ -39,16 +39,16 @@ set<Region *> Essential_regions_search::search(){
         //se ho una sola regione, tale regione è per forza essenziale
 		if(record.second->size() == 1) {
 			for (auto reg: *record.second) {
-				cout << "trovato regione essenziale: ";
-				Utilities::println(*reg);
+				//cout << "trovato regione essenziale: ";
+				//Utilities::println(*reg);
 				essential_regions->insert(reg);
 			}
 		}
 		else{
 			//unisco tutte le pre-regioni
 			temp_union = regions_union(record.second);
-			cout << "union: ";
-			println(temp_union);
+			//cout << "union: ";
+			//println(temp_union);
 
 			//per ogni stato dell'unione
 			for(auto state: temp_union){
@@ -69,12 +69,16 @@ set<Region *> Essential_regions_search::search(){
 				}
 				//se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
 				if(counter == 1){
-					cout << "trovato regione essenziale: ";
-					Utilities::println(*last_essential_candidate);
+					//cout << "trovato regione essenziale: ";
+					//Utilities::println(*last_essential_candidate);
 					essential_regions->insert(last_essential_candidate);
 				}
 			}
 		}
+    }
+    cout << "Regioni essenziali: " << endl;
+    for(auto reg: *essential_regions){
+    	Utilities::println(*reg);
     }
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
