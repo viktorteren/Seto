@@ -39,7 +39,7 @@ private:
     map<int, set<int>* > *regions_intersection;
     //coppia numero eventi che violano la regione e ptr_regione
     //map<int,vector< pair<int,Region*> >*>* number_of_bad_events;
-    int branch_selection(List_edges *list, Region *region, int event);
+    int branch_selection(List_edges *list, Region *region);
     void set_number_of_bad_events(vector<int>* event_type,int event,vector< int >* number_of_bad_events);
 
 };

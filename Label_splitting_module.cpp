@@ -83,7 +83,7 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
     }
 
 
-    delete regions_intersection;
+    //delete regions_intersection;
 
     // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
     //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
@@ -131,7 +131,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                     printRegion( **it );
                     //ricalcola
                     for(auto e  : *middle_set_of_states)
-                        (*events_type)[e.first]=branch_selection(&(ts_map->at(e.first)),*it,e.first);
+                        (*events_type)[e.first]=branch_selection(&(ts_map->at(e.first)),*it);
 
                     set_number_of_bad_events(events_type,event, vec_ptr+pos);
                 }
@@ -177,7 +177,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     delete number_of_bad_events;
 
     cout<<"Regioni candidate******"<<endl;
-    for(auto reg: *candidate_regions){
+    for(const auto &reg: *candidate_regions){
         printRegion(reg);
     }
     cout<<"******"<<endl;
@@ -186,7 +186,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
 }
 
 
-int Label_splitting_module::branch_selection(List_edges *list, Region *region, int event) {
+int Label_splitting_module::branch_selection(List_edges *list, Region *region) {
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans = new vector<int>(4, 0);
     cout<<"DENTRO"<<endl;

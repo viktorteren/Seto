@@ -28,7 +28,7 @@ private:
 	void cost_map_filling();
 	//ritorna il miglior risultato dei rami sottostanti
 	int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
-	int region_cost(Region *reg);
+	unsigned long region_cost(Region *reg);
 	set<Region *>* last_solution;
 	set<set<Region *>> *computed_paths_cache; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
 };

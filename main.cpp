@@ -32,6 +32,7 @@ int main() {
         //chiamo il pre_region genertor passandogli anche le regioni nuove
        // pprg = new Pre_and_post_regions_generator(temp_regions,candidate_regions);
         pprg = new Pre_and_post_regions_generator(temp_regions, candidate_regions);
+	    delete candidate_regions;
     }
     else{
         pprg = new Pre_and_post_regions_generator(temp_regions);
@@ -39,7 +40,7 @@ int main() {
     delete events_not_satify_EC;
 	delete ls;
 
-    delete candidate_regions;
+
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
@@ -66,8 +67,9 @@ int main() {
 
     //cout << "fine ricerca " << endl;
 
+
+    delete pn_module;
     delete pprg;
-	delete pn_module;
 
 
 

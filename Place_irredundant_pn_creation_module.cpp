@@ -83,10 +83,10 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 	//todo: si potrebbe migliorare questo metodo utilizzando essential_regions al posto di essential_regions_map facendo un solo calcolo senza cicli for
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
 	int event;
-	set<int> event_states;
-	set<int> essential_states;
+	set<int> *event_states;
+	set<int> *essential_states;
 	set<int> uncovered_states;
-	set<int> total_uncovered_states;
+	set<int> *total_uncovered_states;
 	set<Region*> *regions;
 	auto essential_regions_of_event = new vector<Region*>();
 	//per ogni evento che ha regioni non essenziali:
@@ -111,7 +111,7 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 
 		//calcolo gli stati non ancora coperti
 
-		uncovered_states = *region_difference(event_states, essential_states);
+		uncovered_states = *region_difference(*event_states, *essential_states);
 		//cout << "---------------" << endl;
 		//cout << "evento: " << record.first << endl;
 		/*cout << "tutti gli stati degli eventi: ";
@@ -122,19 +122,21 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 		println(uncovered_states);
 		cout << "---------------" << endl;*/
 
-		if(total_uncovered_states.empty()){
-			total_uncovered_states = uncovered_states;
+		if(total_uncovered_states->empty()){
+			total_uncovered_states = &uncovered_states;
 		}
 		else{
-			total_uncovered_states = regions_union(&total_uncovered_states, &uncovered_states);
+			total_uncovered_states = regions_union(total_uncovered_states, &uncovered_states);
 		}
 
 		//svuoto le variabili per ogni iterazione
 		essential_regions_of_event->erase(essential_regions_of_event->begin(), essential_regions_of_event->end());
+		delete event_states;
+		delete essential_states;
 	}
 	cout << "total uncovered states: ";
-	println(total_uncovered_states);
-	return total_uncovered_states;
+	println(*total_uncovered_states);
+	return *total_uncovered_states;
 }
 
 int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
@@ -159,7 +161,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 
 	Region *candidate;
 	int cover_of_candidate;
-	int temp_cover;
+	unsigned int temp_cover;
 	//coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme delle regioni del figlio
 	int cost_of_candidate;
 	set<int> new_states_to_cover;
@@ -183,7 +185,9 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 				temp_aggregation->insert(region);
 				if(computed_paths_cache->find(*temp_aggregation) == computed_paths_cache->end()) {
 					//devo vedere la dimensione dell'intersezione tra gli stati da coprire e la regione
-					temp_cover = static_cast<int>(regions_intersection(&states_to_cover, region).size());
+					auto cover = regions_intersection(&states_to_cover, region);
+					temp_cover = cover->size();
+					delete cover;
 					if (temp_cover > cover_of_candidate) {
 						//cout << "candidato nuovo" << endl;
 						cover_of_candidate = temp_cover;
@@ -289,7 +293,7 @@ void Place_irredundant_pn_creation_module::cost_map_filling(){
 	}
 }
 
-int Place_irredundant_pn_creation_module::region_cost(Region *reg) {
+unsigned long Place_irredundant_pn_creation_module::region_cost(Region *reg) {
 	//funzione di costo per minimizzare sia il numero di posti che il numero di archi
 	/*int cost = 1;
 	for(auto record: *pre_regions){

@@ -24,10 +24,10 @@ public:
     struct Branches_states_to_add {
         set<int> *states_to_add_exit_or_enter= nullptr;
         set<int> *states_to_add_nocross= nullptr;
-        /*~Branches_states_to_add(){
-			if(states_to_add_exit_or_enter!= nullptr) delete states_to_add_exit_or_enter;
-			if(states_to_add_nocross!= nullptr) delete states_to_add_nocross;
-		}*/
+        ~Branches_states_to_add(){
+        	delete states_to_add_exit_or_enter;
+        	delete states_to_add_nocross;
+		}
     };
 
     map<int, vector<Region*> *>* get_middle_set_of_states();
@@ -40,7 +40,7 @@ private:
     map<int,vector<Region>*> *regions;
     vector<Region> *queue_temp_regions;
 
-    map<int, Branches_states_to_add> *map_states_to_add;
+    map<int, Branches_states_to_add*> *map_states_to_add;
     Branches_states_to_add *struct_states_to_add;
     set<int> *states_to_add_enter;
     set<int> *states_to_add_exit;

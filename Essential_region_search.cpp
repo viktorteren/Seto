@@ -20,7 +20,7 @@ set<Region *> *Essential_regions_search::search(){
      */
 
 
-    set<int> temp_union;
+    set<int> *temp_union;
     auto essential_regions = new set<Region *> ();
     Region * last_essential_candidate;
     int counter;
@@ -51,7 +51,7 @@ set<Region *> *Essential_regions_search::search(){
 			//println(temp_union);
 
 			//per ogni stato dell'unione
-			for(auto state: temp_union){
+			for(auto state: *temp_union){
 				counter = 0;
 				//per ogni regione
 				for(auto region: *record.second){
@@ -74,6 +74,7 @@ set<Region *> *Essential_regions_search::search(){
 					essential_regions->insert(last_essential_candidate);
 				}
 			}
+			delete temp_union;
 		}
 
     }

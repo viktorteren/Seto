@@ -9,7 +9,7 @@ Region_generator::Region_generator() {
     ER_set = new  vector<ER>;
     regions = new map<int,vector<Region>*>;
     queue_temp_regions= new vector<Region>;
-    map_states_to_add= new map< int , Branches_states_to_add > ();
+    map_states_to_add= new map< int , Branches_states_to_add *> ();
 
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
@@ -18,6 +18,9 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
+    /*for(auto record: *map_states_to_add){
+        delete record.second;
+    }*/
     delete map_states_to_add;
     delete queue_temp_regions;
 }
@@ -110,11 +113,11 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         cout<<"return no cross"<<endl;
 
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= *struct_states_to_add;
+        (*map_states_to_add)[event]= struct_states_to_add;
 
         delete states_to_add_enter;
         delete states_to_add_exit;
-        delete struct_states_to_add;
+        //delete struct_states_to_add;
         // delete states_to_add_nocross;
         delete trans;
         return NOCROSS;
@@ -124,10 +127,10 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
 
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= *struct_states_to_add;
+        (*map_states_to_add)[event]= struct_states_to_add;
 
         delete states_to_add_enter;
-        delete struct_states_to_add;
+        //delete struct_states_to_add;
         //delete states_to_add_exit;
         //delete states_to_add_nocross;
         delete trans;
@@ -139,11 +142,11 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
         struct_states_to_add->states_to_add_exit_or_enter=states_to_add_enter;
         struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= *struct_states_to_add;
+        (*map_states_to_add)[event]= struct_states_to_add;
 
         //delete states_to_add_enter;
         delete states_to_add_exit;
-        delete struct_states_to_add;
+        //delete struct_states_to_add;
 
         //delete states_to_add_nocross;
         delete trans;
@@ -281,7 +284,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
 
-        Branches_states_to_add branches=(*map_states_to_add)[last_event_nocross];
+        Branches_states_to_add branches=*(*map_states_to_add)[last_event_nocross];
 
         cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
         /* for(auto state : *branches.states_to_add_nocross) {
@@ -350,7 +353,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
         cout<<"last event 2 branch "<< last_event_2braches << endl;
 
-        Branches_states_to_add branches=(*map_states_to_add)[last_event_2braches];
+        Branches_states_to_add branches=*(*map_states_to_add)[last_event_2braches];
 
         cout<<"qui";
 

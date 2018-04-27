@@ -6,7 +6,7 @@
 
 namespace Utilities {
     //Region = set<int> ->ritorna un insieme di stati
-    set<int> regions_union(vector<Region *> *vec) {
+    set<int> *regions_union(vector<Region *> *vec) {
         auto all_states = new Region();
         int size;
         Region::iterator it;
@@ -18,10 +18,10 @@ namespace Utilities {
                 ++it;
             }
         }
-        return *all_states;
+        return all_states;
     }
 
-    set<int> regions_union(set<Region *> *vec) {
+    set<int> *regions_union(set<Region *> *vec) {
         //cout << "region union" << endl;
         auto all_states = new Region();
         int size;
@@ -35,10 +35,10 @@ namespace Utilities {
                 ++it;
             }
         }
-        return *all_states;
+        return all_states;
     }
 
-    set<int> regions_union(Region * first, Region* second) {
+    set<int>* regions_union(Region * first, Region* second) {
         auto all_states = new Region();
         int size;
         Region::iterator it;
@@ -54,7 +54,7 @@ namespace Utilities {
             all_states->insert(*it);
             ++it;
         }
-        return *all_states;
+        return all_states;
     }
 
 
@@ -128,14 +128,14 @@ namespace Utilities {
         return pre_regions_intersection;
     }
 
-    set<int> regions_intersection(Region* first, Region* second){
+    set<int> *regions_intersection(Region* first, Region* second){
         auto intersection = new set<int>();
         for (auto state: *first) {
             if (second->find(state) != second->end()) {//trovo lo stato (appartiene a entrambe)
                 intersection->insert(state);
             }
         }
-        return *intersection;
+        return intersection;
     }
 
     void print(Region& region){
@@ -150,7 +150,7 @@ namespace Utilities {
     }
 
     set<int>* region_difference(set<int>& first, set<int>& second){
-        set<int>* s = new set<int>();
+        auto s = new set<int>();
         for(auto state: first){
             if(second.find(state) == second.end()){
                 s->insert(state);
