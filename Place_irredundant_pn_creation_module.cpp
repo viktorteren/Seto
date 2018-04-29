@@ -20,13 +20,13 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 		uncovered_states = search_not_covered_states_per_event();
 		set<int> states_to_cover = uncovered_states;
 		auto used_regions = new set<Region *>();
-		last_solution = new set<Region *>();
+		last_solution_irredundant_region = new set<Region *>();
 		computed_paths_cache = new set<set<Region *>>();
 		cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
 		int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
 		cout << "min: " << min << endl;
 		cout << "insieme di regioni irridondante: " << endl;
-		for(auto region: *last_solution){
+		for(auto region: *last_solution_irredundant_region){
 			cout << "[" << &(*region)  << "] ";
 			println(*region);
 		}
@@ -53,6 +53,13 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 
 }
 
+set<Region*>* Place_irredundant_pn_creation_module::get_irredundant_region(){
+	return last_solution_irredundant_region;
+}
+set<Region*>* Place_irredundant_pn_creation_module::get_essential_regions(){
+	return essential_regions;
+}
+
 void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 	for(auto record: *pre_regions){
 
@@ -60,13 +67,13 @@ void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 		for(auto region: *record.second){
 			//cout << &(*region) << endl;
 			//regione non essenziale
-			if(essential_regions->find(&(*region)) == essential_regions->end()){
-				if (not_essential_regions_map->find(record.first) == not_essential_regions_map->end()) {
-					(*not_essential_regions_map)[record.first] = new set<Region*>();
-				}
-				(*not_essential_regions_map)[record.first]->insert(region);
-				not_essential_regions->insert(region);
-			}
+                if (essential_regions->find(&(*region)) == essential_regions->end()) {
+                    if (not_essential_regions_map->find(record.first) == not_essential_regions_map->end()) {
+                        (*not_essential_regions_map)[record.first] = new set<Region *>();
+                    }
+                    (*not_essential_regions_map)[record.first]->insert(region);
+                    not_essential_regions->insert(region);
+                }
 		}
 	}
 	//per debug:
@@ -251,8 +258,8 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 			computed_paths_cache->insert(new_states_used);
 
 			//dealloco lo spazio vecchio per allocarne uno nuovo
-			delete last_solution;
-			last_solution = new set<Region *>(new_states_used);
+			delete last_solution_irredundant_region;
+			last_solution_irredundant_region = new set<Region *>(new_states_used);
 		}
 		//non ho completato la copertura e posso ancora trovare una soluzione migliore
 		else{

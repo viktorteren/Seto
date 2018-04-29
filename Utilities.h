@@ -38,6 +38,8 @@ namespace Utilities {
 	set<int>* region_difference(set<int>& first, set<int>& second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
 	bool is_bigger_than(Region* region ,set<int>* region2);
+	bool are_equals(Region*,Region*);
+	bool contains(set<Region*>*,Region*);
 };
 
 

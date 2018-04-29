@@ -41,4 +41,12 @@ void TS_parser::parse() {
     }
     num_events = static_cast<int>((*ts_map).size());
     fin.close();
+
+    cout<<"DEGUG TS_MAP"<<endl;
+    for(auto record:*ts_map){
+        cout<<"evento:" <<record.first;
+        for(auto tr:record.second){
+            cout<<"trans: "<< tr.first << ", " << tr.second <<endl;
+        }
+    }
 }

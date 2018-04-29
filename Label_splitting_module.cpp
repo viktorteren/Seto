@@ -12,6 +12,7 @@ Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regio
 
 Label_splitting_module::~Label_splitting_module(){
     delete ER_set;
+    delete regions_intersection;
 };
 
 void printRegion(const Region& region){

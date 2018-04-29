@@ -15,10 +15,15 @@ class Place_irredundant_pn_creation_module {
 public:
 	explicit Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg);
 	~Place_irredundant_pn_creation_module();
+
+	set<Region*>* get_irredundant_region();
+	set<Region*>* get_essential_regions();
+
+
 private:
 	map<int, set<Region*> *> * pre_regions;
 	map<int, set<Region*> *> * post_regions;
-	set<Region *> *essential_regions;
+	set<Region *>* essential_regions;
 	set<Region *> *not_essential_regions;
 	set<int> uncovered_states;
 	void search_not_essential_regions();
@@ -29,7 +34,7 @@ private:
 	//ritorna il miglior risultato dei rami sottostanti
 	int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
 	unsigned long region_cost(Region *reg);
-	set<Region *>* last_solution;
+	set<Region *>* last_solution_irredundant_region;
 	set<set<Region *>> *computed_paths_cache; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
 };
 

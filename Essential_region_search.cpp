@@ -8,7 +8,7 @@ Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre
 
 Essential_regions_search::~Essential_regions_search() = default;
 
-set<Region *> *Essential_regions_search::search(){
+set<Region *>* Essential_regions_search::search(){
 
 	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
@@ -21,8 +21,10 @@ set<Region *> *Essential_regions_search::search(){
 
 
     set<int> *temp_union;
-    auto essential_regions = new set<Region *> ();
-    Region * last_essential_candidate;
+
+	auto essential_regions = new set<Region *> ();
+
+	Region * last_essential_candidate;
     int counter;
 
     //per ogni evento
@@ -82,9 +84,10 @@ set<Region *> *Essential_regions_search::search(){
     //delete &temp_union;
 
     cout << "Regioni essenziali: " << endl;
-    for(auto reg: *essential_regions){
-    	Utilities::println(*reg);
-    }
+		for (auto reg: *essential_regions) {
+			Utilities::println(*reg);
+		}
+
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
     return essential_regions;
