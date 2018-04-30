@@ -23,7 +23,7 @@ void printRegion(const Region& region){
 }
 
 
-bool Label_splitting_module::is_equal_to(ER er,set<int>* intersection){
+bool Label_splitting_module::is_equal_to(ER er,const set<int>* intersection){
 
     if(er->size()!=intersection->size()) {
         cout<<"if"<<endl;
@@ -64,7 +64,12 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
 
     regions_intersection=do_regions_intersection(regions);
 
-    cout<<"trovata intersezione" <<endl;
+    cout<<"trovata intersezione____________" <<endl;
+    for(auto ev:*regions_intersection) {
+        cout << "evento " << ev.first<<endl;
+        println(*ev.second);
+    }
+
     vector<int>* events_not_satisfy_EC=new vector<int>;
 
     //per ogni evento
@@ -88,6 +93,11 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
 
     // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
     //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
+    for(auto ev: *events_not_satisfy_EC){
+        cout<<"event not sat EC----------"<< ev<<endl;
+    }
+
+
     return events_not_satisfy_EC;
 	//return true;
 

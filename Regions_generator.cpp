@@ -487,9 +487,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
 
 
     cout<<"\n debug middle"<<endl;
-    for(auto e : *ts_map ){
-        cout<<"evento " << e.first<<endl;
-        for(auto el_vec: *middle_set_of_states->at(e.first)){
+    for(auto e : *ts_map ){for(auto el_vec: *middle_set_of_states->at(e.first)){
             cout<<el_vec<<endl;
             Utilities::println(*el_vec);
         }

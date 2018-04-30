@@ -57,12 +57,19 @@ namespace Utilities {
         return all_states;
     }
 
+    struct Intersector{
+        Region* operator()(Region *first, Region *second) const {
+            return regions_intersection2(*first,*second);
+        }
+    };
+
 
     map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions) {
 
         auto pre_regions_intersection = new map<int, set<int> *>;
 
         std::vector<Region>::iterator it;
+        Region* temp_intersection;
 
         //per ogni evento
         for (auto item: *regions) {
@@ -74,58 +81,27 @@ namespace Utilities {
             }
             //se c'è più di una preregione
             if (item.second->size() > 1) {
-                //per ogni regione
-                for (it = item.second->begin(); it != item.second->end(); ++it) {
-                    //for (auto set_ptr: *item.second) {
-                    auto set_ptr = &(*it); //puntatore al set
-                    if (it == item.second->begin()) {
-                        auto set_ptr2 = &(*(++it));
-                        //cout << "setprt" << set_ptr << endl;
-                        for (auto state: *set_ptr) {
-                            if (set_ptr2->find(state) != set_ptr2->end()) {//trovo lo stato (appartiene a entrambe)
-                                if (pre_regions_intersection->find(item.first) == pre_regions_intersection->end()) {
-                                    (*pre_regions_intersection)[item.first] = new set<int>();
-                                }
-                                pre_regions_intersection->at(item.first)->insert(state);
-                            }
-                        }
-                    } else {
-                        cout << "else" << endl;
-                        for (auto state: *set_ptr) {
-                            if (pre_regions_intersection->find(state) !=
-                                pre_regions_intersection->end()) {//trovo lo stato (appartiene a entrambe)
-                                //aggiungo la regione alla mappa
-                                if (pre_regions_intersection->find(item.first) == pre_regions_intersection->end()) {
-                                    (*pre_regions_intersection)[item.first] = new set<int>();
-                                }
-                                pre_regions_intersection->at(item.first)->insert(state);
-                            }
-                        }
-                    }
-
-                    for (auto el: *pre_regions_intersection->at(item.first)) {
-                        cout << "INTERSEZIONE: " << el << endl;
-                    }
-                }
+                (*pre_regions_intersection)[item.first]=std::accumulate(item.second->begin(),item.second->end(), (*pre_regions_intersection)[item.first],Intersector());
             }
                 //c'è solo una preregione tutti gli stati appartengono all'intersezione
             else {
-                for (auto state: (*item.second)[0]) {
-                    if (pre_regions_intersection->find(item.first) == pre_regions_intersection->end()) {
-                        (*pre_regions_intersection)[item.first] = new set<int>();
-                    }
-                    pre_regions_intersection->at(item.first)->insert(state);
-                }
-
-                for (auto el: *pre_regions_intersection->at(item.first)) {
-                    cout << "INTERSEZIONE: " << el << endl;
-                }
+                //todo
             }
         }
         cout << "intersezione****************" << endl;
 
 
         return pre_regions_intersection;
+    }
+
+    set<int> *regions_intersection2(Region &first, Region &second) {
+        auto intersection = new set<int>();
+        for (auto state: first) {
+            if (second.find(state) != second.end()) {//trovo lo stato (appartiene a entrambe)
+                intersection->insert(state);
+            }
+        }
+        return intersection;
     }
 
     set<int> *regions_intersection(Region *first, Region *second) {
@@ -225,6 +201,46 @@ namespace Utilities {
 
         return false;
     }
+
+   /* map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions) {
+
+        auto pre_regions_intersection = new map<int, set<int> *>;
+
+        std::vector<Region>::iterator it;
+
+        //per ogni evento
+        for (auto item: *regions) {
+
+            /*for (auto i: *item.second) {
+                cout << "Preregion di " << item.first << endl;
+                for (auto pre: i)
+                    cout << "S: " << pre << endl;
+            }
+            //se c'è più di una preregione
+            if (item.second->size() > 1) {
+                //per ogni regione
+                Region *temp_intersection = new Region(*(item.second->begin()));
+                for (it = item.second->begin()+1; it != item.second->end(); ++it) {
+                    //for (auto set_ptr: *item.second) {
+                    auto set_ptr = &(*it); //puntatore al set
+                    temp_intersection = regions_intersection(temp_intersection, set_ptr);
+                }
+                (*pre_regions_intersection)[item.first]=temp_intersection;
+            }
+                //c'è solo una preregione tutti gli stati appartengono all'intersezione
+            else {
+                (*pre_regions_intersection)[item.first]=&(*item.second)[0];
+            }
+        }
+        cout << "intersezione****************" << endl;
+        for(auto el:*pre_regions_intersection){
+            cout<<"event "<<el.first<<endl;
+            println(*el.second);
+        }
+
+
+        return pre_regions_intersection;
+    }*/
 
 }
 

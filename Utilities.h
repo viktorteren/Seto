@@ -14,6 +14,7 @@
 #include <fstream>
 #include <cassert>
 #include "TS_parser.h"
+#include "numeric"
 
 using namespace std;
 
@@ -28,10 +29,13 @@ const int EXIT_NOCROSS = 2;
 const int ENTER_NOCROSS = 3;
 
 namespace Utilities {
+
+
     set<int> *regions_union(vector<Region*>* vec);
 	set<int> *regions_union(set<Region*>* vec);
 	set<int> *regions_union(Region* first, Region* second);
 	set<int> *regions_intersection(Region* first, Region* second);
+    set<int> *regions_intersection2(Region& first, Region& second);
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions);
     void print(Region& region);
 	void println(Region& region);

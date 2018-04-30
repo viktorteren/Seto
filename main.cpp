@@ -38,14 +38,11 @@ int main() {
         pprg = new Pre_and_post_regions_generator(temp_regions);
     }
     delete events_not_satify_EC;
-	delete ls;
-
-
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 
-
+    delete ls;
     //DEBUG
     cout<<"pre-regioni DEBUG*****************"<<endl;
     for(auto set: *pre_regions){
