@@ -58,7 +58,7 @@ int main() {
     //Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
 
-    auto irredundant_region=pn_module->get_irredundant_region();
+    auto irredundant_region=pn_module->get_irredundant_regions();
     auto essential_regions=pn_module->get_essential_regions();
 
 

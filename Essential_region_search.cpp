@@ -23,6 +23,7 @@ set<Region *>* Essential_regions_search::search(){
     set<int> *temp_union;
 
 	auto essential_regions = new set<Region *> ();
+	essential_map = new map<int, set<Region *>>();
 
 	Region * last_essential_candidate;
     int counter;
@@ -30,7 +31,7 @@ set<Region *>* Essential_regions_search::search(){
     //per ogni evento
     //cout << "num eventi: " << pre_regions->size() << endl;
     for(auto record: *pre_regions){
-        cout <<  "evento: " << record.first << endl;
+        //cout <<  "evento: " << record.first << endl;
 
 		Region::iterator it2;
         //regions = *record.second;
@@ -44,6 +45,11 @@ set<Region *>* Essential_regions_search::search(){
 				//cout << "trovato regione essenziale: ";
 				//Utilities::println(*reg);
 				essential_regions->insert(reg);
+				//non ho ancora creato nessun record relativo ad un certo evento
+				if(essential_map->find(record.first) == essential_map->end()){
+					(*essential_map)[record.first] = set<Region *>();
+				}
+				(*essential_map)[record.first].insert(reg);
 			}
 		}
 		else{
@@ -74,12 +80,26 @@ set<Region *>* Essential_regions_search::search(){
 					//cout << "trovato regione essenziale: ";
 					//Utilities::println(*last_essential_candidate);
 					essential_regions->insert(last_essential_candidate);
+					if(essential_map->find(record.first) == essential_map->end()){
+						(*essential_map)[record.first] = set<Region *>();
+					}
+					(*essential_map)[record.first].insert(last_essential_candidate);
 				}
 			}
 			delete temp_union;
 		}
 
     }
+
+    //print per debug
+    /*
+    cout << "prove essential regions:" << endl;
+    for(auto rec: *essential_map){
+    	cout << "set di regioni dell'evento: " << rec.first << endl;
+    	for(auto reg: rec.second){
+    		println(*reg);
+    	}
+    }*/
 
     //delete &temp_union;
 
@@ -93,6 +113,13 @@ set<Region *>* Essential_regions_search::search(){
     return essential_regions;
 }
 
+
+map<int, set<Region*>> * Essential_regions_search::get_essential_regions_map(){
+	if(essential_map == nullptr){
+		search();
+	}
+	return essential_map;
+};
 
 
 
