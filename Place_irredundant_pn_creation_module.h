@@ -6,6 +6,7 @@
 #define PLACE_IRREDUNDANT_PN_CREATION_MODULE_H
 
 #include "Utilities.h"
+#include "Essential_region_search.h"
 using namespace std;
 
 //irridondante perchè per tutti i rami computazionali non si prenderà mai un per corso che contiene ridondanze
@@ -16,11 +17,12 @@ public:
 	explicit Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg);
 	~Place_irredundant_pn_creation_module();
 
-	set<Region*>* get_irredundant_region();
-	set<Region*>* get_essential_regions();
+	map<int, set<Region*>> * get_irredundant_regions();
+	map<int, set<Region*>> * get_essential_regions();
 
 
 private:
+	Essential_regions_search *ers;
 	map<int, set<Region*> *> * pre_regions;
 	map<int, set<Region*> *> * post_regions;
 	set<Region *>* essential_regions;
@@ -34,8 +36,10 @@ private:
 	//ritorna il miglior risultato dei rami sottostanti
 	int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
 	unsigned long region_cost(Region *reg);
-	set<Region *>* last_solution_irredundant_region;
+	set<Region *>* irredundant_regions;
 	set<set<Region *>> *computed_paths_cache; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
+	map<int, set<Region*>> *irredundant_regions_map;
+	void calculate_irredundant_regions_map();
 };
 
 

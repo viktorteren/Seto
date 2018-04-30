@@ -12,24 +12,30 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 	cost_map = new map<Region* , int>();
 	not_essential_regions_map = new map<int, set<Region*> *>();
 	not_essential_regions = new set<Region *>();
-	auto ers = new Essential_regions_search(pre_regions);
+	ers = new Essential_regions_search(pre_regions);
 	essential_regions = ers->search();
 	search_not_essential_regions();
 	if(not_essential_regions->size() > 0){
 		cost_map_filling();
 		uncovered_states = search_not_covered_states_per_event();
-		set<int> states_to_cover = uncovered_states;
-		auto used_regions = new set<Region *>();
-		last_solution_irredundant_region = new set<Region *>();
-		computed_paths_cache = new set<set<Region *>>();
-		cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
-		int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
-		cout << "min: " << min << endl;
-		cout << "insieme di regioni irridondante: " << endl;
-		for(auto region: *last_solution_irredundant_region){
-			cout << "[" << &(*region)  << "] ";
-			println(*region);
+		if(uncovered_states.size() > 0){
+			set<int> states_to_cover = uncovered_states;
+			auto used_regions = new set<Region *>();
+			irredundant_regions = new set<Region *>();
+			computed_paths_cache = new set<set<Region *>>();
+			cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
+			int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
+			cout << "min cost: " << min << endl;
+			cout << "insieme di regioni irridondante: " << endl;
+			for(auto region: *irredundant_regions){
+				//cout << "[" << &(*region)  << "] ";
+				println(*region);
+			}
 		}
+		else{
+			cout << "ALL STATES ARE COVERED BY ESSENTIAL REGIONS" << endl;
+		}
+
 	}
 	else{
 		cout << "ALL REGIONS ARE ESSENTIAL" << endl;
@@ -53,11 +59,14 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 
 }
 
-set<Region*>* Place_irredundant_pn_creation_module::get_irredundant_region(){
-	return last_solution_irredundant_region;
+map<int, set<Region*>> * Place_irredundant_pn_creation_module::get_irredundant_regions(){
+	if(irredundant_regions_map == nullptr){
+		calculate_irredundant_regions_map();
+	}
+	return irredundant_regions_map;
 }
-set<Region*>* Place_irredundant_pn_creation_module::get_essential_regions(){
-	return essential_regions;
+map<int, set<Region*>> *Place_irredundant_pn_creation_module::get_essential_regions(){
+	return ers->get_essential_regions_map();
 }
 
 void Place_irredundant_pn_creation_module::search_not_essential_regions() {
@@ -87,62 +96,15 @@ void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 }
 
 set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
-	//todo: si potrebbe migliorare questo metodo utilizzando essential_regions al posto di essential_regions_map facendo un solo calcolo senza cicli for
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
-	int event;
-	set<int> *event_states;
-	set<int> *essential_states;
-	set<int> uncovered_states;
-	set<int> *total_uncovered_states;
-	set<Region*> *regions;
-	auto essential_regions_of_event = new vector<Region*>();
-	//per ogni evento che ha regioni non essenziali:
-	for(auto record: *not_essential_regions_map){
-		event = record.first;
-		//calcolo l'unione degli stati coperti dalle pre-regioni di quel evento
-		regions = (*(pre_regions)->find(event)).second;
-		event_states = regions_union(regions);
 
-		//calcolo gli stati coperti da pre-regioni essenziali
-		//scorro tutte le regioni dell'evento estraendo solo quelle essenziali
-		//cout << "aggiunta regioni essenziali dell'evento " << event << endl;
-		for(auto reg: *(pre_regions->find(event)->second)){
-			if(essential_regions->find(reg) != essential_regions->end()){
-				/*cout << "regione essenziale: ";
-				print(*reg);*/
-				essential_regions_of_event->push_back(reg);
-			}
-		}
-		essential_states = regions_union(essential_regions_of_event);
-
-
-		//calcolo gli stati non ancora coperti
-
-		uncovered_states = *region_difference(*event_states, *essential_states);
-		//cout << "---------------" << endl;
-		//cout << "evento: " << record.first << endl;
-		/*cout << "tutti gli stati degli eventi: ";
-		print(event_states);
-		cout << "stati coperti da eventi essenziali: ";
-		print(essential_states);*/
-		/*cout << "stati non coperti da eventi essenziali: ";
-		println(uncovered_states);
-		cout << "---------------" << endl;*/
-
-		if(total_uncovered_states->empty()){
-			total_uncovered_states = &uncovered_states;
-		}
-		else{
-			total_uncovered_states = regions_union(total_uncovered_states, &uncovered_states);
-		}
-
-		//svuoto le variabili per ogni iterazione
-		essential_regions_of_event->erase(essential_regions_of_event->begin(), essential_regions_of_event->end());
-		delete event_states;
-		delete essential_states;
+	auto states_to_cover = Utilities::regions_union(not_essential_regions);
+	auto covered_states = Utilities::regions_union(essential_regions);
+	auto total_uncovered_states = Utilities::region_difference(*states_to_cover, *covered_states);
+	if(total_uncovered_states->size() > 0){
+		cout << "total uncovered states: ";
+		println(*total_uncovered_states);
 	}
-	cout << "total uncovered states: ";
-	println(*total_uncovered_states);
 	return *total_uncovered_states;
 }
 
@@ -258,8 +220,8 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 			computed_paths_cache->insert(new_states_used);
 
 			//dealloco lo spazio vecchio per allocarne uno nuovo
-			delete last_solution_irredundant_region;
-			last_solution_irredundant_region = new set<Region *>(new_states_used);
+			delete irredundant_regions;
+			irredundant_regions = new set<Region *>(new_states_used);
 		}
 		//non ho completato la copertura e posso ancora trovare una soluzione migliore
 		else{
@@ -319,4 +281,27 @@ unsigned long Place_irredundant_pn_creation_module::region_cost(Region *reg) {
 	return reg->size();
 }
 
+void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
+	//algoritmo:
+	//per ogni elemento di not_essential_regions_map se la regione è presente in irredundant_regions
+	irredundant_regions_map = new map<int, set<Region*>>();
+	for(auto record: *not_essential_regions_map){
+		for(auto reg: *record.second){
+			if(irredundant_regions->find(reg) != irredundant_regions->end()){
+				if(irredundant_regions_map->find(record.first) == irredundant_regions_map->end()){
+					(*irredundant_regions_map)[record.first] = set<Region *>();
+				}
+				(*irredundant_regions_map)[record.first].insert(reg);
+			}
+		}
+	}
+	//debug
+	/*cout << "prove irredundant regions:" << endl;
+	for(auto rec: *irredundant_regions_map){
+		cout << "set di regioni dell'evento: " << rec.first << endl;
+		for(auto reg: rec.second){
+			println(*reg);
+		}
+	}*/
 
+}
