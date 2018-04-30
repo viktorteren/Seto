@@ -97,6 +97,64 @@ void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 
 set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
+	int event;
+	set<int> *event_states;
+	set<int> *essential_states;
+	set<int> uncovered_states;
+	set<int> *total_uncovered_states;
+	set<Region*> *regions;
+	auto essential_regions_of_event = new vector<Region*>();
+	//per ogni evento che ha regioni non essenziali:
+	for(auto record: *not_essential_regions_map){
+		event = record.first;
+		//calcolo l'unione degli stati coperti dalle pre-regioni di quel evento
+		// regions = (*(pre_regions)->find(event)).second;
+		event_states = regions_union(regions);
+		//calcolo gli stati coperti da pre-regioni essenziali
+		//scorro tutte le regioni dell'evento estraendo solo quelle essenziali
+		//cout << "aggiunta regioni essenziali dell'evento " << event << endl;
+		for(auto reg: *(pre_regions->find(event)->second)){
+			if(essential_regions->find(reg) != essential_regions->end()){
+				/*cout << "regione essenziale: ";
+				print(*reg);*/
+				essential_regions_of_event->push_back(reg);
+			}
+		}
+		essential_states = regions_union(essential_regions_of_event);
+
+		//calcolo gli stati non ancora coperti
+
+		uncovered_states = *region_difference(*event_states, *essential_states);
+		//cout << "---------------" << endl;
+		//cout << "evento: " << record.first << endl;
+		/*cout << "tutti gli stati degli eventi: ";
+		print(event_states);
+		cout << "stati coperti da eventi essenziali: ";
+		print(essential_states);*/
+		/*cout << "stati non coperti da eventi essenziali: ";
+		println(uncovered_states);
+		cout << "---------------" << endl;*/
+
+		if(total_uncovered_states->empty()){
+			total_uncovered_states = &uncovered_states;
+		}
+		else{
+			total_uncovered_states = regions_union(total_uncovered_states, &uncovered_states);
+		}
+
+		//svuoto le variabili per ogni iterazione
+		essential_regions_of_event->erase(essential_regions_of_event->begin(), essential_regions_of_event->end());
+		delete event_states;
+		delete essential_states;
+	}
+	cout << "total uncovered states: ";
+	println(*total_uncovered_states);
+	return *total_uncovered_states;
+}
+
+/*
+set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
+	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
 
 	auto states_to_cover = Utilities::regions_union(not_essential_regions);
 	auto covered_states = Utilities::regions_union(essential_regions);
@@ -107,6 +165,7 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 	}
 	return *total_uncovered_states;
 }
+*/
 
 int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
 	//cout << "chiamata ricorsiva" << endl;
