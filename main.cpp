@@ -24,6 +24,7 @@ int main() {
     vector<int>* events_not_satify_EC=ls->is_excitation_closed();
 
 	excitation_closure= events_not_satify_EC->empty();
+    cout<<"EC*************"<< excitation_closure <<endl;
 
     if(!excitation_closure) {
         cout<<" not exitation closed " <<endl;

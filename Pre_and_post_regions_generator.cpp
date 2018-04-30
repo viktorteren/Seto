@@ -101,22 +101,24 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 		for (it = regions->begin(); it != regions->end(); ++it) {
 			Region *region = &(*it);
 
+            //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
+            if (pre_regions->find(record.first) == pre_regions->end()) {
+                (*pre_regions)[record.first] = new set<Region *>();
+            }
+
+            //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
+            if (post_regions->find(record.first) == post_regions->end()) {
+                (*post_regions)[record.first] = new set<Region *>();
+            }
+
             if (candidate_regions != nullptr) {
                 bool pre_region = is_pre_region(&record.second, region);
+                cout<<"dopo preregioni"<<endl;
                 bool post_region = is_post_region(&record.second, region);
+                cout<<"dopo postregioni"<<endl;
                 if (pre_region || post_region) {
                     Utilities::println(*it);
                     cout << "is pre region of" << record.first << endl;
-
-                    //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
-                    if (pre_regions->find(record.first) == pre_regions->end()) {
-                        (*pre_regions)[record.first] = new set<Region *>();
-                    }
-
-                    //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
-                    if (post_regions->find(record.first) == post_regions->end()) {
-                        (*post_regions)[record.first] = new set<Region *>();
-                    }
 
                     bool split = false;
 

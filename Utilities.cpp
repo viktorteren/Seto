@@ -57,51 +57,36 @@ namespace Utilities {
         return all_states;
     }
 
-    struct Intersector{
-        Region* operator()(Region *first, Region *second) const {
-            return regions_intersection2(*first,*second);
-        }
-    };
-
-
     map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions) {
 
         auto pre_regions_intersection = new map<int, set<int> *>;
 
         std::vector<Region>::iterator it;
-        Region* temp_intersection;
+        bool state_in_intersecton=true;
 
         //per ogni evento
         for (auto item: *regions) {
-
-            for (auto i: *item.second) {
-                cout << "Preregion di " << item.first << endl;
-                for (auto pre: i)
-                    cout << "S: " << pre << endl;
-            }
-            //se c'è più di una preregione
-            if (item.second->size() > 1) {
-                (*pre_regions_intersection)[item.first]=std::accumulate(item.second->begin(),item.second->end(), (*pre_regions_intersection)[item.first],Intersector());
-            }
-                //c'è solo una preregione tutti gli stati appartengono all'intersezione
-            else {
-                //todo
+            (*pre_regions_intersection)[item.first]=new Region();
+            for (auto state: (*item.second)[0]) {
+                state_in_intersecton=true;
+                for(auto set:*item.second){
+                    if(set.find(state)==set.end()) {//non l'ho trovato
+                        state_in_intersecton = false;
+                        break;
+                    }
+                }
+                if(state_in_intersecton){
+                    pre_regions_intersection->at(item.first)->insert(state);
+                }
             }
         }
         cout << "intersezione****************" << endl;
-
+        for(auto el:*pre_regions_intersection){
+            cout<<"event "<<el.first<<endl;
+            println(*el.second);
+        }
 
         return pre_regions_intersection;
-    }
-
-    set<int> *regions_intersection2(Region &first, Region &second) {
-        auto intersection = new set<int>();
-        for (auto state: first) {
-            if (second.find(state) != second.end()) {//trovo lo stato (appartiene a entrambe)
-                intersection->insert(state);
-            }
-        }
-        return intersection;
     }
 
     set<int> *regions_intersection(Region *first, Region *second) {
