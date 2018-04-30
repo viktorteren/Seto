@@ -62,6 +62,7 @@ int main() {
     auto essential_regions=pn_module->get_essential_regions();
 
 
+
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
         delete record.second;
