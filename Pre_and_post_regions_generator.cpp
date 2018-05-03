@@ -158,7 +158,8 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                                 }
                             }
 
-                            if(candidate_region== nullptr) candidate_region = new set<int>(cand_reg);
+                            if(candidate_region== nullptr)
+                            	candidate_region = new set<int>(cand_reg);
                             if (!Utilities::contains((*post_regions)[record.first], candidate_region)) {
                                 if (is_post_region(&record.second, candidate_region)) {
                                     (*post_regions)[record.first]->insert(candidate_region);

@@ -40,11 +40,11 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 	else{
 		cout << "ALL REGIONS ARE ESSENTIAL" << endl;
 	}
-	delete ers;
-	delete essential_regions;
 }
 
 Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
+	delete ers;
+	delete essential_regions;
 	delete not_essential_regions;
 	delete cost_map;
 	delete not_essential_regions_map;
@@ -56,6 +56,7 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	for(auto el:*post_regions){
 		delete el.second;
 	}
+	delete irredundant_regions_map;
 
 }
 
