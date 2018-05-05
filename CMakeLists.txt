@@ -3,4 +3,4 @@ project(Progetto_SSE)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Progetto_SSE main.cpp Regions_generator.cpp Regions_generator.h Label_splitting_module.h Label_splitting_module.cpp TS_parser.h TS_parser.cpp Essential_region_search.cpp Essential_region_search.h Place_irredundant_pn_creation_module.cpp Place_irredundant_pn_creation_module.h Utilities.cpp Utilities.h Pre_and_post_regions_generator.cpp Pre_and_post_regions_generator.h)
+add_executable(Progetto_SSE src/main.cpp src/Regions_generator.cpp include/Regions_generator.h include/Label_splitting_module.h src/Label_splitting_module.cpp include/TS_parser.h src/TS_parser.cpp src/Essential_region_search.cpp include/Essential_region_search.h src/Place_irredundant_pn_creation_module.cpp include/Place_irredundant_pn_creation_module.h src/Utilities.cpp include/Utilities.h src/Pre_and_post_regions_generator.cpp include/Pre_and_post_regions_generator.h)
