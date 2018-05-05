@@ -2,7 +2,7 @@
 // Created by Viktor on 20/04/2018.
 //
 
-#include "Pre_and_post_regions_generator.h"
+#include "../include/Pre_and_post_regions_generator.h"
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg){
 	regions = reg;

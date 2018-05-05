@@ -2,7 +2,7 @@
 // Created by ciuchino on 13/04/18.
 //
 
-#include "Label_splitting_module.h"
+#include "../include/Label_splitting_module.h"
 
 Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set){
     this->regions=regions;

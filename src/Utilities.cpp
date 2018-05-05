@@ -2,7 +2,7 @@
 // Created by ciuchino on 18/04/18.
 //
 
-#include "Utilities.h"
+#include "../include/Utilities.h"
 
 namespace Utilities {
     //Region = set<int> ->ritorna un insieme di stati

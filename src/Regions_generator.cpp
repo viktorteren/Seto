@@ -1,7 +1,7 @@
 //
 // Created by viktor on 12/04/18.
 //
-#include "Regions_generator.h"
+#include "../include/Regions_generator.h"
 
 
 Region_generator::Region_generator() {

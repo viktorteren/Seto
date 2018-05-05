@@ -3,8 +3,8 @@
 //
 
 #include <climits>
-#include "Place_irredundant_pn_creation_module.h"
-#include "Essential_region_search.h"
+#include "../include/Place_irredundant_pn_creation_module.h"
+#include "../include/Essential_region_search.h"
 
 Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg){
 	pre_regions = pre_reg;

@@ -1,8 +1,8 @@
 
-#include "Label_splitting_module.h"
-#include "Regions_generator.h"
-#include "Place_irredundant_pn_creation_module.h"
-#include "Pre_and_post_regions_generator.h"
+#include "../include/Label_splitting_module.h"
+#include "../include/Regions_generator.h"
+#include "../include/Place_irredundant_pn_creation_module.h"
+#include "../include/Pre_and_post_regions_generator.h"
 
 int main() {
     bool first;

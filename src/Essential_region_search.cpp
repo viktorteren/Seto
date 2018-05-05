@@ -2,7 +2,7 @@
 // Created by viktor on 14/04/18.
 //
 
-#include "Essential_region_search.h"
+#include "../include/Essential_region_search.h"
 
 Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre_reg){ pre_regions = pre_reg; };
 

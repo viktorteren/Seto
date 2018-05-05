@@ -2,7 +2,7 @@
 // Created by ciuchino on 13/04/18.
 //
 
-#include "TS_parser.h"
+#include "../include/TS_parser.h"
 
 My_Map* ts_map;
 int num_states, num_transactions, initial_state,num_events;
