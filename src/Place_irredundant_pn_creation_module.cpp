@@ -40,11 +40,11 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 	else{
 		cout << "ALL REGIONS ARE ESSENTIAL" << endl;
 	}
-	delete ers;
-	delete essential_regions;
 }
 
 Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
+	delete ers;
+	delete essential_regions;
 	delete not_essential_regions;
 	delete cost_map;
 	delete not_essential_regions_map;
@@ -56,6 +56,7 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	for(auto el:*post_regions){
 		delete el.second;
 	}
+	delete irredundant_regions_map;
 
 }
 
@@ -97,36 +98,68 @@ void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 
 set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
+	int event;
+	set<int> *event_states;
+	set<int> *essential_states;
+	set<int> uncovered_states;
+	set<int> *total_uncovered_states;
+	set<Region*> *regions;
+	auto essential_regions_of_event = new vector<Region*>();
+	//per ogni evento che ha regioni non essenziali:
+	for(auto record: *not_essential_regions_map){
+		event = record.first;
+		cout << "uncovered states for event " << event  << ":" << endl;
+		//calcolo l'unione degli stati coperti dalle pre-regioni di quel evento
+		regions = (*(pre_regions)->find(event)).second;
+		event_states = regions_union(regions);
+		//calcolo gli stati coperti da pre-regioni essenziali
+		//scorro tutte le regioni dell'evento estraendo solo quelle essenziali
+		//cout << "aggiunta regioni essenziali dell'evento " << event << endl;
+		for(auto reg: *(pre_regions->find(event)->second)){
+			if(essential_regions->find(reg) != essential_regions->end()){
+				/*cout << "regione essenziale: ";
+				print(*reg);*/
+				essential_regions_of_event->push_back(reg);
+			}
+		}
+		essential_states = regions_union(essential_regions_of_event);
 
-	auto states_to_cover = Utilities::regions_union(not_essential_regions);
-	auto covered_states = Utilities::regions_union(essential_regions);
-	auto total_uncovered_states = Utilities::region_difference(*states_to_cover, *covered_states);
-	if(total_uncovered_states->size() > 0){
-		cout << "total uncovered states: ";
-		println(*total_uncovered_states);
+		//calcolo gli stati non ancora coperti
+
+		uncovered_states = *region_difference(*event_states, *essential_states);
+		println(uncovered_states);
+		//cout << "---------------" << endl;
+		//cout << "evento: " << record.first << endl;
+		/*cout << "tutti gli stati degli eventi: ";
+		print(event_states);
+		cout << "stati coperti da eventi essenziali: ";
+		print(essential_states);*/
+		/*cout << "stati non coperti da eventi essenziali: ";
+		println(uncovered_states);
+		cout << "---------------" << endl;*/
+
+		if(total_uncovered_states->empty()){
+			total_uncovered_states = &uncovered_states;
+		}
+		else{
+			total_uncovered_states = regions_union(total_uncovered_states, &uncovered_states);
+		}
+
+		//svuoto le variabili per ogni iterazione
+		essential_regions_of_event->erase(essential_regions_of_event->begin(), essential_regions_of_event->end());
+		delete event_states;
+		delete essential_states;
 	}
 	return *total_uncovered_states;
 }
 
 int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
-	//cout << "chiamata ricorsiva" << endl;
 	//per l'insieme degli stati non coperti devo trovare le possibili coperture irridondanti
-	//1.1. trovare quali insiemi di regioni non essenziali (dell'evento in questione) coprono tali stati -> creare una parte dell'equazione
-	//prendo una regione alla volta
-	//calcolo gli stati che rimangono da coprire, torno al punto precedente finchè non ho coperto tutti gli stati
-	//controllo se l'insieme che ho ricavato è irridondante
+	//trovare quali insiemi di regioni non essenziali
 
-	//metodo simile ma alternativo:
 	//metto insieme gli stati non coperti senza fare la divisione per evento
-	//e aggiungo regioni che coprono più stati possibili -> potrei avere un miglioramento delle prestazioni
-	//il resto è analogo: mi fermo se supero il vecchio risultato migliore o l'insieme non è più irridondante
-	//alla fine è come se avessi l'equazione del punto 1.1 ma minimizzata parzialmente
-
-	//trovare tutte le coperture possibili è troppo difficile:
-	//prendo una regione non essenzialee alla volta e vedo quanti stati non coperti copre:
-	//scelgo quella che copre più stati procedo con l'esecuzione
-	//mi serve una funzione che dato un insieme di stati e una regione ritorni il numero di stati coperti da quella regione: cardinalità dell'intersezione
-	//devo salvarmi tutte le regioni irridondanti insieme senza mappe
+	//e aggiungo regioni non essenziali che coprono più stati possibili tra quelli non coperti
+	//mi fermo se supero il vecchio risultato migliore -> alla fine  l'insieme è sicuramente irridondante
 
 	Region *candidate;
 	int cover_of_candidate;
