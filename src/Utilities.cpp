@@ -100,14 +100,63 @@ namespace Utilities {
     }
 
     void print(Region &region) {
-        for (auto state : region) {
-            cout << state << ",";
+        Region::iterator it;
+        int pos=0;
+        int size=region.size();
+        //for (auto state : region) {
+        for(it=region.begin();it!=region.end();++it){
+            auto state=*it;
+            pos++;
+            cout << state;
+            if(pos!=size){
+                cout<<",";
+            }
         }
     }
 
     void println(Region &region) {
         print(region);
         cout << endl;
+    }
+
+    void print_place(int pos,Region &region) {
+        cout<<"r"<<pos<<": { ";
+        print(region);
+        cout<<" } ";
+    }
+
+    void print_transactions() {
+        cout<<"Transazioni: "<<endl;
+        for(int i=0;i<num_transactions;i++){
+            cout<<i;
+            if(i!=num_transactions-1)
+                cout<<",";
+        }
+
+    }
+
+
+    void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>> * irredundant_region) {
+        int pos=0;
+
+        cout<<"Posti: "<< endl;
+        for(auto record:*essential_regions){
+            for(auto reg: record.second) {
+                pos++;
+                Utilities::print_place(pos,*reg);
+            }
+        }
+        cout<<endl;
+
+        //todo: nel caso in qui tutte le regioni sono essenziali da seg fault(qui cosa ritorni?)
+        /*for (auto record:*irredundant_region) {
+                for (auto reg: record.second)
+                    Utilities::print_place(*reg);
+        }*/
+
+        print_transactions();
+
+        //todo:finire PN con pre e post regioni (pre_essential_region & post_essential_region && pre/post_irredundant)
     }
 
     set<int> *region_difference(set<int> &first, set<int> &second) {

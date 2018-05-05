@@ -65,7 +65,7 @@ int main() {
     auto irredundant_region=pn_module->get_irredundant_regions();
     auto essential_regions=pn_module->get_essential_regions();
 
-
+    print_PN(essential_regions,irredundant_region);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
