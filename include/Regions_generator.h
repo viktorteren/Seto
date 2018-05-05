@@ -25,8 +25,8 @@ public:
         set<int> *states_to_add_exit_or_enter= nullptr;
         set<int> *states_to_add_nocross= nullptr;
         ~Branches_states_to_add(){
-        	delete states_to_add_exit_or_enter;
-        	delete states_to_add_nocross;
+        	if(states_to_add_exit_or_enter!= nullptr) delete states_to_add_exit_or_enter;
+        	if(states_to_add_nocross != nullptr) delete states_to_add_nocross;
 		}
     };
 

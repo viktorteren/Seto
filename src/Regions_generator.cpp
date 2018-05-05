@@ -18,9 +18,6 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
-    /*for(auto record: *map_states_to_add){
-        delete record.second;
-    }*/
     delete map_states_to_add;
     delete queue_temp_regions;
 }
@@ -284,14 +281,14 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
 
-        Branches_states_to_add branches=*(*map_states_to_add)[last_event_nocross];
+        Branches_states_to_add *branches=(*map_states_to_add)[last_event_nocross];
 
-        cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
+        cout << "dim primo set vettore: " << branches->states_to_add_nocross->size() << endl;
         /* for(auto state : *branches.states_to_add_nocross) {
              cout << "stati vet: " << state <<endl;
          }*/
 
-        for(auto state : *branches.states_to_add_nocross ) {
+        for(auto state : *branches->states_to_add_nocross ) {
             expanded_regions[0].insert(state);
         }
 
@@ -320,6 +317,8 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
+
+        delete branches;
 
     }
     else{
@@ -524,8 +523,9 @@ void Region_generator::set_middle_set_of_states( map<int,int>* queue_event_index
 
     for(auto record:*queue_event_index){
         cout<<"event: " <<record.first<<endl;
-        if((*middle_set_of_states)[record.first] == nullptr)
+        if( (*middle_set_of_states)[record.first] == nullptr)
             (*middle_set_of_states)[record.first] = new vector<Region*>();
+
         init=end+1;
         end=(*queue_event_index)[record.first];
         cout<<"init: " <<init<<" end: " << end;
