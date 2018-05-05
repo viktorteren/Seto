@@ -11,7 +11,6 @@ Region_generator::Region_generator() {
     regions = new map<int,vector<Region>*>;
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add *> ();
-
     middle_set_of_states=new map<int, vector<Region*> *>;
     //states = num_states;
     //events = num_events;
@@ -19,12 +18,22 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
+	//todo: leak rimasto è legato a map_states ... ma non si può utilizzare il seguente codice
 	/*for(auto record: *map_states_to_add){
 		delete record.second;
 	}*/
 	//delete map_states_to_add;
     delete queue_temp_regions;
 	delete regions;
+
+	for(auto el:*middle_set_of_states){
+		delete el.second;
+	}
+	delete middle_set_of_states;
+	for(auto rec: *number_of_bad_events){
+		delete rec.second;
+	}
+	delete number_of_bad_events;
 }
 
 vector<ER>* Region_generator::get_ER_set(){
@@ -220,7 +229,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             event_types[e.first] = branch_selection(&e.second, region, e.first);
 
             for(int i=0;i<num_events;i++){
-                cout<< "event_type: " <<event_types[i];
+                cout<< "event_type: " <<event_types[i] << endl;
             }
 
             //se è no cross non controllo gli altri eventi
@@ -243,10 +252,11 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
-        if(type==OK){
+        //todo: non so a cosa serve tale riga ma provoca un core dump con l'input4
+        /*if(type==OK){
             cout<<"prova "<<i<<endl;
             map_states_to_add->at(1);
-        }
+        }*/
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
             branch = NOCROSS;

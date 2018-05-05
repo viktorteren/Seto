@@ -128,7 +128,7 @@ namespace Utilities {
     void print_transactions(){
         cout<<"Transazioni: "<<endl;
         for(int i=0;i<num_transactions;i++){
-            cout<<i;
+            cout<<"t" <<i;
             if(i!=num_transactions-1)
                 cout<<",";
         }
@@ -143,17 +143,23 @@ namespace Utilities {
         for(auto record:*essential_regions){
             for(auto reg: record.second) {
                 pos++;
-                Utilities::print_place(pos,*reg);
+                print_place(pos,*reg);
             }
         }
         cout<<endl;
 
-        //todo: nel caso in qui tutte le regioni sono essenziali da seg fault(qui cosa ritorni?)
-        /*for (auto record:*irredundant_region) {
-                for (auto reg: record.second)
-                    Utilities::print_place(*reg);
-        }*/
+        cout<< "Posti ovuti a regioni non essenziali: " << endl;
 
+	    for (auto record:*irredundant_regions) {
+		    for (auto reg: record.second){
+			    pos++;
+			    print_place(pos, *reg);
+		    }
+	    }
+
+        cout << endl;
+
+	    //todo: nel caso in qui tutte le regioni sono essenziali da seg fault, seg-fault non dovrebbe essere legato al codice precedente
         print_transactions();
 
         //todo:finire PN con pre e post regioni (pre_essential_region & post_essential_region && pre/post_irredundant)

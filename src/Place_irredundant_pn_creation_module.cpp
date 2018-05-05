@@ -151,6 +151,7 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 				total_uncovered_states = uncovered_states;
 			}
 			else{
+				//todo: qui c'è un memory leak dovuto al riutilizzo della stessa variabile: non so come sistemarlo
 				total_uncovered_states = regions_union(total_uncovered_states, uncovered_states);
 			}
 		}

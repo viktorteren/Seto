@@ -36,12 +36,6 @@ int main() {
 	    delete candidate_regions;
     }
     else{
-
-        for(auto el:*rg->get_middle_set_of_states()){
-            delete el.second;
-        }
-        delete rg->get_middle_set_of_states();
-
         pprg = new Pre_and_post_regions_generator(vector_regions);
     }
     delete events_not_satify_EC;
