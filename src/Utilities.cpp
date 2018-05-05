@@ -6,7 +6,7 @@
 
 namespace Utilities {
     //Region = set<int> ->ritorna un insieme di stati
-    set<int> *regions_union(vector<Region *> *vec) {
+    set<int> *regions_union(vector<Region *> *vec){
         auto all_states = new Region();
         int size;
         Region::iterator it;
@@ -21,7 +21,7 @@ namespace Utilities {
         return all_states;
     }
 
-    set<int> *regions_union(set<Region *> *vec) {
+    set<int> *regions_union(set<Region *> *vec){
         //cout << "region union" << endl;
         auto all_states = new Region();
         int size;
@@ -38,7 +38,7 @@ namespace Utilities {
         return all_states;
     }
 
-    set<int> *regions_union(Region *first, Region *second) {
+    set<int> *regions_union(Region *first, Region *second){
         auto all_states = new Region();
         int size;
         Region::iterator it;
@@ -57,7 +57,7 @@ namespace Utilities {
         return all_states;
     }
 
-    map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions) {
+    map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions){
 
         auto pre_regions_intersection = new map<int, set<int> *>;
 
@@ -89,7 +89,7 @@ namespace Utilities {
         return pre_regions_intersection;
     }
 
-    set<int> *regions_intersection(Region *first, Region *second) {
+    set<int> *regions_intersection(Region *first, Region *second){
         auto intersection = new set<int>();
         for (auto state: *first) {
             if (second->find(state) != second->end()) {//trovo lo stato (appartiene a entrambe)
@@ -99,7 +99,7 @@ namespace Utilities {
         return intersection;
     }
 
-    void print(Region &region) {
+    void print(Region &region){
         Region::iterator it;
         int pos=0;
         int size=region.size();
@@ -114,18 +114,18 @@ namespace Utilities {
         }
     }
 
-    void println(Region &region) {
+    void println(Region &region){
         print(region);
         cout << endl;
     }
 
-    void print_place(int pos,Region &region) {
+    void print_place(int pos,Region &region){
         cout<<"r"<<pos<<": { ";
         print(region);
         cout<<" } ";
     }
 
-    void print_transactions() {
+    void print_transactions(){
         cout<<"Transazioni: "<<endl;
         for(int i=0;i<num_transactions;i++){
             cout<<i;
@@ -136,7 +136,7 @@ namespace Utilities {
     }
 
 
-    void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>> * irredundant_region) {
+    void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>> * irredundant_regions) {
         int pos=0;
 
         cout<<"Posti: "<< endl;
@@ -236,45 +236,11 @@ namespace Utilities {
         return false;
     }
 
-   /* map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *regions) {
-
-        auto pre_regions_intersection = new map<int, set<int> *>;
-
-        std::vector<Region>::iterator it;
-
-        //per ogni evento
-        for (auto item: *regions) {
-
-            /*for (auto i: *item.second) {
-                cout << "Preregion di " << item.first << endl;
-                for (auto pre: i)
-                    cout << "S: " << pre << endl;
-            }
-            //se c'è più di una preregione
-            if (item.second->size() > 1) {
-                //per ogni regione
-                Region *temp_intersection = new Region(*(item.second->begin()));
-                for (it = item.second->begin()+1; it != item.second->end(); ++it) {
-                    //for (auto set_ptr: *item.second) {
-                    auto set_ptr = &(*it); //puntatore al set
-                    temp_intersection = regions_intersection(temp_intersection, set_ptr);
-                }
-                (*pre_regions_intersection)[item.first]=temp_intersection;
-            }
-                //c'è solo una preregione tutti gli stati appartengono all'intersezione
-            else {
-                (*pre_regions_intersection)[item.first]=&(*item.second)[0];
-            }
+    void printRegion(const Region& region){
+        for(auto state: region){
+            cout << "state " << state <<endl;
         }
-        cout << "intersezione****************" << endl;
-        for(auto el:*pre_regions_intersection){
-            cout<<"event "<<el.first<<endl;
-            println(*el.second);
-        }
-
-
-        return pre_regions_intersection;
-    }*/
-
+        cout << endl;
+    }
 }
 

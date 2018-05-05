@@ -18,8 +18,8 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 	if(not_essential_regions->size() > 0){
 		cost_map_filling();
 		uncovered_states = search_not_covered_states_per_event();
-		if(uncovered_states.size() > 0){
-			set<int> states_to_cover = uncovered_states;
+		if(uncovered_states->size() > 0){
+			set<int> states_to_cover = *uncovered_states;
 			auto used_regions = new set<Region *>();
 			irredundant_regions = new set<Region *>();
 			computed_paths_cache = new set<set<Region *>>();
@@ -31,6 +31,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 				//cout << "[" << &(*region)  << "] ";
 				println(*region);
 			}
+			delete used_regions;
 		}
 		else{
 			cout << "ALL STATES ARE COVERED BY ESSENTIAL REGIONS" << endl;
@@ -47,6 +48,9 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	delete essential_regions;
 	delete not_essential_regions;
 	delete cost_map;
+	for(auto rec: *not_essential_regions_map){
+		delete rec.second;
+	}
 	delete not_essential_regions_map;
 
 	for(auto el:*pre_regions){
@@ -57,7 +61,8 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 		delete el.second;
 	}
 	delete irredundant_regions_map;
-
+	delete irredundant_regions;
+	delete computed_paths_cache;
 }
 
 map<int, set<Region*>> * Place_irredundant_pn_creation_module::get_irredundant_regions(){
@@ -96,13 +101,13 @@ void Place_irredundant_pn_creation_module::search_not_essential_regions() {
 	}*/
 }
 
-set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
+set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_event() {
 	cout << "--------------------------------------------------- SEARCHING FOR UNCOVERED STATES --------------------------------------------" << endl;
 	int event;
-	set<int> *event_states;
-	set<int> *essential_states;
-	set<int> uncovered_states;
-	set<int> *total_uncovered_states;
+	set<int> *event_states = nullptr;
+	set<int> *essential_states = nullptr;
+	set<int> *uncovered_states = nullptr;
+	set<int> *total_uncovered_states = nullptr;
 	set<Region*> *regions;
 	auto essential_regions_of_event = new vector<Region*>();
 	//per ogni evento che ha regioni non essenziali:
@@ -125,9 +130,9 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 		essential_states = regions_union(essential_regions_of_event);
 
 		//calcolo gli stati non ancora coperti
-
-		uncovered_states = *region_difference(*event_states, *essential_states);
-		println(uncovered_states);
+		delete uncovered_states;
+		uncovered_states = region_difference(*event_states, *essential_states);
+		println(*uncovered_states);
 		//cout << "---------------" << endl;
 		//cout << "evento: " << record.first << endl;
 		/*cout << "tutti gli stati degli eventi: ";
@@ -138,11 +143,16 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 		println(uncovered_states);
 		cout << "---------------" << endl;*/
 
-		if(total_uncovered_states->empty()){
-			total_uncovered_states = &uncovered_states;
+		if(total_uncovered_states == nullptr){
+			total_uncovered_states = uncovered_states;
 		}
 		else{
-			total_uncovered_states = regions_union(total_uncovered_states, &uncovered_states);
+			if(total_uncovered_states->empty()){
+				total_uncovered_states = uncovered_states;
+			}
+			else{
+				total_uncovered_states = regions_union(total_uncovered_states, uncovered_states);
+			}
 		}
 
 		//svuoto le variabili per ogni iterazione
@@ -150,7 +160,9 @@ set<int> Place_irredundant_pn_creation_module::search_not_covered_states_per_eve
 		delete event_states;
 		delete essential_states;
 	}
-	return *total_uncovered_states;
+	delete essential_regions_of_event;
+	delete uncovered_states;
+	return total_uncovered_states;
 }
 
 int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost){
@@ -166,8 +178,8 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 	unsigned int temp_cover;
 	//coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme delle regioni del figlio
 	int cost_of_candidate;
-	set<int> new_states_to_cover;
-	set<Region *> new_states_used = *used_regions;
+	set<int> *new_states_to_cover;
+	set<Region *> *new_states_used = used_regions;
 	auto chosen_candidates = new set<Region *>();
 	set<Region *> *temp_aggregation;
 	int new_best_cost = last_best_cost; //uno dei sotto-rami potrebbe aver migliorato il risultato, di conseguenza devo aggiornare la variabile e non utilizzare il parametro in ingresso alla funzione
@@ -202,11 +214,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 				//ogni volta che entro nell'if alloco un nuovo spazio di conseguenza devo deallocarlo
 				delete temp_aggregation;
 			}
-			/*else {
-				if(used_regions->size() == 0){
-					cout << "la regione è un vecchio candidato" << endl;
-				}
-			}*/
 		}
 		//cout << "cover of candidate: " << cover_of_candidate << endl;
 
@@ -224,7 +231,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 
 		//non potrò trovare una soluzione migliore con il seguente candidato
 		int current_cost = cost_of_candidate + father_cost;
-		new_states_used.insert(candidate);
+		new_states_used->insert(candidate);
 
 		/*cout << "prova con: ";
 		for(auto r: new_states_used){
@@ -234,7 +241,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 		cout << endl;*/
 		if(current_cost >= new_best_cost){
 			//salvo il percorso nella cache per non ripeterlo
-			//computed_paths_cache->insert(new_states_used);
+			computed_paths_cache->insert(*new_states_used);
 			//break; -> non chiamare la chiamata ricorsiva ma non fare nemmeno break dato che i fratelli con copertura minore possono avere costo più basso
 		}
 		//ho completato la copertura ed è meglio di quella precedente
@@ -250,30 +257,31 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 			cout << "costo precedente era: " << father_cost << endl;*/
 
 			//salvo il percorso nella cache per non ripeterlo
-			computed_paths_cache->insert(new_states_used);
+			computed_paths_cache->insert(*new_states_used);
 
 			//dealloco lo spazio vecchio per allocarne uno nuovo
 			delete irredundant_regions;
-			irredundant_regions = new set<Region *>(new_states_used);
+			irredundant_regions = new set<Region *>(*new_states_used);
 		}
 		//non ho completato la copertura e posso ancora trovare una soluzione migliore
 		else{
 			//essedo già stato scelto il candidato e sapendo che devo fare la chiamata ricorsiva devo calcolarmi il nuovo insieme di stati da coprire
-			new_states_to_cover = *region_difference(states_to_cover, *candidate);
+			new_states_to_cover = region_difference(states_to_cover, *candidate);
 
 			//chiamata ricorsiva per espandere ulteriormente la copertura con il candidato scelto
-			int cost = minimum_cost_search(new_states_to_cover, &new_states_used, new_best_cost, current_cost);
+			int cost = minimum_cost_search(*new_states_to_cover, new_states_used, new_best_cost, current_cost);
 			if(cost < new_best_cost){
 				new_best_cost = cost;
 				//non devo salvarmi il risultato migliore dato che è già stato salvato nella chiamata ricorsiva che ha fatto ritornare il costo minore
 			}
+			delete new_states_to_cover;
 		}
-		new_states_used = *used_regions;
+		new_states_used = used_regions;
 	}
 
 	//salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i sottorami di questo nodo per questo sono arrivato al return
 	computed_paths_cache->insert(*used_regions);
-
+	delete chosen_candidates;
 	return new_best_cost;
 
 }
@@ -288,7 +296,7 @@ void Place_irredundant_pn_creation_module::cost_map_filling(){
 			if(cost_map->find(&(*reg)) == cost_map->end()){
 				(*cost_map)[&(*reg)] = region_cost(&(*reg));
 				cout << "Trovato regione non essenziale :";
-				Utilities::print(*reg);
+				print(*reg);
 				cout << "[" << &(*reg)  << "] con il costo: " << (*cost_map)[&(*reg)]  << endl;
 			}
 		}

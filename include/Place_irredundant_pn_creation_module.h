@@ -2,10 +2,8 @@
 // Created by viktor on 18/04/18.
 //
 
-#ifndef PLACE_IRREDUNDANT_PN_CREATION_MODULE_H
-#define PLACE_IRREDUNDANT_PN_CREATION_MODULE_H
+#pragma once
 
-#include "Utilities.h"
 #include "Essential_region_search.h"
 using namespace std;
 
@@ -27,20 +25,17 @@ private:
 	map<int, set<Region*> *> * post_regions;
 	set<Region *>* essential_regions;
 	set<Region *> *not_essential_regions;
-	set<int> uncovered_states;
+	set<int> *uncovered_states;
 	void search_not_essential_regions();
 	map<int, set<Region*> *> * not_essential_regions_map; //mappa: evento -> insieme di regioni non essenziali per quel evento
-	set<int> search_not_covered_states_per_event();
+	set<int> *search_not_covered_states_per_event();
 	map<Region* , int> *cost_map; //costo per ogni regione (dato da: numero eventi per i quali è una pre-regione + numero eventi per i quali è una post-regione + 1)
 	void cost_map_filling();
 	//ritorna il miglior risultato dei rami sottostanti
 	int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost, int father_cost);
 	unsigned long region_cost(Region *reg);
-	set<Region *>* irredundant_regions;
-	set<set<Region *>> *computed_paths_cache; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
-	map<int, set<Region*>> *irredundant_regions_map;
+	set<Region *>* irredundant_regions = nullptr;
+	set<set<Region *>> *computed_paths_cache = nullptr; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
+	map<int, set<Region*>> *irredundant_regions_map = nullptr;
 	void calculate_irredundant_regions_map();
 };
-
-
-#endif //PLACE_IRREDUNDANT_PN_CREATION_MODULE_H

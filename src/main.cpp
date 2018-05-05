@@ -13,7 +13,7 @@ int main() {
     auto rg = new Region_generator();
     map<int, vector<Region> *>* regions= rg->generate();
 
-    vector<Region>* temp_regions = copy_map_to_vector(regions);
+    vector<Region>* vector_regions = copy_map_to_vector(regions);
 
     auto ls=new Label_splitting_module(regions,rg->get_ER_set());
 
@@ -31,8 +31,8 @@ int main() {
         candidate_regions = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events(),events_not_satify_EC);
         cout<<"___________label splitting ok"<<endl;
         //chiamo il pre_region genertor passandogli anche le regioni nuove
-       // pprg = new Pre_and_post_regions_generator(temp_regions,candidate_regions);
-        pprg = new Pre_and_post_regions_generator(temp_regions, candidate_regions);
+       // pprg = new Pre_and_post_regions_generator(vector_regions,candidate_regions);
+        pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions);
 	    delete candidate_regions;
     }
     else{
@@ -42,7 +42,7 @@ int main() {
         }
         delete rg->get_middle_set_of_states();
 
-        pprg = new Pre_and_post_regions_generator(temp_regions);
+        pprg = new Pre_and_post_regions_generator(vector_regions);
     }
     delete events_not_satify_EC;
 
@@ -57,25 +57,25 @@ int main() {
             println(*reg);
     }
 
-    delete rg;
+
 
     //Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
 
-    auto irredundant_region=pn_module->get_irredundant_regions();
+    auto irredundant_regions=pn_module->get_irredundant_regions();
     auto essential_regions=pn_module->get_essential_regions();
 
-    print_PN(essential_regions,irredundant_region);
+    print_PN(essential_regions,irredundant_regions);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
         delete record.second;
     }
-    delete regions;
-    delete temp_regions;
+
+    delete rg;
+    delete vector_regions;
 
     //cout << "fine ricerca " << endl;
-
 
     delete pn_module;
     delete pprg;

@@ -13,7 +13,8 @@ void TS_parser::parse() {
 
     ts_map = new My_Map();
 
-    std::ifstream fin("../test/input.txt");
+    //todo: con questa versione input4 non funziona da vedere se è dovuto alla sistemazione degli ultimi memory leak o anche prima era cosi
+    std::ifstream fin("../test/input4.txt");
 
     assert(fin);
 

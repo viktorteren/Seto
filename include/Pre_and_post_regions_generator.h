@@ -3,8 +3,7 @@
 //
 
 
-#ifndef PRE_AND_POST_REGIONS_GENERATOR_H
-#define PRE_AND_POST_REGIONS_GENERATOR_H
+#pragma once
 
 #include "Utilities.h"
 
@@ -27,6 +26,3 @@ private:
 	void remove_bigger_regions(Region &new_region);
 
 };
-
-
-#endif //PRE_AND_POST_REGIONS_GENERATOR_H

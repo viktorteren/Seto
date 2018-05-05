@@ -21,13 +21,6 @@ Label_splitting_module::~Label_splitting_module(){
     delete regions_intersection;
 };
 
-void printRegion(const Region& region){
-    for(auto state: region){
-        cout << "state " << state <<endl;
-    }
-    cout << endl;
-}
-
 
 bool Label_splitting_module::is_equal_to(ER er,const set<int>* intersection){
 
@@ -76,7 +69,7 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
         println(*ev.second);
     }
 
-    vector<int>* events_not_satisfy_EC=new vector<int>;
+    auto events_not_satisfy_EC=new vector<int>;
 
     //per ogni evento
     //se per un evento non vale che l'intersezione è uguale all'er la TS non è exitation-closed
@@ -116,8 +109,8 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     //modifica con mappa non vettore perchè per alcuni eventi faccio erase di tutto!!!
     vector<int>* events_type=new vector<int>(middle_set_of_states->size());
     Region* candidate_region= nullptr;
-    int num_bad_event_min=-1;
-    vector<Region>* candidate_regions=new vector<Region>();
+    int num_bad_event_min;
+    auto candidate_regions=new vector<Region>();
 
     cout << "middle TOT: " << endl;
     vector<Region *>::iterator it;
@@ -174,12 +167,11 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
 
         // aggiungo candidate_region alle regioni del mio evento
         cout<<"___________________________REGIONE CANDIDATA__________________"<<endl;
-        if(candidate_region!= nullptr)
+        if(candidate_region!= nullptr){
             print(*candidate_region);
-        cout<<"num: " << num_bad_event_min<<endl;
-
-        candidate_regions->push_back(*candidate_region);
-
+            cout<<"num: " << num_bad_event_min<<endl;
+            candidate_regions->push_back(*candidate_region);
+        }
     }
 
     delete events_type;

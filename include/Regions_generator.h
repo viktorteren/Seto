@@ -2,9 +2,7 @@
 // Created by viktor on 12/04/18.
 //
 
-#ifndef PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
-#define PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H
-
+#pragma once
 
 #include "Utilities.h"
 
@@ -34,8 +32,6 @@ public:
     map<int,vector< int >* >* get_number_of_bad_events();
 
 private:
-    //int events,states;
-
     vector<ER> *ER_set;
     map<int,vector<Region>*> *regions;
     vector<Region> *queue_temp_regions;
@@ -58,5 +54,3 @@ private:
     void set_number_of_bad_events(int* event_type,int l,int event);
 
 };
-
-#endif //PROGETTO_SSE_MINIMAL_PRE_REGION_GENERATOR_H

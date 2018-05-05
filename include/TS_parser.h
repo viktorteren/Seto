@@ -2,9 +2,7 @@
 // Created by ciuchino on 13/04/18.
 //
 
-#ifndef PROGETTO_SSE_TS_PARSER_H
-#define PROGETTO_SSE_TS_PARSER_H
-
+#pragma once
 
 #include "Utilities.h"
 
@@ -22,5 +20,3 @@ class TS_parser{
 public:
     static void parse();
 };
-
-#endif

@@ -3,9 +3,7 @@
 //
 
 
-#ifndef PROGETTO_SSE_ESSENTIAL_REGION_SEARCH_H
-#define PROGETTO_SSE_ESSENTIAL_REGION_SEARCH_H
-
+#pragma once
 
 #include <fstream>
 #include <vector>
@@ -33,7 +31,3 @@ private:
 	map<int, set<Region*> *> * pre_regions;
 	map<int, set<Region*>> * essential_map;
 };
-
-
-
-#endif

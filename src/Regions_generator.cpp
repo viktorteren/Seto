@@ -3,6 +3,7 @@
 //
 #include "../include/Regions_generator.h"
 
+using namespace Utilities;
 
 Region_generator::Region_generator() {
     //ts_map = input_map;
@@ -18,8 +19,12 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
-//    delete map_states_to_add;
+	/*for(auto record: *map_states_to_add){
+		delete record.second;
+	}*/
+	//delete map_states_to_add;
     delete queue_temp_regions;
+	delete regions;
 }
 
 vector<ER>* Region_generator::get_ER_set(){
@@ -321,15 +326,10 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
-
-        //todo:così elimino sono la struttura della mappa per il ramo(evento) che ho scelto (e gli altri eventi???!! (error double free))
+	    //todo:così elimino sono la struttura della mappa per il ramo(evento) che ho scelto (e gli altri eventi???!! (error double free)) -> double free non c'è più ma leak probabilmente si
         delete branches;
-
     }
     else{
-        //aggiungere alla coda i 2 prossimi rami (2 regioni successive)
-        //if(branch==ENTER_NOCROSS){
-
         //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
         //per enter devo aggiungere la destinazione degli archi che erano out dalla regione
 
@@ -385,11 +385,6 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
         //RAMO 2 (EXIT/ENTER)
 
-        /*for(auto state: *region){
-            (*(expanded_regions+1)).insert(state);
-            cout<< "inserisco nella extended Reg: " << state << endl;
-        }*/
-
         for(auto state : *branches->states_to_add_exit_or_enter ) {
             expanded_regions[1].insert(state);
         }
@@ -416,12 +411,8 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             for(auto state : i)
                 cout << "stati" << state <<endl ;
         }
-        //}
         delete branches;
     }
-
-
-
     delete[] event_types;
     delete[] expanded_regions;
 }
@@ -448,7 +439,6 @@ map<int, vector<Region> *>* Region_generator::generate(){
         cout<<"ptr expand: " << &((*queue_temp_regions)[pos]) <<endl;
         pos++;
 
-        //expand(er_temp, 2);
         //aggiungi alla coda ER e sposta la posizione per avere l'albero completo
         //perchè voglio ER come middle _state
 
@@ -462,9 +452,6 @@ map<int, vector<Region> *>* Region_generator::generate(){
             cout<< "POSIZIONEEEE**********************************: ";
             cout<< "POSIZIONEEEE**********************************: " << pos <<"reg size " << queue_temp_regions->size() << endl;
             pos++;
-
-            //tolgo l'elemento espanso dalla coda
-            // queue_temp_regions->pop_front();
         }
         (*queue_event_index)[e.first]=pos-1;
 
@@ -473,18 +460,9 @@ map<int, vector<Region> *>* Region_generator::generate(){
     for(auto record: *regions){
         cout<< "REGION ER di " << record.first << endl;
         for(auto region: *record.second){
-            Utilities::println(region);
+            println(region);
         }
     }
-
-    //creazione delle pre-regioni
-    //create_pre_regions();
-
-   /* vector<Region>::iterator it;
-    for(it=queue_temp_regions->begin();it!=queue_temp_regions->end();it++) {
-        cout << "elem ptr: " << &(*it) << endl;
-    }*/
-
 
     set_middle_set_of_states(queue_event_index);
 
@@ -496,7 +474,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
     cout<<"\n debug middle"<<endl;
     for(auto e : *ts_map ){for(auto el_vec: *middle_set_of_states->at(e.first)){
             cout<<el_vec<<endl;
-            Utilities::println(*el_vec);
+            println(*el_vec);
         }
 
     }

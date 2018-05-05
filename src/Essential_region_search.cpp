@@ -6,7 +6,10 @@
 
 Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre_reg){ pre_regions = pre_reg; };
 
-Essential_regions_search::~Essential_regions_search() = default;
+Essential_regions_search::~Essential_regions_search(){
+	//todo: l'aggiunta di questa delete evidenzia la rilevazione di un nuovo memory leak con valgrind anche se tale memory leak dovrebbe esserci anche prima
+	delete essential_map;
+}
 
 set<Region *>* Essential_regions_search::search(){
 
@@ -34,16 +37,12 @@ set<Region *>* Essential_regions_search::search(){
         //cout <<  "evento: " << record.first << endl;
 
 		Region::iterator it2;
-        //regions = *record.second;
-        /*for(it=regions.begin(); it!=regions.end();++it){
-            Region* region= *it;
-        }*/
 
         //se ho una sola regione, tale regione è per forza essenziale
 		if(record.second->size() == 1) {
 			for (auto reg: *record.second) {
 				//cout << "trovato regione essenziale: ";
-				//Utilities::println(*reg);
+				//println(*reg);
 				essential_regions->insert(reg);
 				//non ho ancora creato nessun record relativo ad un certo evento
 				if(essential_map->find(record.first) == essential_map->end()){
@@ -78,7 +77,7 @@ set<Region *>* Essential_regions_search::search(){
 				//se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
 				if(counter == 1){
 					//cout << "trovato regione essenziale: ";
-					//Utilities::println(*last_essential_candidate);
+					//println(*last_essential_candidate);
 					essential_regions->insert(last_essential_candidate);
 					if(essential_map->find(record.first) == essential_map->end()){
 						(*essential_map)[record.first] = set<Region *>();
@@ -101,13 +100,10 @@ set<Region *>* Essential_regions_search::search(){
     	}
     }*/
 
-    //delete &temp_union;
-
     cout << "Regioni essenziali: " << endl;
-		for (auto reg: *essential_regions) {
-			Utilities::println(*reg);
-		}
-
+    for (auto reg: *essential_regions) {
+    	println(*reg);
+    }
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
     return essential_regions;

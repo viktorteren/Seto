@@ -2,10 +2,7 @@
 // Created by ciuchino on 18/04/18.
 //
 
-#ifndef PROGETTO_SSE_UTILITIES_H
-#define PROGETTO_SSE_UTILITIES_H
-
-
+#pragma once
 #include <iostream>
 #include <vector>
 #include <tuple>
@@ -29,8 +26,6 @@ const int EXIT_NOCROSS = 2;
 const int ENTER_NOCROSS = 3;
 
 namespace Utilities {
-
-
     set<int> *regions_union(vector<Region*>* vec);
 	set<int> *regions_union(set<Region*>* vec);
 	set<int> *regions_union(Region* first, Region* second);
@@ -47,7 +42,5 @@ namespace Utilities {
 	bool is_bigger_than(Region* region ,set<int>* region2);
 	bool are_equals(Region*,Region*);
 	bool contains(set<Region*>*,Region*);
+	void printRegion(const Region& region);
 };
-
-
-#endif //PROGETTO_SSE_UTILITIES_H

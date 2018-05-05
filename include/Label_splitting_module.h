@@ -2,11 +2,7 @@
 // Created by ciuchino on 13/04/18.
 //
 
-#ifndef PROGETTO_SSE_LABEL_SPLITTING_MODULE_H
-#define PROGETTO_SSE_LABEL_SPLITTING_MODULE_H
-
-
-
+#pragma once
 
 #include <fstream>
 #include <vector>
@@ -33,7 +29,6 @@ public:
 private:
     map<int, vector<Region> *> * regions;
     vector<ER> *ER_set;
-    //bool is_exitation_closed();
     bool is_equal_to(ER er,const set<int>* intersection);
     bool is_bigger_than(Region*,set<int>*);
     map<int, set<int>* > *regions_intersection;
@@ -43,5 +38,3 @@ private:
     void set_number_of_bad_events(vector<int>* event_type,int event,vector< int >* number_of_bad_events);
 
 };
-
-#endif
