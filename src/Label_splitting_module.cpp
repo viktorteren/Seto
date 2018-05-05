@@ -11,7 +11,13 @@ Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regio
 };
 
 Label_splitting_module::~Label_splitting_module(){
+    for(auto el: *ER_set){
+        delete el;
+    }
     delete ER_set;
+    for(auto el:*regions_intersection){
+        delete el.second;
+    }
     delete regions_intersection;
 };
 
@@ -87,9 +93,6 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
              //res=false;
         }
     }
-
-
-    //delete regions_intersection;
 
     // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
     //la mappa contiene le regioni candidate solo per gli eventi che le hanno!!

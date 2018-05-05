@@ -18,7 +18,7 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
-    delete map_states_to_add;
+//    delete map_states_to_add;
     delete queue_temp_regions;
 }
 
@@ -238,6 +238,10 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
+        if(type==OK){
+            cout<<"prova "<<i<<endl;
+            map_states_to_add->at(1);
+        }
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
             branch = NOCROSS;
@@ -318,6 +322,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
 
+        //todo:così elimino sono la struttura della mappa per il ramo(evento) che ho scelto (e gli altri eventi???!! (error double free))
         delete branches;
 
     }
@@ -352,16 +357,16 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
         cout<<"last event 2 branch "<< last_event_2braches << endl;
 
-        Branches_states_to_add branches=*(*map_states_to_add)[last_event_2braches];
+        Branches_states_to_add *branches=(*map_states_to_add)[last_event_2braches];
 
         cout<<"qui";
 
-        cout << "dim primo set vettore: " << branches.states_to_add_nocross->size() << endl;
-        for(auto state : *branches.states_to_add_nocross) {
+        cout << "dim primo set vettore: " << branches->states_to_add_nocross->size() << endl;
+        for(auto state : *branches->states_to_add_nocross) {
             cout << "stati vet: " << state <<endl;
         }
 
-        for(auto state : *branches.states_to_add_nocross ) {
+        for(auto state : *branches->states_to_add_nocross ) {
             expanded_regions[0].insert(state);
         }
 
@@ -385,7 +390,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             cout<< "inserisco nella extended Reg: " << state << endl;
         }*/
 
-        for(auto state : *branches.states_to_add_exit_or_enter ) {
+        for(auto state : *branches->states_to_add_exit_or_enter ) {
             expanded_regions[1].insert(state);
         }
 
@@ -412,7 +417,10 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
                 cout << "stati" << state <<endl ;
         }
         //}
+        delete branches;
     }
+
+
 
     delete[] event_types;
     delete[] expanded_regions;
@@ -459,7 +467,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
             // queue_temp_regions->pop_front();
         }
         (*queue_event_index)[e.first]=pos-1;
-        //delete er_temp;
+
     }
 
     for(auto record: *regions){

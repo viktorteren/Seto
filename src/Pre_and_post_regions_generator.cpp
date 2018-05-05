@@ -121,6 +121,7 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                     cout << "is pre region of" << record.first << endl;
 
                     bool split = false;
+					bool to_delete=false;
 
                     for (auto cand_reg: *candidate_regions) {
                         if (Utilities::is_bigger_than(region, &cand_reg)) {
@@ -134,9 +135,24 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                                     cout << "ho inserito new region(difference)" << endl;
                                     Utilities::println(*new_region);
                                 }
-                            }
+								else to_delete=true;
 
-                            //else delete new_region;
+                            }
+							else to_delete=true;
+
+                            if (!Utilities::contains((*post_regions)[record.first], new_region)) {
+                                if (is_post_region(&record.second, new_region)) {
+                                    (*post_regions)[record.first]->insert(new_region);
+
+                                    cout << "ho inserito new region(difference)" << endl;
+                                    Utilities::println(*new_region);
+                                }
+								else if(to_delete){
+									delete new_region;
+                                    to_delete=false;
+								}
+                            }
+							else if(to_delete) delete new_region;
 
                             if (!Utilities::contains((*pre_regions)[record.first], &cand_reg)) {
                                 if (is_pre_region(&record.second, &cand_reg)) {
@@ -147,27 +163,17 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                                     pre_region = true;
                                 }
                             }
-                            // else delete new_region;
 
-                            if (!Utilities::contains((*post_regions)[record.first], new_region)) {
-                                if (is_post_region(&record.second, new_region)) {
-                                    (*post_regions)[record.first]->insert(new_region);
 
-                                    cout << "ho inserito new region(difference)" << endl;
-                                    Utilities::println(*new_region);
-                                }
-                            }
-
-                            if(candidate_region== nullptr)
-                            	candidate_region = new set<int>(cand_reg);
-                            if (!Utilities::contains((*post_regions)[record.first], candidate_region)) {
-                                if (is_post_region(&record.second, candidate_region)) {
+                            if (!Utilities::contains((*post_regions)[record.first], &cand_reg)) {
+                                if (is_post_region(&record.second, &cand_reg)) {
+                                    if(candidate_region == nullptr) candidate_region = new set<int>(cand_reg);
                                     (*post_regions)[record.first]->insert(candidate_region);
-
                                     cout << "ho inserito new region(cand reg)" << endl;
                                     Utilities::println(cand_reg);
                                     post_region = true;
                                 }
+
                             }
 
                             split = true;
