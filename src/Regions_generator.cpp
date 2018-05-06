@@ -24,16 +24,17 @@ Region_generator::~Region_generator() {
 	}*/
 	//delete map_states_to_add;
     delete queue_temp_regions;
-	delete regions;
+	//delete regions;
 
-	for(auto el:*middle_set_of_states){
-		delete el.second;
-	}
-	delete middle_set_of_states;
-	for(auto rec: *number_of_bad_events){
-		delete rec.second;
-	}
-	delete number_of_bad_events;
+    for(auto el:*middle_set_of_states){
+        delete el.second;
+    }
+    delete middle_set_of_states;
+
+    for(auto elem:*number_of_bad_events){
+        delete elem.second;
+    }
+    delete number_of_bad_events;
 }
 
 vector<ER>* Region_generator::get_ER_set(){

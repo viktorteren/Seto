@@ -21,14 +21,14 @@ public:
 
 private:
 	Essential_regions_search *ers;
-	map<int, set<Region*> *> * pre_regions;
-	map<int, set<Region*> *> * post_regions;
-	set<Region *>* essential_regions;
-	set<Region *> *not_essential_regions;
-	set<int> *uncovered_states;
+	map<int, set<Region*> *> * pre_regions= nullptr;
+	map<int, set<Region*> *> * post_regions= nullptr;
+	set<Region *>* essential_regions= nullptr;
+	set<Region *> *not_essential_regions= nullptr;
+	set<int> *uncovered_states= nullptr;
 	void search_not_essential_regions();
 	map<int, set<Region*> *> * not_essential_regions_map; //mappa: evento -> insieme di regioni non essenziali per quel evento
-	set<int> *search_not_covered_states_per_event();
+	set<int>* search_not_covered_states_per_event();
 	map<Region* , int> *cost_map; //costo per ogni regione (dato da: numero eventi per i quali è una pre-regione + numero eventi per i quali è una post-regione + 1)
 	void cost_map_filling();
 	//ritorna il miglior risultato dei rami sottostanti

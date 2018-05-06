@@ -175,15 +175,6 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     }
 
     delete events_type;
-    for(auto el:*middle_set_of_states){
-        delete el.second;
-    }
-    delete middle_set_of_states;
-
-    for(auto elem:*number_of_bad_events){
-        delete elem.second;
-    }
-    delete number_of_bad_events;
 
     cout<<"Regioni candidate******"<<endl;
     for(const auto &reg: *candidate_regions){
