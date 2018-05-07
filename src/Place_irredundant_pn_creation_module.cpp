@@ -15,13 +15,14 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<i
 	ers = new Essential_regions_search(pre_regions);
 	essential_regions = ers->search();
 	search_not_essential_regions();
+	irredundant_regions = new set<Region *>();
 	if(not_essential_regions->size() > 0){
 		cost_map_filling();
 		uncovered_states = search_not_covered_states_per_event();
 		if(uncovered_states->size() > 0){
 			set<int> states_to_cover = *uncovered_states;
+            delete uncovered_states;
 			auto used_regions = new set<Region *>();
-			irredundant_regions = new set<Region *>();
 			computed_paths_cache = new set<set<Region *>>();
 			cout << "--------------------------------------------------- MINIMUM COST SEARCH --------------------------------------------" << endl;
 			int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
@@ -60,16 +61,22 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	for(auto el:*post_regions){
 		delete el.second;
 	}
-	delete irredundant_regions_map;
+
+    delete irredundant_regions_map;
 	delete irredundant_regions;
 	delete computed_paths_cache;
 }
 
 map<int, set<Region*>> * Place_irredundant_pn_creation_module::get_irredundant_regions(){
-	if(irredundant_regions_map == nullptr){
-		calculate_irredundant_regions_map();
-	}
-	return irredundant_regions_map;
+	if(irredundant_regions->size()!=0) {
+        calculate_irredundant_regions_map();
+        return irredundant_regions_map;
+    }
+    else {
+        return nullptr;
+    }
+
+
 }
 map<int, set<Region*>> *Place_irredundant_pn_creation_module::get_essential_regions(){
 	return ers->get_essential_regions_map();
@@ -106,12 +113,17 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 	int event;
 	set<int> *event_states = nullptr;
 	set<int> *essential_states = nullptr;
-	set<int> *uncovered_states = nullptr;
+	//set<int> *uncovered_states = nullptr;
 	set<int> *total_uncovered_states = nullptr;
 	set<Region*> *regions;
 	auto essential_regions_of_event = new vector<Region*>();
+	bool first_iteration=true;
+
 	//per ogni evento che ha regioni non essenziali:
 	for(auto record: *not_essential_regions_map){
+        if(!first_iteration) delete uncovered_states;
+		first_iteration=false;
+        set<int> *uncovered_states = nullptr;
 		event = record.first;
 		cout << "uncovered states for event " << event  << ":" << endl;
 		//calcolo l'unione degli stati coperti dalle pre-regioni di quel evento
@@ -130,7 +142,6 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 		essential_states = regions_union(essential_regions_of_event);
 
 		//calcolo gli stati non ancora coperti
-		delete uncovered_states;
 		uncovered_states = region_difference(*event_states, *essential_states);
 		println(*uncovered_states);
 		//cout << "---------------" << endl;
@@ -152,7 +163,11 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 			}
 			else{
 				//todo: qui c'è un memory leak dovuto al riutilizzo della stessa variabile: non so come sistemarlo
-				total_uncovered_states = regions_union(total_uncovered_states, uncovered_states);
+//				total_uncovered_states = regions_union(total_uncovered_states, uncovered_states);
+                auto tmp=regions_union(total_uncovered_states, uncovered_states);
+                delete total_uncovered_states;
+                total_uncovered_states=tmp;
+                delete uncovered_states;
 			}
 		}
 
@@ -163,6 +178,7 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 	}
 	delete essential_regions_of_event;
 	delete uncovered_states;
+
 	return total_uncovered_states;
 }
 

@@ -54,6 +54,7 @@ namespace Utilities {
             all_states->insert(*it);
             ++it;
         }
+
         return all_states;
     }
 
@@ -126,7 +127,7 @@ namespace Utilities {
     }
 
     void print_transactions(){
-        cout<<"Transazioni: "<<endl;
+       cout<<"Transazioni: "<<endl;
         for(int i=0;i<num_transactions;i++){
             cout<<"t" <<i;
             if(i!=num_transactions-1)
@@ -139,6 +140,8 @@ namespace Utilities {
     void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>> * irredundant_regions) {
         int pos=0;
 
+
+        //todo:ci sono regioni doppie perchè ho mappa
         cout<<"Posti: "<< endl;
         for(auto record:*essential_regions){
             for(auto reg: record.second) {
@@ -148,18 +151,20 @@ namespace Utilities {
         }
         cout<<endl;
 
-        cout<< "Posti ovuti a regioni non essenziali: " << endl;
+        cout<< "Posti dovuti a regioni non essenziali: " << endl;
 
-	    for (auto record:*irredundant_regions) {
-		    for (auto reg: record.second){
-			    pos++;
-			    print_place(pos, *reg);
-		    }
-	    }
+        if(irredundant_regions!= nullptr) {
+            for (auto record:*irredundant_regions) {
+                for (auto reg: record.second) {
+                    pos++;
+                    print_place(pos, *reg);
+                }
+            }
+        }
 
         cout << endl;
 
-	    //todo: nel caso in qui tutte le regioni sono essenziali da seg fault, seg-fault non dovrebbe essere legato al codice precedente
+
         print_transactions();
 
         //todo:finire PN con pre e post regioni (pre_essential_region & post_essential_region && pre/post_irredundant)
@@ -172,6 +177,7 @@ namespace Utilities {
                 s->insert(state);
             }
         }
+
         return s;
     }
 
