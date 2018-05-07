@@ -20,8 +20,8 @@ Label_splitting_module::~Label_splitting_module(){
     }
     delete regions_intersection;
 };
-
-bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersection){
+/*
+bool Label_splitting_module::is_bigger_than_or_equal(Region* region ,set<int>* intersection){
 
     if(region->size() >= intersection->size()){
         cout<<"TRUE**************"<<endl;
@@ -39,7 +39,7 @@ bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersecti
     //nella regione trovo tutti gli stati dell'intersezione
     cout<<"TRUE**************"<<endl;
     return true;
-}
+}*/
 
 vector<int>* Label_splitting_module::is_excitation_closed() {
 
@@ -62,7 +62,7 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
         auto event=item.first;
         auto er=ER_set->at((event));
         auto intersec=regions_intersection->at(event);
-        if( ! (is_equal_to(er, intersec) )){
+        if( ! (are_equals(er, intersec) )){
              cout<<"regione delle'evento:"<<event;
              events_not_satisfy_EC->push_back(event);
              //res=false;
@@ -107,7 +107,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
         for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
             cout << "middle:" << endl;
             println(**it);
-            if ( is_bigger_than(*it, regions_intersection->at(event)) ) {
+            if ( is_bigger_than_or_equal_to(*it, regions_intersection->at(event)) ) {
                 cout << "erase" << endl;
                 *middle_set_of_states->at(event)->erase(it, it);
             } else { //lo stato mi va bene

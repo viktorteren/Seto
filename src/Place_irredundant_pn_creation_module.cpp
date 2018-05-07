@@ -54,14 +54,6 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	}
 	delete not_essential_regions_map;
 
-	for(auto el:*pre_regions){
-		delete el.second;
-	}
-
-	for(auto el:*post_regions){
-		delete el.second;
-	}
-
     delete irredundant_regions_map;
 	delete irredundant_regions;
 	delete computed_paths_cache;
@@ -162,7 +154,6 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 				total_uncovered_states = uncovered_states;
 			}
 			else{
-				//todo: qui c'è un memory leak dovuto al riutilizzo della stessa variabile: non so come sistemarlo
 //				total_uncovered_states = regions_union(total_uncovered_states, uncovered_states);
                 auto tmp=regions_union(total_uncovered_states, uncovered_states);
                 delete total_uncovered_states;

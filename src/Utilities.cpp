@@ -219,8 +219,28 @@ namespace Utilities {
         return true;
     }
 
+    bool is_bigger_than_or_equal_to(Region* region ,set<int>* intersection){
 
-    bool are_equal(Region *region1, Region *region2) {
+        if(region->size() >= intersection->size()){
+            cout<<"TRUE**************"<<endl;
+            return true;
+        }
+
+        for(auto elem: *intersection){
+            //nella regione non trovo un elem delll'intersez
+            if( region->find(elem) == region->end()){
+                cout<<"FALSE**************"<<endl;
+                return false;
+            }
+        }
+
+        //nella regione trovo tutti gli stati dell'intersezione
+        cout<<"TRUE**************"<<endl;
+        return true;
+    }
+
+
+    bool are_equals(Region *region1, Region *region2) {
 
 
         if (region1->size() != region2->size())
@@ -236,11 +256,10 @@ namespace Utilities {
 
     }
 
-
     bool contains(set<Region *> *set, Region *region) {
 
         for(auto elem:*set){
-            if(are_equal(elem, region) ){
+            if(are_equals(elem, region) ){
                 return true;
             }
         }
@@ -248,20 +267,5 @@ namespace Utilities {
         return false;
     }
 
-    bool is_equal_to(ER er,const set<int>* intersection){
-        if(er->size()!=intersection->size()) {
-            cout<<"if"<<endl;
-            return false;
-        }
-        else {
-            cout<<"else"<<endl;
-            for (auto state_er : *er) {
-                if(intersection->find(state_er) == intersection->end()) {   //non l'ho trovato
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
 }
 

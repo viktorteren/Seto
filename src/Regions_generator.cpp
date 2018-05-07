@@ -18,11 +18,12 @@ Region_generator::Region_generator() {
 }
 
 Region_generator::~Region_generator() {
-	//todo: leak rimasto è legato a map_states ... ma non si può utilizzare il seguente codice
-	/*for(auto record: *map_states_to_add){
+	for(auto record: *map_states_to_add){
+        delete record.second->states_to_add_nocross;
+        delete record.second->states_to_add_exit_or_enter;
 		delete record.second;
-	}*/
-	//delete map_states_to_add;
+	}
+	delete map_states_to_add;
     delete queue_temp_regions;
 	//delete regions;
 
@@ -58,8 +59,7 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans= new vector<int>(4,0);
 
-    //delete struct_states_to_add;
-    struct_states_to_add= new Branches_states_to_add();
+//    struct_states_to_add= new Branches_states_to_add();
 
     states_to_add_enter=new set<int>;
     states_to_add_exit=new set<int>;
@@ -124,8 +124,15 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
     if( ( (*trans)[in]>0 && (*trans)[enter]>0) || ((*trans)[in]>0 && (*trans)[exit]>0) || ( (*trans)[enter]>0 && (*trans)[exit]>0 ) ) {
         cout<<"return no cross"<<endl;
 
-        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= struct_states_to_add;
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_nocross!= nullptr)
+            delete (*map_states_to_add)[event]->states_to_add_nocross;
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_exit_or_enter)
+            delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end())
+            delete (*map_states_to_add)[event];
+        (*map_states_to_add)[event]=new Branches_states_to_add();
+        //struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
+        map_states_to_add->at(event)->states_to_add_nocross=states_to_add_nocross;
 
         delete states_to_add_enter;
         delete states_to_add_exit;
@@ -137,9 +144,12 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
     else if( (*trans)[exit]>0  && (*trans)[out]>0 ){ //(exit-out)
         cout<<"return exit_no cross"<<endl;
 
-        struct_states_to_add->states_to_add_exit_or_enter=states_to_add_exit;
-        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= struct_states_to_add;
+        delete (*map_states_to_add)[event]->states_to_add_nocross;
+        delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
+        delete (*map_states_to_add)[event];
+        (*map_states_to_add)[event]=new Branches_states_to_add();
+        map_states_to_add->at(event)->states_to_add_exit_or_enter=states_to_add_exit;
+        map_states_to_add->at(event)->states_to_add_nocross=states_to_add_nocross;;
 
         delete states_to_add_enter;
         //delete struct_states_to_add;
@@ -152,9 +162,13 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         cout<<"return enter_no cross"<<endl;
 
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
-        struct_states_to_add->states_to_add_exit_or_enter=states_to_add_enter;
-        struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
-        (*map_states_to_add)[event]= struct_states_to_add;
+        delete (*map_states_to_add)[event]->states_to_add_nocross;
+        delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
+        delete (*map_states_to_add)[event];
+        (*map_states_to_add)[event]=new Branches_states_to_add();
+        map_states_to_add->at(event)->states_to_add_exit_or_enter=states_to_add_enter;
+        map_states_to_add->at(event)->states_to_add_nocross=states_to_add_nocross;
+        //(*map_states_to_add)[event]= struct_states_to_add;
 
         //delete states_to_add_enter;
         delete states_to_add_exit;
@@ -172,7 +186,9 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         delete states_to_add_exit;
         delete states_to_add_enter;
 
-        delete struct_states_to_add;
+/*        delete struct_states_to_add->states_to_add_exit_or_enter;
+        delete struct_states_to_add->states_to_add_nocross;
+        delete struct_states_to_add;*/
 
         delete trans;
         return OK;
@@ -253,11 +269,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
 
     for(int i = 0; i < num_events; i ++){
         type=event_types[i];
-        //todo: non so a cosa serve tale riga ma provoca un core dump con l'input4
-        /*if(type==OK){
-            cout<<"prova "<<i<<endl;
-            map_states_to_add->at(1);
-        }*/
+
         if(type == NOCROSS){
             cout<<"Break per no_cross " <<endl;
             branch = NOCROSS;
@@ -337,8 +349,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         //capire gli stati da aggiungere
         //l'operazione sta nella copia della regione puntata, l'espansione di tale regione e il ritorno di una nuova regione più grande
         //mettere l'unico ramo (regione successiva)
-	    //todo:così elimino sono la struttura della mappa per il ramo(evento) che ho scelto (e gli altri eventi???!! (error double free)) -> double free non c'è più ma leak probabilmente si
-        delete branches;
+
     }
     else{
         //per il no cross devo aggiungere la sorgente di tutti gli archi entranti nella regione(enter diventa in)
@@ -422,7 +433,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
             for(auto state : i)
                 cout << "stati" << state <<endl ;
         }
-        delete branches;
+
     }
     delete[] event_types;
     delete[] expanded_regions;

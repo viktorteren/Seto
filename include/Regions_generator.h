@@ -22,10 +22,10 @@ public:
     struct Branches_states_to_add {
         set<int> *states_to_add_exit_or_enter= nullptr;
         set<int> *states_to_add_nocross= nullptr;
-        ~Branches_states_to_add(){
+        /*~Branches_states_to_add(){
         	if(states_to_add_exit_or_enter!= nullptr) delete states_to_add_exit_or_enter;
         	if(states_to_add_nocross != nullptr) delete states_to_add_nocross;
-		}
+		}*/
     };
 
     map<int, vector<Region*> *>* get_middle_set_of_states();
@@ -36,11 +36,11 @@ private:
     map<int,vector<Region>*> *regions;
     vector<Region> *queue_temp_regions;
 
-    map<int, Branches_states_to_add*> *map_states_to_add;
-    Branches_states_to_add *struct_states_to_add;
-    set<int> *states_to_add_enter;
-    set<int> *states_to_add_exit;
-    set<int> *states_to_add_nocross;
+    map<int, Branches_states_to_add*> *map_states_to_add= nullptr;
+   // Branches_states_to_add *struct_states_to_add= nullptr;
+    set<int> *states_to_add_enter= nullptr;
+    set<int> *states_to_add_exit= nullptr;
+    set<int> *states_to_add_nocross= nullptr;
 
     map<int, vector<Region*> *>* middle_set_of_states;
     //per ogni evento vector di coppie numero eventi che violano la regione e ptr_regione

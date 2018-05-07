@@ -40,7 +40,8 @@ namespace Utilities {
 	set<int>* region_difference(set<int>& first, set<int>& second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
 	bool is_bigger_than(Region* region ,set<int>* region2);
-	bool are_equal(Region *, Region *);
+    bool is_bigger_than_or_equal_to(Region*,set<int>*);
+    bool are_equals(Region *, Region *);
 	bool contains(set<Region*>*,Region*);
-	bool is_equal_to(ER er,const set<int>* intersection);
+
 };

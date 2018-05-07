@@ -24,5 +24,6 @@ private:
 	bool is_pre_region(List_edges *list, Region *region);
 	bool is_post_region(List_edges *list, Region *region);
 	void remove_bigger_regions(Region &new_region);
+	set<Region*>* added_regions_ptrs;
 
 };
