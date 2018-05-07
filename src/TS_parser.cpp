@@ -3,6 +3,8 @@
 //
 
 #include "../include/TS_parser.h"
+/*#include <gvc/gvc.h>
+#include <cgraph/cgraph.h>*/
 
 My_Map* ts_map;
 int num_states, num_transactions, initial_state,num_events;
