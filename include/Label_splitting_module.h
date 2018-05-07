@@ -29,7 +29,6 @@ public:
 private:
     map<int, vector<Region> *> * regions;
     vector<ER> *ER_set;
-    bool is_equal_to(ER er,const set<int>* intersection);
     bool is_bigger_than(Region*,set<int>*);
     map<int, set<int>* > *regions_intersection;
     //coppia numero eventi che violano la regione e ptr_regione

@@ -30,7 +30,7 @@ namespace Utilities {
 	set<int> *regions_union(set<Region*>* vec);
 	set<int> *regions_union(Region* first, Region* second);
 	set<int> *regions_intersection(Region* first, Region* second);
-    set<int> *regions_intersection2(Region& first, Region& second);
+    //set<int> *regions_intersection2(Region& first, Region& second);
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions);
     void print(Region& region);
 	void println(Region& region);
@@ -40,7 +40,7 @@ namespace Utilities {
 	set<int>* region_difference(set<int>& first, set<int>& second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
 	bool is_bigger_than(Region* region ,set<int>* region2);
-	bool are_equals(Region*,Region*);
+	bool are_equal(Region *, Region *);
 	bool contains(set<Region*>*,Region*);
-	void printRegion(const Region& region);
+	bool is_equal_to(ER er,const set<int>* intersection);
 };

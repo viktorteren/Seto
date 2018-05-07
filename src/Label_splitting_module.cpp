@@ -21,24 +21,6 @@ Label_splitting_module::~Label_splitting_module(){
     delete regions_intersection;
 };
 
-
-bool Label_splitting_module::is_equal_to(ER er,const set<int>* intersection){
-
-    if(er->size()!=intersection->size()) {
-        cout<<"if"<<endl;
-        return false;
-    }
-    else {
-         cout<<"else"<<endl;
-        for (auto state_er : *er) {
-             if(intersection->find(state_er) == intersection->end()) {   //non l'ho trovato
-                return false;
-             }
-        }
-    }
-
-    return true;
-}
 bool Label_splitting_module::is_bigger_than(Region* region ,set<int>* intersection){
 
     if(region->size() >= intersection->size()){
@@ -124,7 +106,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
         //auto set_forced_to_be_a_region;
         for (it = middle_set_of_states->at(event)->begin(); it < middle_set_of_states->at(event)->end(); ++it) {
             cout << "middle:" << endl;
-            printRegion(**it);
+            println(**it);
             if ( is_bigger_than(*it, regions_intersection->at(event)) ) {
                 cout << "erase" << endl;
                 *middle_set_of_states->at(event)->erase(it, it);
@@ -135,7 +117,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
                 auto vec_ptr = number_of_bad_events->at(event);
                 if ((*vec_ptr)[pos] == -1) {
 
-                    printRegion( **it );
+                    println( **it );
                     //ricalcola
                     for(auto e  : *middle_set_of_states)
                         (*events_type)[e.first]=branch_selection(&(ts_map->at(e.first)),*it);
@@ -186,8 +168,8 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
     delete number_of_bad_events;
 
     cout<<"Regioni candidate******"<<endl;
-    for(const auto &reg: *candidate_regions){
-        printRegion(reg);
+    for(auto &reg: *candidate_regions){
+        println(reg);
     }
     cout<<"******"<<endl;
 
