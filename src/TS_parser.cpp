@@ -11,7 +11,7 @@ int num_states, num_transactions, initial_state,num_events;
 
 //todo: aggiungere parser dot
 
-void TS_parser::parse() {
+void TS_parser::parse(string file) {
 
     // Open the file:
 
@@ -23,7 +23,7 @@ void TS_parser::parse() {
 
     assert(fin);
 
-// Read defining parameters:
+    // Read defining parameters:
     fin >> num_states;
     fin >> num_transactions;
     fin >> initial_state;

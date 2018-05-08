@@ -18,5 +18,5 @@ extern int num_states, num_transactions, initial_state,num_events;
 
 class TS_parser{
 public:
-    static void parse();
+    static void parse(string file);
 };

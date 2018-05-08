@@ -141,29 +141,42 @@ namespace Utilities {
         int pos=0;
 
 
-        //todo:ci sono regioni doppie perchè ho mappa
+        //todo:ci sono regioni doppie perchè ho mappa -> non ci sono più regioni doppie con il set ma devo tenere traccia del numero di regione con la regione stessa
+		set<Region *> *unrepeated_regions = new set<Region *>();
         cout<<"Posti: "<< endl;
-        for(auto record:*essential_regions){
-            for(auto reg: record.second) {
-                pos++;
-                print_place(pos,*reg);
-            }
-        }
+		for(auto record:*essential_regions){
+			for(auto reg: record.second) {
+				unrepeated_regions->insert(reg);
+			}
+		}
+
+		for(auto reg: *unrepeated_regions) {
+			pos++;
+			print_place(pos,*reg);
+		}
         cout<<endl;
+
+		delete unrepeated_regions;
 
         cout<< "Posti dovuti a regioni non essenziali: " << endl;
 
+		set<Region *> *unrepeated_irredundant_regions = new set<Region *>();
+
         if(irredundant_regions!= nullptr) {
-            for (auto record:*irredundant_regions) {
-                for (auto reg: record.second) {
-                    pos++;
-                    print_place(pos, *reg);
-                }
-            }
+			for(auto record:*irredundant_regions){
+				for(auto reg: record.second) {
+					unrepeated_irredundant_regions->insert(reg);
+				}
+			}
+			for (auto reg: *unrepeated_irredundant_regions) {
+				pos++;
+				print_place(pos, *reg);
+			}
         }
 
         cout << endl;
 
+        delete unrepeated_irredundant_regions;
 
         print_transactions();
 

@@ -4,11 +4,20 @@
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../include/Pre_and_post_regions_generator.h"
 
-int main() {
-    bool first;
-    TS_parser::parse();
-    //todo: fare lo script parametrico
-    //system(".././script.sh > out");
+int main(int argc, char** argv) {
+	bool first;
+	vector <string> args (argv, argv + argc);
+    if(argc == 0){
+		TS_parser::parse("../test/input3.txt");
+    }
+    else if (argc == 1){
+		TS_parser::parse(args[0]);
+    }
+    else{
+    	cout << "Too many input arguments" << endl;
+    	exit(0);
+    }
+
     int pos = 0;
     vector<Region>* candidate_regions;
 
