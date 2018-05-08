@@ -7,11 +7,13 @@
 int main(int argc, char** argv) {
 	bool first;
 	vector <string> args (argv, argv + argc);
-    if(argc == 0){
-		TS_parser::parse("../test/input3.txt");
+    if(argc == 1){
+    	//default input
+		TS_parser::parse("../test/input.dot");
     }
-    else if (argc == 1){
-		TS_parser::parse(args[0]);
+    else if (argc == 2){
+        //cout << args[1] << endl;
+		TS_parser::parse(args[1]);
     }
     else{
     	cout << "Too many input arguments" << endl;
@@ -85,7 +87,5 @@ int main(int argc, char** argv) {
 
     delete pn_module;
     delete pprg;
-
-
 
 }

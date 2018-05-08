@@ -181,6 +181,8 @@ namespace Utilities {
         print_transactions();
 
         //todo:finire PN con pre e post regioni (pre_essential_region & post_essential_region && pre/post_irredundant)
+
+	    cout << endl;
     }
 
     set<int> *region_difference(set<int> &first, set<int> &second) {
