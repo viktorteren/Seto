@@ -43,5 +43,7 @@ namespace Utilities {
     bool is_bigger_than_or_equal_to(Region*,set<int>*);
     bool are_equals(Region *, Region *);
 	bool contains(set<Region*>*,Region*);
+	//todo: print_pn_dot();
+	//todo: print_ts_dot();
 
 };

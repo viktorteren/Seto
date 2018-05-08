@@ -7,6 +7,8 @@
 int main() {
     bool first;
     TS_parser::parse();
+    //todo: fare lo script parametrico
+    //system(".././script.sh > out");
     int pos = 0;
     vector<Region>* candidate_regions;
 

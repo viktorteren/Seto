@@ -9,11 +9,15 @@
 My_Map* ts_map;
 int num_states, num_transactions, initial_state,num_events;
 
+//todo: aggiungere parser dot
+
 void TS_parser::parse() {
 
     // Open the file:
 
     ts_map = new My_Map();
+
+    //todo: aggiungere input da shell
 
     ifstream fin("../test/input3.txt");
 
