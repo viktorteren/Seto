@@ -17,6 +17,8 @@ extern My_Map* ts_map;
 extern int num_states, num_transactions, initial_state,num_events;
 
 class TS_parser{
+	static void parse_TS(ifstream& fin);
+	static void parse_DOT(ifstream& fin);
 public:
     static void parse(string file);
 };

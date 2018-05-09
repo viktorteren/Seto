@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 	vector <string> args (argv, argv + argc);
     if(argc == 1){
     	//default input
-		TS_parser::parse("../test/input4.ts");
+		TS_parser::parse("../test/input3.dot");
     }
     else if (argc == 2){
         //cout << args[1] << endl;
@@ -64,16 +64,14 @@ int main(int argc, char** argv) {
 
 
     auto essential_regions=pn_module->get_essential_regions();
-    map<int,set<Region*>*>* irredundant_regions= nullptr;
-
-    //auto merging_module=
+    map<int,set<Region*>>* irredundant_regions= nullptr;
 
     if(pn_module->get_irredundant_regions()!= nullptr) {
         irredundant_regions = pn_module->get_irredundant_regions();
-        //print_PN(essential_regions,irredundant_regions);
+        print_PN(essential_regions,irredundant_regions);
     }
     else {
-        //print_PN(essential_regions, nullptr);
+        print_PN(essential_regions, nullptr);
 
     }
 
