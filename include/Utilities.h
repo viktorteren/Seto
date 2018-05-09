@@ -45,5 +45,6 @@ namespace Utilities {
 	bool contains(set<Region*>*,Region*);
 	//todo: print_ts_dot(); -> forse non serve se leggiamo già fil in .dot
 	//todo: print_pn_dot_file() -> utilizzato per l'output con graphviz
+	void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name);
 
 };
