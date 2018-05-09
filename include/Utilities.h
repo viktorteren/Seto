@@ -32,6 +32,7 @@ namespace Utilities {
 	set<int> *regions_intersection(Region* first, Region* second);
     //set<int> *regions_intersection2(Region& first, Region& second);
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions);
+    set<int>* regions_intersection(set<Region*>* set);
     void print(Region& region);
 	void println(Region& region);
 	void print_place(Region &region);
@@ -39,6 +40,7 @@ namespace Utilities {
 	void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
 	set<int>* region_difference(set<int>& first, set<int>& second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
+    set<Region*> *copy_map_to_set(map<int, set<Region*> *> *map);
 	bool is_bigger_than(Region* region ,set<int>* region2);
     bool is_bigger_than_or_equal_to(Region*,set<int>*);
     bool are_equals(Region *, Region *);

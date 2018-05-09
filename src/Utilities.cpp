@@ -90,6 +90,28 @@ namespace Utilities {
         return pre_regions_intersection;
     }
 
+
+    set<int>* regions_intersection(set<Region*>* regions){
+
+        auto pre_regions_intersection= new set<int>();
+        bool state_in_intersecton;
+
+        for (auto state: **regions->begin()) {
+            state_in_intersecton=true;
+            for(auto s: *regions){
+                if(s->find(state)==s->end()) {//non l'ho trovato
+                    state_in_intersecton = false;
+                    break;
+                }
+            }
+            if(state_in_intersecton){
+                pre_regions_intersection->insert(state);
+            }
+        }
+
+        return pre_regions_intersection;
+    }
+
     set<int> *regions_intersection(Region *first, Region *second){
         auto intersection = new set<int>();
         for (auto state: *first) {
@@ -207,6 +229,17 @@ namespace Utilities {
         std::copy(input->begin(), input->end(), vec->begin());
         delete input;
         return vec;
+    }
+
+    set<Region*> *copy_map_to_set(map<int, set<Region*> *> *map) {
+        auto input = new set<Region*>();
+        for (auto record: *map) {
+            for (auto region: *record.second) {
+                input->insert(region);
+            }
+        }
+
+        return input;
     }
 
 

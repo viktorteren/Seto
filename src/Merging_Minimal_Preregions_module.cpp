@@ -31,17 +31,17 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
             if(first->find(event)!=first->end() && second->find(event)!=second->end()) {
                 set_union(first->at(event)->begin(), first->at(event)->end(), second->at(event)->begin(), second->at(event)->end(), merged_vector->begin());
                 (*total_pre_regions_map)[event] = new set<Region *>(merged_vector->begin(), merged_vector->end());
-                //cout<<"entrambe"<<endl;
+                cout<<"entrambe"<<endl;
             }
                 //l'evento è solo in first(essential)
             else if(first->find(event)!=first->end()){
                 (*total_pre_regions_map)[event] = new set<Region*>(first->at(event)->begin(),first->at(event)->end());
-                //cout<<"first"<<endl;
+                cout<<"first"<<endl;
             }
                 //l'evento è solo in second(irredundant)
             else if(second->find(event)!=second->end()){
                 (*total_pre_regions_map)[event] = new set<Region *>(second->at(event)->begin(),second->at(event)->end());
-                //cout<<"secodn"<<endl;
+                cout<<"secodn"<<endl;
             }
         }
     }
@@ -51,6 +51,12 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
             (*total_pre_regions_map)[event]=new set<Region*>(first->at(event)->begin(),first->at(event)->end());
         }
     }
+
+    for(auto el:*total_pre_regions_map){
+        for(auto reg:*el.second){
+            Utilities::println(*reg);
+        }
+    }
 }
 
 map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::get_total_preregions_map() {
@@ -58,6 +64,39 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::get_total_preregions
 }
 
 void Merging_Minimal_Preregions_module::merging_preregions() {
+
+    cout<<"MERGING PREREGIONS___________"<<endl;
+
+    set<Region*>* preregions_set=Utilities::copy_map_to_set(total_pre_regions_map);
+    Region* reg_union= nullptr;
+
+    //per ogni coppia di preregioni
+    //per ogni evento
+    //controlla che valga EC con la nuova regione
+    //se vale
+
+    for(auto reg1:*preregions_set) {
+        for (auto reg2:*preregions_set) {
+            cout<<"r1: " <<reg1<<endl;
+            cout<<"r2: " <<reg2<<endl;
+            if(!Utilities::are_equals(reg1,reg2)) {
+                reg_union = Utilities::regions_union(reg1, reg2);
+                cout << "end" << endl;
+                for (auto record:*total_pre_regions_map) {
+                    auto event = record.first;
+                    auto tmp_set = new set<Region *>(total_pre_regions_map->at(event)->begin(),
+                                                     total_pre_regions_map->at(event)->end());
+                    tmp_set->erase(tmp_set->find(reg1));
+                    tmp_set->erase(tmp_set->find(reg2));
+                    tmp_set->insert(reg_union);
+
+                    //todo controlla ec
+
+                }
+            }
+        }
+    }
+
 
 }
 

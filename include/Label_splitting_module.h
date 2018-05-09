@@ -20,7 +20,7 @@ using namespace Utilities;
 
 class Label_splitting_module{
 public:
-    Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER> *er_set);
+    Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER> *er_set,map<int, set<int>* > * intersection);
     ~Label_splitting_module();
     vector<int>* is_excitation_closed();
     vector<Region>* do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,

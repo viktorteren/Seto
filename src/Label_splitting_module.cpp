@@ -4,9 +4,10 @@
 
 #include "../include/Label_splitting_module.h"
 
-Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set){
+Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set,map<int, set<int>* > * intersection){
     this->regions=regions;
     this->ER_set=er_set;
+    this->regions_intersection=intersection;
     //this->number_of_bad_events=number_of_bad_events;
 };
 
@@ -43,13 +44,7 @@ bool Label_splitting_module::is_bigger_than_or_equal(Region* region ,set<int>* i
 
 vector<int>* Label_splitting_module::is_excitation_closed() {
 
-    regions_intersection=do_regions_intersection(regions);
-
-    cout<<"trovata intersezione____________" <<endl;
-    for(auto ev:*regions_intersection) {
-        cout << "evento " << ev.first<<endl;
-        println(*ev.second);
-    }
+    //regions_intersection=do_regions_intersection(regions);
 
     auto events_not_satisfy_EC=new vector<int>;
 

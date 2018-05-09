@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input3.dot";
+	    file = "../test/input3.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -31,7 +31,8 @@ int main(int argc, char** argv) {
 
     vector<Region>* vector_regions = copy_map_to_vector(regions);
 
-    auto ls=new Label_splitting_module(regions,rg->get_ER_set());
+    auto regions_intersection=do_regions_intersection(regions);
+    auto ls=new Label_splitting_module(regions,rg->get_ER_set(),regions_intersection);
 
     Pre_and_post_regions_generator *pprg;
 
