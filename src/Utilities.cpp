@@ -316,8 +316,8 @@ namespace Utilities {
     }
 
     void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name){
-    	//todo: aggiungere il carattere speciale per i token
-	    //todo: calcolare l'insieme dei posti che contengono i token iniziali
+    	//todo: aggiungere il carattere speciale per i token -> utilizzando uno stile speciale per gli stati iniziali
+        auto initial_reg = initial_regions(net);
     	string output_name = file_name;
     	string in_dot_name;
     	string output = "";
@@ -338,12 +338,32 @@ namespace Utilities {
     	output_name = output_name + "_PN.dot";
     	cout << "file: " << output_name << endl;
 
-    	ofstream fout(file_name);
+    	//todo: finire la creazione del file in output
+    	/*ofstream fout(file_name);
 	    fout << "digraph ";
 	    fout << in_dot_name;
 	    fout << "{";
 
+    	fout.close();*/
+	    delete initial_reg;
+    }
 
+    set<Region *>* initial_regions(map<int,set<Region*>*>* reg_map){
+        auto init_reg = new set<Region *>();
+        for(auto rec: *reg_map){
+            for(auto reg: *rec.second){
+                if(reg->find(initial_state) != reg->end()){
+                    init_reg->insert(reg);
+                }
+            }
+        }
+        //per DEBUG:
+		/*cout << "Initial regions:" << endl;
+		for(auto reg: *init_reg){
+        	println(*reg);
+        }*/
+
+        return init_reg;
     }
 
 }
