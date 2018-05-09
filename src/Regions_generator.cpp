@@ -6,14 +6,11 @@
 using namespace Utilities;
 
 Region_generator::Region_generator() {
-    //ts_map = input_map;
     ER_set = new  vector<ER>;
     regions = new map<int,vector<Region>*>;
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add *> ();
     middle_set_of_states=new map<int, vector<Region*> *>;
-    //states = num_states;
-    //events = num_events;
     number_of_bad_events = new map< int,vector< int >*>();
 }
 

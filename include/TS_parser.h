@@ -10,8 +10,8 @@ typedef std::pair<int, int> Edge;
 
 using namespace std;
 
-typedef vector<Edge> Lista_archi;
-typedef std::map<int, Lista_archi> My_Map;
+typedef vector<Edge> Edge_list;
+typedef std::map<int, Edge_list> My_Map;
 
 extern My_Map* ts_map;
 extern int num_states, num_transactions, initial_state,num_events;
