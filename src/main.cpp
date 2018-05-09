@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
 	vector <string> args (argv, argv + argc);
     if(argc == 1){
     	//default input
-		TS_parser::parse("../test/input.dot");
+		TS_parser::parse("../test/input3.dot");
     }
     else if (argc == 2){
         //cout << args[1] << endl;
