@@ -282,5 +282,36 @@ namespace Utilities {
         return false;
     }
 
+    void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name){
+    	//todo: aggiungere il carattere speciale per i token
+	    //todo: calcolare l'insieme dei posti che contengono i token iniziali
+    	string output_name = file_name;
+    	string in_dot_name;
+    	string output = "";
+    	while(output_name[output_name.size()-1] != '.'){
+    		output_name = output_name.substr(0, output_name.size()-1);
+    	}
+	    output_name = output_name.substr(0, output_name.size()-1);
+    	int lower = 0;
+    	for(int i= output_name.size()-1; i > 0; i--){
+    		if(output_name[i] == '/'){
+    			lower = i;
+    			break;
+    		}
+    	}
+    	in_dot_name = output_name.substr(lower+1, output_name.size());
+    	cout << "out name: " << in_dot_name << endl;
+
+    	output_name = output_name + "_PN.dot";
+    	cout << "file: " << output_name << endl;
+
+    	ofstream fout(file_name);
+	    fout << "digraph ";
+	    fout << in_dot_name;
+	    fout << "{";
+
+
+    }
+
 }
 

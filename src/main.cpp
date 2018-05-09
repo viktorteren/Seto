@@ -8,18 +8,19 @@
 int main(int argc, char** argv) {
 	bool first;
 	vector <string> args (argv, argv + argc);
+	string file;
     if(argc == 1){
     	//default input
-		TS_parser::parse("../test/input3.dot");
+	    file = "../test/input3.dot";
     }
     else if (argc == 2){
-        //cout << args[1] << endl;
-		TS_parser::parse(args[1]);
+	    file = args[1];
     }
     else{
     	cout << "Too many input arguments" << endl;
     	exit(0);
     }
+	TS_parser::parse(file);
 
 
     int pos = 0;
@@ -79,6 +80,9 @@ int main(int argc, char** argv) {
         //print_PN(essential_regions, nullptr);
 
     }
+
+    //todo: mettere in input la mappa dopo il merge
+    print_pn_dot_file(essential_regions, file);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
