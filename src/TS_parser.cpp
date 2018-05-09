@@ -33,7 +33,7 @@ void TS_parser::parse(string file) {
     	cout << "The file extension is not supported" << endl;
     	exit(0);
     }
-
+	cout << "---------END OF PARSING----------" << endl;
 }
 
 
@@ -70,18 +70,10 @@ void TS_parser::parse_TS(ifstream& fin){
 }
 
 void TS_parser::parse_DOT(ifstream& fin){
-	string s;
-	/*while(fin){
-		fin >> s;
-		cout << s << endl;
-	}*/
 	cout << "--------------------.dot FILE PARSING------------------------" << endl;
-	//todo: controllare il parser .dot su altri input: per ora funziona solo su input.dot (forse nemmeno quello)
-	string temp1, temp2, temp3, temp4, tempOld, label, src2, dst2;
-	string::size_type sz;
-	int src, dst, ev;
+	string temp1, temp2, temp3, temp4, tempOld, label, src, dst;
+	int ev;
 	bool found;
-	//bool found_initial_state = false;
 	while(fin){
 		found = true;
 		fin >> temp1;
@@ -101,35 +93,29 @@ void TS_parser::parse_DOT(ifstream& fin){
 			break;
 		}
 		if(temp1.compare("->") == 0){
-			cout << "temp1" << endl;
-			//src = stoi (tempOld,&sz);
+			//cout << "temp1" << endl;
 			label = temp3;
-			src2 = tempOld;
-			dst2 = temp2;
+			src = tempOld;
+			dst = temp2;
 		}
 			//caso ideale
 		else if(temp2.compare("->") == 0){
-			cout << "temp2" << endl;
-			//src = stoi (temp1,&sz);
-			//dst = stoi (temp3,&sz);
-			src2 = temp1;
-			dst2 = temp3;
+			//cout << "temp2" << endl;
+			src = temp1;
+			dst = temp3;
 			label = temp4;
 		}
 		else if(temp3.compare("->") == 0){
-			cout << "temp3" << endl;
-			//src = stoi (temp2,&sz);
-			//dst = stoi (temp4,&sz);
-			src2 = temp2;
-			dst2 = temp4;
+			//cout << "temp3" << endl;
+			src = temp2;
+			dst = temp4;
 			fin >> temp4;
 			label = temp4;
 		}
 		else if(temp4.compare("->") == 0){
-			cout << "temp4" << endl;
-			//src = stoi (temp3,&sz);
-			src2 = temp3;
-			fin >> dst2;
+			//cout << "temp4" << endl;
+			src = temp3;
+			fin >> dst;
 			fin >> label;
 		}
 		else{
@@ -139,21 +125,14 @@ void TS_parser::parse_DOT(ifstream& fin){
 		if(found){
 			if(label[0] != '['){
 				//caso in cui ci sia il carattere ';' unito al numero della destinazione
-				if(dst2[dst2.size()-1] == ';'){
-					dst2 = dst2.substr(0, dst2.size()-1);
+				if(dst[dst.size()-1] == ';'){
+					dst = dst.substr(0, dst.size()-1);
 				}
-				initial_state = stoi (dst2);
-				/*try{
-					initial_state = stoi (dst2);
-				}
-				catch(int err){
-					cout << "catched" << endl;
-
-				}*/
+				initial_state = stoi (dst);
 				found = false;
 			}
-			cout << "SRC: " << src2 << endl;
-			cout << "DST: " << dst2 << endl;
+			cout << "SRC: " << src << endl;
+			cout << "DST: " << dst << endl;
 		}
 
 		if(found){
@@ -180,15 +159,13 @@ void TS_parser::parse_DOT(ifstream& fin){
 			if (ts_map->find(ev) == ts_map->end()) {
 				(*ts_map)[ev] = Lista_archi();
 			}
-			(*ts_map)[ev].push_back(make_pair(stoi(src2), stoi(dst2)));
+			(*ts_map)[ev].push_back(make_pair(stoi(src), stoi(dst)));
 		}
 		if(temp4.compare("}") == 0){
 			break;
 		}
 		tempOld = temp4;
 	}
-
 	num_events = static_cast<int>((*ts_map).size());
-	cout << "---------END OF PARSING----------" << endl;
 	fin.close();
 }
