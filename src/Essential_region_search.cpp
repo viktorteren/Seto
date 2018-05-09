@@ -27,7 +27,7 @@ set<Region *>* Essential_regions_search::search(){
     set<int> *temp_union;
 
 	auto essential_regions = new set<Region *> ();
-	essential_map = new map<int, set<Region *>>();
+	essential_map = new map<int, set<Region *>*>();
 
 	Region * last_essential_candidate;
     int counter;
@@ -47,9 +47,9 @@ set<Region *>* Essential_regions_search::search(){
 				essential_regions->insert(reg);
 				//non ho ancora creato nessun record relativo ad un certo evento
 				if(essential_map->find(record.first) == essential_map->end()){
-					(*essential_map)[record.first] = set<Region *>();
+					(*essential_map)[record.first] = new set<Region *>();
 				}
-				(*essential_map)[record.first].insert(reg);
+				(*essential_map)[record.first]->insert(reg);
 			}
 		}
 		else{
@@ -81,9 +81,9 @@ set<Region *>* Essential_regions_search::search(){
 					//println(*last_essential_candidate);
 					essential_regions->insert(last_essential_candidate);
 					if(essential_map->find(record.first) == essential_map->end()){
-						(*essential_map)[record.first] = set<Region *>();
+						(*essential_map)[record.first] = new set<Region *>();
 					}
-					(*essential_map)[record.first].insert(last_essential_candidate);
+					(*essential_map)[record.first]->insert(last_essential_candidate);
 				}
 			}
 			delete temp_union;
@@ -111,7 +111,7 @@ set<Region *>* Essential_regions_search::search(){
 }
 
 
-map<int, set<Region*>> * Essential_regions_search::get_essential_regions_map(){
+map<int, set<Region*>*> * Essential_regions_search::get_essential_regions_map(){
 	if(essential_map == nullptr){
 		search();
 	}

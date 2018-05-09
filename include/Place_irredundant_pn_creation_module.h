@@ -15,8 +15,8 @@ public:
 	explicit Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg);
 	~Place_irredundant_pn_creation_module();
 
-	map<int, set<Region*>> * get_irredundant_regions();
-	map<int, set<Region*>> * get_essential_regions();
+	map<int, set<Region*>*> * get_irredundant_regions();
+	map<int, set<Region*>*> * get_essential_regions();
 
 
 private:
@@ -36,6 +36,6 @@ private:
 	unsigned long region_cost(Region *reg);
 	set<Region *>* irredundant_regions = nullptr;
 	set<set<Region *>> *computed_paths_cache = nullptr; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
-	map<int, set<Region*>> *irredundant_regions_map = nullptr;
+	map<int, set<Region*>*> *irredundant_regions_map = nullptr;
 	void calculate_irredundant_regions_map();
 };

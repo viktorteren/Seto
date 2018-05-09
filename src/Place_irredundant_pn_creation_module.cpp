@@ -59,7 +59,7 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	delete computed_paths_cache;
 }
 
-map<int, set<Region*>> * Place_irredundant_pn_creation_module::get_irredundant_regions(){
+map<int, set<Region*>*> * Place_irredundant_pn_creation_module::get_irredundant_regions(){
 	if(irredundant_regions->size()!=0) {
         calculate_irredundant_regions_map();
         return irredundant_regions_map;
@@ -70,7 +70,7 @@ map<int, set<Region*>> * Place_irredundant_pn_creation_module::get_irredundant_r
 
 
 }
-map<int, set<Region*>> *Place_irredundant_pn_creation_module::get_essential_regions(){
+map<int, set<Region*>*> *Place_irredundant_pn_creation_module::get_essential_regions(){
 	return ers->get_essential_regions_map();
 }
 
@@ -333,14 +333,14 @@ unsigned long Place_irredundant_pn_creation_module::region_cost(Region *reg) {
 void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
 	//algoritmo:
 	//per ogni elemento di not_essential_regions_map se la regione è presente in irredundant_regions
-	irredundant_regions_map = new map<int, set<Region*>>();
+	irredundant_regions_map = new map<int, set<Region*>*>();
 	for(auto record: *not_essential_regions_map){
 		for(auto reg: *record.second){
 			if(irredundant_regions->find(reg) != irredundant_regions->end()){
 				if(irredundant_regions_map->find(record.first) == irredundant_regions_map->end()){
-					(*irredundant_regions_map)[record.first] = set<Region *>();
+					(*irredundant_regions_map)[record.first] = new set<Region *>();
 				}
-				(*irredundant_regions_map)[record.first].insert(reg);
+				(*irredundant_regions_map)[record.first]->insert(reg);
 			}
 		}
 	}

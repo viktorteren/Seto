@@ -144,9 +144,14 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
     else if( (*trans)[exit]>0  && (*trans)[out]>0 ){ //(exit-out)
         cout<<"return exit_no cross"<<endl;
 
-        delete (*map_states_to_add)[event]->states_to_add_nocross;
-        delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
-        delete (*map_states_to_add)[event];
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_nocross!= nullptr)
+            delete (*map_states_to_add)[event]->states_to_add_nocross;
+
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_exit_or_enter)
+            delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
+
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end())
+            delete (*map_states_to_add)[event];
         (*map_states_to_add)[event]=new Branches_states_to_add();
         map_states_to_add->at(event)->states_to_add_exit_or_enter=states_to_add_exit;
         map_states_to_add->at(event)->states_to_add_nocross=states_to_add_nocross;;
@@ -162,9 +167,14 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
         cout<<"return enter_no cross"<<endl;
 
         //aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge alla coda la expand per controllare che sia il ramo giusto da prendere)
-        delete (*map_states_to_add)[event]->states_to_add_nocross;
-        delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
-        delete (*map_states_to_add)[event];
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_nocross!= nullptr)
+            delete (*map_states_to_add)[event]->states_to_add_nocross;
+
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end() && (*map_states_to_add)[event]->states_to_add_exit_or_enter)
+            delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
+
+        if( (*map_states_to_add).find(event)!=map_states_to_add->end())
+            delete (*map_states_to_add)[event];
         (*map_states_to_add)[event]=new Branches_states_to_add();
         map_states_to_add->at(event)->states_to_add_exit_or_enter=states_to_add_enter;
         map_states_to_add->at(event)->states_to_add_nocross=states_to_add_nocross;
