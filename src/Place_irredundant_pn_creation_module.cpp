@@ -54,6 +54,9 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	}
 	delete not_essential_regions_map;
 
+    for(auto rec: *irredundant_regions_map){
+        delete rec.second;
+    }
     delete irredundant_regions_map;
 	delete irredundant_regions;
 	delete computed_paths_cache;
@@ -333,6 +336,8 @@ unsigned long Place_irredundant_pn_creation_module::region_cost(Region *reg) {
 void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
 	//algoritmo:
 	//per ogni elemento di not_essential_regions_map se la regione è presente in irredundant_regions
+
+    cout<<"CALCULATE IRREDUNDANT REGION MAP_______________"<<endl;
 	irredundant_regions_map = new map<int, set<Region*>*>();
 	for(auto record: *not_essential_regions_map){
 		for(auto reg: *record.second){
@@ -340,6 +345,8 @@ void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
 				if(irredundant_regions_map->find(record.first) == irredundant_regions_map->end()){
 					(*irredundant_regions_map)[record.first] = new set<Region *>();
 				}
+
+                cout<<"REGION: " <<reg<< " AT " << record.first<<endl;
 				(*irredundant_regions_map)[record.first]->insert(reg);
 			}
 		}

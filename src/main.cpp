@@ -3,6 +3,7 @@
 #include "../include/Regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../include/Pre_and_post_regions_generator.h"
+#include "../include/Merging_Minimal_Preregions_module.h"
 
 int main(int argc, char** argv) {
 	bool first;
@@ -19,6 +20,7 @@ int main(int argc, char** argv) {
     	cout << "Too many input arguments" << endl;
     	exit(0);
     }
+
 
     int pos = 0;
     vector<Region>* candidate_regions;
@@ -64,13 +66,16 @@ int main(int argc, char** argv) {
 
 
     auto essential_regions=pn_module->get_essential_regions();
-    map<int,set<Region*>*>* irredundant_regions= nullptr;
+    map<int,set<Region*>*>* irredundant_regions= pn_module->get_irredundant_regions();
 
-    if(pn_module->get_irredundant_regions()!= nullptr) {
-        irredundant_regions = pn_module->get_irredundant_regions();
+    Merging_Minimal_Preregions_module* merging_module= nullptr;
+
+    if(irredundant_regions!= nullptr) {
+        merging_module=new Merging_Minimal_Preregions_module(essential_regions,irredundant_regions);
         //print_PN(essential_regions,irredundant_regions);
     }
     else {
+        merging_module=new Merging_Minimal_Preregions_module(essential_regions, nullptr);
         //print_PN(essential_regions, nullptr);
 
     }
@@ -87,5 +92,7 @@ int main(int argc, char** argv) {
 
     delete pn_module;
     delete pprg;
+
+    //delete merging_module;
 
 }
