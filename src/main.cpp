@@ -64,14 +64,14 @@ int main(int argc, char** argv) {
 
 
     auto essential_regions=pn_module->get_essential_regions();
-    map<int,set<Region*>>* irredundant_regions= nullptr;
+    map<int,set<Region*>*>* irredundant_regions= nullptr;
 
     if(pn_module->get_irredundant_regions()!= nullptr) {
         irredundant_regions = pn_module->get_irredundant_regions();
-        print_PN(essential_regions,irredundant_regions);
+        //print_PN(essential_regions,irredundant_regions);
     }
     else {
-        print_PN(essential_regions, nullptr);
+        //print_PN(essential_regions, nullptr);
 
     }
 
