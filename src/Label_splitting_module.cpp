@@ -4,49 +4,31 @@
 
 #include "../include/Label_splitting_module.h"
 
-Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set,map<int, set<int>* > * intersection){
+Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set){
     this->regions=regions;
     this->ER_set=er_set;
-    this->regions_intersection=intersection;
     //this->number_of_bad_events=number_of_bad_events;
 };
 
 Label_splitting_module::~Label_splitting_module(){
-    for(auto el: *ER_set){
+    /*for(auto el: *ER_set){
         delete el;
     }
-    delete ER_set;
+    delete ER_set;*/
     for(auto el:*regions_intersection){
         delete el.second;
     }
     delete regions_intersection;
 };
-/*
-bool Label_splitting_module::is_bigger_than_or_equal(Region* region ,set<int>* intersection){
 
-    if(region->size() >= intersection->size()){
-        cout<<"TRUE**************"<<endl;
-        return true;
-    }
 
-    for(auto elem: *intersection){
-        //nella regione non trovo un elem delll'intersez
-        if( region->find(elem) == region->end()){
-            cout<<"FALSE**************"<<endl;
-            return false;
-        }
-    }
+set<int>* Label_splitting_module::is_excitation_closed() {
 
-    //nella regione trovo tutti gli stati dell'intersezione
-    cout<<"TRUE**************"<<endl;
-    return true;
-}*/
+    cout<<"*************IS EXCITATION CLOSED*****************"<<endl;
 
-vector<int>* Label_splitting_module::is_excitation_closed() {
+    regions_intersection=do_regions_intersection(regions);
 
-    //regions_intersection=do_regions_intersection(regions);
-
-    auto events_not_satisfy_EC=new vector<int>;
+    auto events_not_satisfy_EC=new set<int>;
 
     //per ogni evento
     //se per un evento non vale che l'intersezione è uguale all'er la TS non è exitation-closed
@@ -56,10 +38,14 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
         cout<<"event: " <<item.first;
         auto event=item.first;
         auto er=ER_set->at((event));
+        cout<<"ER at" <<event<<" : "<<endl;
+        println(*er);
         auto intersec=regions_intersection->at(event);
+        cout<<"Intersec at" <<event<<" :"<<endl;
+        println(*intersec);
         if( ! (are_equals(er, intersec) )){
              cout<<"regione delle'evento:"<<event;
-             events_not_satisfy_EC->push_back(event);
+             events_not_satisfy_EC->insert(event);
              //res=false;
         }
     }
@@ -77,7 +63,7 @@ vector<int>* Label_splitting_module::is_excitation_closed() {
 }
 
 
-vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,map<int,vector< int >*>* number_of_bad_events,vector<int>* events_not_satisfy_EC) {
+vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,map<int,vector< int >*>* number_of_bad_events,set<int>* events_not_satisfy_EC) {
 
     //per ogni evento
     //per ogni stato intermedio se è compreso nel set delle intersezioni
@@ -91,9 +77,11 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
 
     cout << "middle TOT: " << endl;
     vector<Region *>::iterator it;
-    //per ogni evento
+    //per ogni evento che non soddisfa EC
     for (auto event: *events_not_satisfy_EC) {
+
         cout << "EVENTO: " << event << "*************"<<endl;
+
         int pos = 0;
         candidate_region= nullptr;
         num_bad_event_min=-1;
@@ -241,3 +229,4 @@ void Label_splitting_module::set_number_of_bad_events(vector<int>* event_type,in
 
     cout<<"COUNTER: " <<counter<<endl;
 }
+

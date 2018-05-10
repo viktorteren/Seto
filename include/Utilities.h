@@ -30,9 +30,9 @@ namespace Utilities {
 	set<int> *regions_union(set<Region*>* vec);
 	set<int> *regions_union(Region* first, Region* second);
 	set<int> *regions_intersection(Region* first, Region* second);
-    //set<int> *regions_intersection2(Region& first, Region& second);
-    map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> * regions);
-    set<int>* regions_intersection(set<Region*>* set);
+    map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> *);
+	map<int, set<int>* > * do_regions_intersection2(map<int, set<Region*> *> *);
+	set<int>* regions_intersection(set<Region*>* set);
     void print(Region& region);
 	void println(Region& region);
 	void print_place(Region &region);

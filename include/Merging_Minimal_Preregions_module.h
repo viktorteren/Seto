@@ -17,7 +17,9 @@ class Merging_Minimal_Preregions_module {
         ~Merging_Minimal_Preregions_module();
 
     private:
-        void merging_preregions();
+
+        map<int,set<Region*>*>* merging_preregions();
         void merging_2_maps(map<int,set<Region*>*>*,map<int,set<Region*>*>*);
+        ER create_ER_after_splitting(int event);
 };
 

@@ -90,6 +90,37 @@ namespace Utilities {
         return pre_regions_intersection;
     }
 
+    /*map<int, set<int> *> *do_regions_intersection2(map<int, set<Region*> *> *regions){
+
+        auto pre_regions_intersection = new map<int, set<int> *>;
+
+        std::vector<Region>::iterator it;
+        bool state_in_intersecton=true;
+
+        //per ogni evento
+        for (auto item: *regions) {
+            (*pre_regions_intersection)[item.first]=new Region();
+            for (auto state: *(*(item.second)->begin()) ) {
+                state_in_intersecton=true;
+                for(auto set:*item.second){
+                    if(set->find(state)==set->end()) {//non l'ho trovato
+                        state_in_intersecton = false;
+                        break;
+                    }
+                }
+                if(state_in_intersecton){
+                    pre_regions_intersection->at(item.first)->insert(state);
+                }
+            }
+        }
+        cout << "intersezione****************" << endl;
+        for(auto el:*pre_regions_intersection){
+            cout<<"event "<<el.first<<endl;
+            println(*el.second);
+        }
+
+        return pre_regions_intersection;
+    }*/
 
     set<int>* regions_intersection(set<Region*>* regions){
 
@@ -111,6 +142,8 @@ namespace Utilities {
 
         return pre_regions_intersection;
     }
+
+
 
     set<int> *regions_intersection(Region *first, Region *second){
         auto intersection = new set<int>();
@@ -365,6 +398,7 @@ namespace Utilities {
 
         return init_reg;
     }
+
 
 }
 

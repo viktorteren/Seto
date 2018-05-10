@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input3.ts";
+	    file = "../test/input.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -31,31 +31,40 @@ int main(int argc, char** argv) {
 
     vector<Region>* vector_regions = copy_map_to_vector(regions);
 
-    auto regions_intersection=do_regions_intersection(regions);
-    auto ls=new Label_splitting_module(regions,rg->get_ER_set(),regions_intersection);
+    auto ls=new Label_splitting_module(regions,rg->get_ER_set());
 
     Pre_and_post_regions_generator *pprg;
 
     bool excitation_closure;
 
-    vector<int>* events_not_satify_EC=ls->is_excitation_closed();
+    set<int>* events=ls->is_excitation_closed();
 
-	excitation_closure= events_not_satify_EC->empty();
+	excitation_closure= events->empty();
     cout<<"EC*************"<< excitation_closure <<endl;
+
+    set<int>* events_not_satify_EC= nullptr;
 
     if(!excitation_closure) {
         cout<<" not exitation closed " <<endl;
-        candidate_regions = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events(),events_not_satify_EC);
+        candidate_regions = ls->do_label_splitting(rg->get_middle_set_of_states(),rg->get_number_of_bad_events(),events);
         cout<<"___________label splitting ok"<<endl;
-        //chiamo il pre_region genertor passandogli anche le regioni nuove
-       // pprg = new Pre_and_post_regions_generator(vector_regions,candidate_regions);
-        pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions);
+
+        events_not_satify_EC=new set<int>();
+        auto pairs=rg->get_trees_init();
+        for(auto el: *events){
+            events_not_satify_EC->insert(pairs->at(el));
+        }
+        delete events;
+
+        pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,rg->get_ER_set(),events_not_satify_EC);
 	    delete candidate_regions;
     }
     else{
         pprg = new Pre_and_post_regions_generator(vector_regions);
     }
     delete events_not_satify_EC;
+
+
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();

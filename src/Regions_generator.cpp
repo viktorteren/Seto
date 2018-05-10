@@ -12,6 +12,7 @@ Region_generator::Region_generator() {
     map_states_to_add= new map< int , Branches_states_to_add *> ();
     middle_set_of_states=new map<int, vector<Region*> *>;
     number_of_bad_events = new map< int,vector< int >*>();
+    trees_init=new map<int,int>();
 }
 
 Region_generator::~Region_generator() {
@@ -39,18 +40,6 @@ vector<ER>* Region_generator::get_ER_set(){
     return ER_set;
 }
 
-ER Region_generator::createER(int event){
-    auto er = new set<int>;
-    for(auto edge: (*ts_map)[event]){
-        (*er).insert(edge .first);
-        cout<< "CREATE ER di "<< event<<" Insert state: " << edge.first <<endl;
-    }
-
-    for(auto i: *er){
-        cout<< "S: " << i <<endl;
-    }
-    return er;
-}
 
 int Region_generator::branch_selection(List_edges *list, Region *region, int event){
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
@@ -309,6 +298,8 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
     }
     else if (branch == NOCROSS){
         cout<<"RAMO UNICO NO CROSS" <<endl;
+        (*trees_init)[event]=last_event_nocross;
+
         for(auto state: *region){
             (*expanded_regions).insert(state);
             cout<< "inserisco nella extended Reg: " << state << endl;
@@ -369,6 +360,7 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
         cout<< "point reg " << region << endl;
         //cout << "pint exp " << (*expanded_regions)[0];
 
+        (*trees_init)[event]=last_event_2braches;
 
         for(auto state: *region){
             (*expanded_regions).insert(state);
@@ -446,7 +438,18 @@ void Region_generator::expand(Region *region, int event,bool is_ER, int init_pos
     delete[] expanded_regions;
 }
 
+ER createER(int event){
+    auto er = new set<int>;
+    for(auto edge: (*ts_map)[event]){
+        (*er).insert(edge .first);
+        cout<< "CREATE ER di "<< event<<" Insert state: " << edge.first <<endl;
+    }
 
+    for(auto i: *er){
+        cout<< "S: " << i <<endl;
+    }
+    return er;
+}
 
 map<int, vector<Region> *>* Region_generator::generate(){
 
@@ -585,6 +588,10 @@ void Region_generator::set_number_of_bad_events(int* event_type,int l,int event)
 
 map<int,vector< int >*>* Region_generator::get_number_of_bad_events(){
     return number_of_bad_events;
+};
+
+map<int,int>* Region_generator::get_trees_init(){
+    return trees_init;
 };
 
 
