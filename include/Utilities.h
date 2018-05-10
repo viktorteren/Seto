@@ -45,8 +45,8 @@ namespace Utilities {
     bool is_bigger_than_or_equal_to(Region*,set<int>*);
     bool are_equals(Region *, Region *);
 	bool contains(set<Region*>*,Region*);
-	//todo: print_ts_dot(); -> forse non serve se leggiamo già fil in .dot
-	//todo: print_pn_dot_file() -> utilizzato per l'output con graphviz
+	//todo: print_ts_dot(); -> forse non serve se leggiamo già i file in .dot
 	void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name);
 	set<Region *>* initial_regions(map<int,set<Region*>*>* reg);
+	map<Region *, int>* get_regions_map(map<int,set<Region*>*>* net);
 };
