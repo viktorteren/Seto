@@ -354,6 +354,10 @@ namespace Utilities {
     	string output_name = file_name;
     	string in_dot_name;
     	string output = "";
+    	//todo: creo il collegamento tra le regioni ed un intero identificativo
+        map<Region*, int>*regions_mapping;
+        regions_mapping = get_regions_map(net);
+
     	while(output_name[output_name.size()-1] != '.'){
     		output_name = output_name.substr(0, output_name.size()-1);
     	}
@@ -372,13 +376,54 @@ namespace Utilities {
     	cout << "file: " << output_name << endl;
 
     	//todo: finire la creazione del file in output
-    	/*ofstream fout(file_name);
+    	ofstream fout(output_name);
 	    fout << "digraph ";
-	    fout << in_dot_name;
-	    fout << "{";
+	    fout << in_dot_name+"_PN";
+	    fout << "{\n";
+	    fout << "subgraph initial_place {\n"
+	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = black, style = filled];";
+		//todo: qui aggiunta regioni iniziali
 
-    	fout.close();*/
+	    fout << "\n}\n";
+		fout << "subgraph place {     \n"
+		        "\tnode [shape=circle,fixedsize=true, fixedsize = 2];";
+		//todo: qui regioni non iniziali
+	    //dovrò usare regions_difference: tutte - iniziali -> devo avere l'insieme di tutte le regioni iniziali
+	    fout << "\n}\n";
+	    fout << "subgraph transitions {\n"
+	            "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];";
+	    for(auto record: *net){
+	    	fout << "\tt"+to_string(record.first)+";\n";
+	    }
+	    fout << "}\n";
+	    //todo: qui tutti gli archi tra posti e transazioni
+	    for(auto record: *net){
+	    	//ogni regione dovrebbe avere un alias, andrebbe bene avere la mappa tra evento e il numero di regione e non la regione stessa
+	    }
+	    fout << "\n}";
+    	fout.close();
 	    delete initial_reg;
+	    delete regions_mapping;
+    }
+
+
+    map<Region *, int>* get_regions_map(map<int,set<Region*>*>* net){
+    	auto regions_map = new map<Region *, int>();
+    	int counter = 0;
+    	for(auto record: *net){
+    		for(auto reg: *record.second){
+    			if(regions_map->find(reg) == regions_map->end()){
+				    (*regions_map)[reg] = int(counter);
+				    counter++;
+    			}
+    		}
+    	}
+    	//x debug
+	    /*for(auto record: *regions_map){
+    		cout << record.second << ": ";
+    		println(*record.first);
+    	}*/
+    	return regions_map;
     }
 
     set<Region *>* initial_regions(map<int,set<Region*>*>* reg_map){

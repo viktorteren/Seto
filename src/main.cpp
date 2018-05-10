@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
     }
 
     //todo: mettere in input la mappa dopo il merge
-    print_pn_dot_file(essential_regions, file);
+    //print_pn_dot_file(essential_regions, file);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
