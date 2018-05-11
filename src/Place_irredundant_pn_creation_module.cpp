@@ -188,7 +188,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(set<int> states_to
 
 	Region *candidate;
 	int cover_of_candidate;
-	unsigned int temp_cover;
+	int temp_cover;
 	//coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme delle regioni del figlio
 	int cost_of_candidate;
 	set<int> *new_states_to_cover;
