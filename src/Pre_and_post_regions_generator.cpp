@@ -40,6 +40,9 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
         delete el;
     }
     delete added_regions_ptrs;
+    delete events_alias;
+    //todo: se faccio questa delete creo un memory leak al posto di risolverlo
+    //delete er_set;
 }
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region) {
@@ -67,7 +70,7 @@ bool Pre_and_post_regions_generator::is_post_region(List_edges *list, Region *re
 }
 
 void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
-	int cont;
+	unsigned int cont;
 	Region region;
 
 	for(unsigned int i = 0; i< regions->size(); i++){
@@ -157,8 +160,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 
 							Region *candidate_region = nullptr;
 							Region *new_region = region_difference(*region, cand_reg);
-							bool incremented = false;
-
 							if (!contains((*pre_regions)[record.first], new_region)) {
 								if (is_pre_region(&record.second, new_region)) {
 
@@ -247,7 +248,7 @@ map<int,ER>* Pre_and_post_regions_generator::create_ER_after_splitting(map<int,E
 
 	map<int,ER>::iterator it=er_set_old->begin();
 
-	for(int i=0;i< er_set_old->size();i++){
+	for(unsigned int i=0;i< er_set_old->size();i++){
 		//se l'evento non è stato splittato l'ER è quello di prima
 		if(splitted_events->find(i)== splitted_events->end()){
 			(*er_set)[i]=(*it).second; // prendo il set dell'er vecchio

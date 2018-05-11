@@ -34,6 +34,7 @@ Region_generator::~Region_generator() {
         delete elem.second;
     }
     delete number_of_bad_events;
+    delete trees_init;
 }
 
 map<int,ER>* Region_generator::get_ER_set(){
@@ -193,12 +194,10 @@ int Region_generator::branch_selection(List_edges *list, Region *region, int eve
 
 
 bool Region_generator::region_in_queue(Region& new_region,int init_pos){
-    int cont=0;
+    unsigned int cont=0;
 
     vector<Region>::iterator it;
-    it=queue_temp_regions->begin()+init_pos;
-
-    for(it;it!=queue_temp_regions->end();it++){
+    for(it=queue_temp_regions->begin()+init_pos;it!=queue_temp_regions->end();it++){
     //for (auto region: *queue_temp_regions) {
         auto region=*it;
         cont = 0;
@@ -453,12 +452,13 @@ ER createER(int event){
 
 map<int, vector<Region> *>* Region_generator::generate(){
 
-    int pos=0;int init_pos=0;
+    unsigned int pos=0;
+    int init_pos=0;
     //evento e indice di fine
     auto queue_event_index=new map<int,int>;
-
-    for(auto e : *ts_map ){
-        ER er_temp = createER(e.first);
+	ER er_temp = nullptr;
+	for(auto e : *ts_map ){
+        er_temp = createER(e.first);
         (*ER_set)[e.first]=er_temp;
         (*regions)[e.first]=new vector<Region>();
 

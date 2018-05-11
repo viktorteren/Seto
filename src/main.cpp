@@ -6,7 +6,6 @@
 #include "../include/Merging_Minimal_Preregions_module.h"
 
 int main(int argc, char** argv) {
-	bool first;
 	vector <string> args (argv, argv + argc);
 	string file;
     if(argc == 1){
@@ -22,8 +21,6 @@ int main(int argc, char** argv) {
     }
 	TS_parser::parse(file);
 
-
-    int pos = 0;
     vector<Region>* candidate_regions;
 
     auto rg = new Region_generator();
@@ -101,6 +98,7 @@ int main(int argc, char** argv) {
 	}
     //print_pn_dot_file( merged_map, file);
 
+
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
         delete record.second;
@@ -113,6 +111,7 @@ int main(int argc, char** argv) {
 
     delete pn_module;
     delete pprg;
+
 
     //delete merging_module;
 

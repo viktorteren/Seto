@@ -7,8 +7,9 @@
 Essential_regions_search::Essential_regions_search(map<int, set<Region*> *>* pre_reg){ pre_regions = pre_reg; };
 
 Essential_regions_search::~Essential_regions_search(){
-	//todo: l'aggiunta di questa delete evidenzia la rilevazione di un nuovo memory leak con valgrind anche se tale memory leak dovrebbe esserci anche prima
-    //todo:e i set di regioni al suo interno??
+	for(auto record: *pre_regions){
+		delete (*essential_map)[record.first];
+	}
 	delete essential_map;
 }
 

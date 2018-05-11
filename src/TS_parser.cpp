@@ -5,7 +5,8 @@
 #include "../include/TS_parser.h"
 
 My_Map* ts_map;
-int num_states, num_transactions, initial_state,num_events;
+int num_states, initial_state, num_events;
+unsigned int num_transactions;
 
 //todo: aggiungere parser dot
 
@@ -46,7 +47,7 @@ void TS_parser::parse_TS(ifstream& fin){
 	int src, dst, ev;
 
 	//aggiungo gli archi al grafo
-	for (int i = 0; i < num_transactions; ++i) {
+	for (unsigned int i = 0; i < num_transactions; ++i) {
 		fin >> src;
 		fin >> dst;
 		fin >> ev;
@@ -137,14 +138,14 @@ void TS_parser::parse_DOT(ifstream& fin){
 
 		if(found){
 			unsigned long lower=0, upper=label.size();
-			for(int i= 0; i< label.size();i++){
+			for(unsigned int i= 0; i< label.size();i++){
 				if(label[i] == '"'){
 					lower = i;
 					//cout << "found "<< i << endl;
 					break;
 				}
 			}
-			for(int i= lower+1; i< label.size();i++){
+			for(unsigned int i= lower+1; i< label.size();i++){
 				if(label[i] == '"'){
 					upper = i;
 					//cout << "found " << i << endl;

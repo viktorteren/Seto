@@ -183,7 +183,7 @@ namespace Utilities {
 
     void print_transactions(){
        cout<<"Transazioni: "<<endl;
-        for(int i=0;i<num_transactions;i++){
+        for(unsigned int i=0;i<num_transactions;i++){
             cout<<"t" <<i;
             if(i!=num_transactions-1)
                 cout<<",";
@@ -398,9 +398,9 @@ namespace Utilities {
 	    }
 	    fout << "}\n";
 	    //todo: qui tutti gli archi tra posti e transazioni
-	    for(auto record: *net){
+	    //for(auto record: *net){
 	    	//ogni regione dovrebbe avere un alias, andrebbe bene avere la mappa tra evento e il numero di regione e non la regione stessa
-	    }
+	    //}
 	    fout << "\n}";
     	fout.close();
 	    delete initial_reg;
