@@ -101,6 +101,11 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
     set<Region*>* preregions_set=Utilities::copy_map_to_set(total_pre_regions_map);
     Region* reg_union= nullptr;
 
+
+    for(auto el:*preregions_set){
+        Utilities::println(*el);
+    }
+
     //per ogni coppia di preregioni
     //per ogni evento
     //controlla che valga EC con la nuova regione
@@ -109,17 +114,16 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
     map<int,set<Region*>* >* tmp_map=new map<int,set<Region*>*>();
 
 	//per migliorare
-	//set<Region*>::iterator it;
-	//set<Region*>::iterator it2;
+	set<Region*>::iterator it;
+	set<Region*>::iterator it2;
 
-	//for(it=preregions_set->begin();it!=preregions_set->end();++it){
-	//	for(it2=it++;it2!=preregions_set->end();++it2){
-      //  	it--;
-		//	auto reg1=*it;
-		//	auto reg2=*it2;
+	for(it=preregions_set->begin();it!=preregions_set->end();++it){
+		for(it2=next(it);it2!=preregions_set->end();++it2){
+			auto reg1=*it;
+			auto reg2=*it2;
 
-    for(auto reg1:*preregions_set) {
-        for (auto reg2:*preregions_set) {
+   // for(auto reg1:*preregions_set) {
+     //   for (auto reg2:*preregions_set) {
             cout<<"r1: ";
 			Utilities::println(*reg1);
             cout<<"r2: ";
@@ -129,12 +133,13 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
                 bool ec=false;
                 for (auto record:*total_pre_regions_map) {
                     auto event = record.first;
+					cout<<"evento: " <<event;
                     //auto tmp_set = new set<Region *>(total_pre_regions_map->at(event)->begin(),
                                                    //  total_pre_regions_map->at(event)->end());
 
                     auto tmp_set=new set<Region*>();
 
-                    bool event_contains_reg=true;
+                    bool event_contains_reg=false;
                     for(auto reg: *total_pre_regions_map->at(event)){
                         if(!Utilities::are_equals(reg,reg1) && !Utilities::are_equals(reg,reg2) )
                             tmp_set->insert(reg);
@@ -142,8 +147,7 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
                     }
                     //inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
                     if(event_contains_reg) {
-						cout<<"event:"<<event<<endl;
-						cout<<"l'evento è ok perchè non ha cambiato le sue preregioni con questa unione"<<endl;
+
                         tmp_set->insert(reg_union);
 
                         //tmp_set->erase(tmp_set->find(reg1));
@@ -153,6 +157,12 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
                         auto intersection = Utilities::regions_intersection(tmp_set);
                         auto er = ER_map->at(event);
 
+                        cout<<"intersection:"<<endl;
+                        Utilities::println(*intersection);
+
+                        cout<<"er:"<<endl;
+                        Utilities::println(*er);
+
                         //controlla ec ER(ev)==intersec(prereg(ev))
                         ec = Utilities::are_equals(intersection, er);
 
@@ -160,12 +170,17 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
 
                         //provo altre 2 regioni perchè per un evento non vale la EC
                         if (ec == false) {
+                            cout<<"BREAK l'evento non soddisfa EC-provo altre regioni"<<endl;
                             delete tmp_set;
                             break;
                         } else {
                             (*tmp_map)[event] = tmp_set;
                         }
                     }
+					else {
+						cout<<"event:"<<event<<endl;
+						cout<<"l'evento è ok perchè non ha cambiato le sue preregioni con questa unione"<<endl;
+					}
                 }
 
                 //se per tutti gli eventi la coppia è ok faccio il merge effettivo

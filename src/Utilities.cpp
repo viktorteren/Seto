@@ -268,7 +268,8 @@ namespace Utilities {
         auto input = new set<Region*>();
         for (auto record: *map) {
             for (auto region: *record.second) {
-                input->insert(region);
+				if(!contains(input,region))
+                	input->insert(region);
             }
         }
 
