@@ -4,9 +4,9 @@
 
 #include "../include/Merging_Minimal_Preregions_module.h"
 
-Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(map<int,set<Region*>*> * essential_preregions,map<int,set<Region*>*> * irredundant_preregions){
+Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(map<int,set<Region*>*> * essential_preregions,map<int,set<Region*>*> * irredundant_preregions,map<int,ER>* ER){
     merging_2_maps(essential_preregions,irredundant_preregions);
-    merging_preregions();
+    merged_pre_regions_map=merging_preregions(ER);
 }
 
 Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
@@ -19,6 +19,8 @@ Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
 
 void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* first,map<int,set<Region*>*>* second){
 
+    cout<<"MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********"<<endl;
+
     total_pre_regions_map=new map<int,set<Region*>*>();
 
     cout<<"first"<<endl;
@@ -28,12 +30,12 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
             Utilities::println(*reg);
     }
 
-    cout<<"  SECOND"<<endl;
+    /*cout<<"  SECOND"<<endl;
     for(auto el:*second) {
         cout << "ev " << el.first << endl;
         for (auto reg:*el.second)
             Utilities::println(*reg);
-    }
+    }*/
 
 
     if(second!=nullptr){
@@ -84,15 +86,15 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
 
 }
 
+map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::get_merged_preregions_map() {
+    return merged_pre_regions_map;
+}
+
 map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::get_total_preregions_map() {
-    return total_pre_regions_map;
+	return total_pre_regions_map;
 }
 
-ER Merging_Minimal_Preregions_module::create_ER_after_splitting(int event){
-    //todo
-}
-
-map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions() {
+map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(map<int,set<int>*>* ER_map) {
 
     cout<<"MERGING PREREGIONS___________"<<endl;
 
@@ -106,13 +108,24 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions()
 
     map<int,set<Region*>* >* tmp_map=new map<int,set<Region*>*>();
 
+	//per migliorare
+	//set<Region*>::iterator it;
+	//set<Region*>::iterator it2;
+
+	//for(it=preregions_set->begin();it!=preregions_set->end();++it){
+	//	for(it2=it++;it2!=preregions_set->end();++it2){
+      //  	it--;
+		//	auto reg1=*it;
+		//	auto reg2=*it2;
+
     for(auto reg1:*preregions_set) {
         for (auto reg2:*preregions_set) {
-            cout<<"r1: " <<reg1<<endl;
-            cout<<"r2: " <<reg2<<endl;
+            cout<<"r1: ";
+			Utilities::println(*reg1);
+            cout<<"r2: ";
+			Utilities::println(*reg2);
             if(!Utilities::are_equals(reg1,reg2)) {
                 reg_union = Utilities::regions_union(reg1, reg2);
-                cout << "end" << endl;
                 bool ec=false;
                 for (auto record:*total_pre_regions_map) {
                     auto event = record.first;
@@ -129,6 +142,8 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions()
                     }
                     //inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
                     if(event_contains_reg) {
+						cout<<"event:"<<event<<endl;
+						cout<<"l'evento è ok perchè non ha cambiato le sue preregioni con questa unione"<<endl;
                         tmp_set->insert(reg_union);
 
                         //tmp_set->erase(tmp_set->find(reg1));
@@ -136,13 +151,12 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions()
                         //tmp_set->insert(reg_union);
 
                         auto intersection = Utilities::regions_intersection(tmp_set);
-                        auto er = create_ER_after_splitting(event);
+                        auto er = ER_map->at(event);
 
                         //controlla ec ER(ev)==intersec(prereg(ev))
                         ec = Utilities::are_equals(intersection, er);
 
                         delete intersection;
-                        delete er;
 
                         //provo altre 2 regioni perchè per un evento non vale la EC
                         if (ec == false) {
@@ -157,6 +171,7 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions()
                 //se per tutti gli eventi la coppia è ok faccio il merge effettivo
                 if(ec==true){
                     delete preregions_set;
+                    cout<<"merging ok"<<endl;
                     return tmp_map;
                 }
 
@@ -165,6 +180,7 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions()
     }
 
     //non ho fatto il merge
+    cout<<"not merging"<<endl;
     return nullptr;
 
 

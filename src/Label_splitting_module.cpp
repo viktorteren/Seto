@@ -4,17 +4,13 @@
 
 #include "../include/Label_splitting_module.h"
 
-Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,vector<ER>* er_set){
+Label_splitting_module::Label_splitting_module(map<int, vector<Region> *>* regions,map<int,ER>* er_set){
     this->regions=regions;
     this->ER_set=er_set;
     //this->number_of_bad_events=number_of_bad_events;
 };
 
 Label_splitting_module::~Label_splitting_module(){
-    /*for(auto el: *ER_set){
-        delete el;
-    }
-    delete ER_set;*/
     for(auto el:*regions_intersection){
         delete el.second;
     }

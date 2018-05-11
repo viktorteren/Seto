@@ -6,7 +6,7 @@
 using namespace Utilities;
 
 Region_generator::Region_generator() {
-    ER_set = new  vector<ER>;
+    ER_set = new map<int,ER>;
     regions = new map<int,vector<Region>*>;
     queue_temp_regions= new vector<Region>;
     map_states_to_add= new map< int , Branches_states_to_add *> ();
@@ -36,7 +36,7 @@ Region_generator::~Region_generator() {
     delete number_of_bad_events;
 }
 
-vector<ER>* Region_generator::get_ER_set(){
+map<int,ER>* Region_generator::get_ER_set(){
     return ER_set;
 }
 
@@ -459,7 +459,7 @@ map<int, vector<Region> *>* Region_generator::generate(){
 
     for(auto e : *ts_map ){
         ER er_temp = createER(e.first);
-        (*ER_set).push_back(er_temp);
+        (*ER_set)[e.first]=er_temp;
         (*regions)[e.first]=new vector<Region>();
 
         init_pos=pos;

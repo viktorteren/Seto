@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
     cout<<"EC*************"<< excitation_closure <<endl;
 
     set<int>* events_not_satify_EC= nullptr;
+    map<int,ER>* new_ER;
 
     if(!excitation_closure) {
         cout<<" not exitation closed " <<endl;
@@ -58,13 +59,15 @@ int main(int argc, char** argv) {
 
         pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,rg->get_ER_set(),events_not_satify_EC);
 	    delete candidate_regions;
+
+        new_ER=pprg->get_new_ER();
+        delete rg->get_ER_set();
     }
     else{
         pprg = new Pre_and_post_regions_generator(vector_regions);
+        new_ER=rg->get_ER_set();
     }
     delete events_not_satify_EC;
-
-
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
     map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
@@ -82,17 +85,21 @@ int main(int argc, char** argv) {
     Merging_Minimal_Preregions_module* merging_module= nullptr;
 
     if(irredundant_regions!= nullptr) {
-        merging_module=new Merging_Minimal_Preregions_module(essential_regions,irredundant_regions);
+        merging_module=new Merging_Minimal_Preregions_module(essential_regions,irredundant_regions,new_ER);
         //print_PN(essential_regions,irredundant_regions);
     }
     else {
-        merging_module=new Merging_Minimal_Preregions_module(essential_regions, nullptr);
+        merging_module=new Merging_Minimal_Preregions_module(essential_regions, nullptr,new_ER);
         //print_PN(essential_regions, nullptr);
 
     }
 
-    //todo: mettere in input la mappa dopo il merge
-    //print_pn_dot_file(essential_regions, file);
+    auto merged_map= merging_module->get_merged_preregions_map();
+
+	if(merged_map== nullptr){
+		merged_map= merging_module->get_total_preregions_map();
+	}
+    //print_pn_dot_file( merged_map, file);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){

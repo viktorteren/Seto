@@ -13,7 +13,7 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	create_pre_and_post_regions(nullptr);
 }
 
-Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions, vector<ER>* Er_set, set<int>* events){
+Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions, map<int,ER>* Er_set, set<int>* events){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
 	post_regions= new map < int , set<Region*>* > ();
@@ -21,6 +21,8 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
     events_to_split=events;
 
 	create_pre_and_post_regions(candidate_regions);
+	er_set=create_ER_after_splitting(Er_set,events);
+
 }
 
 Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
@@ -117,6 +119,8 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 
     cout<<"total events:" <<total_events_counter<<endl;
 
+	events_alias=new map<int,int>();
+
     for (auto record: *ts_map) {
 		cout << "_______________evento: " << record.first << endl;
 		for (it = regions->begin(); it != regions->end(); ++it) {
@@ -134,10 +138,8 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 
             if (candidate_regions != nullptr) {
 
-                events_alias=new set<pair<int,int>*>();
-
                 bool pre_region = is_pre_region(&record.second, region);
-                bool post_region = is_post_region(&record.second, region);
+                //bool post_region = is_post_region(&record.second, region);
                 cout<<"dopo post region"<<endl;
 
                // if (pre_region || post_region) {
@@ -145,119 +147,68 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                     //cout << "is pre region of" << record.first << endl;
 
                     bool split = false;
-					bool to_delete=false;
+					//bool to_delete=false;
 
 
 					for (auto cand_reg: *candidate_regions) {
-                        cout<<"regione candidata ";
-                        println(cand_reg);
-                        if (is_bigger_than(region, &cand_reg)) {
+						cout << "regione candidata ";
+						println(cand_reg);
+						if (is_bigger_than(region, &cand_reg)) {
 
-                            Region *candidate_region = nullptr;
-                            Region *new_region = region_difference(*region, cand_reg);
-                            bool incremented=false;
+							Region *candidate_region = nullptr;
+							Region *new_region = region_difference(*region, cand_reg);
+							bool incremented = false;
 
-                            if (!contains((*pre_regions)[record.first], new_region)) {
-                                if (is_pre_region(&record.second, new_region)) {
+							if (!contains((*pre_regions)[record.first], new_region)) {
+								if (is_pre_region(&record.second, new_region)) {
 
-                                    //se l'evento era quello da splittare aggiungi la nuova regione ad un nuovo evento e crea la mappa degli alias
-                                    if(events_to_split->find(record.first)!=events_to_split->end()) {
-                                        cout<<"event to split"<< record.first<<endl;
-                                        (*pre_regions)[total_events_counter+1] = new set<Region *>();
-                                        (*pre_regions)[total_events_counter+1]->insert(new_region);
-                                        events_alias->insert(new pair<int,int>(record.first,total_events_counter+1));
-                                        total_events_counter++;
-                                        incremented=true;
-                                    }
-                                    else {
-                                        (*pre_regions)[record.first]->insert(new_region);
-                                    }
+									//se l'evento era quello da splittare aggiungi la nuova regione ad un nuovo evento e crea la mappa degli alias
+									if (events_to_split->find(record.first) != events_to_split->end()) {
+										cout << "event to split" << record.first << endl;
+										(*pre_regions)[total_events_counter + 1] = new set<Region *>();
+										(*pre_regions)[total_events_counter + 1]->insert(new_region);
+										(*events_alias)[record.first]=total_events_counter + 1;
+										total_events_counter++;
+									} else {
+										(*pre_regions)[record.first]->insert(new_region);
+									}
 
 									added_regions_ptrs->insert(new_region);
-                                    cout << "ho inserito new region(difference)" << endl;
-                                    println(*new_region);
-                                }
-								else
-									to_delete=true;
-
-                            }
-							else
-								to_delete=true;
-
-                            if (!contains((*post_regions)[record.first], new_region)) {
-                                if (is_post_region(&record.second, new_region)) {
-
-                                    //se l'evento era quello da splittare aggiungi la nuova regione ad un nuovo evento e crea la mappa degli alias
-                                    if(events_to_split->find(record.first)!=events_to_split->end()) {
-                                        (*post_regions)[total_events_counter+1] = new set<Region *>();
-                                        (*post_regions)[total_events_counter+1]->insert(new_region);
-                                        events_alias->insert(new pair<int,int>(record.first,total_events_counter+1));
-                                        if(!incremented) {
-                                            total_events_counter++;
-                                        }
-                                    }
-                                    else {
-                                        (*pre_regions)[record.first]->insert(new_region);
-                                    }
-
-                                    added_regions_ptrs->insert(new_region);
-
-                                    cout << "ho inserito new region(difference)" << endl;
-                                    println(*new_region);
-                                }
-								else
-									if(to_delete){
-                                	    delete new_region;
-                                        to_delete=false;
-									}
-                            }
-							else
-								if(to_delete)
+									cout << "ho inserito new region(difference)" << endl;
+									println(*new_region);
+								} else
 									delete new_region;
 
-                            if (!contains((*pre_regions)[record.first], &cand_reg)) {
-                                if (is_pre_region(&record.second, &cand_reg)) {
-                                    candidate_region = new set<int>(cand_reg);
-                                    (*pre_regions)[record.first]->insert(candidate_region);
+							} else
+								delete new_region;
+
+							if (!contains((*pre_regions)[record.first], &cand_reg)) {
+								if (is_pre_region(&record.second, &cand_reg)) {
+									candidate_region = new set<int>(cand_reg);
+									(*pre_regions)[record.first]->insert(candidate_region);
 									added_regions_ptrs->insert(candidate_region);
-                                    //cout << "ho inserito new region(cand reg)" << endl;
-                                    //println(cand_reg);
-                                    pre_region = true;
-                                }
-                            }
+									//cout << "ho inserito new region(cand reg)" << endl;
+									//println(cand_reg);
+									pre_region = true;
+								}
+							}
 
+							split = true;
 
-                            if (!contains((*post_regions)[record.first], &cand_reg)) {
-                                if (is_post_region(&record.second, &cand_reg)) {
-                                	if(candidate_region == nullptr)
-                                		candidate_region = new set<int>(cand_reg);
-                                    (*post_regions)[record.first]->insert(candidate_region);
-									added_regions_ptrs->insert(candidate_region);
-                                    //cout << "ho inserito new region(cand reg)" << endl;
-                                    //println(cand_reg);
-                                    post_region = true;
-                                }
-                            }
-                            split = true;
-                        }
-                    }
+						}
 
-                    if (!split) {
-                        if (pre_region) (*pre_regions)[record.first]->insert(region);
-                        if (post_region) (*post_regions)[record.first]->insert(region);
-                    }
+						if (!split) {
+							if (pre_region) (*pre_regions)[record.first]->insert(region);
+							//if (post_region) (*post_regions)[record.first]->insert(region);
+						}
 
-                //}
+					}
 
                 cout<<"qui"<<endl;
             }
             else if (is_pre_region(&record.second, region)) {
                 cout<<"qui pre"<<endl;
                 (*pre_regions)[record.first]->insert(region);
-            }
-            else if (is_post_region(&record.second, region)) {
-                cout<<"qui post"<<endl;
-                (*post_regions)[record.first]->insert(region);
             }
 		}
 	}
@@ -270,13 +221,9 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 			println(*r);
 	}
 
-
-	cout << "Post regions:" << endl;
-	for (auto record: *post_regions) {
-		cout<<"event "<< record.first<<endl;
-		for (auto region: *record.second) {
-			println(*region);
-		}
+	cout<<"ALIAS " <<endl;
+	for(auto e:*events_alias){
+		cout<<"event: " <<e.first<<"alias: " << e.second<<endl;
 	}
 }
 
@@ -287,4 +234,40 @@ map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
 
 map<int, set<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
 	return pre_regions;
+}
+
+map<int,ER>* Pre_and_post_regions_generator::get_new_ER(){
+	return er_set;
+};
+
+map<int,ER>* Pre_and_post_regions_generator::create_ER_after_splitting(map<int,ER>* er_set_old,set<int>* splitted_events){
+
+	cout<<"ER after splitting"<<endl;
+	auto er_set = new map<int,ER>();
+
+	map<int,ER>::iterator it=er_set_old->begin();
+
+	for(int i=0;i< er_set_old->size();i++){
+		//se l'evento non è stato splittato l'ER è quello di prima
+		if(splitted_events->find(i)== splitted_events->end()){
+			(*er_set)[i]=(*it).second; // prendo il set dell'er vecchio
+		}
+			//l'ER è l'intersezione delle preregioni dell'evento(EC è valida)
+		else {
+			cout<<"evento"<<i<<endl;
+			auto event1=i;
+			(*er_set)[i]=regions_intersection(pre_regions->at(event1));
+			auto event2=events_alias->at(i);
+			(*er_set)[event2]=regions_intersection(pre_regions->at(event2));
+		}
+		++it;
+	}
+
+	cout<<"debug:" <<endl;
+	for(auto ev:*er_set){
+		println(*ev.second);
+	}
+
+	return er_set;
+
 }

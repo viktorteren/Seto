@@ -17,7 +17,7 @@ public:
 
     map<int, vector<Region> *>* generate();
 
-    vector<ER>* get_ER_set();
+    map<int,ER>* get_ER_set();
 
     struct Branches_states_to_add {
         set<int> *states_to_add_exit_or_enter= nullptr;
@@ -33,7 +33,7 @@ public:
     map<int,int>* get_trees_init();
 
 private:
-    vector<ER> *ER_set;
+    map<int,ER> *ER_set;
     map<int,vector<Region>*> *regions;
     vector<Region> *queue_temp_regions;
 

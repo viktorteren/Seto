@@ -17,7 +17,7 @@ using namespace std;
 
 typedef set<int> Region;
 typedef std::pair<int, int> Edge;
-typedef set<int> *ER;
+typedef set<int> * ER;
 typedef vector<Edge> List_edges;
 
 const int OK = 0;
@@ -26,12 +26,13 @@ const int EXIT_NOCROSS = 2;
 const int ENTER_NOCROSS = 3;
 
 namespace Utilities {
+
     set<int> *regions_union(vector<Region*>* vec);
 	set<int> *regions_union(set<Region*>* vec);
 	set<int> *regions_union(Region* first, Region* second);
 	set<int> *regions_intersection(Region* first, Region* second);
     map<int, set<int>* > * do_regions_intersection(map<int, vector<Region> *> *);
-	map<int, set<int>* > * do_regions_intersection2(map<int, set<Region*> *> *);
+	//map<int, set<int>* > * do_regions_intersection2(map<int, set<Region*> *> *);
 	set<int>* regions_intersection(set<Region*>* set);
     void print(Region& region);
 	void println(Region& region);

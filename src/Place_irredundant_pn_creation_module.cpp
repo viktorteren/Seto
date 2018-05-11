@@ -54,10 +54,12 @@ Place_irredundant_pn_creation_module::~Place_irredundant_pn_creation_module(){
 	}
 	delete not_essential_regions_map;
 
-    for(auto rec: *irredundant_regions_map){
-        delete rec.second;
-    }
-    delete irredundant_regions_map;
+	if(irredundant_regions_map!= nullptr){
+    	for(auto rec: *irredundant_regions_map){
+        	delete rec.second;
+    	}
+    	delete irredundant_regions_map;
+	}
 	delete irredundant_regions;
 	delete computed_paths_cache;
 }

@@ -38,4 +38,5 @@ private:
 	set<set<Region *>> *computed_paths_cache = nullptr; //se ho già calcolato il costo di un percorso [insieme di regioni] allora è presente all'interno della cache
 	map<int, set<Region*>*> *irredundant_regions_map = nullptr;
 	void calculate_irredundant_regions_map();
+
 };
