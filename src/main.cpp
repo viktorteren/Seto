@@ -64,6 +64,8 @@ int main(int argc, char** argv) {
         pprg = new Pre_and_post_regions_generator(vector_regions);
         new_ER=rg->get_ER_set();
     }
+
+//todo verifica    delete events;
     delete events_not_satify_EC;
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
@@ -113,6 +115,6 @@ int main(int argc, char** argv) {
     delete pprg;
 
 
-    //delete merging_module;
+    delete merging_module;
 
 }
