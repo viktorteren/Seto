@@ -40,6 +40,7 @@ namespace Utilities {
     void print_transactions();
 	void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
 	set<int>* region_difference(set<int>& first, set<int>& second);
+	set<Region *>* region_pointer_difference(set<Region *>* first, set<Region*>* second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
     set<Region*> *copy_map_to_set(map<int, set<Region*> *> *map);
 	bool is_bigger_than(Region* region ,set<int>* region2);

@@ -247,7 +247,6 @@ namespace Utilities {
                 s->insert(state);
             }
         }
-
         return s;
     }
 
@@ -350,13 +349,15 @@ namespace Utilities {
     }
 
     void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name){
-    	//todo: aggiungere il carattere speciale per i token -> utilizzando uno stile speciale per gli stati iniziali
+    	//todo: net ha dei duplucati  che devono essere eliminati
         auto initial_reg = initial_regions(net);
     	string output_name = file_name;
     	string in_dot_name;
     	string output = "";
-    	//todo: creo il collegamento tra le regioni ed un intero identificativo
+    	//creazione della mappa tra il puntatore alla regione ed un intero univoco corrispondente
         map<Region*, int>*regions_mapping;
+        auto regions_set = copy_map_to_set(net);
+        auto not_initial_regions = region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(net);
 
     	while(output_name[output_name.size()-1] != '.'){
@@ -371,38 +372,48 @@ namespace Utilities {
     		}
     	}
     	in_dot_name = output_name.substr(lower+1, output_name.size());
-    	cout << "out name: " << in_dot_name << endl;
+    	//cout << "out name: " << in_dot_name << endl;
 
     	output_name = output_name + "_PN.dot";
-    	cout << "file: " << output_name << endl;
+    	cout << "file output PN: " << output_name << endl;
 
-    	//todo: finire la creazione del file in output
     	ofstream fout(output_name);
 	    fout << "digraph ";
 	    fout << in_dot_name+"_PN";
 	    fout << "{\n";
+	    //regioni iniziali
 	    fout << "subgraph initial_place {\n"
-	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = black, style = filled];";
-		//todo: qui aggiunta regioni iniziali
+	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = black, style = filled];\n";
+	    for(auto reg: *initial_reg){
+	    	fout << "\tr" << regions_mapping->at(reg) << ";\n";
+	    }
 
-	    fout << "\n}\n";
+	    fout << "}\n";
+	    //regioni non iniziali
 		fout << "subgraph place {     \n"
-		        "\tnode [shape=circle,fixedsize=true, fixedsize = 2];";
-		//todo: qui regioni non iniziali
-	    //dovrò usare regions_difference: tutte - iniziali -> devo avere l'insieme di tutte le regioni iniziali
-	    fout << "\n}\n";
+		        "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
+	    for(auto reg: *not_initial_regions){
+		    fout << "\tr" << regions_mapping->at(reg) << ";\n";
+	    }
+	    fout << "}\n";
 	    fout << "subgraph transitions {\n"
-	            "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];";
+	            "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
 	    for(auto record: *net){
 	    	fout << "\tt"+to_string(record.first)+";\n";
 	    }
 	    fout << "}\n";
-	    //todo: qui tutti gli archi tra posti e transazioni
-	    //for(auto record: *net){
+
+	    for(auto record: *net){
 	    	//ogni regione dovrebbe avere un alias, andrebbe bene avere la mappa tra evento e il numero di regione e non la regione stessa
-	    //}
-	    fout << "\n}";
+	        for(auto reg: *record.second){
+	        	fout << "\tr" << regions_mapping->at(reg) << " -> " << "t" << to_string(record.first) << ";\n";
+	        }
+	    }
+	    //todo: mancano tutti gli archi tra transazioni e post (prese dalle post-regioni)
+	    fout << "}";
     	fout.close();
+	    delete regions_set;
+	    delete not_initial_regions;
 	    delete initial_reg;
 	    delete regions_mapping;
     }
@@ -420,7 +431,8 @@ namespace Utilities {
     		}
     	}
     	//x debug
-	    /*for(auto record: *regions_map){
+	    /*
+	    for(auto record: *regions_map){
     		cout << record.second << ": ";
     		println(*record.first);
     	}*/
@@ -445,6 +457,27 @@ namespace Utilities {
         return init_reg;
     }
 
+    set<Region *>* region_pointer_difference(set<Region*>* first, set<Region*>* second){
+    	/*cout << "primo insieme: " << endl;
+    	for(auto reg: *first){
+    		println(*reg);
+    	}
+	    cout << "secondo insieme: " << endl;
+	    for(auto reg: *second){
+		    println(*reg);
+	    }*/
+    	auto difference = new set<Region *>();
+    	for(auto reg: *first){
+    		if(second->find(reg) == second->end()){
+    			difference->insert(reg);
+    		}
+    	}
+	    /*cout << "risultato: " << endl;
+	    for(auto reg: *difference){
+		    println(*reg);
+	    }*/
+    	return difference;
+    }
 
 }
 
