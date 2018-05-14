@@ -63,7 +63,8 @@ namespace Utilities {
     bool are_equals(Region *, Region *);
     bool contains(set<Region*>*,Region*);
     //todo: print_ts_dot(); -> forse non serve se leggiamo già i file in .dot
-    void print_pn_dot_file(map<int,set<Region*>*>* net, map<int, set<Region *>*> *post_regions, string file_name);
+    void print_pn_dot_file(map<int,set<Region*>*>* net, map<int, set<Region *>*> *post_regions, map<int, int>& aliases, string file_name);
 	void restore_default_labels(map<int, set<Region*>*>* net, map<int, int>& aliases);
+	char translate_label(int label);
     bool contains_state(Region* reg,int state);
 };

@@ -95,28 +95,30 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 
 void Pre_and_post_regions_generator::create_post_regions() {
 	//record. first da ts_map è l'evento, record.second è la lista da passare a is_post_region
-	cout << "mappa pre-regioni :" << endl;
-	print(*pre_regions);
+	/*cout << "mappa pre-regioni :" << endl;
+	print(*pre_regions);*/
 	post_regions = new map<int, set<Region*> *>();
 	for(auto rec: *pre_regions){
 		for(auto reg: *rec.second){
 			if(ts_map->find(rec.first) != ts_map->end()){
-				//todo: devo trovare dei casi in cui ho per forza delle post-regioni [NON ENTRO MAI DENTRO L'IF]
-				if(is_post_region(&(ts_map->at(rec.first)),reg)){
-					cout << "trovato una nuova post-regione" << endl;
-					if(post_regions->find(rec.first) == post_regions->end()){
-						(*post_regions)[rec.first] = new set<Region *>();
+				auto evento = rec.first;
+				for(auto r: *ts_map){
+					if(is_post_region(&(ts_map->at(r.first)),reg)){
+						if(post_regions->find(r.first) == post_regions->end()){
+							(*post_regions)[r.first] = new set<Region *>();
+						}
+						(*post_regions)[r.first]->insert(reg);
 					}
-					(*post_regions)[rec.first]->insert(reg);
 				}
+
 			}
 			else{
 				cout << "ts_map non contiene " << rec.first << endl;
 			}
 		}
 	}
-	cout << "mappa post-regioni :" << endl;
-	print(*post_regions);
+	/*cout << "mappa post-regioni :" << endl;
+	print(*post_regions);*/
 }
 
 
