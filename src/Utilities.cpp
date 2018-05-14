@@ -346,16 +346,16 @@ namespace Utilities {
         return false;
     }
 
-    void print_pn_dot_file(map<int,set<Region*>*>* net, map<int, set<Region *> *> *post_regions, string file_name){
-        auto initial_reg = initial_regions(net);
+    void print_pn_dot_file(map<int,set<Region*>*>* pre_regions, map<int, set<Region *> *> *post_regions, map<int, int>& aliases, string file_name){
+        auto initial_reg = initial_regions(pre_regions);
     	string output_name = file_name;
     	string in_dot_name;
     	string output = "";
     	//creazione della mappa tra il puntatore alla regione ed un intero univoco corrispondente
         map<Region*, int>*regions_mapping;
-        auto regions_set = copy_map_to_set(net);
+        auto regions_set = copy_map_to_set(pre_regions);
         auto not_initial_regions = region_pointer_difference(regions_set, initial_reg);
-        regions_mapping = get_regions_map(net);
+        regions_mapping = get_regions_map(pre_regions);
 
     	while(output_name[output_name.size()-1] != '.'){
     		output_name = output_name.substr(0, output_name.size()-1);
@@ -379,6 +379,7 @@ namespace Utilities {
 	    fout << in_dot_name+"_PN";
 	    fout << "{\n";
 	    //regioni iniziali
+	    cout << "scrittura regioni iniziali" << endl;
 	    fout << "subgraph initial_place {\n"
 	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = black, style = filled];\n";
 	    for(auto reg: *initial_reg){
@@ -387,27 +388,89 @@ namespace Utilities {
 
 	    fout << "}\n";
 	    //regioni non iniziali
+	    cout << "scrittura regioni non iniziali" << endl;
 		fout << "subgraph place {     \n"
 		        "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
 	    for(auto reg: *not_initial_regions){
 		    fout << "\tr" << regions_mapping->at(reg) << ";\n";
 	    }
 	    fout << "}\n";
+	    //transazioni
+	    cout << "scrittura transazioni" << endl;
 	    fout << "subgraph transitions {\n"
 	            "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
-	    for(auto record: *net){
-	    	fout << "\tt"+to_string(record.first)+";\n";
+	    for(auto record: aliases){
+	    	fout << "\t" << translate_label(record.first) << ";\n";
+		    fout << "\t" << translate_label(record.first) << "_ [label = \"" << translate_label(record.first) << "'\"];\n";
+	    }
+	    for(auto record: *pre_regions){
+	    	if(record.first < num_events){
+	    		if(aliases.find(record.first) == aliases.end()){
+				    fout << "\t" << translate_label(record.first) << ";\n";
+	    		}
+	    	}
 	    }
 	    fout << "}\n";
 
-	    for(auto record: *net){
+	    cout << "scrittura archi" << endl;
+	    for(auto record: *pre_regions){
 	        for(auto reg: *record.second){
-	        	fout << "\tr" << regions_mapping->at(reg) << " -> " << "t" << to_string(record.first) << ";\n";
+		        if(record.first < num_events){
+			        if(regions_mapping->find(reg) != regions_mapping->end()) {
+				        fout << "\tr" << regions_mapping->at(reg) << " -> " << translate_label(record.first) << ";\n";
+			        }
+			        else{
+				        cout << "regions_mapping non contiene ";
+				        println(*reg);
+			        }
+		        }
+		        else{
+					int label;
+					for(auto rec: aliases){
+						if(rec.second == record.first){
+							label = rec.first;
+							break;
+						}
+					}
+					if(regions_mapping->find(reg) != regions_mapping->end()){
+						fout << "\tr" << regions_mapping->at(reg) << " -> " << translate_label(label) << "_;\n";
+					}
+					else{
+						cout << "regions_mapping non contiene ";
+						println(*reg);
+					}
+
+		        }
 	        }
 	    }
 	    for(auto record: *post_regions){
 		    for(auto reg: *record.second){
-			    fout <<  "\tt" << to_string(record.first) << " -> "  << "r" << regions_mapping->at(reg) << ";\n";
+			    if(record.first < num_events){
+				    if(regions_mapping->find(reg) != regions_mapping->end()) {
+					    fout << "\t" << translate_label(record.first) << " -> " << "r" << regions_mapping->at(reg) << ";\n";
+				    }
+				    else{
+				    	//entra qui 2 volte
+					    cout << "regions_mapping non contiene ";
+					    println(*reg);
+				    }
+			    }
+			    else{
+				    int label;
+				    for(auto rec: aliases){
+					    if(rec.second == record.first){
+						    label = rec.first;
+						    break;
+					    }
+				    }
+				    if(regions_mapping->find(reg) != regions_mapping->end()){
+					    fout <<  "\t" << translate_label(label) << "_ -> "  << "r" << regions_mapping->at(reg) << ";\n";
+				    }
+				    else{
+					    "regions_mapping non contiene ";
+					    println(*reg);
+				    }
+			    }
 		    }
 	    }
 	    fout << "}";
@@ -479,6 +542,11 @@ namespace Utilities {
     	return difference;
     }
 
+    char translate_label(int label){
+    	char base = 'a';
+    	base +=label;
+    	return base;
+    }
 
     Region* get_ptr_into(set<Region *> *set, Region *region) {
 

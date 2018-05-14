@@ -112,10 +112,8 @@ int main(int argc, char** argv) {
 	pprg->create_post_regions();
 	auto post_regions = pprg->get_post_regions();
 
-	restore_default_labels(merged_map, pprg->get_events_alias());
-    print_pn_dot_file( merged_map, post_regions, file);
-
-
+	//restore_default_labels(merged_map, pprg->get_events_alias());
+    print_pn_dot_file( merged_map, post_regions, pprg->get_events_alias(), file);
 
     //dealloco regions e tutti i suoi vettori
     for(auto record:*regions){
