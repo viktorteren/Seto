@@ -94,11 +94,26 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
+void Pre_and_post_regions_generator::create_post_regions() {
+	//record. first da ts_map è l'evento, record.second è la lista da passare a is_post_region
+	post_regions = new map<int, set<Region*> *>();
+	for(auto rec: *pre_regions){
+		for(auto reg: *rec.second){
+			if(is_post_region(&ts_map->at(rec.first),reg)){
+				if(post_regions->find(rec.first) == post_regions->end()){
+					(*post_regions)[rec.first] = new set<Region *>();
+				}
+
+			}
+		}
+	}
+}
+
 
 void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>* candidate_regions) {
 	cout
-			<< "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------"
-			<< endl;
+		<< "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------"
+		<< endl;
 	vector<Region>::iterator it;
 	for (it = regions->begin(); it < regions->end(); ++it) {
 		Region *region = &(*it);
@@ -106,8 +121,8 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 	}
 
 	cout
-			<< "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------"
-			<< endl;
+		<< "--------------------------------------------------- CREATION OF PRE-REGIONS AND POST-REGIONS --------------------------------------------"
+		<< endl;
 	//per ogni evento
 	//per ogni regione
 	//guardo se è una pre-regione per tale evento
@@ -257,5 +272,8 @@ map<int,ER>* Pre_and_post_regions_generator::create_ER_after_splitting(map<int,E
 	}
 
 	return er_set;
+}
 
+map<int, int>& Pre_and_post_regions_generator::get_events_alias() {
+	return *events_alias;
 }

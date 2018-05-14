@@ -175,6 +175,19 @@ namespace Utilities {
         cout << endl;
     }
 
+    void println(set<Region *>& regions){
+    	for(auto reg: regions){
+    		println(*reg);
+    	}
+    }
+
+    void print(map<int, set<Region*>*>& net){
+    	for(auto rec: net){
+    		cout << "event: " << rec.first << endl;
+    		println(*rec.second);
+    	}
+    }
+
     void print_place(int pos,Region &region){
         cout<<"r"<<pos<<": { ";
         print(region);
@@ -409,7 +422,7 @@ namespace Utilities {
 	        	fout << "\tr" << regions_mapping->at(reg) << " -> " << "t" << to_string(record.first) << ";\n";
 	        }
 	    }
-	    //todo: mancano tutti gli archi tra transazioni e post (prese dalle post-regioni)
+	    //todo: mancano tutti gli archi tra transazioni e posti (prese dalle post-regioni)
 	    fout << "}";
     	fout.close();
 	    delete regions_set;
@@ -431,8 +444,8 @@ namespace Utilities {
     		}
     	}
     	//x debug
-	    /*
-	    for(auto record: *regions_map){
+
+	    /*for(auto record: *regions_map){
     		cout << record.second << ": ";
     		println(*record.first);
     	}*/
@@ -477,6 +490,47 @@ namespace Utilities {
 		    println(*reg);
 	    }*/
     	return difference;
+    }
+
+	set<Region *>* region_pointer_union(set<Region*>* first, set<Region*>* second){
+		/*cout << "primo insieme: " << endl;
+		println(*first);
+
+		cout << "secondo insieme: " << endl;
+		println(*second);*/
+
+		auto un = new set<Region *>(*first);
+		for(auto reg: *second){
+			un->insert(reg);
+		}
+		/*cout << "risultato: " << endl;
+		println(*un);*/
+
+		return un;
+	}
+
+	void restore_default_labels(map<int, set<Region*>*>* net, map<int, int>& aliases){
+    	/*cout << "mappa alias: " << endl;
+    	for(auto rec: aliases){
+    		cout << rec.first << " : " << rec.second << endl;
+    	}
+    	cout << "vecchia mappa:" << endl;
+    	print(*net);*/
+    	int counter = 0;
+    	for(auto rec: *net){
+    		//l'etichetta rec.first è stata splittata
+    		if(aliases.find(rec.first) != aliases.end()){
+    			net->at(rec.first) = region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
+    		}
+    		counter ++;
+    		if(counter == num_events)
+    			break;
+    	}
+    	for(auto rec: aliases){
+    		net->erase(rec.second);
+    	}
+		/*cout << "nuova mappa:" << endl;
+		print(*net);*/
     }
 
 }

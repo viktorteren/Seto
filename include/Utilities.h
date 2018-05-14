@@ -36,11 +36,14 @@ namespace Utilities {
 	set<int>* regions_intersection(set<Region*>* set);
     void print(Region& region);
 	void println(Region& region);
+	void println(set<Region *>& regions);
+	void print(map<int, set<Region*>*>& net);
 	void print_place(Region &region);
     void print_transactions();
 	void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
 	set<int>* region_difference(set<int>& first, set<int>& second);
 	set<Region *>* region_pointer_difference(set<Region *>* first, set<Region*>* second);
+	set<Region *>* region_pointer_union(set<Region *>* first, set<Region*>* second);
 	vector<Region>* copy_map_to_vector(map<int, vector<Region> *>* map);
     set<Region*> *copy_map_to_set(map<int, set<Region*> *> *map);
 	bool is_bigger_than(Region* region ,set<int>* region2);
@@ -51,4 +54,5 @@ namespace Utilities {
 	void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name);
 	set<Region *>* initial_regions(map<int,set<Region*>*>* reg);
 	map<Region *, int>* get_regions_map(map<int,set<Region*>*>* net);
+	void restore_default_labels(map<int, set<Region*>*>* net, map<int, int>& aliases);
 };

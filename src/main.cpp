@@ -98,8 +98,9 @@ int main(int argc, char** argv) {
 		merged_map= merging_module->get_total_preregions_map();
 	}
 	//todo: modificare la  mappa dopo label splitting
-	//todo: calcolare le post-regioni a partire dalle regioni
-	//todo: unire i nomi delle nuove regioni per ottenere i nomi originali
+	//todo: calcolare le post-regioni a partire dalla mappa nuova
+
+	restore_default_labels(merged_map, pprg->get_events_alias());
 
     print_pn_dot_file( merged_map, file);
 
