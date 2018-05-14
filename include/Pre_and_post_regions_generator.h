@@ -14,12 +14,16 @@ public:
 	~Pre_and_post_regions_generator();
 	map<int, set<Region*> *> *get_pre_regions();
 	map<int,ER>* get_new_ER();
-
+	map<int, int>& get_events_alias();
+	void create_post_regions();
 private:
 	vector<Region> *regions;
 	map<int, set<Region*> *> *pre_regions;
+	map<int, set<Region*> *> *post_regions = nullptr;
+    //todo usa questa per avere una sola occorrenza delle nuove regioni splittate
     set<Region*>* added_regions_ptrs;
     set<int>* events_to_split;
+    //alias vecchio -> nuovo
     map<int,int>* events_alias;
 	map<int,ER>* er_set= nullptr;
 
