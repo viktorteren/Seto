@@ -53,6 +53,8 @@ namespace Utilities {
 
     void print(Region& region);
     void println(Region& region);
+	void println(set<Region *>& regions);
+	void print(map<int, set<Region*>*>& net);
     void print_place(Region &region);
     void print_transactions();
     void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
@@ -61,6 +63,7 @@ namespace Utilities {
     bool are_equals(Region *, Region *);
     bool contains(set<Region*>*,Region*);
     //todo: print_ts_dot(); -> forse non serve se leggiamo già i file in .dot
-    void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name);
+    void print_pn_dot_file(map<int,set<Region*>*>* net, map<int, set<Region *>*> *post_regions, string file_name);
+	void restore_default_labels(map<int, set<Region*>*>* net, map<int, int>& aliases);
     bool contains_state(Region* reg,int state);
 };

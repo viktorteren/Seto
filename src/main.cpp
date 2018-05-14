@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input.ts";
+	    file = "../test/input4.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -101,10 +101,12 @@ int main(int argc, char** argv) {
 		merged_map= merging_module->get_total_preregions_map();
 	}
 
-	//todo: calcolare le post-regioni a partire dalle regioni
-	//todo: unire i nomi delle nuove regioni per ottenere i nomi originali
+	pprg->create_post_regions();
+	auto post_regions = pprg->get_post_regions();
 
-    print_pn_dot_file( merged_map, file);
+	restore_default_labels(merged_map, pprg->get_events_alias());
+    print_pn_dot_file( merged_map, post_regions, file);
+
 
 
     //dealloco regions e tutti i suoi vettori

@@ -348,8 +348,7 @@ namespace Utilities {
         return false;
     }
 
-    void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name){
-    	//todo: net ha dei duplucati  che devono essere eliminati
+    void print_pn_dot_file(map<int,set<Region*>*>* net, map<int, set<Region *> *> *post_regions, string file_name){
         auto initial_reg = initial_regions(net);
     	string output_name = file_name;
     	string in_dot_name;
@@ -404,12 +403,15 @@ namespace Utilities {
 	    fout << "}\n";
 
 	    for(auto record: *net){
-	    	//ogni regione dovrebbe avere un alias, andrebbe bene avere la mappa tra evento e il numero di regione e non la regione stessa
 	        for(auto reg: *record.second){
 	        	fout << "\tr" << regions_mapping->at(reg) << " -> " << "t" << to_string(record.first) << ";\n";
 	        }
 	    }
-	    //todo: mancano tutti gli archi tra transazioni e post (prese dalle post-regioni)
+	    for(auto record: *post_regions){
+		    for(auto reg: *record.second){
+			    fout <<  "\tt" << to_string(record.first) << " -> "  << "r" << regions_mapping->at(reg) << ";\n";
+		    }
+	    }
 	    fout << "}";
     	fout.close();
 	    delete regions_set;
