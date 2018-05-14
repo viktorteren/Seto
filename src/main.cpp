@@ -97,7 +97,11 @@ int main(int argc, char** argv) {
 	if(merged_map== nullptr){
 		merged_map= merging_module->get_total_preregions_map();
 	}
-    //print_pn_dot_file( merged_map, file);
+	//todo: modificare la  mappa dopo label splitting
+	//todo: calcolare le post-regioni a partire dalle regioni
+	//todo: unire i nomi delle nuove regioni per ottenere i nomi originali
+
+    print_pn_dot_file( merged_map, file);
 
 
     //dealloco regions e tutti i suoi vettori
