@@ -16,7 +16,6 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions, map<int,ER>* Er_set, set<int>* events){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
-	//post_regions= new map < int , set<Region*>* > ();
 
     events_to_split=events;
 
@@ -30,6 +29,7 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
         delete el.second;
     }
     delete pre_regions;
+    delete post_regions;
 
     for(auto el:*added_regions_ptrs){
         delete el;
@@ -37,8 +37,6 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
     delete added_regions_ptrs;
 
     delete events_alias;
-    //todo: se faccio questa delete creo un memory leak al posto di risolverlo
-    //delete er_set;
 }
 
 bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *region) {
@@ -54,8 +52,8 @@ bool Pre_and_post_regions_generator::is_pre_region(List_edges *list, Region *reg
 }
 
 bool Pre_and_post_regions_generator::is_post_region(List_edges *list, Region *region) {
-    cout<<"regione (is_post_region)"<<endl;
-    println(*region);
+    /*cout<<"regione (is_post_region)"<<endl;
+    println(*region);*/
 	for(auto t: *list){
 		if( region->find(t.first) == region->end()){ //il primo stato non appartiene alla regione
 			if(region->find(t.second) != region->end())
@@ -97,17 +95,28 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 
 void Pre_and_post_regions_generator::create_post_regions() {
 	//record. first da ts_map è l'evento, record.second è la lista da passare a is_post_region
+	cout << "mappa pre-regioni :" << endl;
+	print(*pre_regions);
 	post_regions = new map<int, set<Region*> *>();
 	for(auto rec: *pre_regions){
 		for(auto reg: *rec.second){
-			if(is_post_region(&ts_map->at(rec.first),reg)){
-				if(post_regions->find(rec.first) == post_regions->end()){
-					(*post_regions)[rec.first] = new set<Region *>();
+			if(ts_map->find(rec.first) != ts_map->end()){
+				//todo: devo trovare dei casi in cui ho per forza delle post-regioni [NON ENTRO MAI DENTRO L'IF]
+				if(is_post_region(&(ts_map->at(rec.first)),reg)){
+					cout << "trovato una nuova post-regione" << endl;
+					if(post_regions->find(rec.first) == post_regions->end()){
+						(*post_regions)[rec.first] = new set<Region *>();
+					}
+					(*post_regions)[rec.first]->insert(reg);
 				}
-
+			}
+			else{
+				cout << "ts_map non contiene " << rec.first << endl;
 			}
 		}
 	}
+	cout << "mappa post-regioni :" << endl;
+	print(*post_regions);
 }
 
 
@@ -260,6 +269,10 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 
 map<int, set<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
 	return pre_regions;
+}
+
+map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
+	return post_regions;
 }
 
 map<int,ER>* Pre_and_post_regions_generator::get_new_ER(){

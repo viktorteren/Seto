@@ -13,6 +13,7 @@ public:
 	Pre_and_post_regions_generator(vector<Region> * reg,vector<Region>* candidate_regions,map<int,ER>* Er_set,set<int>* events_to_split);
 	~Pre_and_post_regions_generator();
 	map<int, set<Region*> *> *get_pre_regions();
+	map<int, set<Region*> *> *get_post_regions();
 	map<int,ER>* get_new_ER();
 	map<int, int>& get_events_alias();
 	void create_post_regions();
