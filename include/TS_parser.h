@@ -6,12 +6,14 @@
 
 #include "Utilities.h"
 
-typedef std::pair<int, int> Edge;
-
 using namespace std;
 
-typedef vector<Edge> Edge_list;
-typedef std::map<int, Edge_list> My_Map;
+typedef set<int> Region;
+typedef std::pair<int, int> Edge;
+typedef set<int> * ER;
+typedef set<Edge*> Edges_list;
+
+typedef std::map<int, Edges_list> My_Map;
 
 extern My_Map* ts_map;
 extern int num_states, initial_state,num_events,num_events_after_splitting;

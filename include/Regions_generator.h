@@ -51,7 +51,7 @@ private:
     map<int,int>* trees_init;
 
     //ER createER(int event);
-    int branch_selection(List_edges *list, Region *region, int event);
+    int branch_selection(Edges_list *list, Region *region, int event);
     bool region_in_queue(Region &new_region,int init_pos);
     void expand(Region *region, int event,bool is_ER,int init_pos);
     void set_middle_set_of_states(map<int,int>* queue_event_index);

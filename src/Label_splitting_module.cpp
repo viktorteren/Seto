@@ -147,7 +147,7 @@ vector<Region>* Label_splitting_module::do_label_splitting(map<int, vector<Regio
 }
 
 
-int Label_splitting_module::branch_selection(List_edges *list, Region *region) {
+int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans = new vector<int>(4, 0);
     cout<<"DENTRO"<<endl;
@@ -159,22 +159,22 @@ int Label_splitting_module::branch_selection(List_edges *list, Region *region) {
     const int enter = 3;
 
     for (auto t: *list) {
-        if (region->find(t.first) != region->end()) { //il primo stato appartiene alla regione
-            if (region->find(t.second) != region->end()) { //anche il secondo stato appartiene alla regione
+        if (region->find(t->first) != region->end()) { //il primo stato appartiene alla regione
+            if (region->find(t->second) != region->end()) { //anche il secondo stato appartiene alla regione
                 (*trans)[in]++;
-                cout << t.first << "->" << t.second << " IN " << endl;
+                cout << t->first << "->" << t->second << " IN " << endl;
                 //per no cross è ok, gli altri non si possono fare
             } else {
                 (*trans)[exit]++;
-                cout << t.first << "->" << t.second << " EXIT" << endl;
+                cout << t->first << "->" << t->second << " EXIT" << endl;
             }
         } else {//il primo non ci appartiene
-            if (region->find(t.second) != region->end()) { //il secondo stato appartiene alla regione
+            if (region->find(t->second) != region->end()) { //il secondo stato appartiene alla regione
                 (*trans)[enter]++;
-                cout << t.first << "->" << t.second << " ENTER" << endl;
+                cout << t->first << "->" << t->second << " ENTER" << endl;
             } else {
                 (*trans)[out]++;
-                cout << t.first << "->" << t.second << " OUT" << endl;
+                cout << t->first << "->" << t->second << " OUT" << endl;
             }
         }
     }
@@ -226,14 +226,18 @@ void Label_splitting_module::set_number_of_bad_events(vector<int>* event_type,in
     cout<<"COUNTER: " <<counter<<endl;
 }
 
-void Label_splitting_module::split_ts_map(map<int,int>* events_alias,const map<int,const set<Region*>*>* pre_regions) {
+void Label_splitting_module::split_ts_map(map<int,int>* events_alias,map<int,set<Region*>*>* pre_regions) {
+
+    cout<<"SPLIT TS MAP "<<endl;
 
     //perogni evento che ho splittato
     //elimina le transazioni uscenti nella new region (le entranti?)
     //aggiungi nuove transazioni nell'evento alias(corrispondenti a quelle che ho tolto)
-    vector<Edge>::iterator it;
+    set<Edge*>::iterator it;
 
     for(auto record: *events_alias){
+        cout<<"event: " <<record.first;
+        auto to_erase=new set<Edge*>();
         auto event=record.first;
         auto transactions=ts_map->at(event);
 
@@ -242,23 +246,36 @@ void Label_splitting_module::split_ts_map(map<int,int>* events_alias,const map<i
         auto new_region=*pre_regions->at(alias_event)->begin();
 
         for(it=transactions.begin();it!=transactions.end();++it){
-            auto tr=it;
+            auto tr=*it;
         //for(auto tr: transactions){
-            if( contains_state(new_region,(*tr).first) ) {
+            if( contains_state(new_region,tr->first) ) {
                 //aggiungo questa transazione all'evento alias
                 //elimino la transazione vecchia
-                transactions.erase(tr);
+                to_erase->insert(tr);
                 if(ts_map->find(alias_event)==ts_map->end()) {
-                    (*ts_map)[alias_event] = List_edges();
-                    auto pair=Edge();
-                    pair.first=tr->first;
-                    pair.second=tr->second;
-                    ts_map->at(alias_event).push_back(pair);
+                    (*ts_map)[alias_event] = Edges_list();
                 }
+                auto pair=new Edge();
+                pair->first=tr->first;
+                pair->second=tr->second;
+                ts_map->at(alias_event).insert(pair);
             }
 
         }
 
+        for(auto el:*to_erase) {
+            ts_map->at(event).erase(el);
+        }
+        delete to_erase;
     }
+
+    cout<<"DEBUG TS_MAP SPLITTED"<<endl;
+	for(auto record:*ts_map){
+		cout<<"evento:" <<record.first<<endl;
+		for(auto tr:record.second){
+			cout<<"trans: "<< tr->first << ", " << tr->second <<endl;
+		}
+	}
+
 }
 

@@ -10,15 +10,24 @@
 #include <set>
 #include <fstream>
 #include <cassert>
-#include "TS_parser.h"
 #include "numeric"
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <cassert>
+#include <tuple>
+#include <map>
+#include <string>
+#include <set>
+#include "../include/TS_parser.h"
 
 using namespace std;
 
 typedef set<int> Region;
 typedef std::pair<int, int> Edge;
 typedef set<int> * ER;
-typedef vector<Edge> List_edges;
+typedef set<Edge*> Edges_list;
 
 const int OK = 0;
 const int NOCROSS = 1;

@@ -4,15 +4,6 @@
 
 #pragma once
 
-#include <fstream>
-#include <vector>
-#include <algorithm>
-#include <iostream>
-#include <cassert>
-#include <tuple>
-#include <map>
-#include <string>
-#include <set>
 #include "Utilities.h"
 
 using namespace std;
@@ -25,7 +16,7 @@ public:
     set<int>* is_excitation_closed();
     vector<Region>* do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,
                                        map<int,vector< int >*>* number_of_bad_events,set<int> * events_not_satisfy_EC);
-    void split_ts_map(map<int,int>* events_alias,const map<int,const set<Region*>*>* pre_regions);
+    void split_ts_map(map<int,int>* events_alias,map<int,set<Region*>*>* pre_regions);
 
 private:
     map<int, vector<Region> *> * regions;
@@ -33,7 +24,7 @@ private:
     map<int, set<int>* > *regions_intersection;
     //coppia numero eventi che violano la regione e ptr_regione
     //map<int,vector< pair<int,Region*> >*>* number_of_bad_events;
-    int branch_selection(List_edges *list, Region *region);
+    int branch_selection(Edges_list *list, Region *region);
     void set_number_of_bad_events(vector<int>* event_type,int event,vector< int >* number_of_bad_events);
 
 };

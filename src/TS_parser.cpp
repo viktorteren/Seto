@@ -54,9 +54,10 @@ void TS_parser::parse_TS(ifstream& fin){
 		// add_edge(vertex_array[src], vertex_array[dst], event(ev), g);
 		//non c'è l'entry relativa all'evento ev
 		if (ts_map->find(ev) == ts_map->end()) {
-			(*ts_map)[ev] = Edge_list();
+			(*ts_map)[ev] = Edges_list();
 		}
-		(*ts_map)[ev].push_back(make_pair(src, dst));
+        auto pair_ptr=new pair<int,int>(src, dst);
+		(*ts_map)[ev].insert(pair_ptr);
 	}
 	num_events = static_cast<int>((*ts_map).size());
 	fin.close();
@@ -158,9 +159,10 @@ void TS_parser::parse_DOT(ifstream& fin){
 			cout << "prova: " <<label << endl << "in: " << temp << endl;
 			ev = stoi(temp);
 			if (ts_map->find(ev) == ts_map->end()) {
-				(*ts_map)[ev] = Edge_list();
+				(*ts_map)[ev] = Edges_list();
 			}
-			(*ts_map)[ev].push_back(make_pair(stoi(src), stoi(dst)));
+            auto pair_ptr=new pair<int,int>(stoi(src), stoi(dst));
+			(*ts_map)[ev].insert(pair_ptr);
 		}
 		if(temp4.compare("}") == 0){
 			break;

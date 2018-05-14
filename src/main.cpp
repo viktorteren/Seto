@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
 
     //todo: modificare la  mappa dopo label splitting
-    //ls->split_ts_map();
+    ls->split_ts_map(&pprg->get_events_alias(),pre_regions);
 
     delete ls;
     delete rg;

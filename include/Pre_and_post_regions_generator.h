@@ -29,8 +29,8 @@ private:
 
 	void create_pre_and_post_regions(vector<Region>* candidate_regions);
 	//void create_pre_and_post_regions_with_splitting(map<int,Region>* candidate_regions);
-	bool is_pre_region(List_edges *list, Region *region);
-	bool is_post_region(List_edges *list, Region *region);
+	bool is_pre_region(Edges_list*list, Region *region);
+	bool is_post_region(Edges_list *list, Region *region);
 	void remove_bigger_regions(Region &new_region);
 	map<int,ER>* create_ER_after_splitting(map<int,ER>*,set<int>*);
 
