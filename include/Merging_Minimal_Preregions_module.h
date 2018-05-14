@@ -13,6 +13,7 @@ class Merging_Minimal_Preregions_module {
 	map<int,set<Region*>*>* total_pre_regions_map= nullptr;
 	map<int,set<Region*>*>* merged_pre_regions_map= nullptr;
     map<int,ER>* er= nullptr;
+    Region* union_ptr= nullptr;
 
     map<int,set<Region*>*>* merging_preregions(map<int,ER>*);
     void merging_2_maps(map<int,set<Region*>*>*,map<int,set<Region*>*>*);

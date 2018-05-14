@@ -6,9 +6,9 @@
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../include/Essential_region_search.h"
 
-Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg, map<int, set<Region*> *>* post_reg){
+Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(map<int, set<Region*> *>* pre_reg){
 	pre_regions = pre_reg;
-	post_regions = post_reg;
+	//post_regions = post_reg;
 	cost_map = new map<Region* , int>();
 	not_essential_regions_map = new map<int, set<Region*> *>();
 	not_essential_regions = new set<Region *>();

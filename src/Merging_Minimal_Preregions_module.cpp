@@ -20,11 +20,14 @@ Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
         for (auto el: *merged_pre_regions_map)
             delete el.second;
         delete merged_pre_regions_map;
+        delete union_ptr;
     }
 
     for(auto el:*er)
         delete el.second;
     delete er;
+
+
 }
 
 
@@ -100,6 +103,14 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
         }
     }
 
+
+    cout<<"debug merging 2 mappe"<<endl;
+    for(auto el: *total_pre_regions_map){
+        cout<<"ev: " <<el.first<<endl;
+        for(auto r:*el.second)
+        Utilities::println(*r);
+    }
+
 }
 
 map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::get_merged_preregions_map() {
@@ -128,25 +139,25 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
     //se vale
 
     map<int,set<Region*>* >* tmp_map=new map<int,set<Region*>*>();
+    for(auto record: *total_pre_regions_map){
+        auto set=record.second;
+        (*tmp_map)[record.first]=new std::set<Region*>(set->begin(),set->end());
+    }
 
-	//per migliorare
 	set<Region*>::iterator it;
 	set<Region*>::iterator it2;
-
-    bool union_ok=false;
 
 	for(it=preregions_set->begin();it!=preregions_set->end();++it){
 		for(it2=next(it);it2!=preregions_set->end();++it2){
 			auto reg1=*it;
 			auto reg2=*it2;
 
-   // for(auto reg1:*preregions_set) {
-     //   for (auto reg2:*preregions_set) {
             cout<<"r1: ";
 			Utilities::println(*reg1);
             cout<<"r2: ";
 			Utilities::println(*reg2);
             if(!Utilities::are_equals(reg1,reg2)) {
+
                 reg_union = Utilities::regions_union(reg1, reg2);
                 bool ec=false;
                 for (auto record:*total_pre_regions_map) {
@@ -193,7 +204,9 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
                             delete reg_union;
                             break;
                         } else {
+                            delete (*tmp_map)[event];
                             (*tmp_map)[event] = tmp_set;
+                            union_ptr=reg_union;
                         }
                     }
 					else {
@@ -209,6 +222,15 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
                     cout<<"merging ok"<<endl;
                     Utilities::println(*reg1);
                     Utilities::println(*reg2);
+
+
+                    for(auto el:*tmp_map) {
+                        cout << "ev: " << el.first<<endl;
+                        for (auto r: *el.second) {
+                            Utilities::println(*r);
+                        }
+                    }
+
                     return tmp_map;
                 }
 
@@ -219,6 +241,14 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
 
     //non ho fatto il merge
     cout<<"not merging"<<endl;
+
+
+    for(auto el: *tmp_map){
+        delete el.second;
+    }
+    delete tmp_map;
+    delete preregions_set;
+
     return nullptr;
 
 

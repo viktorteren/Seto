@@ -9,14 +9,14 @@ using namespace Utilities;
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
-	post_regions= new map < int , set<Region*>* > ();
+	//post_regions= new map < int , set<Region*>* > ();
 	create_pre_and_post_regions(nullptr);
 }
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions, map<int,ER>* Er_set, set<int>* events){
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
-	post_regions= new map < int , set<Region*>* > ();
+	//post_regions= new map < int , set<Region*>* > ();
 
     events_to_split=events;
 
@@ -30,11 +30,6 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
         delete el.second;
     }
     delete pre_regions;
-
-    for(auto el:*post_regions){
-        delete el.second;
-    }
-    delete post_regions;
 
     for(auto el:*added_regions_ptrs){
         delete el;
@@ -134,10 +129,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
                 (*pre_regions)[record.first] = new set<Region *>();
             }
 
-            //se l'evento non era presente nella mappa creo lo spazio per il relativo set di regioni
-            if (post_regions->find(record.first) == post_regions->end()) {
-                (*post_regions)[record.first] = new set<Region *>();
-            }
 
             if (candidate_regions != nullptr) {
 
@@ -228,10 +219,6 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 	}
 }
 
-
-map<int, set<Region*> *> * Pre_and_post_regions_generator::get_post_regions(){
-	return post_regions;
-}
 
 map<int, set<Region*> *> * Pre_and_post_regions_generator::get_pre_regions(){
 	return pre_regions;

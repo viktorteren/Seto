@@ -49,10 +49,10 @@ int main(int argc, char** argv) {
 
         events_not_satify_EC=new set<int>();
         auto pairs=rg->get_trees_init();
+
         for(auto el: *events){
             events_not_satify_EC->insert(pairs->at(el));
         }
-        delete events;
 
         pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,rg->get_ER_set(),events_not_satify_EC);
 	    delete candidate_regions;
@@ -65,17 +65,16 @@ int main(int argc, char** argv) {
         new_ER=rg->get_ER_set();
     }
 
-//todo verifica    delete events;
+    delete events;
     delete events_not_satify_EC;
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
-    map<int, set<Region*> *> * post_regions = pprg->get_post_regions();
 
     delete ls;
     delete rg;
 
     //Inizio modulo: ricerca di set irridondanti di regioni
-    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, post_regions);
+    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions);
 
 
     auto essential_regions=pn_module->get_essential_regions();
