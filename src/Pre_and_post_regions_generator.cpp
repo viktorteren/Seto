@@ -93,12 +93,12 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
-void Pre_and_post_regions_generator::create_post_regions() {
+void Pre_and_post_regions_generator::create_post_regions(map<int,set<Region*>*>* merged_pre_regions) {
 	//record. first da ts_map è l'evento, record.second è la lista da passare a is_post_region
-	/*cout << "mappa pre-regioni :" << endl;
-	print(*pre_regions);*/
+	cout << "mappa pre-regioni :" << endl;
+	print(*merged_pre_regions);
 	post_regions = new map<int, set<Region*> *>();
-	for(auto rec: *pre_regions){
+	for(auto rec: *merged_pre_regions){
 		for(auto reg: *rec.second){
 			if(ts_map->find(rec.first) != ts_map->end()){
 				auto evento = rec.first;
@@ -117,8 +117,8 @@ void Pre_and_post_regions_generator::create_post_regions() {
 			}
 		}
 	}
-	/*cout << "mappa post-regioni :" << endl;
-	print(*post_regions);*/
+	cout << "mappa post-regioni :" << endl;
+	print(*post_regions);
 }
 
 

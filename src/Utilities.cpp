@@ -351,6 +351,8 @@ namespace Utilities {
     	string output_name = file_name;
     	string in_dot_name;
     	string output = "";
+    	cout << "merged map: " << endl;
+    	print(*pre_regions);
     	//creazione della mappa tra il puntatore alla regione ed un intero univoco corrispondente
         map<Region*, int>*regions_mapping;
         auto regions_set = copy_map_to_set(pre_regions);
@@ -494,11 +496,11 @@ namespace Utilities {
     		}
     	}
     	//x debug
-	    /*
+
 	    for(auto record: *regions_map){
     		cout << record.second << ": ";
     		println(*record.first);
-    	}*/
+    	}
     	return regions_map;
     }
 

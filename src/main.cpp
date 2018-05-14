@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input.ts";
+	    file = "../test/input4.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -83,6 +83,8 @@ int main(int argc, char** argv) {
     auto essential_regions=pn_module->get_essential_regions();
     map<int,set<Region*>*>* irredundant_regions= pn_module->get_irredundant_regions();
 
+
+
     Merging_Minimal_Preregions_module* merging_module= nullptr;
 
     if(irredundant_regions!= nullptr) {
@@ -95,13 +97,15 @@ int main(int argc, char** argv) {
 
     }
 
+
+
     auto merged_map= merging_module->get_merged_preregions_map();
 
 	if(merged_map== nullptr){
 		merged_map= merging_module->get_total_preregions_map();
 	}
 
-	pprg->create_post_regions();
+	pprg->create_post_regions(merged_map);
 	auto post_regions = pprg->get_post_regions();
 
 	//restore_default_labels(merged_map, pprg->get_events_alias());
