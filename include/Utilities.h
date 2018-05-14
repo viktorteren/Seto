@@ -57,7 +57,7 @@ namespace Utilities {
 	void print(map<int, set<Region*>*>& net);
     void print_place(Region &region);
     void print_transactions();
-    void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
+    //void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
     bool is_bigger_than(Region* region ,set<int>* region2);
     bool is_bigger_than_or_equal_to(Region*,set<int>*);
     bool are_equals(Region *, Region *);

@@ -191,13 +191,11 @@ namespace Utilities {
 
     }
 
-
+	/*
     void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>> * irredundant_regions) {
         int pos=0;
 
-
-        //todo:ci sono regioni doppie perchè ho mappa -> non ci sono più regioni doppie con il set ma devo tenere traccia del numero di regione con la regione stessa
-		set<Region *> *unrepeated_regions = new set<Region *>();
+        set<Region *> *unrepeated_regions = new set<Region *>();
         cout<<"Posti: "<< endl;
 		for(auto record:*essential_regions){
 			for(auto reg: record.second) {
@@ -238,7 +236,7 @@ namespace Utilities {
         //todo:finire PN con pre e post regioni (pre_essential_region & post_essential_region && pre/post_irredundant)
 
 	    cout << endl;
-    }
+    }*/
 
     set<int> *region_difference(set<int> &first, set<int> &second) {
         auto s = new set<int>();
