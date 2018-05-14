@@ -479,5 +479,88 @@ namespace Utilities {
     	return difference;
     }
 
+
+    Region* get_ptr_into(set<Region *> *set, Region *region) {
+
+        std::set<Region*>::iterator it;
+        for(it=set->begin();it!=set->end();++it){
+            auto elem=*it;
+            //for(auto elem:*set){
+            if(are_equals(elem, region) ){
+                return *it;
+            }
+        }
+
+        return nullptr;
+    }
+
+
+    bool contains_state(Region* reg,int state){
+
+        for(auto el:*reg){
+            if(el==state)
+                return true;
+        }
+
+        return false;
+
+    }
+
+    void println(set<Region *>& regions){
+        for(auto reg: regions){
+            println(*reg);
+        }
+    }
+
+    void print(map<int, set<Region*>*>& net){
+        for(auto rec: net){
+            cout << "event: " << rec.first << endl;
+            println(*rec.second);
+        }
+    }
+
+
+    set<Region *>* region_pointer_union(set<Region*>* first, set<Region*>* second){
+        /*cout << "primo insieme: " << endl;
+        println(*first);
+
+        cout << "secondo insieme: " << endl;
+        println(*second);*/
+
+        auto un = new set<Region *>(*first);
+        for(auto reg: *second){
+            un->insert(reg);
+        }
+        /*cout << "risultato: " << endl;
+        println(*un);*/
+
+        return un;
+    }
+
+    void restore_default_labels(map<int, set<Region*>*>* net, map<int, int>& aliases){
+        /*cout << "mappa alias: " << endl;
+        for(auto rec: aliases){
+            cout << rec.first << " : " << rec.second << endl;
+        }
+        cout << "vecchia mappa:" << endl;
+        print(*net);*/
+        int counter = 0;
+        for(auto rec: *net){
+            //l'etichetta rec.first è stata splittata
+            if(aliases.find(rec.first) != aliases.end()){
+                net->at(rec.first) = region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
+            }
+            counter ++;
+            if(counter == num_events)
+                break;
+        }
+        for(auto rec: aliases){
+            net->erase(rec.second);
+        }
+        /*cout << "nuova mappa:" << endl;
+        print(*net);*/
+    }
+
+
 }
 
