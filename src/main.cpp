@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 		merged_map= merging_module->get_total_preregions_map();
 	}
 
-	pprg->create_post_regions();
+	pprg->create_post_regions(merged_map);
 	auto post_regions = pprg->get_post_regions();
 
 	//restore_default_labels(merged_map, pprg->get_events_alias());
