@@ -25,6 +25,7 @@ public:
     set<int>* is_excitation_closed();
     vector<Region>* do_label_splitting(map<int, vector<Region*> *>* middle_set_of_states,
                                        map<int,vector< int >*>* number_of_bad_events,set<int> * events_not_satisfy_EC);
+    void split_ts_map(map<int,int>* events_alias,const map<int,const set<Region*>*>* pre_regions);
 
 private:
     map<int, vector<Region> *> * regions;

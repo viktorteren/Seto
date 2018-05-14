@@ -35,6 +35,7 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
         delete el;
     }
     delete added_regions_ptrs;
+
     delete events_alias;
     //todo: se faccio questa delete creo un memory leak al posto di risolverlo
     //delete er_set;
@@ -151,8 +152,18 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 
 							Region *candidate_region = nullptr;
 							Region *new_region = region_difference(*region, cand_reg);
+
+							cout<<"debug unica regione:"<<endl;
+							println(*new_region);
+
 							if (!contains((*pre_regions)[record.first], new_region)) {
 								if (is_pre_region(&record.second, new_region)) {
+
+									auto reg_ptr=get_ptr_into(added_regions_ptrs,new_region);
+									if( reg_ptr!= nullptr ){
+										delete new_region;
+										new_region=reg_ptr;
+									}
 
 									//se l'evento era quello da splittare aggiungi la nuova regione ad un nuovo evento e crea la mappa degli alias
 									if (events_to_split->find(record.first) != events_to_split->end()) {
@@ -174,9 +185,18 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 							} else
 								delete new_region;
 
+
 							if (!contains((*pre_regions)[record.first], &cand_reg)) {
 								if (is_pre_region(&record.second, &cand_reg)) {
-									candidate_region = new set<int>(cand_reg);
+
+                                    auto reg2_ptr=get_ptr_into(added_regions_ptrs,&cand_reg);
+                                    if( reg2_ptr!= nullptr ){
+                                        candidate_region=reg2_ptr;
+                                    }
+                                    else{
+                                        candidate_region = new set<int>(cand_reg);
+                                    }
+
 									(*pre_regions)[record.first]->insert(candidate_region);
 									added_regions_ptrs->insert(candidate_region);
 									//cout << "ho inserito new region(cand reg)" << endl;
@@ -217,6 +237,9 @@ void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>*
 	for(auto e:*events_alias){
 		cout<<"event: " <<e.first<<"alias: " << e.second<<endl;
 	}
+
+	num_events_after_splitting=pre_regions->size();
+    cout<<"NUM EVENTS AFTER SPLIT " <<num_events_after_splitting<<endl;
 }
 
 

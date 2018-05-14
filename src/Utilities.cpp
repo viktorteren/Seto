@@ -348,6 +348,23 @@ namespace Utilities {
         return false;
     }
 
+
+    Region* get_ptr_into(set<Region *> *set, Region *region) {
+
+        std::set<Region*>::iterator it;
+        for(it=set->begin();it!=set->end();++it){
+            auto elem=*it;
+        //for(auto elem:*set){
+            if(are_equals(elem, region) ){
+                return *it;
+            }
+        }
+
+        return nullptr;
+    }
+
+
+
     void print_pn_dot_file(map<int,set<Region*>*>* net, string file_name){
     	//todo: net ha dei duplucati  che devono essere eliminati
         auto initial_reg = initial_regions(net);
@@ -431,11 +448,11 @@ namespace Utilities {
     		}
     	}
     	//x debug
-	    /*
+
 	    for(auto record: *regions_map){
     		cout << record.second << ": ";
     		println(*record.first);
-    	}*/
+    	}
     	return regions_map;
     }
 
@@ -477,6 +494,18 @@ namespace Utilities {
 		    println(*reg);
 	    }*/
     	return difference;
+    }
+
+
+    bool contains_state(Region* reg,int state){
+
+        for(auto el:*reg){
+            if(el==state)
+                return true;
+        }
+
+        return false;
+
     }
 
 }

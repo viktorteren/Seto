@@ -53,8 +53,7 @@ void Merging_Minimal_Preregions_module::merging_2_maps(map<int,set<Region*>*>* f
 
 
     if(second!=nullptr){
-        //todo num_events deve diventare quello dop olabel splitting
-        for(int event=0;event<num_events;event++){
+        for(int event=0;event<num_events_after_splitting;event++){
             cout<<"evento:"<<event<<endl;
 
             //trovo entrambi gli eventi

@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input.ts";
+	    file = "../test/input4.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -70,6 +70,9 @@ int main(int argc, char** argv) {
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
 
+    //todo: modificare la  mappa dopo label splitting
+    //ls->split_ts_map();
+
     delete ls;
     delete rg;
 
@@ -97,7 +100,7 @@ int main(int argc, char** argv) {
 	if(merged_map== nullptr){
 		merged_map= merging_module->get_total_preregions_map();
 	}
-	//todo: modificare la  mappa dopo label splitting
+
 	//todo: calcolare le post-regioni a partire dalle regioni
 	//todo: unire i nomi delle nuove regioni per ottenere i nomi originali
 

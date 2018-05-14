@@ -5,7 +5,7 @@
 #include "../include/TS_parser.h"
 
 My_Map* ts_map;
-int num_states, initial_state, num_events;
+int num_states, initial_state, num_events,num_events_after_splitting;
 unsigned int num_transactions;
 
 //todo: aggiungere parser dot

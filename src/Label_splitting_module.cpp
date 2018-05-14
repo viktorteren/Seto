@@ -226,3 +226,39 @@ void Label_splitting_module::set_number_of_bad_events(vector<int>* event_type,in
     cout<<"COUNTER: " <<counter<<endl;
 }
 
+void Label_splitting_module::split_ts_map(map<int,int>* events_alias,const map<int,const set<Region*>*>* pre_regions) {
+
+    //perogni evento che ho splittato
+    //elimina le transazioni uscenti nella new region (le entranti?)
+    //aggiungi nuove transazioni nell'evento alias(corrispondenti a quelle che ho tolto)
+    vector<Edge>::iterator it;
+
+    for(auto record: *events_alias){
+        auto event=record.first;
+        auto transactions=ts_map->at(event);
+
+        //la nuova regione è sempre solo una
+        auto alias_event=events_alias->at(event);
+        auto new_region=*pre_regions->at(alias_event)->begin();
+
+        for(it=transactions.begin();it!=transactions.end();++it){
+            auto tr=it;
+        //for(auto tr: transactions){
+            if( contains_state(new_region,(*tr).first) ) {
+                //aggiungo questa transazione all'evento alias
+                //elimino la transazione vecchia
+                transactions.erase(tr);
+                if(ts_map->find(alias_event)==ts_map->end()) {
+                    (*ts_map)[alias_event] = List_edges();
+                    auto pair=Edge();
+                    pair.first=tr->first;
+                    pair.second=tr->second;
+                    ts_map->at(alias_event).push_back(pair);
+                }
+            }
+
+        }
+
+    }
+}
+
