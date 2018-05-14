@@ -10,7 +10,7 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 	regions = reg;
 	pre_regions= new map < int , set<Region*>* > ();
 	//post_regions= new map < int , set<Region*>* > ();
-	create_pre_and_post_regions(nullptr);
+	create_pre_regions(nullptr);
 }
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * reg, vector<Region> * candidate_regions, map<int,ER>* Er_set, set<int>* events){
@@ -19,7 +19,7 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> * 
 
     events_to_split=events;
 
-	create_pre_and_post_regions(candidate_regions);
+	create_pre_regions(candidate_regions);
 	er_set=create_ER_after_splitting(Er_set,events);
 
 }
@@ -122,7 +122,7 @@ void Pre_and_post_regions_generator::create_post_regions(map<int,set<Region*>*>*
 }
 
 
-void Pre_and_post_regions_generator::create_pre_and_post_regions(vector<Region>* candidate_regions) {
+void Pre_and_post_regions_generator::create_pre_regions(vector<Region>* candidate_regions) {
 	cout
 		<< "------------------------------------------------------------ DELETING OF NON MINIMAL REGIONS -------------------------------------------"
 		<< endl;
@@ -295,16 +295,18 @@ map<int,ER>* Pre_and_post_regions_generator::create_ER_after_splitting(map<int,E
 		}
 			//l'ER è l'intersezione delle preregioni dell'evento(EC è valida)
 		else {
-			cout<<"evento"<<i<<endl;
+			//cout<<"evento"<<i<<endl;
 			auto event1=i;
 			(*er_set)[i]=regions_intersection(pre_regions->at(event1));
-			auto event2=events_alias->at(i);
-			(*er_set)[event2]=regions_intersection(pre_regions->at(event2));
+            if(events_alias->find(i)!=events_alias->end()) {
+                auto event2 = events_alias->at(i);
+                (*er_set)[event2] = regions_intersection(pre_regions->at(event2));
+            }
 		}
 		++it;
 	}
 
-	cout<<"debug:" <<endl;
+	cout<<"debug: er" <<endl;
 	for(auto ev:*er_set){
 		println(*ev.second);
 	}

@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input4.ts";
+	    file = "../test/input3.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -73,6 +73,14 @@ int main(int argc, char** argv) {
     //todo: modificare la  mappa dopo label splitting
     ls->split_ts_map(&pprg->get_events_alias(),pre_regions);
 
+    cout<<"main DEBUG TS_MAP SPLITTED"<<endl;
+    for(auto record:*ts_map){
+        cout<<"evento:" <<record.first<<endl;
+        for(auto tr:record.second){
+            cout<<"trans: "<< tr->first << ", " << tr->second <<endl;
+        }
+    }
+
     delete ls;
     delete rg;
 
@@ -82,8 +90,6 @@ int main(int argc, char** argv) {
 
     auto essential_regions=pn_module->get_essential_regions();
     map<int,set<Region*>*>* irredundant_regions= pn_module->get_irredundant_regions();
-
-
 
     Merging_Minimal_Preregions_module* merging_module= nullptr;
 
@@ -97,15 +103,13 @@ int main(int argc, char** argv) {
 
     }
 
-
-
     auto merged_map= merging_module->get_merged_preregions_map();
 
 	if(merged_map== nullptr){
 		merged_map= merging_module->get_total_preregions_map();
 	}
 
-	pprg->create_post_regions(merged_map);
+	pprg->create_post_regions();
 	auto post_regions = pprg->get_post_regions();
 
 	//restore_default_labels(merged_map, pprg->get_events_alias());
