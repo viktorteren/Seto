@@ -357,6 +357,12 @@ namespace Utilities {
         auto not_initial_regions = region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(pre_regions);
 
+        cout<<"regions mapping"<<endl;
+        for(auto el:*regions_mapping){
+            cout<<"regione: " << el.second;
+            println(*el.first);
+        }
+
     	while(output_name[output_name.size()-1] != '.'){
     		output_name = output_name.substr(0, output_name.size()-1);
     	}

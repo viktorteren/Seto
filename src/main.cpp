@@ -109,7 +109,12 @@ int main(int argc, char** argv) {
 		merged_map= merging_module->get_total_preregions_map();
 	}
 
-	pprg->create_post_regions();
+    cout<<"debug"<<endl;
+    for(auto el : *merged_map)
+        for(auto el2 : *el.second)
+            println(*el2);
+
+	pprg->create_post_regions(copy_map_to_set(merged_map));
 	auto post_regions = pprg->get_post_regions();
 
 	//restore_default_labels(merged_map, pprg->get_events_alias());
