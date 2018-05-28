@@ -16,7 +16,7 @@ public:
 	map<int, set<Region*> *> *get_post_regions();
 	map<int,ER>* get_new_ER();
 	map<int, int>& get_events_alias();
-	void create_post_regions(set<Region*>* final_regions);
+	void create_post_regions(map<int,set<Region*>*>* merged_pre_regions);
 private:
 	vector<Region> *regions;
 	map<int, set<Region*> *> *pre_regions;

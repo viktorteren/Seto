@@ -93,27 +93,32 @@ void Pre_and_post_regions_generator::remove_bigger_regions(Region& new_region){
 	}
 }
 
-void Pre_and_post_regions_generator::create_post_regions(set<Region*>* final_regions) {
+void Pre_and_post_regions_generator::create_post_regions(map<int,set<Region*>*>* merged_pre_regions) {
 	//record. first da ts_map è l'evento, record.second è la lista da passare a is_post_region
-	/*cout << "mappa pre-regioni :" << endl;
-	print(*pre_regions);*/
-
+	cout << "mappa pre-regioni :" << endl;
+	print(*merged_pre_regions);
 	post_regions = new map<int, set<Region*> *>();
-	for(auto reg: *final_regions){
-		cout<<"region: ";
-		println(*reg);
+	for(auto rec: *merged_pre_regions){
+		for(auto reg: *rec.second){
+			if(ts_map->find(rec.first) != ts_map->end()){
+				auto evento = rec.first;
 				for(auto r: *ts_map){
 					if(is_post_region(&(ts_map->at(r.first)),reg)){
 						if(post_regions->find(r.first) == post_regions->end()){
 							(*post_regions)[r.first] = new set<Region *>();
 						}
-                        cout<<"inserisco post region per "<<r.first<<endl;
 						(*post_regions)[r.first]->insert(reg);
 					}
 				}
+
+			}
+			else{
+				cout << "ts_map non contiene " << rec.first << endl;
+			}
+		}
 	}
-	/*cout << "mappa post-regioni :" << endl;
-	print(*post_regions);*/
+	cout << "mappa post-regioni :" << endl;
+	print(*post_regions);
 }
 
 
@@ -230,12 +235,12 @@ void Pre_and_post_regions_generator::create_pre_regions(vector<Region>* candidat
 
 						}
 
-					}
+						if (!split) {
+							if (pre_region) (*pre_regions)[record.first]->insert(region);
+							//if (post_region) (*post_regions)[record.first]->insert(region);
+						}
 
-                if (!split) {
-                    if (pre_region) (*pre_regions)[record.first]->insert(region);
-                    //if (post_region) (*post_regions)[record.first]->insert(region);
-                }
+					}
 
                 cout<<"qui"<<endl;
             }
