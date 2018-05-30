@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input3.ts";
+	    file = "../test/input2.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -110,9 +110,11 @@ int main(int argc, char** argv) {
 	}
 
 	pprg->create_post_regions(merged_map);
+    //pprg->create_post_regions(pprg->get_pre_regions());
 	auto post_regions = pprg->get_post_regions();
 
 	//restore_default_labels(merged_map, pprg->get_events_alias());
+    //print_pn_dot_file( pprg->get_pre_regions(), post_regions, pprg->get_events_alias(), file);
     print_pn_dot_file( merged_map, post_regions, pprg->get_events_alias(), file);
 
     //dealloco regions e tutti i suoi vettori

@@ -38,6 +38,11 @@ set<Region *>* Essential_regions_search::search(){
     for(auto record: *pre_regions){
         //cout <<  "evento: " << record.first << endl;
 
+		if(record.first==4){
+			cout<<"debug pre regions"<<endl;
+			print(*pre_regions);
+		}
+
 		Region::iterator it2;
 
         //se ho una sola regione, tale regione è per forza essenziale
@@ -93,14 +98,14 @@ set<Region *>* Essential_regions_search::search(){
     }
 
     //print per debug
-    /*
+
     cout << "prove essential regions:" << endl;
     for(auto rec: *essential_map){
     	cout << "set di regioni dell'evento: " << rec.first << endl;
-    	for(auto reg: rec.second){
+    	for(auto reg: *rec.second){
     		println(*reg);
     	}
-    }*/
+    }
 
     cout << "Regioni essenziali: " << endl;
     for (auto reg: *essential_regions) {
