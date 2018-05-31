@@ -383,7 +383,7 @@ namespace Utilities {
 	    //regioni iniziali
 	    cout << "scrittura regioni iniziali" << endl;
 	    fout << "subgraph initial_place {\n"
-	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = black, style = filled];\n";
+	            "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = gray, style = filled];\n";
 	    for(auto reg: *initial_reg){
 	    	fout << "\tr" << regions_mapping->at(reg) << ";\n";
 	    }
@@ -469,7 +469,7 @@ namespace Utilities {
 					    fout <<  "\t" << translate_label(label) << "_ -> "  << "r" << regions_mapping->at(reg) << ";\n";
 				    }
 				    else{
-					    "regions_mapping non contiene ";
+					    cout << "regions_mapping non contiene ";
 					    println(*reg);
 				    }
 			    }

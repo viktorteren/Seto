@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input2.ts";
+	    file = "../test/input3.ts";
     }
     else if (argc == 2){
 	    file = args[1];
