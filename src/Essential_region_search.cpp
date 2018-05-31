@@ -47,16 +47,8 @@ set<Region *>* Essential_regions_search::search(){
 
         //se ho una sola regione, tale regione è per forza essenziale
 		if(record.second->size() == 1) {
-			for (auto reg: *record.second) {
-				//cout << "trovato regione essenziale: ";
-				//println(*reg);
-				essential_regions->insert(reg);
-				//non ho ancora creato nessun record relativo ad un certo evento
-				if(essential_map->find(record.first) == essential_map->end()){
-					(*essential_map)[record.first] = new set<Region *>();
-				}
-				(*essential_map)[record.first]->insert(reg);
-			}
+			auto it = record.second->begin();
+			essential_regions->insert(*it);
 		}
 		else{
 			//unisco tutte le pre-regioni
@@ -69,7 +61,6 @@ set<Region *>* Essential_regions_search::search(){
 				counter = 0;
 				//per ogni regione
 				for(auto region: *record.second){
-					//controllo se la regione non contiene lo stato
 					if (region->find(state) == region->end()) {
 						if(counter == 0) {
 							last_essential_candidate = region;
@@ -80,19 +71,30 @@ set<Region *>* Essential_regions_search::search(){
 							break;
 						}
 					}
+
 				}
 				//se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
 				if(counter == 1){
 					//cout << "trovato regione essenziale: ";
 					//println(*last_essential_candidate);
 					essential_regions->insert(last_essential_candidate);
-					if(essential_map->find(record.first) == essential_map->end()){
-						(*essential_map)[record.first] = new set<Region *>();
-					}
-					(*essential_map)[record.first]->insert(last_essential_candidate);
 				}
 			}
 			delete temp_union;
+		}
+
+		//una volta trovato tutte le regioni essenziali le salvo nella mappa
+		for(auto record: *pre_regions){
+			for(auto region: *essential_regions){
+				auto set_of_event = record.second;
+				if(set_of_event->find(region) != set_of_event->end()){
+					if(essential_map->find(record.first) == essential_map->end()){
+						(*essential_map)[record.first] = new set<Region *>();
+					}
+					(*essential_map)[record.first]->insert(region);
+				}
+
+			}
 		}
 
     }
