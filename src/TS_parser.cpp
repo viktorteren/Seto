@@ -23,6 +23,7 @@ void TS_parser::parse(string file) {
     //il file è nel nostro formato ts
     if((file[file.size()-2]) == 't' && (file[file.size()-1] == 's')){
 	    parse_TS(fin);
+	    create_DOT_input(file);
     }
     //il file è nel formato dot
     else if((file[file.size()-3] == 'd' && (file[file.size()-2]) == 'o' && (file[file.size()-1] == 't'))){
@@ -171,29 +172,41 @@ void TS_parser::parse_DOT(ifstream& fin){
 	fin.close();
 }
 
-/*
-void TS_parser::parse_APT(ifstream& fin){
-    cout << "--------------------.apt FILE PARSING------------------------" << endl;
-    string tmp;
-    string tmp2;
-    while(fin){
-        fin>>tmp;
-            if(tmp.compare(".states")==0){
-                for(int i=0;;++i) {
-                    fin>>tmp;
-                    if (tmp.compare("[initial]") == 0) {
-                        initial_state = stoi(tmp);
-                    }
-                    ++num_states;
-                    if(tmp.at(0)!='s'){
-                        tmp2=tmp;
-                        break;
-                    }
-                }
-            }
-            if(tmp2.compare(".labels")==0){
+void TS_parser::create_DOT_input(string file_path){
+	cout << "CREATION OF INPUT .DOT FILE" << endl;
+	string output_name = file_path;
+	string in_name;
+	while(output_name[output_name.size()-1] != '.'){
+		output_name = output_name.substr(0, output_name.size()-1);
+	}
+	output_name = output_name.substr(0, output_name.size()-1);
+	int lower = 0;
+	for(int i= output_name.size()-1; i > 0; i--){
+		if(output_name[i] == '/'){
+			lower = i;
+			break;
+		}
+	}
+	in_name = output_name.substr(lower+1, output_name.size());
+	//cout << "out name: " << in_dot_name << endl;
 
-            }
-        }
-    fin.close();
-}*/
+	output_name = output_name + ".dot";
+
+	ofstream fout(output_name);
+	fout << "digraph ";
+	fout << in_name;
+	fout << "{\n";
+	fout << "\tlabel=\"(name=" << in_name << ",n=" << num_states << ",m=" << num_transactions << ")\";\n";
+	fout << "\t_nil [style = \"invis\"];\n";
+	fout << "\tnode [shape = doublecircle]; 0;\n";
+	fout << "\tnode [shape = circle];\n";
+	fout << "\t_nil -> 0;\n";
+	for(auto rec: *ts_map){
+		for(auto edge: rec.second){
+			fout << "\t" << edge->first << "->" << edge->second << "[label=\"" << rec.first << "\"];\n";
+		}
+	}
+
+	fout << "}\n";
+	//transazioni
+}
