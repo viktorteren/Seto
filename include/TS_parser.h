@@ -22,6 +22,7 @@ extern unsigned int num_transactions;
 class TS_parser{
 	static void parse_TS(ifstream& fin);
 	static void parse_DOT(ifstream& fin);
+	static void create_DOT_input(string file_path);
 public:
     static void parse(string file);
 };
