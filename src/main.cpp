@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
 
   delete merging_module;
 
-  int c = 0;
+  //int c = 0;
   for (auto el : *ts_map) {
     for (auto p : el.second) {
       delete p;
