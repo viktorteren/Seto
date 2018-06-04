@@ -157,8 +157,9 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
             Utilities::println(*reg2);
 
             //le regioni sono disgiunte!!!
-            if(Utilities::regions_intersection(reg1,reg2)->empty()) {
-
+            auto inter=Utilities::regions_intersection(reg1,reg2);
+            if(inter->empty()) {
+                delete inter;
                 if (!Utilities::are_equals(reg1, reg2)) {
 
                     reg_union = Utilities::regions_union(reg1, reg2);
@@ -240,6 +241,7 @@ map<int,set<Region*>*>*  Merging_Minimal_Preregions_module::merging_preregions(m
 
             }
             else {
+                delete inter;
                 cout<<"le regioni non sono disgiunte"<<endl;
             }
 

@@ -170,3 +170,30 @@ void TS_parser::parse_DOT(ifstream& fin){
 	num_events = static_cast<int>((*ts_map).size());
 	fin.close();
 }
+
+/*
+void TS_parser::parse_APT(ifstream& fin){
+    cout << "--------------------.apt FILE PARSING------------------------" << endl;
+    string tmp;
+    string tmp2;
+    while(fin){
+        fin>>tmp;
+            if(tmp.compare(".states")==0){
+                for(int i=0;;++i) {
+                    fin>>tmp;
+                    if (tmp.compare("[initial]") == 0) {
+                        initial_state = stoi(tmp);
+                    }
+                    ++num_states;
+                    if(tmp.at(0)!='s'){
+                        tmp2=tmp;
+                        break;
+                    }
+                }
+            }
+            if(tmp2.compare(".labels")==0){
+
+            }
+        }
+    fin.close();
+}*/

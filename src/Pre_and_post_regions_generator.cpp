@@ -29,6 +29,10 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
         delete el.second;
     }
     delete pre_regions;
+
+    for(auto el:*post_regions){
+        delete el.second;
+    }
     delete post_regions;
 
     for(auto el:*added_regions_ptrs){
@@ -37,6 +41,7 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator(){
     delete added_regions_ptrs;
 
     delete events_alias;
+
 }
 
 bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list, Region *region) {
@@ -296,6 +301,7 @@ map<int,ER>* Pre_and_post_regions_generator::create_ER_after_splitting(map<int,E
 		else {
 			//cout<<"evento"<<i<<endl;
 			auto event1=i;
+            delete (*it).second;
 			(*er_set)[i]=regions_intersection(pre_regions->at(event1));
             if(events_alias->find(i)!=events_alias->end()) {
                 auto event2 = events_alias->at(i);

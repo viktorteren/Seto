@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 	string file;
     if(argc == 1){
     	//default input
-	    file = "../test/input3.ts";
+	    file = "../test/input2.ts";
     }
     else if (argc == 2){
 	    file = args[1];
@@ -70,7 +70,6 @@ int main(int argc, char** argv) {
 
     map<int, set<Region*> *> * pre_regions = pprg->get_pre_regions();
 
-    //todo: modificare la  mappa dopo label splitting
     ls->split_ts_map(&pprg->get_events_alias(),pre_regions);
 
     cout<<"main DEBUG TS_MAP SPLITTED"<<endl;
@@ -132,5 +131,15 @@ int main(int argc, char** argv) {
 
 
     delete merging_module;
+
+    int c=0;
+    for(auto el:*ts_map) {
+        for (auto p:el.second) {
+            delete p;
+            //c++;
+        }
+    }
+   // cout<<"C: "<<c<<endl;
+    delete ts_map;
 
 }

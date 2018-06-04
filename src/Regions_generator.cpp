@@ -457,9 +457,12 @@ map<int, vector<Region> *>* Region_generator::generate(){
     //evento e indice di fine
     auto queue_event_index=new map<int,int>;
 	ER er_temp = nullptr;
+
 	for(auto e : *ts_map ){
+
         er_temp = createER(e.first);
-        (*ER_set)[e.first]=er_temp;
+        (*ER_set)[e.first] = er_temp;
+
         (*regions)[e.first]=new vector<Region>();
 
         init_pos=pos;
