@@ -31,7 +31,12 @@ void TS_parser::parse(string file) {
   else if ((file[file.size() - 3] == 'd' && (file[file.size() - 2]) == 'o' &&
             (file[file.size() - 1] == 't'))) {
     parse_DOT(fin);
-  } else {
+  }
+  else if ((file[file.size() - 3] == 'a' && (file[file.size() - 2]) == 'p' &&
+            (file[file.size() - 1] == 't'))) {
+      parse_APT(fin);
+      print_ts_dot_file(file);
+  }else {
     cout << "The file extension is not supported" << endl;
     exit(0);
   }
@@ -169,5 +174,89 @@ void TS_parser::parse_DOT(ifstream &fin) {
   }
   num_events = static_cast<int>((*ts_map).size());
   fin.close();
+}
+
+void TS_parser::parse_APT(ifstream& fin){
+    cout << "--------------------.apt FILE PARSING------------------------" << endl;
+    string tmp;
+    string tmp2;
+    string src, dst, ev;
+    int src2, dst2, ev2;
+    num_events = 0;
+    num_transactions = 0;
+    num_states = 0;
+
+    map<string, int>* labels_map = new map<string, int>;
+
+    while(fin){
+        fin >> tmp;
+        if(tmp.compare(".type") == 0){
+            fin >> tmp;
+            if(tmp.compare("LTS") != 0){
+                cout << "INPUT NOT SUPPORTED" << endl;
+                exit(1);
+            }
+        }
+        else if(tmp.compare(".states")==0){
+            for(int i=0;;++i) {
+                fin >> tmp;
+                if(i == 0){
+                    initial_state = stoi(tmp.substr(1, tmp.size()-9));
+                }
+                if(tmp.at(0)!='s'){
+                    tmp2=tmp;
+                    break;
+                }
+                ++num_states;
+            }
+        }
+        if(tmp2.compare(".labels")==0) {
+            while(true){
+                fin >> tmp;
+                if(tmp.compare(".arcs") == 0){
+                    break;
+                }
+                (*labels_map)[tmp] = num_events;
+                ++num_events;
+            }
+            while(!fin.eof()){
+                fin >> src;
+                if(fin.eof())
+                    break;
+                fin >> ev;
+                if(fin.eof())
+                    break;
+                fin >> dst;
+                if(fin.eof())
+                    break;
+
+
+
+                src2 = stoi(src.substr(1, src.size()));
+                dst2 = stoi(dst.substr(1, dst.size()));
+                //ev2 = stoi(ev.substr(1, ev.size()));
+                ev2 = labels_map->at(ev);
+                if (ts_map->find(ev2) == ts_map->end()) {
+                   (*ts_map)[ev2] = Edges_list();
+                }
+                auto pair_ptr = new pair<int, int>(src2, dst2);
+                (*ts_map)[ev2].insert(pair_ptr);
+                ++num_transactions;
+            }
+        }
+    }
+    fin.close();
+
+    cout << "PRINT MAPPA DOPO LETTURA APT:" << endl;
+    cout << "num events: " << num_events << endl;
+    cout << "num states :" << num_states << endl;
+    cout << "stato iniziale " << initial_state << endl;
+    cout << "num transactions: " << num_transactions << endl;
+    for(auto rec: *ts_map){
+        cout << "evento :" << rec.first << endl;
+        for(auto t: rec.second){
+            cout << t->first << " -> " << t->second << endl;
+        }
+    }
 }
 

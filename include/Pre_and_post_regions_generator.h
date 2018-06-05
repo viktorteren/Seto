@@ -24,7 +24,6 @@ private:
   vector<Region> *regions;
   map<int, set<Region *> *> *pre_regions;
   map<int, set<Region *> *> *post_regions = nullptr;
-  // todo usa questa per avere una sola occorrenza delle nuove regioni splittate
   set<Region *> *added_regions_ptrs;
   set<int> *events_to_split;
   // alias vecchio -> nuovo
