@@ -4,6 +4,8 @@
 
 #include "../include/TS_parser.h"
 
+using namespace Utilities;
+
 My_Map *ts_map;
 int num_states, initial_state, num_events, num_events_after_splitting;
 unsigned int num_transactions;
@@ -23,7 +25,7 @@ void TS_parser::parse(string file) {
   // il file è nel nostro formato ts
   if ((file[file.size() - 2]) == 't' && (file[file.size() - 1] == 's')) {
     parse_TS(fin);
-    create_DOT_input(file);
+    print_ts_dot_file(file);
   }
   // il file è nel formato dot
   else if ((file[file.size() - 3] == 'd' && (file[file.size() - 2]) == 'o' &&
@@ -40,7 +42,6 @@ void TS_parser::parse_TS(ifstream &fin) {
   // Read defining parameters:
   fin >> num_states;
   fin >> num_transactions;
-  // todo: è proprio vero che abbiamo un solo stato iniziale???
   fin >> initial_state;
   int src, dst, ev;
 
@@ -170,43 +171,3 @@ void TS_parser::parse_DOT(ifstream &fin) {
   fin.close();
 }
 
-void TS_parser::create_DOT_input(string file_path) {
-  cout << "CREATION OF INPUT .DOT FILE" << endl;
-  string output_name = file_path;
-  string in_name;
-  while (output_name[output_name.size() - 1] != '.') {
-    output_name = output_name.substr(0, output_name.size() - 1);
-  }
-  output_name = output_name.substr(0, output_name.size() - 1);
-  int lower = 0;
-  for (int i = output_name.size() - 1; i > 0; i--) {
-    if (output_name[i] == '/') {
-      lower = i;
-      break;
-    }
-  }
-  in_name = output_name.substr(lower + 1, output_name.size());
-  // cout << "out name: " << in_dot_name << endl;
-
-  output_name = output_name + ".dot";
-
-  ofstream fout(output_name);
-  fout << "digraph ";
-  fout << in_name;
-  fout << "{\n";
-  fout << "\tlabel=\"(name=" << in_name << ",n=" << num_states
-       << ",m=" << num_transactions << ")\";\n";
-  fout << "\t_nil [style = \"invis\"];\n";
-  fout << "\tnode [shape = doublecircle]; 0;\n";
-  fout << "\tnode [shape = circle];\n";
-  fout << "\t_nil -> 0;\n";
-  for (auto rec : *ts_map) {
-    for (auto edge : rec.second) {
-      fout << "\t" << edge->first << "->" << edge->second << "[label=\""
-           << rec.first << "\"];\n";
-    }
-  }
-
-  fout << "}\n";
-  // transazioni
-}

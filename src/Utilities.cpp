@@ -341,6 +341,47 @@ bool contains(set<Region *> *set, Region *region) {
   return false;
 }
 
+void print_ts_dot_file(string file_path){
+    cout << "CREATION OF INPUT .DOT FILE" << endl;
+    string output_name = file_path;
+    string in_name;
+    while (output_name[output_name.size() - 1] != '.') {
+        output_name = output_name.substr(0, output_name.size() - 1);
+    }
+    output_name = output_name.substr(0, output_name.size() - 1);
+    int lower = 0;
+    for (int i = output_name.size() - 1; i > 0; i--) {
+        if (output_name[i] == '/') {
+            lower = i;
+            break;
+        }
+    }
+    in_name = output_name.substr(lower + 1, output_name.size());
+    // cout << "out name: " << in_dot_name << endl;
+
+    output_name = output_name + ".dot";
+
+    ofstream fout(output_name);
+    fout << "digraph ";
+    fout << in_name;
+    fout << "{\n";
+    fout << "\tlabel=\"(name=" << in_name << ",n=" << num_states
+         << ",m=" << num_transactions << ")\";\n";
+    fout << "\t_nil [style = \"invis\"];\n";
+    fout << "\tnode [shape = doublecircle]; 0;\n";
+    fout << "\tnode [shape = circle];\n";
+    fout << "\t_nil -> 0;\n";
+    for (auto rec : *ts_map) {
+        for (auto edge : rec.second) {
+            fout << "\t" << edge->first << "->" << edge->second << "[label=\""
+                 << rec.first << "\"];\n";
+        }
+    }
+
+    fout << "}\n";
+    fout.close();
+}
+
 void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int> &aliases, string file_name) {

@@ -34,7 +34,6 @@ set<int> *regions_union(set<Region *> *vec);
 set<int> *regions_union(Region *first, Region *second);
 set<int> *regions_intersection(Region *first, Region *second);
 map<int, set<int> *> *do_regions_intersection(map<int, vector<Region> *> *);
-// map<int, set<int>* > * do_regions_intersection2(map<int, set<Region*> *> *);
 set<int> *regions_intersection(set<Region *> *set);
 set<int> *region_difference(set<int> &first, set<int> &second);
 set<Region *> *region_pointer_difference(set<Region *> *first,
@@ -51,12 +50,11 @@ void println(set<Region *> &regions);
 void print(map<int, set<Region *> *> &net);
 void print_place(Region &region);
 void print_transactions();
-// void print_PN(map<int, set<Region*>> *,map<int, set<Region*>> *);
 bool is_bigger_than(Region *region, set<int> *region2);
 bool is_bigger_than_or_equal_to(Region *, set<int> *);
 bool are_equals(Region *, Region *);
 bool contains(set<Region *> *, Region *);
-// todo: print_ts_dot(); -> forse non serve se leggiamo già i file in .dot
+void print_ts_dot_file(string file_path); //-> forse non serve se leggiamo già i file in .dot
 void print_pn_dot_file(map<int, set<Region *> *> *net,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int> &aliases, string file_name);
