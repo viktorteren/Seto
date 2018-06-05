@@ -125,9 +125,14 @@ do_regions_intersection(map<int, vector<Region> *> *regions) {
 }*/
 
 set<int> *regions_intersection(set<Region *> *regions) {
+    cout<<"dentro inters: "<<endl;
+  println(*regions);
 
   auto pre_regions_intersection = new set<int>();
   bool state_in_intersecton;
+
+  if(*regions->begin()== nullptr)
+      return pre_regions_intersection;
 
   for (auto state : **regions->begin()) {
     state_in_intersecton = true;

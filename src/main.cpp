@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
   string file;
   if (argc == 1) {
     // default input
-    file = "../test/prova.apt";
+    file = "../test/input9.apt";
   } else if (argc == 2) {
     file = args[1];
   } else {

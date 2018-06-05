@@ -169,9 +169,9 @@ void Pre_and_post_regions_generator::create_pre_regions(
 
       if (candidate_regions != nullptr) {
 
-        bool pre_region = is_pre_region(&record.second, region);
+        //bool pre_region = is_pre_region(&record.second, region);
         // bool post_region = is_post_region(&record.second, region);
-        cout << "dopo post region" << endl;
+        //cout << "dopo post region" << endl;
 
         // if (pre_region || post_region) {
         println(*it);
@@ -237,7 +237,7 @@ void Pre_and_post_regions_generator::create_pre_regions(
                 added_regions_ptrs->insert(candidate_region);
                 // cout << "ho inserito new region(cand reg)" << endl;
                 // println(cand_reg);
-                pre_region = true;
+                //pre_region = true;
               }
             }
 
@@ -245,7 +245,7 @@ void Pre_and_post_regions_generator::create_pre_regions(
           }
 
           if (!split) {
-            if (pre_region)
+            if (is_pre_region(&record.second, region))
               (*pre_regions)[record.first]->insert(region);
             // if (post_region) (*post_regions)[record.first]->insert(region);
           }
@@ -304,10 +304,15 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
       // cout<<"evento"<<i<<endl;
       auto event1 = i;
       delete (*it).second;
-      (*er_set)[i] = regions_intersection(pre_regions->at(event1));
+      if(pre_regions->at(event1)!= nullptr) {
+          (*er_set)[i] = regions_intersection(pre_regions->at(event1));
+      }
+      else (*er_set)[i]=new set<int>;
       if (events_alias->find(i) != events_alias->end()) {
         auto event2 = events_alias->at(i);
-        (*er_set)[event2] = regions_intersection(pre_regions->at(event2));
+        if(pre_regions->at(event2)!= nullptr)  {
+            (*er_set)[event2] = regions_intersection(pre_regions->at(event2)); }
+        else (*er_set)[event2]=new set<int>;
       }
     }
     ++it;
