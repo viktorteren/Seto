@@ -15,7 +15,7 @@ Essential_regions_search::~Essential_regions_search(){
 
 set<Region *>* Essential_regions_search::search(){
 
-	cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
+	//cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
      *  unione delle pre regioni per creare un insieme di tutti gli stati
@@ -37,11 +37,6 @@ set<Region *>* Essential_regions_search::search(){
     //cout << "num eventi: " << pre_regions->size() << endl;
     for(auto record: *pre_regions){
         //cout <<  "evento: " << record.first << endl;
-
-		if(record.first==4){
-			cout<<"debug pre regions"<<endl;
-			print(*pre_regions);
-		}
 
 		Region::iterator it2;
 
@@ -101,18 +96,18 @@ set<Region *>* Essential_regions_search::search(){
 
     //print per debug
 
-    cout << "prove essential regions:" << endl;
+    /*cout << "prove essential regions:" << endl;
     for(auto rec: *essential_map){
     	cout << "set di regioni dell'evento: " << rec.first << endl;
     	for(auto reg: *rec.second){
     		println(*reg);
     	}
-    }
-
+    }*/
+/*
     cout << "Regioni essenziali: " << endl;
     for (auto reg: *essential_regions) {
     	println(*reg);
-    }
+    }*/
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
     return essential_regions;

@@ -20,7 +20,7 @@ Label_splitting_module::~Label_splitting_module() {
 
 set<int> *Label_splitting_module::is_excitation_closed() {
 
-  cout << "*************IS EXCITATION CLOSED*****************" << endl;
+ // cout << "*************IS EXCITATION CLOSED*****************" << endl;
 
   regions_intersection = do_regions_intersection(regions);
 
@@ -32,16 +32,16 @@ set<int> *Label_splitting_module::is_excitation_closed() {
   // bool res=true;
 
   for (auto item : *regions) {
-    cout << "event: " << item.first;
+    //cout << "event: " << item.first;
     auto event = item.first;
     auto er = ER_set->at((event));
-    cout << "ER at" << event << " : " << endl;
-    println(*er);
+    //cout << "ER at" << event << " : " << endl;
+    //println(*er);
     auto intersec = regions_intersection->at(event);
-    cout << "Intersec at" << event << " :" << endl;
-    println(*intersec);
+    //cout << "Intersec at" << event << " :" << endl;
+    //println(*intersec);
     if (!(are_equals(er, intersec))) {
-      cout << "regione delle'evento:" << event;
+     // cout << "regione delle'evento:" << event;
       events_not_satisfy_EC->insert(event);
       // res=false;
     }
@@ -49,9 +49,9 @@ set<int> *Label_splitting_module::is_excitation_closed() {
 
   // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
   // la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
-  for (auto ev : *events_not_satisfy_EC) {
+ /* for (auto ev : *events_not_satisfy_EC) {
     cout << "event not sat EC----------" << ev << endl;
-  }
+  }*/
 
   return events_not_satisfy_EC;
   // return true;
@@ -73,12 +73,12 @@ vector<Region> *Label_splitting_module::do_label_splitting(
   int num_bad_event_min;
   auto candidate_regions = new vector<Region>();
 
-  cout << "middle TOT: " << endl;
+  //cout << "middle TOT: " << endl;
   vector<Region *>::iterator it;
   // per ogni evento che non soddisfa EC
   for (auto event : *events_not_satisfy_EC) {
 
-    cout << "EVENTO: " << event << "*************" << endl;
+   // cout << "EVENTO: " << event << "*************" << endl;
 
     int pos = 0;
     candidate_region = nullptr;
@@ -87,19 +87,19 @@ vector<Region> *Label_splitting_module::do_label_splitting(
     // auto set_forced_to_be_a_region;
     for (it = middle_set_of_states->at(event)->begin();
          it < middle_set_of_states->at(event)->end(); ++it) {
-      cout << "middle:" << endl;
-      println(**it);
+     // cout << "middle:" << endl;
+     // println(**it);
       if (is_bigger_than_or_equal_to(*it, regions_intersection->at(event))) {
-        cout << "erase" << endl;
+       // cout << "erase" << endl;
         *middle_set_of_states->at(event)->erase(it, it);
       } else { // lo stato mi va bene
         // cache e ricalcolo solo se non c'è(avevo fatto break per no cross)
         // mi prendo il numero di eventi che violano per ogni set di stati!!
-        cout << "eveent: " << event << endl;
+        //cout << "eveent: " << event << endl;
         auto vec_ptr = number_of_bad_events->at(event);
         if ((*vec_ptr)[pos] == -1) {
 
-          println(**it);
+         // println(**it);
           // ricalcola
           for (auto e : *middle_set_of_states)
             (*events_type)[e.first] =
@@ -124,29 +124,29 @@ vector<Region> *Label_splitting_module::do_label_splitting(
           }
         }
 
-        cout << "NUMBER candidate: " << num_bad_event_min << endl;
+        //cout << "NUMBER candidate: " << num_bad_event_min << endl;
       }
 
       pos++;
     }
 
     // aggiungo candidate_region alle regioni del mio evento
-    cout << "___________________________REGIONE CANDIDATA__________________"
-         << endl;
+    //cout << "___________________________REGIONE CANDIDATA__________________"
+         //<< endl;
     if (candidate_region != nullptr) {
-      print(*candidate_region);
-      cout << "num: " << num_bad_event_min << endl;
+     // print(*candidate_region);
+     // cout << "num: " << num_bad_event_min << endl;
       candidate_regions->push_back(*candidate_region);
     }
   }
 
   delete events_type;
 
-  cout << "Regioni candidate******" << endl;
-  for (auto &reg : *candidate_regions) {
+  //cout << "Regioni candidate******" << endl;
+  /*for (auto &reg : *candidate_regions) {
     println(reg);
-  }
-  cout << "******" << endl;
+  }*/
+//  cout << "******" << endl;
 
   return candidate_regions;
 }
@@ -154,7 +154,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
 int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
   // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
   vector<int> *trans = new vector<int>(4, 0);
-  cout << "DENTRO" << endl;
+ // cout << "DENTRO" << endl;
 
   // num in-out-exit-enter
   const int in = 0;
@@ -168,48 +168,48 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
       if (region->find(t->second) !=
           region->end()) { // anche il secondo stato appartiene alla regione
         (*trans)[in]++;
-        cout << t->first << "->" << t->second << " IN " << endl;
+      //  cout << t->first << "->" << t->second << " IN " << endl;
         // per no cross è ok, gli altri non si possono fare
       } else {
         (*trans)[exit]++;
-        cout << t->first << "->" << t->second << " EXIT" << endl;
+      //  cout << t->first << "->" << t->second << " EXIT" << endl;
       }
     } else { // il primo non ci appartiene
       if (region->find(t->second) !=
           region->end()) { // il secondo stato appartiene alla regione
         (*trans)[enter]++;
-        cout << t->first << "->" << t->second << " ENTER" << endl;
+       // cout << t->first << "->" << t->second << " ENTER" << endl;
       } else {
         (*trans)[out]++;
-        cout << t->first << "->" << t->second << " OUT" << endl;
+       // cout << t->first << "->" << t->second << " OUT" << endl;
       }
     }
   }
 
   int it = 0;
-  cout << ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
-  for (auto i : *trans) {
+ // cout << ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
+  /*for (auto i : *trans) {
     cout << "num trans " << it << ": " << i << endl;
     it++;
-  }
+  }*/
 
   // gli Enter+in devono diventare per forza in(nocross)
   if (((*trans)[in] > 0 && (*trans)[enter] > 0) ||
       ((*trans)[in] > 0 && (*trans)[exit] > 0) ||
       ((*trans)[enter] > 0 && (*trans)[exit] > 0)) {
-    cout << "return no cross" << endl;
+    //cout << "return no cross" << endl;
     delete trans;
     return NOCROSS;
   } else if ((*trans)[exit] > 0 && (*trans)[out] > 0) { //(exit-out)
-    cout << "return exit_no cross" << endl;
+   // cout << "return exit_no cross" << endl;
     delete trans;
     return EXIT_NOCROSS;
   } else if ((*trans)[enter] > 0 && (*trans)[out] > 0) { //(enter-out)
-    cout << "return enter_no cross" << endl;
+   // cout << "return enter_no cross" << endl;
     delete trans;
     return ENTER_NOCROSS;
   } else {
-    cout << "return ok" << endl;
+    //cout << "return ok" << endl;
     delete trans;
     return OK;
   }
@@ -220,7 +220,7 @@ void Label_splitting_module::set_number_of_bad_events(
   // conta per ogni set di stati gli eventi bad
   // pair<int,Region*> *bad_events=new pair<int,Region*>;
 
-  cout << "SET BAD NUMBER per " << event << "********" << endl;
+ // cout << "SET BAD NUMBER per " << event << "********" << endl;
 
   int counter = 0;
   for (auto n : *event_type) {
@@ -231,13 +231,13 @@ void Label_splitting_module::set_number_of_bad_events(
 
   (*number_of_bad_events)[0] = counter;
 
-  cout << "COUNTER: " << counter << endl;
+  //cout << "COUNTER: " << counter << endl;
 }
 
 void Label_splitting_module::split_ts_map(
     map<int, int> *events_alias, map<int, set<Region *> *> *pre_regions) {
 
-  cout << "SPLIT TS MAP " << endl;
+  //cout << "SPLIT TS MAP " << endl;
 
   // perogni evento che ho splittato
   // elimina le transazioni uscenti nella new region (le entranti?)
@@ -246,7 +246,7 @@ void Label_splitting_module::split_ts_map(
   set<Edge *>::iterator it;
 
   for (auto record : *events_alias) {
-    cout << "event: " << record.first;
+    //cout << "event: " << record.first;
     auto to_erase = new set<Edge *>();
     auto event = record.first;
     auto transactions = ts_map->at(event);
@@ -278,11 +278,12 @@ void Label_splitting_module::split_ts_map(
     delete to_erase;
   }
 
-  cout << "DEBUG TS_MAP SPLITTED" << endl;
-  for (auto record : *ts_map) {
+ // cout << "DEBUG TS_MAP SPLITTED" << endl;
+  /*for (auto record : *ts_map) {
     cout << "evento:" << record.first << endl;
     for (auto tr : record.second) {
       cout << "trans: " << tr->first << ", " << tr->second << endl;
     }
-  }
+  }*/
+
 }

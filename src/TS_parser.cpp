@@ -40,7 +40,7 @@ void TS_parser::parse(string file) {
     cout << "The file extension is not supported" << endl;
     exit(0);
   }
-  cout << "---------END OF PARSING----------" << endl;
+ // cout << "---------END OF PARSING----------" << endl;
 }
 
 void TS_parser::parse_TS(ifstream &fin) {
@@ -136,8 +136,8 @@ void TS_parser::parse_DOT(ifstream &fin) {
         initial_state = stoi(dst);
         found = false;
       }
-      cout << "SRC: " << src << endl;
-      cout << "DST: " << dst << endl;
+      //cout << "SRC: " << src << endl;
+      //cout << "DST: " << dst << endl;
     }
 
     if (found) {
@@ -159,7 +159,7 @@ void TS_parser::parse_DOT(ifstream &fin) {
       string temp = label.substr(lower + 1);
       int diff = upper - lower - 1;
       temp = temp.substr(0, diff);
-      cout << "prova: " << label << endl << "in: " << temp << endl;
+     // cout << "prova: " << label << endl << "in: " << temp << endl;
       ev = stoi(temp);
       if (ts_map->find(ev) == ts_map->end()) {
         (*ts_map)[ev] = Edges_list();
@@ -247,16 +247,16 @@ void TS_parser::parse_APT(ifstream& fin){
     }
     fin.close();
 
-    cout << "PRINT MAPPA DOPO LETTURA APT:" << endl;
-    cout << "num events: " << num_events << endl;
-    cout << "num states :" << num_states << endl;
-    cout << "stato iniziale " << initial_state << endl;
-    cout << "num transactions: " << num_transactions << endl;
-    for(auto rec: *ts_map){
+    //cout << "PRINT MAPPA DOPO LETTURA APT:" << endl;
+    //cout << "num events: " << num_events << endl;
+    //cout << "num states :" << num_states << endl;
+    //cout << "stato iniziale " << initial_state << endl;
+    //cout << "num transactions: " << num_transactions << endl;
+    /*for(auto rec: *ts_map){
         cout << "evento :" << rec.first << endl;
         for(auto t: rec.second){
             cout << t->first << " -> " << t->second << endl;
         }
-    }
+    }*/
 }
 

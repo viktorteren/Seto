@@ -33,16 +33,16 @@ Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
 void Merging_Minimal_Preregions_module::merging_2_maps(
     map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {
 
-  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
+//  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
 
   total_pre_regions_map = new map<int, set<Region *> *>();
 
-  cout << "first" << endl;
-  for (auto el : *first) {
+ // cout << "first" << endl;
+ /* for (auto el : *first) {
     cout << "ev " << el.first << endl;
     for (auto reg : *el.second)
       Utilities::println(*reg);
-  }
+  }*/
 
   /*cout<<"  SECOND"<<endl;
   for(auto el:*second) {
@@ -53,7 +53,7 @@ void Merging_Minimal_Preregions_module::merging_2_maps(
 
   if (second != nullptr) {
     for (int event = 0; event < num_events_after_splitting; event++) {
-      cout << "evento:" << event << endl;
+     // cout << "evento:" << event << endl;
 
       // trovo entrambi gli eventi
       if (first->find(event) != first->end() &&
@@ -66,8 +66,8 @@ void Merging_Minimal_Preregions_module::merging_2_maps(
                   second->at(event)->begin(), second->at(event)->end(),
                   merged_vector->begin());
 
-        for (auto el : *merged_vector)
-          Utilities::println(*el);
+        /*for (auto el : *merged_vector)
+          Utilities::println(*el);*/
 
         (*total_pre_regions_map)[event] =
             new set<Region *>(merged_vector->begin(), merged_vector->end());
@@ -107,12 +107,12 @@ void Merging_Minimal_Preregions_module::merging_2_maps(
     }
   }
 
-  cout << "debug merging 2 mappe" << endl;
-  for (auto el : *total_pre_regions_map) {
+//  cout << "debug merging 2 mappe" << endl;
+  /*for (auto el : *total_pre_regions_map) {
     cout << "ev: " << el.first << endl;
     for (auto r : *el.second)
       Utilities::println(*r);
-  }
+  }*/
 }
 
 map<int, set<Region *> *> *
@@ -129,15 +129,15 @@ map<int, set<Region *> *> *
 Merging_Minimal_Preregions_module::merging_preregions(
     map<int, set<int> *> *ER_map) {
 
-  cout << "MERGING PREREGIONS___________" << endl;
+  //cout << "MERGING PREREGIONS___________" << endl;
 
   set<Region *> *preregions_set =
       Utilities::copy_map_to_set(total_pre_regions_map);
   Region *reg_union = nullptr;
 
-  for (auto el : *preregions_set) {
+ /* for (auto el : *preregions_set) {
     Utilities::println(*el);
-  }
+  }*/
 
   // per ogni coppia di preregioni
   // per ogni evento
@@ -158,10 +158,10 @@ Merging_Minimal_Preregions_module::merging_preregions(
       auto reg1 = *it;
       auto reg2 = *it2;
 
-      cout << "r1: ";
+     /* cout << "r1: ";
       Utilities::println(*reg1);
       cout << "r2: ";
-      Utilities::println(*reg2);
+      Utilities::println(*reg2);*/
 
       // le regioni sono disgiunte!!!
       auto inter = Utilities::regions_intersection(reg1, reg2);
@@ -173,7 +173,7 @@ Merging_Minimal_Preregions_module::merging_preregions(
           bool ec = false;
           for (auto record : *total_pre_regions_map) {
             auto event = record.first;
-            cout << "evento: " << event;
+           // cout << "evento: " << event;
             // auto tmp_set = new set<Region
             // *>(total_pre_regions_map->at(event)->begin(),
             //  total_pre_regions_map->at(event)->end());
@@ -201,11 +201,11 @@ Merging_Minimal_Preregions_module::merging_preregions(
               auto intersection = Utilities::regions_intersection(tmp_set);
               auto er = ER_map->at(event);
 
-              cout << "intersection:" << endl;
-              Utilities::println(*intersection);
+             /* cout << "intersection:" << endl;
+              Utilities::println(*intersection);*/
 
-              cout << "er:" << endl;
-              Utilities::println(*er);
+             // cout << "er:" << endl;
+              //Utilities::println(*er);
 
               // controlla ec ER(ev)==intersec(prereg(ev))
               ec = Utilities::are_equals(intersection, er);
@@ -214,8 +214,8 @@ Merging_Minimal_Preregions_module::merging_preregions(
 
               // provo altre 2 regioni perchè per un evento non vale la EC
               if (ec == false) {
-                cout << "BREAK l'evento non soddisfa EC-provo altre regioni"
-                     << endl;
+               // cout << "BREAK l'evento non soddisfa EC-provo altre regioni"
+                     //<< endl;
                 delete tmp_set;
                 delete reg_union;
                 break;
@@ -226,26 +226,26 @@ Merging_Minimal_Preregions_module::merging_preregions(
               }
             } else {
               delete tmp_set;
-              cout << "event:" << event << endl;
-              cout << "l'evento è ok perchè non ha cambiato le sue preregioni "
-                      "con questa unione"
-                   << endl;
+             // cout << "event:" << event << endl;
+             // cout << "l'evento è ok perchè non ha cambiato le sue preregioni "
+                   //   "con questa unione"
+                 //  << endl;
             }
           }
 
           // se per tutti gli eventi la coppia è ok faccio il merge effettivo
           if (ec == true) {
             delete preregions_set;
-            cout << "merging ok" << endl;
-            Utilities::println(*reg1);
-            Utilities::println(*reg2);
+           // cout << "merging ok" << endl;
+            //Utilities::println(*reg1);
+            //Utilities::println(*reg2);
 
-            for (auto el : *tmp_map) {
-              cout << "ev: " << el.first << endl;
+           /* for (auto el : *tmp_map) {
+             // cout << "ev: " << el.first << endl;
               for (auto r : *el.second) {
                 Utilities::println(*r);
               }
-            }
+            }*/
 
             return tmp_map;
           }
@@ -253,13 +253,13 @@ Merging_Minimal_Preregions_module::merging_preregions(
 
       } else {
         delete inter;
-        cout << "le regioni non sono disgiunte" << endl;
+       // cout << "le regioni non sono disgiunte" << endl;
       }
     }
   }
 
   // non ho fatto il merge
-  cout << "not merging" << endl;
+ // cout << "not merging" << endl;
 
   for (auto el : *tmp_map) {
     delete el.second;

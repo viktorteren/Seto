@@ -82,11 +82,11 @@ do_regions_intersection(map<int, vector<Region> *> *regions) {
       }
     }
   }
-  cout << "intersezione****************" << endl;
+  /*cout << "intersezione****************" << endl;
   for (auto el : *pre_regions_intersection) {
     cout << "event " << el.first << endl;
     println(*el.second);
-  }
+  }*/
 
   return pre_regions_intersection;
 }
@@ -106,6 +106,7 @@ do_regions_intersection(map<int, vector<Region> *> *regions) {
             state_in_intersecton=true;
             for(auto set:*item.second){
                 if(set->find(state)==set->end()) {//non l'ho trovato
+
                     state_in_intersecton = false;
                     break;
                 }
@@ -125,8 +126,7 @@ do_regions_intersection(map<int, vector<Region> *> *regions) {
 }*/
 
 set<int> *regions_intersection(set<Region *> *regions) {
-    cout<<"dentro inters: "<<endl;
-  println(*regions);
+  //println(*regions);
 
   auto pre_regions_intersection = new set<int>();
   bool state_in_intersecton;
@@ -285,9 +285,9 @@ bool is_bigger_than(Region *region, set<int> *region2) {
     for (auto elem : *region2) {
       // nella regione non trovo un elem
       if (region->find(elem) == region->end()) {
-        cout << "****FALSE ";
-        print(*region), cout << " is not bigger than ";
-        println(*region2);
+        //cout << "****FALSE ";
+       // print(*region), cout << " is not bigger than ";
+        //println(*region2);
         return false;
       }
     }
@@ -295,29 +295,29 @@ bool is_bigger_than(Region *region, set<int> *region2) {
     return false;
 
   // nella regione trovo tutti gli stati della reg2
-  cout << "****TRUE";
-  print(*region), cout << " is bigger than ";
-  println(*region2);
+ // cout << "****TRUE";
+  //print(*region), cout << " is bigger than ";
+  //println(*region2);
   return true;
 }
 
 bool is_bigger_than_or_equal_to(Region *region, set<int> *intersection) {
 
   if (region->size() >= intersection->size()) {
-    cout << "TRUE**************" << endl;
+    //cout << "TRUE**************" << endl;
     return true;
   }
 
   for (auto elem : *intersection) {
     // nella regione non trovo un elem delll'intersez
     if (region->find(elem) == region->end()) {
-      cout << "FALSE**************" << endl;
+      //cout << "FALSE**************" << endl;
       return false;
     }
   }
 
   // nella regione trovo tutti gli stati dell'intersezione
-  cout << "TRUE**************" << endl;
+ // cout << "TRUE**************" << endl;
   return true;
 }
 
@@ -347,7 +347,7 @@ bool contains(set<Region *> *set, Region *region) {
 }
 
 void print_ts_dot_file(string file_path){
-    cout << "CREATION OF INPUT .DOT FILE" << endl;
+    //cout << "CREATION OF INPUT .DOT FILE" << endl;
     string output_name = file_path;
     string in_name;
     while (output_name[output_name.size() - 1] != '.') {
@@ -394,7 +394,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
   string output_name = file_name;
   string in_dot_name;
   string output = "";
-  cout << "merged map: " << endl;
+  //cout << "merged map: " << endl;
   print(*pre_regions);
   // creazione della mappa tra il puntatore alla regione ed un intero univoco
   // corrispondente
@@ -419,14 +419,14 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
   // cout << "out name: " << in_dot_name << endl;
 
   output_name = output_name + "_PN.dot";
-  cout << "file output PN: " << output_name << endl;
+  //cout << "file output PN: " << output_name << endl;
 
   ofstream fout(output_name);
   fout << "digraph ";
   fout << in_dot_name + "_PN";
   fout << "{\n";
   // regioni iniziali
-  cout << "scrittura regioni iniziali" << endl;
+  //cout << "scrittura regioni iniziali" << endl;
   fout << "subgraph initial_place {\n"
           "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
           "black, fillcolor = gray, style = filled];\n";
@@ -436,7 +436,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
 
   fout << "}\n";
   // regioni non iniziali
-  cout << "scrittura regioni non iniziali" << endl;
+  //cout << "scrittura regioni non iniziali" << endl;
   fout << "subgraph place {     \n"
           "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
   for (auto reg : *not_initial_regions) {
@@ -444,7 +444,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
   }
   fout << "}\n";
   // transazioni
-  cout << "scrittura transazioni" << endl;
+  //cout << "scrittura transazioni" << endl;
   fout << "subgraph transitions {\n"
           "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
   for (auto record : aliases) {
@@ -461,7 +461,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
   }
   fout << "}\n";
 
-  cout << "scrittura archi" << endl;
+  //cout << "scrittura archi" << endl;
   for (auto record : *pre_regions) {
     for (auto reg : *record.second) {
       if (record.first < num_events) {
@@ -469,8 +469,8 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
           fout << "\tr" << regions_mapping->at(reg) << " -> "
                << translate_label(record.first) << ";\n";
         } else {
-          cout << "regions_mapping non contiene ";
-          println(*reg);
+          //cout << "regions_mapping non contiene ";
+         // println(*reg);
         }
       } else {
         int label;
@@ -484,8 +484,8 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
           fout << "\tr" << regions_mapping->at(reg) << " -> "
                << translate_label(label) << "_;\n";
         } else {
-          cout << "regions_mapping non contiene ";
-          println(*reg);
+          //cout << "regions_mapping non contiene ";
+        //  println(*reg);
         }
       }
     }
@@ -498,8 +498,8 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                << "r" << regions_mapping->at(reg) << ";\n";
         } else {
           // entra qui 2 volte
-          cout << "regions_mapping non contiene ";
-          println(*reg);
+         // cout << "regions_mapping non contiene ";
+         // println(*reg);
         }
       } else {
         int label;
@@ -513,8 +513,8 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
           fout << "\t" << translate_label(label) << "_ -> "
                << "r" << regions_mapping->at(reg) << ";\n";
         } else {
-          cout << "regions_mapping non contiene ";
-          println(*reg);
+          //cout << "regions_mapping non contiene ";
+         // println(*reg);
         }
       }
     }
@@ -540,10 +540,10 @@ map<Region *, int> *get_regions_map(map<int, set<Region *> *> *net) {
   }
   // x debug
 
-  for (auto record : *regions_map) {
+  /*for (auto record : *regions_map) {
     cout << record.second << ": ";
     println(*record.first);
-  }
+  }*/
   return regions_map;
 }
 
@@ -625,10 +625,10 @@ void println(set<Region *> &regions) {
 }
 
 void print(map<int, set<Region *> *> &net) {
-  for (auto rec : net) {
+  /*for (auto rec : net) {
     cout << "event: " << rec.first << endl;
     println(*rec.second);
-  }
+  }*/
 }
 
 set<Region *> *region_pointer_union(set<Region *> *first,
