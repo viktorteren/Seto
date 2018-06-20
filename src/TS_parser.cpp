@@ -149,7 +149,7 @@ void TS_parser::parse_DOT(ifstream &fin) {
           break;
         }
       }
-      for (unsigned int i = lower + 1; i < label.size(); i++) {
+      for (unsigned long i = lower + 1; i < label.size(); i++) {
         if (label[i] == '"') {
           upper = i;
           // cout << "found " << i << endl;
@@ -157,7 +157,7 @@ void TS_parser::parse_DOT(ifstream &fin) {
         }
       }
       string temp = label.substr(lower + 1);
-      int diff = upper - lower - 1;
+      unsigned long diff = upper - lower - 1;
       temp = temp.substr(0, diff);
      // cout << "prova: " << label << endl << "in: " << temp << endl;
       ev = stoi(temp);
@@ -186,7 +186,7 @@ void TS_parser::parse_APT(ifstream& fin){
     num_transactions = 0;
     num_states = 0;
 
-    map<string, int>* labels_map = new map<string, int>;
+    auto labels_map = new map<string, int>;
 
     while(fin){
         fin >> tmp;
@@ -229,9 +229,6 @@ void TS_parser::parse_APT(ifstream& fin){
                 fin >> dst;
                 if(fin.eof())
                     break;
-
-
-
                 src2 = stoi(src.substr(1, src.size()));
                 dst2 = stoi(dst.substr(1, dst.size()));
                 //ev2 = stoi(ev.substr(1, ev.size()));

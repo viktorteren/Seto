@@ -236,7 +236,7 @@ Merging_Minimal_Preregions_module::merging_preregions(
           // se per tutti gli eventi la coppia è ok faccio il merge effettivo
           if (ec == true) {
             delete preregions_set;
-           // cout << "merging ok" << endl;
+           cout << "merging ok" << endl;
             //Utilities::println(*reg1);
             //Utilities::println(*reg2);
 
@@ -259,7 +259,7 @@ Merging_Minimal_Preregions_module::merging_preregions(
   }
 
   // non ho fatto il merge
- // cout << "not merging" << endl;
+  cout << "not merging" << endl;
 
   for (auto el : *tmp_map) {
     delete el.second;

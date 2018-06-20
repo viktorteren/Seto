@@ -30,5 +30,5 @@ private:
   // map<int,vector< pair<int,Region*> >*>* number_of_bad_events;
   int branch_selection(Edges_list *list, Region *region);
   void set_number_of_bad_events(vector<int> *event_type, int event,
-                                vector<int> *number_of_bad_events);
+                                vector<int> *number_of_bad_events, int pos);
 };

@@ -20,7 +20,7 @@ Label_splitting_module::~Label_splitting_module() {
 
 set<int> *Label_splitting_module::is_excitation_closed() {
 
- // cout << "*************IS EXCITATION CLOSED*****************" << endl;
+  //cout << "*************IS EXCITATION CLOSED*****************" << endl;
 
   regions_intersection = do_regions_intersection(regions);
 
@@ -95,7 +95,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
       } else { // lo stato mi va bene
         // cache e ricalcolo solo se non c'è(avevo fatto break per no cross)
         // mi prendo il numero di eventi che violano per ogni set di stati!!
-        //cout << "eveent: " << event << endl;
+        //cout << "event: " << event << endl;
         auto vec_ptr = number_of_bad_events->at(event);
         if ((*vec_ptr)[pos] == -1) {
 
@@ -105,7 +105,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
             (*events_type)[e.first] =
                 branch_selection(&(ts_map->at(e.first)), *it);
 
-          set_number_of_bad_events(events_type, event, vec_ptr + pos);
+          set_number_of_bad_events(events_type, event, vec_ptr, pos);
         }
 
         if ((*vec_ptr)[pos] != 0) {
@@ -142,8 +142,8 @@ vector<Region> *Label_splitting_module::do_label_splitting(
 
   delete events_type;
 
-  //cout << "Regioni candidate******" << endl;
-  /*for (auto &reg : *candidate_regions) {
+  /*cout << "Regioni candidate******" << endl;
+  for (auto &reg : *candidate_regions) {
     println(reg);
   }*/
 //  cout << "******" << endl;
@@ -216,7 +216,7 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
 }
 
 void Label_splitting_module::set_number_of_bad_events(
-    vector<int> *event_type, int event, vector<int> *number_of_bad_events) {
+    vector<int> *event_type, int event, vector<int> *number_of_bad_events, int pos) {
   // conta per ogni set di stati gli eventi bad
   // pair<int,Region*> *bad_events=new pair<int,Region*>;
 
@@ -229,7 +229,7 @@ void Label_splitting_module::set_number_of_bad_events(
     }
   }
 
-  (*number_of_bad_events)[0] = counter;
+  (*number_of_bad_events)[pos] = counter;
 
   //cout << "COUNTER: " << counter << endl;
 }

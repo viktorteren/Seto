@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   string file;
   if (argc == 1) {
     // default input
-    file = "../test/input8.ts";
+    file = "../test/input14.ts";
   } else if (argc == 2) {
     file = args[1];
   } else {
@@ -30,6 +30,17 @@ int main(int argc, char **argv) {
   map<int, vector<Region> *> *regions = rg->generate();
 
   vector<Region> *vector_regions = copy_map_to_vector(regions);
+
+  int cont = 0;
+  double somma = 0;
+  for(auto reg: *vector_regions){
+      cont++;
+      somma += reg.size();
+  }
+
+  cout << "media: " << (somma/cont) << endl;
+
+  cout << "numero regioni: " << vector_regions->size() << endl;
 
   auto t_region_gen= (double)(clock() - tStart_partial)/CLOCKS_PER_SEC;
 

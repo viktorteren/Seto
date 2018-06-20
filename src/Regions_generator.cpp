@@ -460,7 +460,7 @@ ER createER(int event) {
 }
 
 map<int, vector<Region> *> *Region_generator::generate() {
-
+  //cout << "GENERATE REGIONS " << endl;
   unsigned int pos = 0;
   int init_pos = 0;
   // evento e indice di fine
@@ -535,6 +535,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
   }*/
 
   delete queue_event_index;
+
   return regions;
 };
 

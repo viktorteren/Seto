@@ -448,14 +448,14 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
   fout << "subgraph transitions {\n"
           "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
   for (auto record : aliases) {
-    fout << "\t" << translate_label(record.first) << ";\n";
-    fout << "\t" << translate_label(record.first) << "_ [label = \""
-         << translate_label(record.first) << "'\"];\n";
+    fout << "\t" << record.first << ";\n";
+    fout << "\t" << record.first << "_ [label = \""
+         << record.first << "'\"];\n";
   }
   for (auto record : *pre_regions) {
     if (record.first < num_events) {
       if (aliases.find(record.first) == aliases.end()) {
-        fout << "\t" << translate_label(record.first) << ";\n";
+        fout << "\t" << record.first << ";\n";
       }
     }
   }
@@ -467,7 +467,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
       if (record.first < num_events) {
         if (regions_mapping->find(reg) != regions_mapping->end()) {
           fout << "\tr" << regions_mapping->at(reg) << " -> "
-               << translate_label(record.first) << ";\n";
+               << record.first << ";\n";
         } else {
           //cout << "regions_mapping non contiene ";
          // println(*reg);
@@ -482,7 +482,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
         }
         if (regions_mapping->find(reg) != regions_mapping->end()) {
           fout << "\tr" << regions_mapping->at(reg) << " -> "
-               << translate_label(label) << "_;\n";
+               << label << "_;\n";
         } else {
           //cout << "regions_mapping non contiene ";
         //  println(*reg);
@@ -494,7 +494,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
     for (auto reg : *record.second) {
       if (record.first < num_events) {
         if (regions_mapping->find(reg) != regions_mapping->end()) {
-          fout << "\t" << translate_label(record.first) << " -> "
+          fout << "\t" << record.first << " -> "
                << "r" << regions_mapping->at(reg) << ";\n";
         } else {
           // entra qui 2 volte
@@ -510,7 +510,7 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
           }
         }
         if (regions_mapping->find(reg) != regions_mapping->end()) {
-          fout << "\t" << translate_label(label) << "_ -> "
+          fout << "\t" << label << "_ -> "
                << "r" << regions_mapping->at(reg) << ";\n";
         } else {
           //cout << "regions_mapping non contiene ";
