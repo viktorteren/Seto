@@ -57,7 +57,7 @@ bool contains(set<Region *> *, Region *);
 void print_ts_dot_file(string file_path); //-> forse non serve se leggiamo già i file in .dot
 void print_pn_dot_file(map<int, set<Region *> *> *net,
                        map<int, set<Region *> *> *post_regions,
-                       map<int, vector<int>*> &aliases, string file_name);
+                       map<int, int> &aliases, string file_name);
 void restore_default_labels(map<int, set<Region *> *> *net,
                             map<int, int> &aliases);
 char translate_label(int label);

@@ -19,7 +19,7 @@ public:
   do_label_splitting(map<int, vector<Region *> *> *middle_set_of_states,
                      map<int, vector<int> *> *number_of_bad_events,
                      set<int> *events_not_satisfy_EC);
-  void split_ts_map(map<int, vector<int>*> *events_alias,
+  void split_ts_map(map<int, int> *events_alias,
                     map<int, set<Region *> *> *pre_regions);
 
 private:

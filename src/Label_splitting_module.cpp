@@ -186,7 +186,7 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
     }
   }
 
-  //int it = 0;
+  int it = 0;
  // cout << ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
   /*for (auto i : *trans) {
     cout << "num trans " << it << ": " << i << endl;
@@ -235,11 +235,11 @@ void Label_splitting_module::set_number_of_bad_events(
 }
 
 void Label_splitting_module::split_ts_map(
-    map<int, vector<int>*> *events_alias, map<int, set<Region *> *> *pre_regions) {
+    map<int, int> *events_alias, map<int, set<Region *> *> *pre_regions) {
 
   //cout << "SPLIT TS MAP " << endl;
 
-  // per ogni evento che ho splittato
+  // perogni evento che ho splittato
   // elimina le transazioni uscenti nella new region (le entranti?)
   // aggiungi nuove transazioni nell'evento alias(corrispondenti a quelle che ho
   // tolto)
@@ -251,32 +251,31 @@ void Label_splitting_module::split_ts_map(
     auto event = record.first;
     auto transactions = ts_map->at(event);
 
-    for(auto alias_event_at : *events_alias->at(event)){
-        auto new_region = *pre_regions->at(alias_event_at)->begin();
+    // la nuova regione è sempre solo una
+    auto alias_event = events_alias->at(event);
+    auto new_region = *pre_regions->at(alias_event)->begin();
 
-        for (it = transactions.begin(); it != transactions.end(); ++it) {
-            auto tr = *it;
-            // for(auto tr: transactions){
-            if (contains_state(new_region, tr->first)) {
-                // aggiungo questa transazione all'evento alias
-                // elimino la transazione vecchia
-                to_erase->insert(tr);
-                if (ts_map->find(alias_event_at) == ts_map->end()) {
-                    (*ts_map)[alias_event_at] = Edges_list();
-                }
-                auto pair = new Edge();
-                pair->first = tr->first;
-                pair->second = tr->second;
-                ts_map->at(alias_event_at).insert(pair);
-            }
+    for (it = transactions.begin(); it != transactions.end(); ++it) {
+      auto tr = *it;
+      // for(auto tr: transactions){
+      if (contains_state(new_region, tr->first)) {
+        // aggiungo questa transazione all'evento alias
+        // elimino la transazione vecchia
+        to_erase->insert(tr);
+        if (ts_map->find(alias_event) == ts_map->end()) {
+          (*ts_map)[alias_event] = Edges_list();
         }
-
-        for (auto el : *to_erase) {
-            ts_map->at(event).erase(el);
-        }
-        delete to_erase;
+        auto pair = new Edge();
+        pair->first = tr->first;
+        pair->second = tr->second;
+        ts_map->at(alias_event).insert(pair);
+      }
     }
 
+    for (auto el : *to_erase) {
+      ts_map->at(event).erase(el);
+    }
+    delete to_erase;
   }
 
  // cout << "DEBUG TS_MAP SPLITTED" << endl;
