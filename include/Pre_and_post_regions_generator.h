@@ -17,7 +17,7 @@ public:
   map<int, set<Region *> *> *get_pre_regions();
   map<int, set<Region *> *> *get_post_regions();
   map<int, ER> *get_new_ER();
-  map<int, int> &get_events_alias();
+  map<int, vector<int>*> &get_events_alias();
   void create_post_regions(map<int, set<Region *> *> *merged_pre_regions);
 
 private:
@@ -27,7 +27,7 @@ private:
   set<Region *> *added_regions_ptrs;
   set<int> *events_to_split;
   // alias vecchio -> nuovo
-  map<int, int> *events_alias;
+  map<int, vector<int>*> *events_alias = nullptr;
   map<int, ER> *er_set = nullptr;
 
   void create_pre_regions(vector<Region> *candidate_regions);

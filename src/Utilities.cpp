@@ -389,13 +389,13 @@ void print_ts_dot_file(string file_path){
 
 void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
-                       map<int, int> &aliases, string file_name) {
+                       map<int, vector<int>*> &aliases, string file_name) {
   auto initial_reg = initial_regions(pre_regions);
   string output_name = file_name;
   string in_dot_name;
   string output = "";
   //cout << "merged map: " << endl;
-  print(*pre_regions);
+  //print(*pre_regions);
   // creazione della mappa tra il puntatore alla regione ed un intero univoco
   // corrispondente
   map<Region *, int> *regions_mapping;
@@ -473,16 +473,30 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
          // println(*reg);
         }
       } else {
-        int label;
+        int label=-1;
+        int cont;
+        auto r = record.first;
         for (auto rec : aliases) {
-          if (rec.second == record.first) {
-            label = rec.first;
-            break;
-          }
+            cout << "rec: " << rec.first << " " << rec.second << endl;
+            cont = 0;
+            for(auto el: *rec.second){
+                if (el == record.first) {
+                    label = rec.first;
+                    break;
+                }
+                cont ++;
+            }
+            if(label == rec.first)
+                break;
+
         }
         if (regions_mapping->find(reg) != regions_mapping->end()) {
           fout << "\tr" << regions_mapping->at(reg) << " -> "
-               << label << "_;\n";
+               << label;
+          for(int i = 0; i<= cont; i++){
+            fout << "_";
+          }
+          fout << ";\n";
         } else {
           //cout << "regions_mapping non contiene ";
         //  println(*reg);
@@ -502,15 +516,26 @@ void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
          // println(*reg);
         }
       } else {
-        int label;
+        int label=-1;
+        int cont;
         for (auto rec : aliases) {
-          if (rec.second == record.first) {
-            label = rec.first;
-            break;
+          cont = 0;
+          for(auto el: *rec.second){
+            if (el == record.first) {
+              label = rec.first;
+              break;
+            }
+            cont ++;
           }
+          if(label == rec.first)
+            break;
         }
         if (regions_mapping->find(reg) != regions_mapping->end()) {
-          fout << "\t" << label << "_ -> "
+          fout << "\t" << label;
+          for(int i = 0; i<= cont; i++){
+            fout << "_";
+          }
+          fout << " -> "
                << "r" << regions_mapping->at(reg) << ";\n";
         } else {
           //cout << "regions_mapping non contiene ";
@@ -625,10 +650,10 @@ void println(set<Region *> &regions) {
 }
 
 void print(map<int, set<Region *> *> &net) {
-  /*for (auto rec : net) {
+  for (auto rec : net) {
     cout << "event: " << rec.first << endl;
     println(*rec.second);
-  }*/
+  }
 }
 
 set<Region *> *region_pointer_union(set<Region *> *first,

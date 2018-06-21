@@ -154,7 +154,7 @@ void Pre_and_post_regions_generator::create_pre_regions(
 
  // cout << "total events:" << total_events_counter << endl;
 
-  events_alias = new map<int, int>();
+  events_alias = new map<int, vector<int>*>();
 
   for (auto record : *ts_map) {
     //cout << "_______________evento: " << record.first << endl;
@@ -191,6 +191,7 @@ void Pre_and_post_regions_generator::create_pre_regions(
             //cout << "debug unica regione:" << endl;
            // println(*new_region);
 
+
             if (!contains((*pre_regions)[record.first], new_region)) {
               if (is_pre_region(&record.second, new_region)) {
 
@@ -204,11 +205,17 @@ void Pre_and_post_regions_generator::create_pre_regions(
                 // ad un nuovo evento e crea la mappa degli alias
                 if (events_to_split->find(record.first) !=
                     events_to_split->end()) {
+                  if(total_events_counter == 12){
+                    cout << "fsg";
+                  }
                   //cout << "event to split" << record.first << endl;
                   (*pre_regions)[total_events_counter + 1] =
                       new set<Region *>();
                   (*pre_regions)[total_events_counter + 1]->insert(new_region);
-                  (*events_alias)[record.first] = total_events_counter + 1;
+                  if(events_alias->find(record.first) == events_alias->end()){
+                    (*events_alias)[record.first] = new vector<int>();
+                  }
+                  (*events_alias)[record.first]->push_back(total_events_counter + 1);
                   total_events_counter++;
                 } else {
                   (*pre_regions)[record.first]->insert(new_region);
@@ -307,10 +314,11 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
       }
       else (*er_set)[i]=new set<int>;
       if (events_alias->find(i) != events_alias->end()) {
-        auto event2 = events_alias->at(i);
-        if(pre_regions->at(event2)!= nullptr)  {
+        for(auto event2 :*events_alias->at(i)){
+          if(pre_regions->at(event2)!= nullptr)  {
             (*er_set)[event2] = regions_intersection(pre_regions->at(event2)); }
-        else (*er_set)[event2]=new set<int>;
+          else (*er_set)[event2]=new set<int>;
+        }
       }
     }
     ++it;
@@ -324,6 +332,6 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
   return er_set;
 }
 
-map<int, int> &Pre_and_post_regions_generator::get_events_alias() {
+map<int, vector<int>*> &Pre_and_post_regions_generator::get_events_alias() {
   return *events_alias;
 }
