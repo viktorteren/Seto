@@ -204,12 +204,18 @@ void Pre_and_post_regions_generator::create_pre_regions(
                 // ad un nuovo evento e crea la mappa degli alias
                 if (events_to_split->find(record.first) !=
                     events_to_split->end()) {
-                  //cout << "event to split" << record.first << endl;
-                  (*pre_regions)[total_events_counter + 1] =
-                      new set<Region *>();
-                  (*pre_regions)[total_events_counter + 1]->insert(new_region);
-                  (*events_alias)[record.first] = total_events_counter + 1;
-                  total_events_counter++;
+
+                  if(events_alias->find(record.first)!=events_alias->end()){
+                      (*pre_regions)[events_alias->at(record.first)]->insert(new_region);
+                  }
+                  else {
+                      //cout << "event to split" << record.first << endl;
+                      (*pre_regions)[total_events_counter + 1] =
+                              new set<Region *>();
+                      (*pre_regions)[total_events_counter + 1]->insert(new_region);
+                      (*events_alias)[record.first] = total_events_counter + 1;
+                      total_events_counter++;
+                  }
                 } else {
                   (*pre_regions)[record.first]->insert(new_region);
                 }
