@@ -391,7 +391,7 @@ void print_ts_dot_file(string file_path){
 
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
-                           map<int, int> &aliases, string file_name) {
+                           map<int, int> *aliases, string file_name) {
         auto initial_reg = initial_regions(pre_regions);
         string output_name = file_name;
         string in_dot_name;
@@ -449,10 +449,10 @@ void print_ts_dot_file(string file_path){
         //cout << "scrittura transazioni" << endl;
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
-        for (auto record : aliases) {
-            fout << "\t" << record.first << ";\n";
-            fout << "\t" << record.second << " [label = \""
-                 << record.first << "'\"];\n";
+        for (auto record : *aliases) {
+            //fout << "\t" << record.first << ";\n";
+            fout << "\t" << record.first << " [label = \""
+                 << record.second << "'\"];\n";
         }
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
@@ -465,24 +465,24 @@ void print_ts_dot_file(string file_path){
         for (auto record : *pre_regions) {
             for (auto reg : *record.second) {
                 if (record.first < num_events) {
+                    //if (regions_mapping->find(reg) != regions_mapping->end()) {
+                        fout << "\tr" << regions_mapping->at(reg) << " -> "
+                             << record.first << ";\n";
+                    //} else {
+                        //cout << "regions_mapping non contiene ";
+                        // println(*reg);
+                    //}
+                } else {
+                    /*int label;
+                    for (auto rec : aliases) {
+                        if (rec.first == record.first) {
+                            label = rec.second;
+                            break;
+                        }
+                    }*/
                     if (regions_mapping->find(reg) != regions_mapping->end()) {
                         fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
-                    } else {
-                        //cout << "regions_mapping non contiene ";
-                        // println(*reg);
-                    }
-                } else {
-                    int label;
-                    for (auto rec : aliases) {
-                        if (rec.second == record.first) {
-                            label = rec.first;
-                            break;
-                        }
-                    }
-                    if (regions_mapping->find(reg) != regions_mapping->end()) {
-                        fout << "\tr" << regions_mapping->at(reg) << " -> "
-                             << aliases.at(label) << ";\n";
                     } else {
                         //cout << "regions_mapping non contiene ";
                         //  println(*reg);
@@ -502,15 +502,15 @@ void print_ts_dot_file(string file_path){
                         // println(*reg);
                     }
                 } else {
-                    int label;
+                    /*int label;
                     for (auto rec : aliases) {
                         if (rec.second == record.first) {
                             label = rec.first;
                             break;
                         }
-                    }
+                    }*/
                     if (regions_mapping->find(reg) != regions_mapping->end()) {
-                        fout << "\t" << aliases.at(label) << " -> "
+                        fout << "\t" << record.first << " -> "
                              << "r" << regions_mapping->at(reg) << ";\n";
                     } else {
                         //cout << "regions_mapping non contiene ";

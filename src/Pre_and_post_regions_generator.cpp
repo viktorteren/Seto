@@ -39,12 +39,12 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator() {
   }
   delete post_regions;
 
-  for (auto el : *added_regions_ptrs) {
+  /*for (auto el : *added_regions_ptrs) {
     delete el;
-  }
-  delete added_regions_ptrs;
+  }*/
+  //delete added_regions_ptrs;
 
-  delete events_alias;
+  //delete events_alias;
 }
 
 bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
@@ -235,12 +235,11 @@ void Pre_and_post_regions_generator::create_pre_regions(
                       (*pre_regions)[events_alias->at(record.first)]->insert(new_region);
                   }
                   else {
-                      //cout << "event to split" << record.first << endl;
-                      (*pre_regions)[total_events_counter + 1] =
-                              new set<Region *>();
-                      (*pre_regions)[total_events_counter + 1]->insert(new_region);
-                      (*events_alias)[record.first] = total_events_counter + 1;
                       total_events_counter++;
+                      //cout << "event to split" << record.first << endl;
+                      (*pre_regions)[total_events_counter] = new set<Region *>();
+                      (*pre_regions)[total_events_counter]->insert(new_region);
+                      (*events_alias)[record.first] = total_events_counter;
                   }
                 } else {
                   (*pre_regions)[record.first]->insert(new_region);
@@ -339,12 +338,12 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
           (*er_set)[i] = regions_intersection(pre_regions->at(event1));
       }
       else (*er_set)[i]=new set<int>;
-      if (events_alias->find(i) != events_alias->end()) {
+      /*if (events_alias->find(i) != events_alias->end()) {
         auto event2 = events_alias->at(i);
         if(pre_regions->at(event2)!= nullptr)  {
             (*er_set)[event2] = regions_intersection(pre_regions->at(event2)); }
         else (*er_set)[event2]=new set<int>;
-      }
+      }*/
     }
     ++it;
   }
@@ -357,6 +356,6 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
   return er_set;
 }
 
-map<int, int> &Pre_and_post_regions_generator::get_events_alias() {
-  return *events_alias;
-}
+/*map<int, int>* Pre_and_post_regions_generator::get_events_alias() {
+  return events_alias;
+}*/

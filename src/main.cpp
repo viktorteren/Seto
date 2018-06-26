@@ -26,17 +26,18 @@ int main(int argc, char **argv) {
 
     auto tStart_partial = clock();
 
-    map<int, set<Region *> *> * pre_regions;
-    Label_splitting_module* ls;
-    map<int, ER> * new_ER;
-    vector<Region> * vector_regions;
-    map<int, vector<Region> *> * regions;
-    bool first=true;
+    map<int, set<Region *> *> *pre_regions;
+    Label_splitting_module *ls;
+    map<int, ER> *new_ER;
+    vector<Region> *vector_regions;
+    map<int, vector<Region> *> *regions;
+    bool first = true;
 
     double t_pre_region_gen;
     double t_region_gen;
     double t_splitting;
     //int c=0;
+    auto aliases= new map<int,int>();
     do {
         //c++;
         num_events = ts_map->size();
@@ -62,16 +63,17 @@ int main(int argc, char **argv) {
         }
 
         for (auto r: *vector_regions) {
-        cout << "reg: ";
-        println(r);
-        }
-
-        for(auto rec: *regions){
-            cout<<"event"<<rec.first<<endl;
-        for (auto r: *rec.second) {
             cout << "reg: ";
             println(r);
-        }}
+        }
+
+        for (auto rec: *regions) {
+            cout << "event" << rec.first << endl;
+            for (auto r: *rec.second) {
+                cout << "reg: ";
+                println(r);
+            }
+        }
 
         int cont = 0;
         double somma = 0;
@@ -106,7 +108,7 @@ int main(int argc, char **argv) {
             candidate_regions = ls->do_label_splitting(
                     rg->get_middle_set_of_states(), rg->get_number_of_bad_events(), events);
             //cout << "___________label splitting ok" << endl;
-            ls->split_ts_map_2(candidate_regions);
+            ls->split_ts_map_2(candidate_regions, aliases);
 
             /*events_not_satify_EC = new set<int>();
             auto pairs = rg->get_trees_init();
@@ -120,15 +122,15 @@ int main(int argc, char **argv) {
             tStart_partial = clock();
 
             //pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,
-                                                      //rg->get_ER_set(),
-                                                      //events_not_satify_EC);
+            //rg->get_ER_set(),
+            //events_not_satify_EC);
             delete candidate_regions;
 
             //new_ER = pprg->get_new_ER();
             new_ER = rg->get_ER_set();
             //delete rg->get_ER_set();
         } else {
-            if(!first) break;
+            if (!first) break;
             t_splitting = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
             tStart_partial = clock();
             //pprg = new Pre_and_post_regions_generator(vector_regions);
@@ -140,7 +142,7 @@ int main(int argc, char **argv) {
 
         t_pre_region_gen = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-       // pre_regions = pprg->get_pre_regions();
+        // pre_regions = pprg->get_pre_regions();
 
         tStart_partial = clock();
         if (!excitation_closure) {
@@ -159,23 +161,22 @@ int main(int argc, char **argv) {
 
         }
 
-        first=false;
-        delete ls;
+        first = false;
         delete rg;
-        cout<<"ho finito"<<endl;
+        cout << "ho finito" << endl;
         //if(c==1) break;
     }//end prova do while
-    while(true);
+    while (true);
 
-    Pre_and_post_regions_generator* pprg=new Pre_and_post_regions_generator(vector_regions);
+    Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(vector_regions);
     pre_regions = pprg->get_pre_regions();
 
-    tStart_partial=clock();
+    tStart_partial = clock();
     // Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions);
-    auto t_irred= (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+    auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-    tStart_partial=clock();
+    tStart_partial = clock();
 
     auto essential_regions = pn_module->get_essential_regions();
     map<int, set<Region *> *> *irredundant_regions =
@@ -199,7 +200,7 @@ int main(int argc, char **argv) {
         merged_map = merging_module->get_total_preregions_map();
     }
 
-    auto t_merge=(double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+    auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     pprg->create_post_regions(merged_map);
     // pprg->create_post_regions(pprg->get_pre_regions());
@@ -209,8 +210,13 @@ int main(int argc, char **argv) {
     // restore_default_labels(merged_map, pprg->get_events_alias());
     // print_pn_dot_file( pprg->get_pre_regions(), post_regions,
     // pprg->get_events_alias(), file);
-
-    print_pn_dot_file(merged_map, post_regions, pprg->get_events_alias(), file);
+    cout << "print aliases" << endl;
+    for(auto rec: *aliases){
+        cout << rec.first << " : " << rec.second << endl;
+    }
+    print_pn_dot_file(merged_map, post_regions, aliases, file);
+    delete ls;
+    delete aliases;
 
     // dealloco regions e tutti i suoi vettori
     for (auto record : *regions) {
@@ -237,7 +243,7 @@ int main(int argc, char **argv) {
     // cout<<"C: "<<c<<endl;
     delete ts_map;
 
-    printf("Time total: %.5fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
+    printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
     printf("Time region gen: %.5fs\n", t_region_gen);
     printf("Time splitting: %.5fs\n", t_splitting);
     printf("Time pre region gen: %.5fs\n", t_pre_region_gen);

@@ -9,7 +9,6 @@ Label_splitting_module::Label_splitting_module(
   this->regions = regions;
   this->ER_set = er_set;
   // this->number_of_bad_events=number_of_bad_events;
-  this->event_alias=new map<int,int>();
 };
 
 Label_splitting_module::~Label_splitting_module() {
@@ -240,7 +239,7 @@ void Label_splitting_module::split_ts_map(
 
   //cout << "SPLIT TS MAP " << endl;
 
-  // perogni evento che ho splittato
+  // per ogni evento che ho splittato
   // elimina le transazioni uscenti nella new region (le entranti?)
   // aggiungi nuove transazioni nell'evento alias(corrispondenti a quelle che ho
   // tolto)
@@ -290,7 +289,7 @@ void Label_splitting_module::split_ts_map(
 }
 
 
-void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions){
+void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions, map<int, int> *event_alias){
   //per la regione candidata migliore per ogni regione se è contenuta, eventi uscente da candidate rimangono cosi evnti uscenti da new region vengono aggiunti
 
   Region* best_region=nullptr;
@@ -329,6 +328,7 @@ void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions){
           //crea alias e nuove trans poi erase
             //ts_map size è il nuovo evento
             (*event_alias)[total_events]=event;
+            cout << "aggiungo ad aliases: " << total_events << " : " << event << endl;
 
             auto to_erase = new set<Edge *>();
 

@@ -22,19 +22,17 @@ public:
   void split_ts_map(map<int, int> *events_alias,
                     map<int, set<Region *> *> *pre_regions);
 
-    void split_ts_map_2(vector<Region> * candidate_regions);
+    void split_ts_map_2(vector<Region> * candidate_regions, map<int, int>* event_alias);
 
 private:
   map<int, vector<Region> *> *regions;
   map<int, ER> *ER_set;
   map<int, set<int> *> *regions_intersection;
-  map<int,int>* event_alias= nullptr;
   // coppia numero eventi che violano la regione e ptr_regione
   // map<int,vector< pair<int,Region*> >*>* number_of_bad_events;
   int branch_selection(Edges_list *list, Region *region);
   void set_number_of_bad_events(vector<int> *event_type, int event,
                                 vector<int> *number_of_bad_events, int pos);
-
 
     map<int, vector<Edge *> *> *calculate_exit_trans(Region *pSet);
 
