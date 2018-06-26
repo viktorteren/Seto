@@ -451,14 +451,14 @@ void print_ts_dot_file(string file_path){
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
         for (auto record : aliases) {
             fout << "\t" << record.first << ";\n";
-            fout << "\t" << aliases.at(record.first) << " [label = \""
+            fout << "\t" << record.second << " [label = \""
                  << record.first << "'\"];\n";
         }
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
-                if (aliases.find(record.first) == aliases.end()) {
-                    fout << "\t" << record.first << ";\n";
-                }
+
+                fout << "\t" << record.first << ";\n";
+
             }
         }
         fout << "}\n";

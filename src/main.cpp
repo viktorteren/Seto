@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   string file;
   if (argc == 1) {
     // default input
-    file = "../test/input.ts";
+    file = "../test/input7.ts";
   } else if (argc == 2) {
     file = args[1];
   } else {
