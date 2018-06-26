@@ -456,9 +456,7 @@ void print_ts_dot_file(string file_path){
         }
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
-
                 fout << "\t" << record.first << ";\n";
-
             }
         }
         fout << "}\n";

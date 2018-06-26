@@ -11,7 +11,7 @@ using namespace std;
 class Region_generator {
 
 public:
-  Region_generator();
+  Region_generator(int num_events);
   ~Region_generator();
 
   map<int, vector<Region> *> *generate();
@@ -31,6 +31,7 @@ public:
   map<int, vector<Region *> *> *get_middle_set_of_states();
   map<int, vector<int> *> *get_number_of_bad_events();
   map<int, int> *get_trees_init();
+    void remove_bigger_regions(Region &new_region,vector<Region>* regions);
 
 private:
   map<int, ER> *ER_set;

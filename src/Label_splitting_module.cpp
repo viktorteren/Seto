@@ -9,6 +9,7 @@ Label_splitting_module::Label_splitting_module(
   this->regions = regions;
   this->ER_set = er_set;
   // this->number_of_bad_events=number_of_bad_events;
+  this->event_alias=new map<int,int>();
 };
 
 Label_splitting_module::~Label_splitting_module() {
@@ -78,7 +79,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
   // per ogni evento che non soddisfa EC
   for (auto event : *events_not_satisfy_EC) {
 
-   // cout << "EVENTO: " << event << "*************" << endl;
+    cout << "EVENTO: " << event << "*************" << endl;
 
     int pos = 0;
     candidate_region = nullptr;
@@ -131,21 +132,21 @@ vector<Region> *Label_splitting_module::do_label_splitting(
     }
 
     // aggiungo candidate_region alle regioni del mio evento
-    //cout << "___________________________REGIONE CANDIDATA__________________"
-         //<< endl;
+    cout << "___________________________REGIONE CANDIDATA__________________"
+         << endl;
     if (candidate_region != nullptr) {
-     // print(*candidate_region);
-     // cout << "num: " << num_bad_event_min << endl;
+      print(*candidate_region);
+      cout << "num: " << num_bad_event_min << endl;
       candidate_regions->push_back(*candidate_region);
     }
   }
 
   delete events_type;
 
-  /*cout << "Regioni candidate******" << endl;
+  cout << "Regioni candidate******" << endl;
   for (auto &reg : *candidate_regions) {
     println(reg);
-  }*/
+  }
 //  cout << "******" << endl;
 
   return candidate_regions;
@@ -287,3 +288,124 @@ void Label_splitting_module::split_ts_map(
   }*/
 
 }
+
+
+void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions){
+  //per la regione candidata migliore per ogni regione se è contenuta, eventi uscente da candidate rimangono cosi evnti uscenti da new region vengono aggiunti
+
+  Region* best_region=nullptr;
+  vector<Region>::iterator it;
+  for(it=candidate_regions->begin();it<candidate_regions->end();++it){
+    if(best_region== nullptr ) {
+      best_region = &*it;
+    }
+    else {
+      if(best_region->size()<(*it).size()) {
+        best_region = &*it;
+      }
+    }
+  }
+
+  auto regions_vec=Utilities::copy_map_to_vector(regions);
+  vector<Region>::iterator it2;
+  for(it2=regions_vec->begin();it2<regions_vec->end();++it2){
+    auto reg=&*it2;
+    if(is_bigger_than(reg,best_region)){
+      Region* new_region=region_difference(*it2,*best_region);
+      map<int,vector<Edge*>*>* exit_trans_new_region=calculate_exit_trans(new_region); //cambiano nome
+      vector<int>* exit_trans_cand_region=calculate_exit_trans_events(new_region);
+
+      //itero su tutti gli eventi uscenti da candidata
+      //se ci sono trans per quell'evento uscenti dalla nuova allora queste le elimino e creo quelle nuove più l'alias altrimenti niente
+
+      int total_events=ts_map->size();
+      for(auto event : *exit_trans_cand_region){
+        if(exit_trans_new_region->find(event)!=exit_trans_new_region->end()){
+
+            if (ts_map->find(total_events) == ts_map->end()) {
+                (*ts_map)[total_events] = Edges_list();
+            }
+
+          //crea alias e nuove trans poi erase
+            //ts_map size è il nuovo evento
+            (*event_alias)[total_events]=event;
+
+            auto to_erase = new set<Edge *>();
+
+            for(auto tr: *exit_trans_new_region->at(event)) {
+
+                auto pair = new Edge();
+                pair->first = tr->first;
+                pair->second = tr->second;
+                (*ts_map)[total_events].insert(pair);
+                to_erase->insert(tr);
+            }
+
+            for (auto el : *to_erase) {
+                ts_map->at(event).erase(el);
+            }
+            if(ts_map->at(event).size()==0)
+                ts_map->erase(event);
+            delete to_erase;
+
+        }
+      }
+    break;
+    }
+  }
+
+
+}
+
+map<int, vector<Edge *> *> *Label_splitting_module::calculate_exit_trans(Region *pSet) {
+
+    auto map_tr=new map<int,vector<Edge*>*>();
+
+    //per ogni evento
+    //se il first è nella ia regione
+    // e il secondonon lo è
+    //è uscente
+    for(auto record: *ts_map){
+       auto event=record.first;
+       for(auto tr: record.second){
+           if(contains_state(pSet,tr->first) && !contains_state(pSet,tr->second)){
+               if(map_tr->find(event)==map_tr->end()) {
+                   (*map_tr)[event] = new vector<Edge*>();
+               }
+               map_tr->at(event)->push_back(tr);
+           }
+       }
+    }
+
+    cout<<"debug"<<endl;
+    for(auto r:*map_tr){
+        cout<<"event "<<r.first <<endl;
+        for(auto r2: *(r.second)){
+            cout<<r2->first<< " -> "<<r2->second<<endl;
+        }
+    }
+
+    return map_tr;
+
+}
+
+vector<int> *Label_splitting_module::calculate_exit_trans_events(Region *pSet) {
+
+    auto vec=new vector<int>();
+    //per ogni evento
+    //se il first è nella ia regione
+    // e il secondonon lo è
+    //è uscente
+    for(auto record: *ts_map){
+        auto event=record.first;
+        for(auto tr: record.second){
+            if(contains_state(pSet,tr->first) && !contains_state(pSet,tr->second)){
+                vec->push_back(event);
+                break;
+            }
+        }
+    }
+
+    return vec;
+}
+

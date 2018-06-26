@@ -11,7 +11,8 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(
   regions = reg;
   pre_regions = new map<int, set<Region *> *>();
   // post_regions= new map < int , set<Region*>* > ();
-  create_pre_regions(nullptr);
+  //create_pre_regions(nullptr);
+    create_pre_regions();
 }
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(
@@ -22,7 +23,8 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(
 
   events_to_split = events;
 
-  create_pre_regions(candidate_regions);
+    create_pre_regions();
+  //create_pre_regions(candidate_regions);
   er_set = create_ER_after_splitting(Er_set, events);
 }
 
@@ -73,34 +75,6 @@ bool Pre_and_post_regions_generator::is_post_region(Edges_list *list,
   return false;
 }
 
-void Pre_and_post_regions_generator::remove_bigger_regions(Region &new_region) {
-  unsigned int cont;
-  Region region;
-
-  for (unsigned int i = 0; i < regions->size(); i++) {
-    region = regions->at(i);
-    cont = 0;
-    if (region.size() > new_region.size()) {
-      for (auto state : new_region) {
-        if (region.find(state) == region.end()) {
-          break;
-        } else {
-          cont++;
-        }
-      }
-      if (cont == new_region.size()) {
-        //cout << "eliminazione regione vecchia ";
-        //print(region);
-        //cout << " a causa di: ";
-        //println(new_region);
-        // remove old too big region
-        regions->erase(regions->begin() + i);
-        i--;
-      }
-    }
-  }
-}
-
 void Pre_and_post_regions_generator::create_post_regions(
     map<int, set<Region *> *> *merged_pre_regions) {
   // record. first da ts_map è l'evento, record.second è la lista da passare a
@@ -129,6 +103,57 @@ void Pre_and_post_regions_generator::create_post_regions(
   print(*post_regions);*/
 }
 
+void Pre_and_post_regions_generator::create_pre_regions() {
+    cout
+            << "--------------------------------------------------- CREATING OF PRE-REGIONS --------------------------------------------"
+            << endl;
+
+    //per ogni evento
+    //per ogni regione
+    //guardo se è una pre-regione per tale evento
+    // se si aggiungo alla mappa
+
+    vector<Region>::iterator it;
+    for(auto record: *ts_map){
+        //cout << "evento: " << record.first << endl;
+        for(it=regions->begin(); it!=regions->end();++it){
+            Region* region= &(*it);
+            if(is_pre_region(&record.second, region)){
+                //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
+                if (pre_regions->find(record.first) == pre_regions->end()){
+                    (*pre_regions)[record.first] = new set<Region *> ();
+                }
+
+                //cout << &region << endl;
+                //cout << ((*pre_regions)[record.first]) << endl;
+                //aggiungo la regione alla mappa
+                if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
+                    (*pre_regions)[record.first]->insert(region);
+                    /*cout << "inserisco " << &(*region) << endl;
+                    Utilities::println(*region);*/
+                }
+            }
+        }
+
+    }
+
+
+    for (auto record: *pre_regions) {
+
+        cout << "Event: " << record.first << endl;
+
+        for (auto region: *record.second) {
+
+            println(*region);
+
+        }
+    }
+
+
+}
+
+
+/*
 void Pre_and_post_regions_generator::create_pre_regions(
     vector<Region> *candidate_regions) {
  // cout << "------------------------------------------------------------ "
@@ -140,6 +165,7 @@ void Pre_and_post_regions_generator::create_pre_regions(
     Region *region = &(*it);
     remove_bigger_regions(*region);
   }
+
 
   //cout << "--------------------------------------------------- CREATION OF "
     //      "PRE-REGIONS AND POST-REGIONS "
@@ -277,8 +303,9 @@ void Pre_and_post_regions_generator::create_pre_regions(
   }
 
   num_events_after_splitting = pre_regions->size();
-  cout << "NUM EVENTS AFTER SPLIT " << num_events_after_splitting << endl;*/
-}
+  cout << "NUM EVENTS AFTER SPLIT " << num_events_after_splitting << endl;
+}*/
+
 
 map<int, set<Region *> *> *Pre_and_post_regions_generator::get_pre_regions() {
   return pre_regions;

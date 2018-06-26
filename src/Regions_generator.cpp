@@ -5,7 +5,7 @@
 
 using namespace Utilities;
 
-Region_generator::Region_generator() {
+Region_generator::Region_generator(int num_events) {
   ER_set = new map<int, ER>;
   regions = new map<int, vector<Region> *>;
   queue_temp_regions = new vector<Region>;
@@ -35,6 +35,44 @@ Region_generator::~Region_generator() {
   }
   delete number_of_bad_events;
   delete trees_init;
+}
+
+
+void Region_generator::remove_bigger_regions(Region &new_region,vector<Region>* regions_vector) {
+  unsigned int cont;
+  Region region;
+
+  for (unsigned int i = 0; i < regions_vector->size(); i++) {
+    region = regions_vector->at(i);
+    cont = 0;
+    if (region.size() > new_region.size()) {
+      for (auto state : new_region) {
+        if (region.find(state) == region.end()) {
+          break;
+        } else {
+          cont++;
+        }
+      }
+      if (cont == new_region.size()) {
+        //cout << "eliminazione regione vecchia ";
+        //print(region);
+        //cout << " a causa di: ";
+        //println(new_region);
+        // remove old too big region
+          for(auto rec: *regions){
+              vector<Region>::iterator it;
+              for(it=rec.second->begin();it < rec.second->end(); ++it){
+                  if(are_equals(&region, &*it)){
+                        regions->at(rec.first)->erase(it);
+                  }
+              }
+          }
+          regions_vector->erase(regions_vector->begin() + i);
+        i--;
+
+      }
+    }
+  }
 }
 
 map<int, ER> *Region_generator::get_ER_set() { return ER_set; }
