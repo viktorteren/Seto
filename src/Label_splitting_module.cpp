@@ -103,7 +103,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
           // ricalcola
           for (auto e : *middle_set_of_states)
             (*events_type)[e.first] =
-                branch_selection(&(ts_map->at(e.first)), *it);
+                branch_selection(&(ts->at(e.first)), *it);
 
           set_number_of_bad_events(events_type, event, vec_ptr, pos);
         }
@@ -135,7 +135,7 @@ vector<Region> *Label_splitting_module::do_label_splitting(
          << endl;
     if (candidate_region != nullptr) {
       print(*candidate_region);
-      cout << "num: " << num_bad_event_min << endl;
+      cout << " num: " << num_bad_event_min << endl;
       candidate_regions->push_back(*candidate_region);
     }
   }
@@ -312,22 +312,24 @@ void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions, 
     if(is_bigger_than(reg,best_region)){
       Region* new_region=region_difference(*it2,*best_region);
       map<int,vector<Edge*>*>* exit_trans_new_region=calculate_exit_trans(new_region); //cambiano nome
-      vector<int>* exit_trans_cand_region=calculate_exit_trans_events(new_region);
+      vector<int>* exit_trans_cand_region=calculate_exit_trans_events(best_region);
 
       //itero su tutti gli eventi uscenti da candidata
       //se ci sono trans per quell'evento uscenti dalla nuova allora queste le elimino e creo quelle nuove più l'alias altrimenti niente
 
-      int total_events=ts_map->size();
+      int total_events=max_label+1;
+      cout << "total events !!!: " << total_events << endl;
       for(auto event : *exit_trans_cand_region){
         if(exit_trans_new_region->find(event)!=exit_trans_new_region->end()){
 
             if (ts_map->find(total_events) == ts_map->end()) {
                 (*ts_map)[total_events] = Edges_list();
             }
-
+            cout << "effettuo uno splitting" << endl;
           //crea alias e nuove trans poi erase
-            //ts_map size è il nuovo evento
+            //ts size è il nuovo evento
             (*event_alias)[total_events]=event;
+            max_label = total_events;
             cout << "aggiungo ad aliases: " << total_events << " : " << event << endl;
 
             auto to_erase = new set<Edge *>();
@@ -344,8 +346,13 @@ void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions, 
             for (auto el : *to_erase) {
                 ts_map->at(event).erase(el);
             }
-            if(ts_map->at(event).size()==0)
+            /*if(ts_map->at(event).size()==0){
+                /*My_Map::iterator it;
+                it = ts_map->find(event);
+                ts_map->erase(it);
                 ts_map->erase(event);
+            }*/
+
             delete to_erase;
 
         }
@@ -353,7 +360,7 @@ void Label_splitting_module::split_ts_map_2(vector<Region> * candidate_regions, 
     break;
     }
   }
-
+  cout << "ts_map size dopo lo split: " << ts_map->size() << endl;
 
 }
 

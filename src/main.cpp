@@ -40,8 +40,18 @@ int main(int argc, char **argv) {
     int number_of_events;
     //int c=0;
     auto aliases= new map<int,int>();
+    int contatore;
+
+
+    number_of_events = max_label+1;
     do {
-        number_of_events = ts_map->size();
+        contatore = 0;
+        for(auto rec: *ts_map){
+            contatore++;
+        }
+        cout << "number_of_events: " << number_of_events << endl;
+        cout << "num_events: " << num_events  << endl;
+        cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         Region_generator *rg = new Region_generator(number_of_events);
         regions = rg->generate();
         cout << "DEBUG: regioni dopo generate " << endl;
@@ -131,7 +141,7 @@ int main(int argc, char **argv) {
             new_ER = rg->get_ER_set();
             //delete rg->get_ER_set();
         } else {
-            if (!first) break;
+            break;
             t_splitting = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
             tStart_partial = clock();
             //pprg = new Pre_and_post_regions_generator(vector_regions);
@@ -164,6 +174,7 @@ int main(int argc, char **argv) {
 
         first = false;
         delete rg;
+        //number_of_events++;
         cout << "ho finito" << endl;
         //if(c==1) break;
     }//end prova do while

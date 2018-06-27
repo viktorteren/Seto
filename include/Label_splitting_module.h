@@ -28,6 +28,7 @@ private:
   map<int, vector<Region> *> *regions;
   map<int, ER> *ER_set;
   map<int, set<int> *> *regions_intersection;
+  My_Map* ts;
   // coppia numero eventi che violano la regione e ptr_regione
   // map<int,vector< pair<int,Region*> >*>* number_of_bad_events;
   int branch_selection(Edges_list *list, Region *region);

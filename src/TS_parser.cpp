@@ -9,11 +9,11 @@ using namespace Utilities;
 My_Map *ts_map;
 int num_states, initial_state, num_events, num_events_after_splitting;
 unsigned int num_transactions;
+int max_label = -1;
 
 void TS_parser::parse(string file) {
 
   // Open the file:
-
   ts_map = new My_Map();
 
   ifstream fin(file);
@@ -40,6 +40,8 @@ void TS_parser::parse(string file) {
     cout << "The file extension is not supported" << endl;
     exit(0);
   }
+
+  max_label = num_events-1;
  // cout << "---------END OF PARSING----------" << endl;
 }
 
