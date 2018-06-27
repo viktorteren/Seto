@@ -11,12 +11,13 @@ using namespace std;
 class Region_generator {
 
 public:
-  Region_generator(int num_events);
+  Region_generator(int n);
   ~Region_generator();
 
   map<int, vector<Region> *> *generate();
 
   map<int, ER> *get_ER_set();
+  int number_of_events;
 
   struct Branches_states_to_add {
     set<int> *states_to_add_exit_or_enter = nullptr;

@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input.ts";
+        file = "../test/input3.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -31,17 +31,18 @@ int main(int argc, char **argv) {
     map<int, ER> *new_ER;
     vector<Region> *vector_regions;
     map<int, vector<Region> *> *regions;
+
     bool first = true;
 
     double t_pre_region_gen;
     double t_region_gen;
     double t_splitting;
+    int number_of_events;
     //int c=0;
     auto aliases= new map<int,int>();
     do {
-        //c++;
-        num_events = ts_map->size();
-        Region_generator *rg = new Region_generator(num_events);
+        number_of_events = ts_map->size();
+        Region_generator *rg = new Region_generator(number_of_events);
         regions = rg->generate();
         cout << "DEBUG: regioni dopo generate " << endl;
         for (auto rec: *regions) {
@@ -167,6 +168,7 @@ int main(int argc, char **argv) {
         //if(c==1) break;
     }//end prova do while
     while (true);
+    cout << "uscito dal ciclo while" << endl;
 
     Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(vector_regions);
     pre_regions = pprg->get_pre_regions();
