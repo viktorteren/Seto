@@ -12,9 +12,10 @@ Region_generator::Region_generator(int n) {
     map_states_to_add = new map<int, Branches_states_to_add *>();
     middle_set_of_states = new map<int, vector<Region *> *>;
     number_of_bad_events = new map<int, vector<int> *>();
-    trees_init = new map<int, int>();
+    //trees_init = new map<int, int>();
     number_of_events = n;
-    violations = new map<int, map<Region*, pair<int, int>*>*>();
+    event_violations = new map<int, map<int , int >*>();
+    trans_violations = new map<int, map<int, vector<Edge*>* >*>();
 }
 
 Region_generator::~Region_generator() {
@@ -36,8 +37,8 @@ Region_generator::~Region_generator() {
         delete elem.second;
     }
     delete number_of_bad_events;
-    delete trees_init;
-    delete violations;
+    //delete trees_init;
+    //delete violations;
 }
 
 
@@ -81,11 +82,14 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
 map<int, ER> *Region_generator::get_ER_set() { return ER_set; }
 
 int Region_generator::branch_selection(Edges_list *list, Region *region,
-                                       int event) {
+                                       int event,int region_id_position) {
     // quale ramo devo prendere tra ok, nocross oppure 2 rami? (per un evento)
     vector<int> *trans = new vector<int>(4, 0);
 
     //    struct_states_to_add= new Branches_states_to_add();
+
+    /*cout<<"debug: regione"<<endl;
+    println(*region);*/
 
     states_to_add_enter = new set<int>;
     states_to_add_exit = new set<int>;
@@ -97,6 +101,10 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
     const int exit = 2;
     const int enter = 3;
 
+    auto enter_tr= new vector<Edge*>();
+    auto exit_tr= new vector<Edge*>();
+    auto out_tr= new vector<Edge*>();
+
     for (auto t : *list) {
         if (region->find(t->first) !=
             region->end()) { // il primo stato appartiene alla regione
@@ -107,6 +115,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
                 // per no cross è ok, gli altri non si possono fare
             } else {
                 (*trans)[exit]++;
+                exit_tr->push_back(t);
                 // cout << t->first << "->" << t->second << " EXIT" << endl;
                 // per exit è ok
                 // per no cross:
@@ -118,6 +127,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
             if (region->find(t->second) !=
                 region->end()) { // il secondo stato appartiene alla regione
                 (*trans)[enter]++;
+                enter_tr->push_back(t);
                 //cout << t->first << "->" << t->second << " ENTER" << endl;
                 // per il no cross devo aggiungere la sorgente di tutti gli archi
                 // entranti nella regione(enter diventa in)
@@ -130,6 +140,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
                 // per exit non si può fare
             } else {
                 (*trans)[out]++;
+                out_tr->push_back(t);
                 //cout << t->first << "->" << t->second << " OUT" << endl;
                 // per enter devo aggiungere la destinazione degli archi che erano out
                 // dalla regione
@@ -152,17 +163,33 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
 
 
 
-    // gli Enter+in devono diventare per forza in(nocross)
+    // gli Enter+in e Exit_in devono diventare per forza in(nocross)
     if (((*trans)[in] > 0 && (*trans)[enter] > 0) ||
         ((*trans)[in] > 0 && (*trans)[exit] > 0) ||
         ((*trans)[enter] > 0 && (*trans)[exit] > 0)) {
         //cout << "return no cross" << endl;
+
+        if(trans_violations->find(event) == trans_violations->end())
+            (*trans_violations)[event] = new map< int, vector<Edge*>* >();
+
         if (((*trans)[in] > 0 && (*trans)[enter] > 0)) {
-            last_branch = ENTER_IN;
+            (*(*trans_violations)[event])[region_id_position] = enter_tr;
+            delete out_tr;
+            delete exit_tr;
         }
         else if((*trans)[in] > 0 && (*trans)[exit] > 0) {
-            last_branch = EXIT_IN;
+            (*(*trans_violations)[event])[region_id_position] = exit_tr;
+            delete out_tr;
+            delete enter_tr;
         }
+        else if ( (*trans)[enter] > 0 && (*trans)[exit] > 0){
+            (*(*trans_violations)[event])[region_id_position] = enter_tr;
+            delete out_tr;
+            delete exit_tr;
+        }
+
+        //auto vec=search_bad_transactions(last_branch,list,region);
+
 
         if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
             (*map_states_to_add)[event]->states_to_add_nocross != nullptr)
@@ -185,6 +212,13 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
     } else if ((*trans)[exit] > 0 && (*trans)[out] > 0) { //(exit-out)
         //cout << "return exit_no cross" << endl;
 
+        if(trans_violations->find(event) == trans_violations->end())
+            (*trans_violations)[event] = new map< int, vector<Edge*>* >();
+        //auto vec=search_bad_transactions(EXIT_OUT,list,region);
+        (*(*trans_violations)[event])[region_id_position] = out_tr;
+        delete exit_tr;
+        delete enter_tr;
+
         if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
             (*map_states_to_add)[event]->states_to_add_nocross != nullptr)
             delete (*map_states_to_add)[event]->states_to_add_nocross;
@@ -205,11 +239,18 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         // delete states_to_add_exit;
         // delete states_to_add_nocross;
         delete trans;
-        last_exit_enter = EXIT;
-        last_branch = EXIT_IN;
+        //last_exit_enter = EXIT;
+        //last_branch = EXIT_IN;
         return EXIT_NOCROSS;
     } else if ((*trans)[enter] > 0 && (*trans)[out] > 0) { //(enter-out)
         //cout << "return enter_no cross" << endl;
+
+        if(trans_violations->find(event) == trans_violations->end())
+            (*trans_violations)[event] = new map< int, vector<Edge*>* >();
+        //auto vec=search_bad_transactions(ENTER_OUT,list,region);
+        (*(*trans_violations)[event])[region_id_position] = out_tr;
+        delete exit_tr;
+        delete enter_tr;
 
         // aggiungo gli stati da aggiungere per entry e no cross (ma li aggiunge
         // alla coda la expand per controllare che sia il ramo giusto da prendere)
@@ -235,8 +276,8 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
 
         // delete states_to_add_nocross;
         delete trans;
-        last_exit_enter = ENTER;
-        last_branch = ENTER_IN;
+       // last_exit_enter = ENTER;
+        //last_branch = ENTER_IN;
         return ENTER_NOCROSS;
     } else {
         //cout << "return ok" << endl;
@@ -280,17 +321,18 @@ bool Region_generator::region_in_queue(Region &new_region, int init_pos) {
 }
 
 void Region_generator::expand(Region *region, int event, bool is_ER,
-                              int init_pos) {
+                              int init_pos, int region_id_position) {
     int *event_types = new int[number_of_events];
     int last_event_2braches = -1;
     int last_event_nocross = -1;
     auto expanded_regions = new Region[2];
 
-    /*cout << "|||REGIONE: " << region << " --- ";
+   /* cout << "|||REGIONE: " << region << " --- ";
     for (auto i : (*region)) {
       cout << i << " ";
     }
-    cout << endl;*/
+    cout << endl;
+    cout<<"id position reg: " << region_id_position<<endl;*/
 
     for (int i = 0; i < number_of_events; i++) {
         event_types[i] = -1;
@@ -301,7 +343,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         // controllo tutti, non è un ER
         if (e.first != event || !is_ER) {
             //cout << "Non è ER" << endl;
-            event_types[e.first] = branch_selection(&e.second, region, e.first);
+            event_types[e.first] = branch_selection(&e.second, region, e.first,region_id_position);
 
             /*for (int i = 0; i < number_of_events; i++) {
               cout << "event_type: " << event_types[i] << endl;
@@ -387,11 +429,11 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             expanded_regions[0].insert(state);
         }
 
-        (*trees_init)[event] = last_event_nocross;
-        if(violations->find(event) == violations->end())
-            (*violations)[event] = new map<Region*, pair<int, int>*>();
-        auto pairs = new pair<int,int>(event, last_branch);
-        (*(*violations)[event])[region] = pairs;
+        //(*trees_init)[event] = last_event_nocross;
+        if(event_violations->find(event) == event_violations->end())
+            (*event_violations)[event] = new map<int, int >();
+        //auto pairs = new pair<int,int>(event, last_branch);
+        (*(*event_violations)[event])[region_id_position] = last_event_nocross;
 
         /*for (auto i : expanded_regions[0]) {
           cout << "Stato della regione espansa NOCROSS " << i << endl;
@@ -433,7 +475,14 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         //cout << "point reg " << region << endl;
         // cout << "pint exp " << (*expanded_regions)[0];
 
-        (*trees_init)[event] = last_event_2braches;
+        //(*trees_init)[event] = last_event_2braches;
+
+        if(event_violations->find(event) == event_violations->end())
+            (*event_violations)[event] = new map<int, int >();
+        (*(*event_violations)[event])[region_id_position] = last_event_2braches;
+
+        /*cout<<"inserisco per " << event <<"la regione ";
+        println(*region);*/
 
         for (auto state : *region) {
             (*expanded_regions).insert(state);
@@ -464,10 +513,10 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             expanded_regions[0].insert(state);
         }
 
-        if(violations->find(event) == violations->end())
+      /*  if(violations->find(event) == violations->end())
             (*violations)[event] = new map<Region*, pair<int, int>*>();
         auto pairs = new pair<int,int>(event, last_branch);
-        (*(*violations)[event])[region] = pairs;
+        (*(*violations)[event])[region] = pairs;*/
 
         /*for (auto i : expanded_regions[0]) {
           cout << "Stato della regione espansa NOCROSS " << i << endl;
@@ -486,10 +535,10 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             expanded_regions[1].insert(state);
         }
 
-        if(violations->find(event) == violations->end())
+        /*if(violations->find(event) == violations->end())
             (*violations)[event] = new map<Region*, pair<int, int>*>();
         pairs = new pair<int,int>(event, last_exit_enter);
-        (*(*violations)[event])[region] = pairs;
+        (*(*violations)[event])[region] = pairs;*/
 
         /*for (auto i : expanded_regions[1]) {
           cout << "Stato della regione espansa ENTER " << i << endl;
@@ -552,7 +601,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
         queue_temp_regions->push_back(*er_temp);
         // espando la prima volta - la regione coincide con ER
         //cout << "ptr expand prima: " << &((*queue_temp_regions)[pos]) << endl;
-        expand(&((*queue_temp_regions)[pos]), e.first, true, init_pos);
+        expand(&((*queue_temp_regions)[pos]), e.first, true, init_pos, pos-init_pos);
         //cout << "ptr expand: " << &((*queue_temp_regions)[pos]) << endl;
         pos++;
 
@@ -565,7 +614,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
                queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
 
             if ((*queue_temp_regions)[pos].size() != num_transactions)
-                expand(&((*queue_temp_regions)[pos]), e.first, false, init_pos);
+                expand(&((*queue_temp_regions)[pos]), e.first, false, init_pos,pos-init_pos);
             else
                 regions->at(e.first)->push_back((*queue_temp_regions)[pos]);
 
@@ -573,6 +622,12 @@ map<int, vector<Region> *> *Region_generator::generate() {
             //cout << "POSIZIONEEEE**********************************: " << pos
             //   << "reg size " << queue_temp_regions->size() << endl;
             pos++;
+
+          /*  for(auto r: *queue_temp_regions){
+                cout<<"reg:" <<endl;
+                println(r);
+            }*/
+
         }
         (*queue_event_index)[e.first] = pos - 1;
     }
@@ -591,8 +646,9 @@ map<int, vector<Region> *> *Region_generator::generate() {
     //cout << " " << &((*queue_temp_regions)[0]) << endl;
     //cout << " " << &(*queue_temp_regions)[0] << endl;
 
-    //cout << "\n debug middle" << endl;
-    /*for (auto e : *ts_map) {
+   /* cout << "\n debug middle" << endl;
+    for (auto e : *ts_map) {
+        cout<<"evento"<<e.first<<endl;
       for (auto el_vec : *middle_set_of_states->at(e.first)) {
         //cout << el_vec << endl;
         println(*el_vec);
@@ -606,6 +662,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
         cout << n << endl;
       }
     }*/
+
 
     delete queue_event_index;
 
@@ -679,8 +736,57 @@ map<int, vector<int> *> *Region_generator::get_number_of_bad_events() {
     return number_of_bad_events;
 };
 
-map<int, int> *Region_generator::get_trees_init() { return trees_init; };
-
+/*map<int, int> *Region_generator::get_trees_init() { return trees_init; };*/
+/*
 map<int, map<Region*, pair<int, int>*>*>* Region_generator::get_violations() {
     return violations;
 }
+*//*
+vector<Edge *> *Region_generator::search_bad_transactions(int type,Edges_list *list, Region *region) {
+
+    auto vec=new vector<Edge*>();
+
+    for(auto tr: *list) {
+
+        if (type == EXIT_OUT ||type == ENTER_OUT ) {
+            //cerco per exit_no cross (exit/out) oppure enter_no cross (enter/out) salvo transizioni out (erano 2 rami)
+            if (region->find(tr->first) == region->end()) { // il primo stato non appartiene alla regione
+                if (region->find(tr->second) == region->end()) {//il secondo stato non appartiene alla regione
+                    vec->push_back(tr);
+                }
+            }
+        } else if (type == ENTER_IN) {
+            //cerco le transizioni uscenti da regione (era no cross)
+            if (region->find(tr->first) == region->end()) { // il primo stato non appartiene alla regione
+                if (region->find(tr->second) != region->end()) {//il secondo stato appartiene alla regione
+                    vec->push_back(tr);
+                }
+            }
+        } else if (type == EXIT_IN) {
+            //cerco le transizioni entranti da regione (era no cross)
+            if (region->find(tr->first) != region->end()) { // il primo stato appartiene alla regione
+                if (region->find(tr->second) == region->end()) {//il secondo stato non appartiene alla regione
+                    vec->push_back(tr);
+                }
+            }
+        } else if (type==ENTER_EXIT){
+            //salva transizioni enter (era no cross) - avrei potuto salvare anche le exit è uguale
+            if (region->find(tr->first) == region->end()) { // il primo stato non appartiene alla regione
+                if (region->find(tr->second) != region->end()) {//il secondo stato appartiene alla regione
+                    vec->push_back(tr);
+                }
+            }
+        }
+    }
+
+    return vec;
+
+}
+*/
+
+map<int, map<int, int >*>* Region_generator::get_violations_event(){
+   return event_violations;
+};
+map<int, map<int, vector<Edge*> *>* >* Region_generator::get_violations_trans(){
+    return trans_violations;
+};

@@ -12,22 +12,23 @@ using namespace Utilities;
 class Label_splitting_module {
 public:
   Label_splitting_module(map<int, vector<Region> *> *regions,
-                         map<int, ER> *er_set);
+                         map<int, ER> *er_set,map<int, vector<Region *> *> *middle_set_of_states);
   ~Label_splitting_module();
   set<int> *is_excitation_closed();
-  vector<Region> *
-  do_label_splitting(map<int, vector<Region *> *> *middle_set_of_states,
+    map<int, pair<int,Region*>* > * do_label_splitting(
                      map<int, vector<int> *> *number_of_bad_events,
                      set<int> *events_not_satisfy_EC);
   void split_ts_map(map<int, int> *events_alias,
                     map<int, set<Region *> *> *pre_regions);
 
-    void split_ts_map_2(vector<Region> * candidate_regions, map<int, int>* event_alias, map<int, map<Region*, pair<int, int>*>*>* violations);
+    void split_ts_map_2(map<int, pair<int,Region*>* > * candidate_regions, map<int, int>* event_alias, map<int, map<int, int >*>* event_violations,
+    map<int, map<int, vector<Edge*> *>* >* trans_violations);
 
 private:
   map<int, vector<Region> *> *regions;
   map<int, ER> *ER_set;
   map<int, set<int> *> *regions_intersection;
+    map<int, vector<Region *> *> *middle_set_of_states;
   My_Map* ts;
   // coppia numero eventi che violano la regione e ptr_regione
   // map<int,vector< pair<int,Region*> >*>* number_of_bad_events;

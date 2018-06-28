@@ -26,10 +26,11 @@ const int OK = 0;
 const int NOCROSS = 1;
 const int EXIT_NOCROSS = 2;
 const int ENTER_NOCROSS = 3;
-const int EXIT = 4;
-const int ENTER = 5;
+const int EXIT_OUT = 4;
+const int ENTER_OUT = 5;
 const int ENTER_IN = 6;
 const int EXIT_IN = 7;
+const int ENTER_EXIT=8;
 
 namespace Utilities {
 
