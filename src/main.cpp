@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input3.ts";
+        file = "../test/input.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -42,13 +42,8 @@ int main(int argc, char **argv) {
     auto aliases= new map<int,int>();
     int contatore;
 
-
-    number_of_events = max_label+1;
     do {
-        contatore = 0;
-        for(auto rec: *ts_map){
-            contatore++;
-        }
+        number_of_events = ts_map->size();
         cout << "number_of_events: " << number_of_events << endl;
         cout << "num_events: " << num_events  << endl;
         cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
@@ -119,7 +114,7 @@ int main(int argc, char **argv) {
             candidate_regions = ls->do_label_splitting(
                     rg->get_middle_set_of_states(), rg->get_number_of_bad_events(), events);
             //cout << "___________label splitting ok" << endl;
-            ls->split_ts_map_2(candidate_regions, aliases);
+            ls->split_ts_map_2(candidate_regions, aliases, rg->get_violations());
 
             /*events_not_satify_EC = new set<int>();
             auto pairs = rg->get_trees_init();

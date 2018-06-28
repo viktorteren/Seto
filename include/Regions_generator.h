@@ -32,7 +32,8 @@ public:
   map<int, vector<Region *> *> *get_middle_set_of_states();
   map<int, vector<int> *> *get_number_of_bad_events();
   map<int, int> *get_trees_init();
-    void remove_bigger_regions(Region &new_region,vector<Region>* regions);
+  void remove_bigger_regions(Region &new_region,vector<Region>* regions);
+  map<int, map<Region*, pair<int, int>*>*>* get_violations();
 
 private:
   map<int, ER> *ER_set;
@@ -52,6 +53,10 @@ private:
 
   // indica che l'albero di first inizia con second
   map<int, int> *trees_init;
+  //pair contiene <evento, tipo>
+  map<int, map<Region*, pair<int, int>*>*>* violations;
+  int last_branch;
+  int last_exit_enter;
 
   // ER createER(int event);
   int branch_selection(Edges_list *list, Region *region, int event);
@@ -59,4 +64,5 @@ private:
   void expand(Region *region, int event, bool is_ER, int init_pos);
   void set_middle_set_of_states(map<int, int> *queue_event_index);
   void set_number_of_bad_events(int *event_type, int l, int event);
+
 };
