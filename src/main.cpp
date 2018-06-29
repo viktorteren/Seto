@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input11.ts";
+        file = "../test/input7.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -50,13 +50,13 @@ int main(int argc, char **argv) {
         //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         Region_generator *rg = new Region_generator(number_of_events);
         regions = rg->generate();
-        cout << "DEBUG: regioni dopo generate " << endl;
+        /*cout << "DEBUG: regioni dopo generate " << endl;
         for (auto rec: *regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(reg);
             }
-        }
+        }*/
         vector_regions = copy_map_to_vector(regions);
 
         // cout << "------------------------------------------------------------ "
@@ -68,7 +68,8 @@ int main(int argc, char **argv) {
             Region *region = &(*it);
             rg->remove_bigger_regions(*region, vector_regions);
         }
-/*
+
+        cout << "region dopo l'eliminazioni delle regioni più grandi" << endl;
         for (auto r: *vector_regions) {
             cout << "reg: ";
             println(r);
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
                 cout << "reg: ";
                 println(r);
             }
-        }*/
+        }
 
         int cont = 0;
         double somma = 0;
@@ -177,6 +178,10 @@ int main(int argc, char **argv) {
             pn_module->get_irredundant_regions();
 
     Merging_Minimal_Preregions_module *merging_module = nullptr;
+
+    cout << "regioni irridondanti" << endl;
+    print(*irredundant_regions);
+    //todo: controllare se la ricerca di regioni irridondanti non deve eliminare tutte le regioni di un evento
 
     if (irredundant_regions != nullptr) {
         merging_module = new Merging_Minimal_Preregions_module(

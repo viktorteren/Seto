@@ -37,4 +37,5 @@ private:
   bool is_pre_region(Edges_list *list, Region *region);
   bool is_post_region(Edges_list *list, Region *region);
   map<int, ER> *create_ER_after_splitting(map<int, ER> *, set<int> *);
+    void remove_bigger_regions(Region &new_region, vector<Region> *regions_vector);
 };

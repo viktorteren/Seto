@@ -28,13 +28,13 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
       //cout << "--------------------------------------------------- MINIMUM "
          //     "COST SEARCH --------------------------------------------"
            //<< endl;
-     // int min = minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
+     minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
     //  cout << "min cost: " << min << endl;
-      //cout << "insieme di regioni irridondante: " << endl;
-      /*for (auto region : *irredundant_regions) {
+      cout << "insieme di regioni irridondante: " << endl;
+      for (auto region : *irredundant_regions) {
         // cout << "[" << &(*region)  << "] ";
         println(*region);
-      }*/
+      }
       delete used_regions;
     } else {
     //  cout << "ALL STATES ARE COVERED BY ESSENTIAL REGIONS" << endl;
@@ -312,6 +312,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(
         // non devo salvarmi il risultato migliore dato che è già stato salvato
         // nella chiamata ricorsiva che ha fatto ritornare il costo minore
       }
+
       delete new_states_to_cover;
     }
     new_states_used = used_regions;
@@ -319,6 +320,8 @@ int Place_irredundant_pn_creation_module::minimum_cost_search(
 
   // salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i
   // sottorami di questo nodo per questo sono arrivato al return
+  cout << "regioni irridondanti correnti: ";
+  println(*used_regions);
   computed_paths_cache->insert(*used_regions);
   delete chosen_candidates;
   return new_best_cost;

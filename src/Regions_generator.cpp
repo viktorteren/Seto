@@ -57,7 +57,7 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                     cont++;
                 }
             }
-            if (cont == new_region.size()) {
+            if (cont == new_region.size()  && new_region.size() > 0) {
                 //cout << "eliminazione regione vecchia ";
                 //print(region);
                 //cout << " a causa di: ";

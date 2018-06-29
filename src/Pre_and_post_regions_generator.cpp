@@ -115,7 +115,7 @@ void Pre_and_post_regions_generator::create_pre_regions() {
 
     vector<Region>::iterator it;
     for(auto record: *ts_map){
-        //cout << "evento: " << record.first << endl;
+        cout << "evento: " << record.first << endl;
         for(it=regions->begin(); it!=regions->end();++it){
             Region* region= &(*it);
             if(is_pre_region(&record.second, region)){
@@ -129,8 +129,8 @@ void Pre_and_post_regions_generator::create_pre_regions() {
                 //aggiungo la regione alla mappa
                 if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
                     (*pre_regions)[record.first]->insert(region);
-                    /*cout << "inserisco " << &(*region) << endl;
-                    Utilities::println(*region);*/
+                    cout << "inserisco " << &(*region) << endl;
+                    println(*region);
                 }
             }
         }

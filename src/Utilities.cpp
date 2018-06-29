@@ -480,6 +480,7 @@ void print_ts_dot_file(string file_path){
                             break;
                         }
                     }*/
+                    //todo: sisytemare la mappa di alias invertita
                     if (regions_mapping->find(reg) != regions_mapping->end()) {
                         fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
