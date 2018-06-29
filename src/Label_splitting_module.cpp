@@ -306,7 +306,7 @@ void Label_splitting_module::split_ts_map_2(map<int,pair<int,Region*>*> *candida
     for (it = candidate_regions->begin(); it != candidate_regions->end(); ++it) {
         // cout<<"regione cand"<<endl;
         //println(*(*it).second->second);
-        /*if (best_region == nullptr) {
+        if (best_region == nullptr) {
             best_region = (*it).second->second;
             best_region_root_event = (*it).first;
             best_region_id = (*it).second->first;
@@ -316,12 +316,12 @@ void Label_splitting_module::split_ts_map_2(map<int,pair<int,Region*>*> *candida
                 best_region_root_event = (*it).first;
                 best_region_id = (*it).second->first;
             }
-        }*/
-        //}
+        }
+    }
 
-        best_region = (*it).second->second;
+       /* best_region = (*it).second->second;
         best_region_root_event = (*it).first;
-        best_region_id = (*it).second->first;
+        best_region_id = (*it).second->first;*/
 
         auto regions_vec = Utilities::copy_map_to_vector(regions);
         vector<Region>::iterator it2;
@@ -363,7 +363,12 @@ void Label_splitting_module::split_ts_map_2(map<int,pair<int,Region*>*> *candida
                 // cout << "effettuo uno splitting" << endl;
                 //crea alias e nuove trans poi erase
                 //ts size è il nuovo evento
-                (*event_alias)[total_events] = event;
+                if(event_alias->find(event)!=event_alias->end()){
+                    (*event_alias)[total_events] = event_alias->at(event);
+                }
+                else {
+                    (*event_alias)[total_events] = event;
+                }
                 //  cout << "aggiungo ad aliases: " << total_events << " : " << event << endl;
 
                 auto to_erase = new set<Edge *>();
@@ -382,20 +387,13 @@ void Label_splitting_module::split_ts_map_2(map<int,pair<int,Region*>*> *candida
                 for (auto el : *to_erase) {
                     ts_map->at(event).erase(el);
                 }
-                /*if(ts_map->at(event).size()==0){
-                    /*My_Map::iterator it;
-                    it = ts_map->find(event);
-                    ts_map->erase(it);
-                    ts_map->erase(event);
-                }*/
-
                 delete to_erase;
 
                 break;
             }
         }
         //cout << "ts_map size dopo lo split: " << ts_map->size() << endl;
-    }
+   // }
 
 }
 

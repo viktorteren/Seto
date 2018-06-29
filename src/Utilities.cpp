@@ -449,11 +449,25 @@ void print_ts_dot_file(string file_path){
         //cout << "scrittura transazioni" << endl;
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
+        auto alias_counter=new map<int,int>();
+        for(auto al:*aliases){
+            (*alias_counter)[al.second]=0;
+        }
         for (auto record : *aliases) {
             //fout << "\t" << record.first << ";\n";
+            int label;
+            label=record.second;
+            (*alias_counter)[label]++;
             fout << "\t" << record.first << " [label = \""
-                 << record.second << "'\"];\n";
+                 << label;
+            //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
+            for(int i=0;i<(*alias_counter)[record.second];++i) {
+                fout << "'";
+            }
+            fout<<"\"];\n";
+
         }
+        delete alias_counter;
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
                 fout << "\t" << record.first << ";\n";
@@ -473,14 +487,7 @@ void print_ts_dot_file(string file_path){
                         // println(*reg);
                     //}
                 } else {
-                    /*int label;
-                    for (auto rec : aliases) {
-                        if (rec.first == record.first) {
-                            label = rec.second;
-                            break;
-                        }
-                    }*/
-                    //todo: sisytemare la mappa di alias invertita
+                    //int label=aliases->at(record.first);
                     if (regions_mapping->find(reg) != regions_mapping->end()) {
                         fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
@@ -503,13 +510,7 @@ void print_ts_dot_file(string file_path){
                         // println(*reg);
                     }
                 } else {
-                    /*int label;
-                    for (auto rec : aliases) {
-                        if (rec.second == record.first) {
-                            label = rec.first;
-                            break;
-                        }
-                    }*/
+                    //int label=aliases->at(record.first);
                     if (regions_mapping->find(reg) != regions_mapping->end()) {
                         fout << "\t" << record.first << " -> "
                              << "r" << regions_mapping->at(reg) << ";\n";
@@ -626,10 +627,10 @@ void println(set<Region *> &regions) {
 }
 
 void print(map<int, set<Region *> *> &net) {
-  /*for (auto rec : net) {
+  for (auto rec : net) {
     cout << "event: " << rec.first << endl;
     println(*rec.second);
-  }*/
+  }
 }
 
 set<Region *> *region_pointer_union(set<Region *> *first,

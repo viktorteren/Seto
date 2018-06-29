@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input7.ts";
+        file = "../test/input.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
     vector<Region> *vector_regions;
     map<int, vector<Region> *> *regions;
 
-    bool first = true;
 
     double t_pre_region_gen;
     double t_region_gen;
@@ -42,6 +41,8 @@ int main(int argc, char **argv) {
     auto tStart_partial = clock();
 
     int vec_size=-1;
+
+    bool excitation_closure=false;
     double dim_reg;
     do {
         number_of_events = ts_map->size();
@@ -50,13 +51,13 @@ int main(int argc, char **argv) {
         //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         Region_generator *rg = new Region_generator(number_of_events);
         regions = rg->generate();
-        /*cout << "DEBUG: regioni dopo generate " << endl;
+        cout << "DEBUG: regioni dopo generate " << endl;
         for (auto rec: *regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(reg);
             }
-        }*/
+        }
         vector_regions = copy_map_to_vector(regions);
 
         // cout << "------------------------------------------------------------ "
@@ -75,6 +76,7 @@ int main(int argc, char **argv) {
             println(r);
         }
 
+        cout<<"regioni"<<endl;
         for (auto rec: *regions) {
             cout << "event" << rec.first << endl;
             for (auto r: *rec.second) {
@@ -95,9 +97,9 @@ int main(int argc, char **argv) {
         cout << "numero regioni: " << vector_regions->size() << endl;
 
         //messo per non andare in loop ma non sarei exit closure----da togliere
-        if(vec_size==vector_regions->size() && dim_reg==(somma / cont)) break;
+        /*if(vec_size==vector_regions->size() && dim_reg==(somma / cont)) break;
         vec_size=vector_regions->size();
-        dim_reg=(somma / cont);
+        dim_reg=(somma / cont);*/
 
 
         t_region_gen = t_region_gen + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -105,8 +107,6 @@ int main(int argc, char **argv) {
         tStart_partial = clock();
 
         ls = new Label_splitting_module(regions, rg->get_ER_set(),rg->get_middle_set_of_states());
-
-        bool excitation_closure;
 
         set<int> *events = ls->is_excitation_closed();
 
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
             //delete rg->get_ER_set();
         } else {
             new_ER = rg->get_ER_set();
-            break;
+            //break;
             //pprg = new Pre_and_post_regions_generator(vector_regions);
             new_ER = rg->get_ER_set();
         }
@@ -147,7 +147,6 @@ int main(int argc, char **argv) {
         delete events;
         delete events_not_satify_EC;
 
-        first = false;
         delete rg;
         //number_of_events++;
         cout << "ho finito" << endl;
@@ -156,7 +155,7 @@ int main(int argc, char **argv) {
 
         //if(c==1) break;
     }//end prova do while
-    while (true);
+    while (!excitation_closure);
     cout << "uscito dal ciclo while" << endl;
 
 
@@ -179,11 +178,12 @@ int main(int argc, char **argv) {
 
     Merging_Minimal_Preregions_module *merging_module = nullptr;
 
-    cout << "regioni irridondanti" << endl;
-    print(*irredundant_regions);
-    //todo: controllare se la ricerca di regioni irridondanti non deve eliminare tutte le regioni di un evento
-
     if (irredundant_regions != nullptr) {
+
+        cout << "regioni irridondanti" << endl;
+        print(*irredundant_regions);
+        //todo: controllare se la ricerca di regioni irridondanti non deve eliminare tutte le regioni di un evento
+
         merging_module = new Merging_Minimal_Preregions_module(
                 essential_regions, irredundant_regions, new_ER);
         // print_PN(essential_regions,irredundant_regions);
@@ -213,6 +213,17 @@ int main(int argc, char **argv) {
     for(auto rec: *aliases){
         cout << rec.first << " : " << rec.second << endl;
     }*/
+
+    for(auto al: *aliases){
+        cout<<al.first<<"->"<<al.second<<endl;
+    }
+
+    cout<<"print finale PN"<<endl;
+    cout<<"post regions"<<endl;
+    print(*post_regions);
+    cout<<"pre regions mergerd map"<<endl;
+    print(*merged_map);
+
     print_pn_dot_file(merged_map, post_regions, aliases, file);
     delete ls;
     delete aliases;

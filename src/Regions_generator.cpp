@@ -63,14 +63,14 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                 //cout << " a causa di: ";
                 //println(new_region);
                 // remove old too big region
-                for (auto rec: *regions) {
+                /*for (auto rec: *regions) {
                     vector<Region>::iterator it;
                     for (it = rec.second->begin(); it < rec.second->end(); ++it) {
                         if (are_equals(&region, &*it)) {
                             regions->at(rec.first)->erase(it);
                         }
                     }
-                }
+                }*/
                 regions_vector->erase(regions_vector->begin() + i);
                 i--;
 
