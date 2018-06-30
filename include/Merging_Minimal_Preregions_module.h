@@ -21,8 +21,8 @@ private:
 public:
   map<int, set<Region *> *> *get_merged_preregions_map();
   map<int, set<Region *> *> *get_total_preregions_map();
-  Merging_Minimal_Preregions_module(map<int, set<Region *> *> *,
-                                    map<int, set<Region *> *> *,
-                                    map<int, ER> *);
+  Merging_Minimal_Preregions_module(map<int, set<Region *> *> * essential_regions,
+                                    map<int, set<Region *> *> * irredundant_regions,
+                                    map<int, ER> *new_ER);
   ~Merging_Minimal_Preregions_module();
 };
