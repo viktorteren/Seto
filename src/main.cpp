@@ -95,6 +95,7 @@ int main(int argc, char **argv) {
         cout << "media: " << (somma / cont) << endl;
 
         cout << "numero regioni: " << vector_regions->size() << endl;
+        num_events_after_splitting = vector_regions->size();
 
         //messo per non andare in loop ma non sarei exit closure----da togliere
         /*if(vec_size==vector_regions->size() && dim_reg==(somma / cont)) break;
@@ -184,7 +185,7 @@ int main(int argc, char **argv) {
 
 
     tStart_partial = clock();
-    Pre_and_post_regions_generator *pprg = new Pre_and_post_regions_generator(vector_regions);
+    auto pprg = new Pre_and_post_regions_generator(vector_regions);
     pre_regions = pprg->get_pre_regions();
 
     t_pre_region_gen = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -206,7 +207,8 @@ int main(int argc, char **argv) {
 
         cout << "regioni irridondanti" << endl;
         print(*irredundant_regions);
-        //todo: controllare se la ricerca di regioni irridondanti non deve eliminare tutte le regioni di un evento
+        cout << "regioni essenziali" << endl;
+        print(*essential_regions);
 
         merging_module = new Merging_Minimal_Preregions_module(
                 essential_regions, irredundant_regions, new_ER);
@@ -219,9 +221,14 @@ int main(int argc, char **argv) {
 
     auto merged_map = merging_module->get_merged_preregions_map();
 
+
+
     if (merged_map == nullptr) {
         merged_map = merging_module->get_total_preregions_map();
     }
+
+    /*cout << "merged map nel main: " << endl;
+    print(*merged_map);*/
 
     auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -238,6 +245,7 @@ int main(int argc, char **argv) {
         cout << rec.first << " : " << rec.second << endl;
     }*/
 
+    cout << "aliases: " << endl;
     for(auto al: *aliases){
         cout<<al.first<<"->"<<al.second<<endl;
     }
