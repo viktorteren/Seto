@@ -8,11 +8,11 @@
 
 class Pre_and_post_regions_generator {
 public:
-  Pre_and_post_regions_generator(vector<Region> *reg);
-  Pre_and_post_regions_generator(vector<Region> *reg,
+  explicit Pre_and_post_regions_generator(vector<Region> *reg);
+  /*Pre_and_post_regions_generator(vector<Region> *reg,
                                  vector<Region*> *candidate_regions,
                                  map<int, ER> *Er_set,
-                                 set<int> *events_to_split);
+                                 set<int> *events_to_split);*/
   ~Pre_and_post_regions_generator();
   map<int, set<Region *> *> *get_pre_regions();
   map<int, set<Region *> *> *get_post_regions();

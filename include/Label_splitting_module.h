@@ -28,7 +28,7 @@ private:
   map<int, vector<Region> *> *regions;
   map<int, ER> *ER_set;
   map<int, set<int> *> *regions_intersection;
-    map<int, vector<Region *> *> *middle_set_of_states;
+  map<int, vector<Region *> *> *middle_set_of_states;
   My_Map* ts;
   // coppia numero eventi che violano la regione e ptr_regione
   // map<int,vector< pair<int,Region*> >*>* number_of_bad_events;

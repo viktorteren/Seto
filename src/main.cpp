@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/prova.ts";
+        file = "../test/input7.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -45,11 +45,11 @@ int main(int argc, char **argv) {
     bool excitation_closure=false;
     double dim_reg;
     do {
-        number_of_events = ts_map->size();
+        number_of_events = static_cast<int>(ts_map->size());
         //cout << "number_of_events: " << number_of_events << endl;
         //cout << "num_events: " << num_events  << endl;
         //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
-        Region_generator *rg = new Region_generator(number_of_events);
+        auto rg = new Region_generator(number_of_events);
         regions = rg->generate();
         cout << "DEBUG: regioni dopo generate " << endl;
         for (auto rec: *regions) {
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
         int cont = 0;
         double somma = 0;
-        for (auto reg: *vector_regions) {
+        for (const auto &reg: *vector_regions) {
             cont++;
             somma += reg.size();
         }
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
         cout << "media: " << (somma / cont) << endl;
 
         cout << "numero regioni: " << vector_regions->size() << endl;
-        num_events_after_splitting = vector_regions->size();
+        num_events_after_splitting = static_cast<int>(vector_regions->size());
 
         //messo per non andare in loop ma non sarei exit closure----da togliere
         /*if(vec_size==vector_regions->size() && dim_reg==(somma / cont)) break;
@@ -129,18 +129,13 @@ int main(int argc, char **argv) {
                 events_not_satify_EC->insert(pairs->at(el));
             }*/
 
-            //pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,
-            //rg->get_ER_set(),
-            //events_not_satify_EC);
-            map<int,pair<int,Region*>*>::iterator it;
-            for(it=candidate_regions->begin();it!=candidate_regions->end();++it) {
-               delete it->second;
+            map<int,pair<int,Region*>*>::iterator it2;
+            for(it2=candidate_regions->begin();it2!=candidate_regions->end();++it2) {
+               delete it2->second;
             }
             delete candidate_regions;
 
-            //new_ER = pprg->get_new_ER();
             new_ER = rg->get_ER_set();
-            //delete rg->get_ER_set();
 
             delete vector_regions;
             delete ls;
@@ -175,13 +170,13 @@ int main(int argc, char **argv) {
     cout << "uscito dal ciclo while" << endl;
 
 
-    cout<<"ts map debug:"<<endl;
+    /*cout<<"ts map debug:"<<endl;
     for(auto tr: *ts_map){
         cout<<"evento "<< tr.first<<endl;
         for(auto r: tr.second){
             cout<<r->first<< "->"<< r->second<<endl;
         }
-    }
+    }*/
 
 
     tStart_partial = clock();
@@ -192,7 +187,7 @@ int main(int argc, char **argv) {
 
     tStart_partial = clock();
     // Inizio modulo: ricerca di set irridondanti di regioni
-    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions);
+    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     tStart_partial = clock();
@@ -253,7 +248,7 @@ int main(int argc, char **argv) {
     cout<<"print finale PN"<<endl;
     cout<<"post regions"<<endl;
     print(*post_regions);
-    cout<<"pre regions mergerd map"<<endl;
+    cout<<"pre regions merged map"<<endl;
     print(*merged_map);
 
     print_pn_dot_file(merged_map, post_regions, aliases, file);

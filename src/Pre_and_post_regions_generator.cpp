@@ -11,10 +11,10 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(
   regions = reg;
   pre_regions = new map<int, set<Region *> *>();
   // post_regions= new map < int , set<Region*>* > ();
-  //create_pre_regions(nullptr);
     create_pre_regions();
 }
 
+/*
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(
     vector<Region> *reg, vector<Region*> *candidate_regions,
     map<int, ER> *Er_set, set<int> *events) {
@@ -27,6 +27,7 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(
   //create_pre_regions(candidate_regions);
   er_set = create_ER_after_splitting(Er_set, events);
 }
+*/
 
 Pre_and_post_regions_generator::~Pre_and_post_regions_generator() {
   for (auto el : *pre_regions) {
@@ -115,7 +116,7 @@ void Pre_and_post_regions_generator::create_pre_regions() {
 
     vector<Region>::iterator it;
     for(auto record: *ts_map){
-        cout << "evento: " << record.first << endl;
+        //cout << "evento: " << record.first << endl;
         for(it=regions->begin(); it!=regions->end();++it){
             Region* region= &(*it);
             if(is_pre_region(&record.second, region)){
@@ -129,27 +130,20 @@ void Pre_and_post_regions_generator::create_pre_regions() {
                 //aggiungo la regione alla mappa
                 if((*pre_regions)[record.first]->find(region) == (*pre_regions)[record.first]->end()){
                     (*pre_regions)[record.first]->insert(region);
-                    cout << "inserisco " << &(*region) << endl;
-                    println(*region);
+                    //cout << "inserisco " << &(*region) << endl;
+                    //println(*region);
                 }
             }
         }
 
     }
 
-
-    for (auto record: *pre_regions) {
-
+    /*for (auto record: *pre_regions) {
         cout << "Event: " << record.first << endl;
-
         for (auto region: *record.second) {
-
             println(*region);
-
         }
-    }
-
-
+    }*/
 }
 
 
@@ -322,7 +316,7 @@ map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
   //cout << "ER after splitting" << endl;
   auto er_set = new map<int, ER>();
 
-  map<int, ER>::iterator it = er_set_old->begin();
+  auto it = er_set_old->begin();
 
   for (unsigned int i = 0; i < er_set_old->size(); i++) {
     // se l'evento non è stato splittato l'ER è quello di prima

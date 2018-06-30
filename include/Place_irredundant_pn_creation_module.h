@@ -15,7 +15,7 @@ using namespace std;
 class Place_irredundant_pn_creation_module {
 public:
   explicit Place_irredundant_pn_creation_module(
-      map<int, set<Region *> *> *pre_reg);
+      map<int, set<Region *> *> *pre_reg, map<int, ER> *er_map);
   ~Place_irredundant_pn_creation_module();
 
   map<int, set<Region *> *> *get_irredundant_regions();
@@ -27,6 +27,7 @@ private:
   set<Region *> *essential_regions = nullptr;
   set<Region *> *not_essential_regions = nullptr;
   set<int> *uncovered_states = nullptr;
+  map<int, ER> *er = nullptr;
   map<int, set<Region *> *> *not_essential_regions_map; // mappa: evento ->
                                                         // insieme di regioni
                                                         // non essenziali per
@@ -41,6 +42,7 @@ private:
                // regioni] allora è presente all'interno della cache
   map<int, set<Region *> *> *irredundant_regions_map = nullptr;
   set<int>* events_without_essential_regions = nullptr;
+  set<int>* all_events = nullptr;
 
   void search_not_essential_regions();
   void cost_map_filling();
@@ -53,4 +55,6 @@ private:
   void calculate_irredundant_regions_map();
   set<int>* calculate_events_without_essential_regions();
   bool all_events_have_at_least_one_pre_region(set<Region *> irredundant_regions);
+  bool all_events_have_ec_satisfied(set<Region*> &irredundant_regions);
+  bool ec_satisfied(int event, set<Region*> *events_regions);
 };
