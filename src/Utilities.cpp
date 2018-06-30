@@ -395,9 +395,7 @@ void print_ts_dot_file(string file_path){
         auto initial_reg = initial_regions(pre_regions);
         string output_name = file_name;
         string in_dot_name;
-        string output = "";
-        //cout << "merged map: " << endl;
-        print(*pre_regions);
+        string output;
         // creazione della mappa tra il puntatore alla regione ed un intero univoco
         // corrispondente
         map<Region *, int> *regions_mapping;
@@ -405,6 +403,7 @@ void print_ts_dot_file(string file_path){
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(pre_regions);
+
 
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -438,15 +437,13 @@ void print_ts_dot_file(string file_path){
 
         fout << "}\n";
         // regioni non iniziali
-        //cout << "scrittura regioni non iniziali" << endl;
         fout << "subgraph place {     \n"
                 "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
         for (auto reg : *not_initial_regions) {
             fout << "\tr" << regions_mapping->at(reg) << ";\n";
         }
         fout << "}\n";
-        // transazioni
-        //cout << "scrittura transazioni" << endl;
+        // transazioni (eventi)
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
         auto alias_counter=new map<int,int>();
@@ -468,6 +465,7 @@ void print_ts_dot_file(string file_path){
 
         }
         delete alias_counter;
+        //transazioni (eventi) iniziali
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
                 fout << "\t" << record.first << ";\n";
@@ -475,7 +473,8 @@ void print_ts_dot_file(string file_path){
         }
         fout << "}\n";
 
-        //cout << "scrittura archi" << endl;
+        //archi tra tansazioni e posti (tra eventi e regioni)
+        //regione -> evento
         for (auto record : *pre_regions) {
             for (auto reg : *record.second) {
                 if (record.first < num_events) {
@@ -492,12 +491,13 @@ void print_ts_dot_file(string file_path){
                         fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
                     } else {
-                        //cout << "regions_mapping non contiene ";
-                        //  println(*reg);
+                        cout << "regions_mapping non contiene ";
+                          println(*reg);
                     }
                 }
             }
         }
+        //evento -> regione
         for (auto record : *post_regions) {
             for (auto reg : *record.second) {
                 if (record.first < num_events) {

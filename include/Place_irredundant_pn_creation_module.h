@@ -40,12 +40,17 @@ private:
       nullptr; // se ho già calcolato il costo di un percorso [insieme di
                // regioni] allora è presente all'interno della cache
   map<int, set<Region *> *> *irredundant_regions_map = nullptr;
+  set<int>* events_without_essential_regions = nullptr;
 
   void search_not_essential_regions();
   void cost_map_filling();
   // ritorna il miglior risultato dei rami sottostanti
   int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions,
                           int last_best_cost, int father_cost);
+  int minimum_cost_search_with_label_costraints(set<int> states_to_cover, set<Region *> *used_regions,
+                            int last_best_cost, int father_cost);
   unsigned long region_cost(Region *reg);
   void calculate_irredundant_regions_map();
+  set<int>* calculate_events_without_essential_regions();
+  bool all_events_have_at_least_one_pre_region(set<Region *> irredundant_regions);
 };
