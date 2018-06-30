@@ -16,10 +16,10 @@ Pre_and_post_regions_generator::Pre_and_post_regions_generator(
 }
 
 Pre_and_post_regions_generator::Pre_and_post_regions_generator(
-    vector<Region> *reg, vector<Region> *candidate_regions,
+    vector<Region> *reg, vector<Region*> *candidate_regions,
     map<int, ER> *Er_set, set<int> *events) {
   regions = reg;
-  pre_regions = new map<int, set<Region *> *>();
+  pre_regions = new map<int, set<Region*> *>();
 
   events_to_split = events;
 
