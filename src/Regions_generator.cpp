@@ -38,7 +38,22 @@ Region_generator::~Region_generator() {
     }
     delete number_of_bad_events;
     //delete trees_init;
-    //delete violations;
+
+    //map<int, map<int, int >*>* event_violations;
+    //map<int, map<int, vector<Edge*> *>* >* trans_violations;
+    for (auto elem : *trans_violations) {
+        for(auto elem2: *elem.second){
+            delete elem2.second;
+        }
+        delete elem.second;
+    }
+    delete trans_violations;
+
+    for (auto elem : *event_violations) {
+        delete elem.second;
+    }
+    delete event_violations;
+
 }
 
 
@@ -104,6 +119,10 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
     auto enter_tr= new vector<Edge*>();
     auto exit_tr= new vector<Edge*>();
     auto out_tr= new vector<Edge*>();
+
+    bool out_add=false;
+    bool exit_add=false;
+    bool enter_add=false;
 
     for (auto t : *list) {
         if (region->find(t->first) !=
@@ -172,23 +191,35 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         if(trans_violations->find(event) == trans_violations->end())
             (*trans_violations)[event] = new map< int, vector<Edge*>* >();
 
+        //prima di sovrascrivere il vettore di transazioni bad per la stessa regione elimino quello vecchio se c'era
+        //voglio solo le bad transazione per l'evento che espanderà cioè l'ultimo scritto (quello associato alla regione nella struttura degli eventi)
+        if(trans_violations->at(event)->find(region_id_position)!=trans_violations->at(event)->end()){
+            delete (*(*trans_violations)[event])[region_id_position];
+        }
+
         if (((*trans)[in] > 0 && (*trans)[enter] > 0)) {
             (*(*trans_violations)[event])[region_id_position] = enter_tr;
-            delete out_tr;
-            delete exit_tr;
+            enter_add=true;
+            //delete out_tr;
+            //delete exit_tr;
         }
         else if((*trans)[in] > 0 && (*trans)[exit] > 0) {
             (*(*trans_violations)[event])[region_id_position] = exit_tr;
-            delete out_tr;
-            delete enter_tr;
+            exit_add=true;
+            //delete out_tr;
+            //delete enter_tr;
         }
         else if ( (*trans)[enter] > 0 && (*trans)[exit] > 0){
+            enter_add=true;
             (*(*trans_violations)[event])[region_id_position] = enter_tr;
-            delete out_tr;
-            delete exit_tr;
+            //delete out_tr;
+        //    delete exit_tr;
         }
 
-        //auto vec=search_bad_transactions(last_branch,list,region);
+        if(out_add==false) delete out_tr;
+        if(exit_add==false) delete exit_tr;
+        if(enter_add==false) delete enter_tr;
+
 
 
         if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
@@ -208,14 +239,22 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         // delete struct_states_to_add;
         // delete states_to_add_nocross;
         delete trans;
+
         return NOCROSS;
     } else if ((*trans)[exit] > 0 && (*trans)[out] > 0) { //(exit-out)
         //cout << "return exit_no cross" << endl;
 
         if(trans_violations->find(event) == trans_violations->end())
             (*trans_violations)[event] = new map< int, vector<Edge*>* >();
-        //auto vec=search_bad_transactions(EXIT_OUT,list,region);
+
+        //prima di sovrascrivere il vettore di transazioni bad per la stessa regione elimino quello vecchio se c'era
+        //voglio solo le bad transazione per l'evento che espanderà cioè l'ultimo scritto (quello associato alla regione nella struttura degli eventi)
+        if(trans_violations->at(event)->find(region_id_position)!=trans_violations->at(event)->end()){
+            delete (*(*trans_violations)[event])[region_id_position];
+        }
+
         (*(*trans_violations)[event])[region_id_position] = out_tr;
+
         delete exit_tr;
         delete enter_tr;
 
@@ -241,13 +280,19 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         delete trans;
         //last_exit_enter = EXIT;
         //last_branch = EXIT_IN;
+
         return EXIT_NOCROSS;
     } else if ((*trans)[enter] > 0 && (*trans)[out] > 0) { //(enter-out)
         //cout << "return enter_no cross" << endl;
 
         if(trans_violations->find(event) == trans_violations->end())
             (*trans_violations)[event] = new map< int, vector<Edge*>* >();
-        //auto vec=search_bad_transactions(ENTER_OUT,list,region);
+
+        //prima di sovrascrivere il vettore di transazioni bad per la stessa regione elimino quello vecchio se c'era
+        //voglio solo le bad transazione per l'evento che espanderà cioè l'ultimo scritto (quello associato alla regione nella struttura degli eventi)
+        if(trans_violations->at(event)->find(region_id_position)!=trans_violations->at(event)->end()){
+            delete (*(*trans_violations)[event])[region_id_position];
+        }
         (*(*trans_violations)[event])[region_id_position] = out_tr;
         delete exit_tr;
         delete enter_tr;
@@ -278,6 +323,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         delete trans;
        // last_exit_enter = ENTER;
         //last_branch = ENTER_IN;
+
         return ENTER_NOCROSS;
     } else {
         //cout << "return ok" << endl;
@@ -290,8 +336,12 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         /*        delete struct_states_to_add->states_to_add_exit_or_enter;
                 delete struct_states_to_add->states_to_add_nocross;
                 delete struct_states_to_add;*/
+        delete exit_tr;
+        delete enter_tr;
+        delete out_tr;
 
         delete trans;
+
         return OK;
     }
 }
@@ -447,7 +497,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             //cout << "Regione non aggiunta alla coda(già presente)" << endl;
         }
 
-        vector<Region>::iterator it;
+        /*vector<Region>::iterator it;
         for (it = queue_temp_regions->begin(); it != queue_temp_regions->end();
              it++) {
             Region i = *it;
@@ -455,8 +505,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             // for(auto i: *queue_temp_regions){
             //cout << "coda:" << i_ptr << endl;
             /*for (auto state : i)
-              cout << "stati" << state << endl;*/
-        }
+              cout << "stati" << state << endl;
+        }*/
         // capire gli stati da aggiungere
         // l'operazione sta nella copia della regione puntata, l'espansione di tale
         // regione e il ritorno di una nuova regione più grande

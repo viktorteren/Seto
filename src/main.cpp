@@ -4,14 +4,14 @@
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Regions_generator.h"
-#include <time.h>
+#include <ctime>
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input.ts";
+        file = "../test/prova.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -28,9 +28,9 @@ int main(int argc, char **argv) {
     map<int, vector<Region> *> *regions;
 
 
-    double t_pre_region_gen;
-    double t_region_gen;
-    double t_splitting;
+    double t_pre_region_gen=0.0;
+    double t_region_gen=0.0;
+    double t_splitting=0.0;
     int number_of_events;
     //int c=0;
     auto aliases= new map<int,int>();
@@ -115,7 +115,6 @@ int main(int argc, char **argv) {
 
         set<int> *events_not_satify_EC = nullptr;
 
-
         if (!excitation_closure) {
             //cout << " not exitation closed " << endl;
             candidate_regions = ls->do_label_splitting( rg->get_number_of_bad_events(), events);
@@ -132,11 +131,28 @@ int main(int argc, char **argv) {
             //pprg = new Pre_and_post_regions_generator(vector_regions, candidate_regions,
             //rg->get_ER_set(),
             //events_not_satify_EC);
+            map<int,pair<int,Region*>*>::iterator it;
+            for(it=candidate_regions->begin();it!=candidate_regions->end();++it) {
+               delete it->second;
+            }
             delete candidate_regions;
 
             //new_ER = pprg->get_new_ER();
             new_ER = rg->get_ER_set();
             //delete rg->get_ER_set();
+
+            delete vector_regions;
+            delete ls;
+
+            for (auto el : *new_ER)
+                delete el.second;
+            delete new_ER;
+
+            for(auto reg_vec: *regions) {
+                delete reg_vec.second;
+            }
+            delete regions;
+
         } else {
             new_ER = rg->get_ER_set();
             //break;
@@ -153,10 +169,18 @@ int main(int argc, char **argv) {
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-        //if(c==1) break;
     }//end prova do while
     while (!excitation_closure);
     cout << "uscito dal ciclo while" << endl;
+
+
+    cout<<"ts map debug:"<<endl;
+    for(auto tr: *ts_map){
+        cout<<"evento "<< tr.first<<endl;
+        for(auto r: tr.second){
+            cout<<r->first<< "->"<< r->second<<endl;
+        }
+    }
 
 
     tStart_partial = clock();
@@ -233,7 +257,6 @@ int main(int argc, char **argv) {
         delete record.second;
     }
     delete regions;
-
     delete vector_regions;
 
     // cout << "fine ricerca " << endl;
@@ -243,14 +266,11 @@ int main(int argc, char **argv) {
 
     delete merging_module;
 
-    //int c = 0;
     for (auto el : *ts_map) {
         for (auto p : el.second) {
             delete p;
-            // c++;
         }
     }
-    // cout<<"C: "<<c<<endl;
     delete ts_map;
 
     printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
