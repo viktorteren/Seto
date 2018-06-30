@@ -8,10 +8,11 @@
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
-    string file;
+    string file,file_name;
     if (argc == 1) {
         // default input
-        file = "../test/prova.ts";
+        file_name="input_splitting.ts";
+        file = "../test/"+file_name;
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -173,6 +174,7 @@ int main(int argc, char **argv) {
     while (!excitation_closure);
     cout << "uscito dal ciclo while" << endl;
 
+    print_ts_dot_file(file,aliases);
 
     cout<<"ts map debug:"<<endl;
     for(auto tr: *ts_map){

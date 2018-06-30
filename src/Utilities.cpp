@@ -346,7 +346,7 @@ bool contains(set<Region *> *set, Region *region) {
   return false;
 }
 
-void print_ts_dot_file(string file_path){
+void print_ts_dot_file(string file_path,map<int, int> *aliases){
     //cout << "CREATION OF INPUT .DOT FILE" << endl;
     string output_name = file_path;
     string in_name;
@@ -364,7 +364,13 @@ void print_ts_dot_file(string file_path){
     in_name = output_name.substr(lower + 1, output_name.size());
     // cout << "out name: " << in_dot_name << endl;
 
-    output_name = output_name + ".dot";
+    if(aliases!= nullptr){
+        in_name+="_ECTS";
+        output_name = output_name + "_ECTS.dot";
+    }
+    else {
+        output_name = output_name + ".dot";
+    }
 
     ofstream fout(output_name);
     fout << "digraph ";
@@ -378,12 +384,51 @@ void print_ts_dot_file(string file_path){
     fout << "\tnode [shape = circle];\n";
     fout << "\t_nil -> ";
     fout << initial_state << ";\n";
+
+    map<int,int>* alias_counter= nullptr;
+    map<int,int>* alias_counter_original= nullptr;
+    if (aliases != nullptr) {
+        alias_counter = new map<int, int>();
+        alias_counter_original = new map<int, int>();
+        for (auto al:*aliases) {
+            (*alias_counter)[al.second] = 0;
+            (*alias_counter_original)[al.second] = 0;
+        }
+        for (auto al:*aliases) {
+            (*alias_counter)[al.second]++;
+            (*alias_counter_original)[al.second]++;
+        }
+
+        cout<<"alias counter"<<endl;
+        for(auto r: *alias_counter)
+            cout<<r.first<<"->"<<r.second<<endl;
+
+    }
+
     for (auto rec : *ts_map) {
+        //levento è un alias
+        int label;
+        string to_add="";
+        if(aliases!= nullptr && aliases->find(rec.first)!=aliases->end()){
+            label=aliases->at(rec.first);
+            for(int i=0;i<(*alias_counter_original)[label]-(*alias_counter)[label]+1;++i){
+                to_add+="'";
+            }
+            (*alias_counter)[label]--;
+            cout<<" ev "<<rec.first<<"to add "<<to_add<<endl;
+        }
+        else {
+            label=rec.first;
+        }
         for (auto edge : rec.second) {
             fout << "\t" << edge->first << "->" << edge->second << "[label=\""
-                 << rec.first << "\"];\n";
+                 << label << to_add <<"\"];\n";
         }
+
     }
+
+    if(alias_counter!= nullptr) delete alias_counter;
+    if(alias_counter_original!= nullptr) delete alias_counter_original;
 
     fout << "}\n";
     fout.close();

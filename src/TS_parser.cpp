@@ -17,14 +17,14 @@ void TS_parser::parse(string file) {
 
   ifstream fin(file);
   if (!fin) {
-    cout << "The file wasn't found." << endl;
+    cout << "File non trovato." << endl;
     exit(0);
   }
 
   // il file è nel nostro formato ts
   if ((file[file.size() - 2]) == 't' && (file[file.size() - 1] == 's')) {
     parse_TS(fin);
-    print_ts_dot_file(file);
+    print_ts_dot_file(file, nullptr);
   }
   // il file è nel formato dot
   else if ((file[file.size() - 3] == 'd' && (file[file.size() - 2]) == 'o' &&
@@ -34,9 +34,9 @@ void TS_parser::parse(string file) {
   else if ((file[file.size() - 3] == 'a' && (file[file.size() - 2]) == 'p' &&
             (file[file.size() - 1] == 't'))) {
       parse_APT(fin);
-      print_ts_dot_file(file);
+      print_ts_dot_file(file, nullptr);
   }else {
-    cout << "The file extension is not supported" << endl;
+    cout << "Estensione non supportata" << endl;
     exit(0);
   }
 
