@@ -81,7 +81,7 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                 /*for (auto rec: *regions) {
                     vector<Region>::iterator it;
                     for (it = rec.second->begin(); it < rec.second->end(); ++it) {
-                        if (are_equals(&region, &*it)) {
+                        if (are_equal(&region, &*it)) {
                             regions->at(rec.first)->erase(it);
                         }
                     }

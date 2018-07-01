@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
             rg->remove_bigger_regions(*region, vector_regions);
         }
 
-        cout << "region dopo l'eliminazioni delle regioni più grandi" << endl;
+        /*cout << "region dopo l'eliminazioni delle regioni più grandi" << endl;
         for (auto r: *vector_regions) {
             cout << "reg: ";
             println(r);
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
                 cout << "reg: ";
                 println(r);
             }
-        }
+        }*/
 
         int cont = 0;
         double somma = 0;
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 
         delete rg;
         //number_of_events++;
-        cout << "ho finito" << endl;
+        //cout << "ho finito" << endl;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -198,12 +198,14 @@ int main(int argc, char **argv) {
 
     Merging_Minimal_Preregions_module *merging_module = nullptr;
 
+    cout << "pre-regioni essenziali" << endl;
+    print(*essential_regions);
+
     if (irredundant_regions != nullptr) {
 
-        cout << "regioni irridondanti" << endl;
+        cout << "pre-regioni irridondanti" << endl;
         print(*irredundant_regions);
-        cout << "regioni essenziali" << endl;
-        print(*essential_regions);
+
 
         merging_module = new Merging_Minimal_Preregions_module(
                 essential_regions, irredundant_regions, new_ER);
@@ -216,10 +218,16 @@ int main(int argc, char **argv) {
 
     auto merged_map = merging_module->get_merged_preregions_map();
 
+    cout << "not merged pre-regions: " << endl;
+    print(*merging_module->get_total_preregions_map());
 
 
     if (merged_map == nullptr) {
         merged_map = merging_module->get_total_preregions_map();
+    }
+    else{
+        cout << "merged pre-regions: " << endl;
+        print(*merging_module->get_merged_preregions_map());
     }
 
     /*cout << "merged map nel main: " << endl;
@@ -240,16 +248,16 @@ int main(int argc, char **argv) {
         cout << rec.first << " : " << rec.second << endl;
     }*/
 
-    cout << "aliases: " << endl;
+    /*cout << "aliases: " << endl;
     for(auto al: *aliases){
         cout<<al.first<<"->"<<al.second<<endl;
-    }
+    }*/
 
-    cout<<"print finale PN"<<endl;
-    cout<<"post regions"<<endl;
-    print(*post_regions);
-    cout<<"pre regions merged map"<<endl;
-    print(*merged_map);
+    //cout<<"print finale PN"<<endl;
+    //cout<<"post regions"<<endl;
+    //print(*post_regions);
+    //cout<<"pre regions merged map"<<endl;
+    //print(*merged_map);
 
     print_pn_dot_file(merged_map, post_regions, aliases, file);
     delete ls;

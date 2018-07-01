@@ -46,9 +46,7 @@ private:
 
   void search_not_essential_regions();
   void cost_map_filling();
-  // ritorna il miglior risultato dei rami sottostanti
-  int minimum_cost_search(set<int> states_to_cover, set<Region *> *used_regions,
-                          int last_best_cost, int father_cost);
+  // ritorna il miglior risultato dei rami sottostanti controllando se è soddiisfatta la condizione di excitation closure
   int minimum_cost_search_with_label_costraints(set<int> states_to_cover, set<Region *> *used_regions,
                             int last_best_cost, int father_cost);
   unsigned long region_cost(Region *reg);

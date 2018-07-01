@@ -41,7 +41,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
         auto intersec = regions_intersection->at(event);
         //cout << "Intersec at" << event << " :" << endl;
         //println(*intersec);
-        if (!(are_equals(er, intersec))) {
+        if (!(are_equal(er, intersec))) {
             // cout << "regione delle'evento:" << event;
             events_not_satisfy_EC->insert(event);
             // res=false;

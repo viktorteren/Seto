@@ -321,7 +321,7 @@ bool is_bigger_than_or_equal_to(Region *region, set<int> *intersection) {
   return true;
 }
 
-bool are_equals(Region *region1, Region *region2) {
+bool are_equal(Region *region1, Region *region2) {
 
   if (region1->size() != region2->size())
     return false;
@@ -338,7 +338,7 @@ bool are_equals(Region *region1, Region *region2) {
 bool contains(set<Region *> *set, Region *region) {
 
   for (auto elem : *set) {
-    if (are_equals(elem, region)) {
+    if (are_equal(elem, region)) {
       return true;
     }
   }
@@ -647,7 +647,7 @@ Region *get_ptr_into(set<Region *> *set, Region *region) {
   for (it = set->begin(); it != set->end(); ++it) {
     auto elem = *it;
     // for(auto elem:*set){
-    if (are_equals(elem, region)) {
+    if (are_equal(elem, region)) {
       return *it;
     }
   }

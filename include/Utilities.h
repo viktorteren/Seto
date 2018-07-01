@@ -59,7 +59,7 @@ void print_place(Region &region);
 void print_transactions();
 bool is_bigger_than(Region *region, set<int> *region2);
 bool is_bigger_than_or_equal_to(Region *, set<int> *);
-bool are_equals(Region *, Region *);
+bool are_equal(Region *r1, Region *r2);
 bool contains(set<Region *> *, Region *);
 void print_ts_dot_file(string file_path,map<int, int> *aliases); //-> forse non serve se leggiamo già i file in .dot
 void print_pn_dot_file(map<int, set<Region *> *> *net,

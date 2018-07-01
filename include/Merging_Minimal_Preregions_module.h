@@ -3,9 +3,12 @@
 //
 #pragma once
 
-#include "Utilities.h"
 #include <algorithm>
+#include "Utilities.h"
+#include "../include/Pre_and_post_regions_generator.h"
+
 using namespace std;
+using namespace Utilities;
 
 class Merging_Minimal_Preregions_module {
 

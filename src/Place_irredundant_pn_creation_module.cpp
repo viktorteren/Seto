@@ -26,7 +26,8 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
     if (!not_essential_regions->empty()) {
         cost_map_filling();
         uncovered_states = search_not_covered_states_per_event();
-        if (!uncovered_states->empty()) {
+        auto empty_set = new set<Region *>();
+        if (!uncovered_states->empty() || !all_events_have_ec_satisfied(*empty_set)) {
             set<int> states_to_cover = *uncovered_states;
             delete uncovered_states;
             auto used_regions = new set<Region *>();
@@ -46,6 +47,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
         } else {
             //  cout << "ALL STATES ARE COVERED BY ESSENTIAL REGIONS" << endl;
         }
+        delete empty_set;
 
     } else {
         // cout << "ALL REGIONS ARE ESSENTIAL" << endl;
@@ -139,13 +141,13 @@ bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Regi
         if(!ec_satisfied(ev, regions_of_ev)){
             delete regions_of_ev;
             delete candidate_set_of_regions;
-            cout << "return false all ec satisfied" << endl;
+            //cout << "return false all ec satisfied" << endl;
             return false;
         }
         delete regions_of_ev;
     }
     delete candidate_set_of_regions;
-    cout << "return true all ec satiisfied" << endl;
+    //cout << "return true all ec satisfied" << endl;
     return true;
 }
 
@@ -289,150 +291,6 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
     return total_uncovered_states;
 }
 
-int Place_irredundant_pn_creation_module::minimum_cost_search(
-        set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost,
-        int father_cost) {
-    // per l'insieme degli stati non coperti devo trovare le possibili coperture
-    // irridondanti
-    // trovare quali insiemi di regioni non essenziali
-
-    // metto insieme gli stati non coperti senza fare la divisione per evento
-    // e aggiungo regioni non essenziali che coprono più stati possibili tra
-    // quelli non coperti
-    // mi fermo se supero il vecchio risultato migliore -> alla fine  l'insieme è
-    // sicuramente irridondante
-
-    Region *candidate;
-    int cover_of_candidate;
-    int temp_cover;
-    // coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme
-    // delle regioni del figlio
-    int cost_of_candidate;
-    set<int> *new_states_to_cover;
-    set<Region *> *new_states_used = used_regions;
-    auto chosen_candidates = new set<Region *>();
-    set<Region *> *temp_aggregation;
-    int new_best_cost =
-            last_best_cost; // uno dei sotto-rami potrebbe aver migliorato il
-    // risultato, di conseguenza devo aggiornare la variabile
-    // e non utilizzare il parametro in ingresso alla funzione
-    // finchè ci sono candidati che aumentano la copertura
-    while (true) {
-        cover_of_candidate = 0;
-        // scelta del prossimo candidato
-        for (auto region : *not_essential_regions) {
-            /*if(used_regions->size() == 0){
-                    cout << "	---candidate: ";
-                    println(*region);
-            }*/
-            // la regione nuova non può essere un vecchio candidato
-            if (chosen_candidates->find(region) == chosen_candidates->end()) {
-                // controllo se l'insieme con il candidato è già stato calcolato o no
-                // [faccio prima questo controllo dato che lo ritengo più leggero
-                // dell'intersezione nella condizione successiva]
-                temp_aggregation = new set<Region *>(*used_regions);
-                temp_aggregation->insert(region);
-                if (computed_paths_cache->find(*temp_aggregation) ==
-                    computed_paths_cache->end()) {
-                    // devo vedere la dimensione dell'intersezione tra gli stati da
-                    // coprire e la regione
-                    auto cover = regions_intersection(&states_to_cover, region);
-                    temp_cover = cover->size();
-                    delete cover;
-                    if (temp_cover > cover_of_candidate) {
-                        // cout << "candidato nuovo" << endl;
-                        cover_of_candidate = temp_cover;
-                        candidate = region;
-                    }
-                } else {
-                    // cout << "elemento già presente nella cache" << endl;
-                }
-                // ogni volta che entro nell'if alloco un nuovo spazio di conseguenza
-                // devo deallocarlo
-                delete temp_aggregation;
-            }
-        }
-        // cout << "cover of candidate: " << cover_of_candidate << endl;
-
-        // non posso migliorare la copertura
-        if (cover_of_candidate == 0)
-            break;
-        else {
-            // salvo il nuovo candidato
-            chosen_candidates->insert(candidate);
-        }
-        cost_of_candidate = (*cost_map)[&(*candidate)];
-        // cout << "cost of candidate: " << cost_of_candidate << endl;
-        // cout << "candidate cover: " << cover_of_candidate << endl;
-        // non devo fare una chiamata ricorsiva se il costo è troppo grande oppure
-        // se ho completato la copertura
-
-        // non potrò trovare una soluzione migliore con il seguente candidato
-        int current_cost = cost_of_candidate + father_cost;
-        new_states_used->insert(candidate);
-
-        /*cout << "prova con: ";
-        for(auto r: new_states_used){
-                print(*r);
-                cout << "|||";
-        }
-        cout << endl;*/
-        if (current_cost >= new_best_cost) {
-            // salvo il percorso nella cache per non ripeterlo
-            computed_paths_cache->insert(*new_states_used);
-            // break; -> non chiamare la chiamata ricorsiva ma non fare nemmeno break
-            // dato che i fratelli con copertura minore possono avere costo più basso
-        }
-            // ho completato la copertura ed è meglio di quella precedente
-        else if (states_to_cover.size() - cover_of_candidate == 0) {
-
-            new_best_cost = current_cost;
-            /*cout << "trovato nuovo minimo: " << new_best_cost << endl;
-            for(auto r: new_states_used){
-                    println(*r);
-            }
-            cout << "aggiungendo ";
-            println(*candidate);
-            cout << "costo precedente era: " << father_cost << endl;*/
-
-            // salvo il percorso nella cache per non ripeterlo
-            computed_paths_cache->insert(*new_states_used);
-
-            // dealloco lo spazio vecchio per allocarne uno nuovo
-            delete irredundant_regions;
-            irredundant_regions = new set<Region *>(*new_states_used);
-        }
-            // non ho completato la copertura e posso ancora trovare una soluzione
-            // migliore
-        else {
-            // essedo già stato scelto il candidato e sapendo che devo fare la
-            // chiamata ricorsiva devo calcolarmi il nuovo insieme di stati da coprire
-            new_states_to_cover = region_difference(states_to_cover, *candidate);
-
-            // chiamata ricorsiva per espandere ulteriormente la copertura con il
-            // candidato scelto
-            int cost = minimum_cost_search(*new_states_to_cover, new_states_used,
-                                           new_best_cost, current_cost);
-            if (cost < new_best_cost) {
-                new_best_cost = cost;
-                // non devo salvarmi il risultato migliore dato che è già stato salvato
-                // nella chiamata ricorsiva che ha fatto ritornare il costo minore
-            }
-
-            delete new_states_to_cover;
-        }
-        new_states_used = used_regions;
-    }
-
-    // salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i
-    // sottorami di questo nodo per questo sono arrivato al return
-    //cout << "regioni irridondanti correnti: ";
-    //println(*used_regions);
-    computed_paths_cache->insert(*used_regions);
-    delete chosen_candidates;
-    return new_best_cost;
-}
-
 int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costraints(
         set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost,
         int father_cost) {
@@ -461,7 +319,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     // risultato, di conseguenza devo aggiornare la variabile
     // e non utilizzare il parametro in ingresso alla funzione
     // finchè ci sono candidati che aumentano la copertura
-    while (true) {
         cover_of_candidate = 0;
         // scelta del prossimo candidato
         for (auto region : *not_essential_regions) {
@@ -498,13 +355,10 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
         }
         // cout << "cover of candidate: " << cover_of_candidate << endl;
 
-        // non posso migliorare la copertura e ho la condizione di ec soddisfatta
-        if (cover_of_candidate == 0 && all_events_have_ec_satisfied(*new_states_used) )
-            break;
-        else {
-            // salvo il nuovo candidato
-            chosen_candidates->insert(candidate);
-        }
+
+        // salvo il nuovo candidato
+        chosen_candidates->insert(candidate);
+
         cost_of_candidate = (*cost_map)[&(*candidate)];
         // cout << "cost of candidate: " << cost_of_candidate << endl;
         // cout << "candidate cover: " << cover_of_candidate << endl;
@@ -529,7 +383,9 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
                //potrei avere degli insiemi di regioni che non fanno soddisfare la condizione di excitation closure
                // per degli eventi, in quel caso la soluzione non è valida
                 if(all_events_have_ec_satisfied(*new_states_used)){
+
                     new_best_cost = current_cost;
+                    //cout << "new best cost = " << new_best_cost << endl;
                     /*cout << "trovato nuovo minimo: " << new_best_cost << endl;
                     for(auto r: new_states_used){
                             println(*r);
@@ -548,6 +404,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
                     int cost = minimum_cost_search_with_label_costraints(states_to_cover, new_states_used,
                                                                          new_best_cost, current_cost);
                     if (cost < new_best_cost) {
+                        //cout << "new best cost:" << new_best_cost << " -> " << cost << endl;
                         new_best_cost = cost;
                         // non devo salvarmi il risultato migliore dato che è già stato salvato
                         // nella chiamata ricorsiva che ha fatto ritornare il costo minore
@@ -573,11 +430,10 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
                 // non devo salvarmi il risultato migliore dato che è già stato salvato
                 // nella chiamata ricorsiva che ha fatto ritornare il costo minore
             }
-
             delete new_states_to_cover;
         }
         new_states_used = used_regions;
-    }
+
 
     // salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i
     // sottorami di questo nodo per questo sono arrivato al return
@@ -585,7 +441,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     //println(*used_regions);
     computed_paths_cache->insert(*used_regions);
     delete chosen_candidates;
-    cout << "new best cost: " << new_best_cost << endl;
+    //cout << "new best cost: " << new_best_cost << endl;
     return new_best_cost;
 }
 
