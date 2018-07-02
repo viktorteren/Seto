@@ -15,7 +15,7 @@ Essential_regions_search::~Essential_regions_search() {
 
 set<Region *> *Essential_regions_search::search() {
 
-    //cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
+    cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
      *  unione delle pre regioni per creare un insieme di tutti gli stati
@@ -94,14 +94,14 @@ set<Region *> *Essential_regions_search::search() {
 
     //print per debug
 
-    /*cout << "prove essential regions:" << endl;
+    cout << "prove essential regions:" << endl;
     for(auto rec: *essential_map){
     	cout << "set di regioni dell'evento: " << rec.first << endl;
     	for(auto reg: *rec.second){
     		println(*reg);
     	}
     }
-
+    /*
     cout << "Regioni essenziali: " << endl;
     for (auto reg: *essential_regions) {
     	println(*reg);

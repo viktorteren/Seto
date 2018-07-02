@@ -101,9 +101,17 @@ set<int> *Place_irredundant_pn_creation_module::calculate_events_without_essenti
 
 bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Region *> &irredundant_regions) {
     //per ogni evento che non ha regioni essenziali
+
     auto candidate_set_of_regions = new set<Region *>(irredundant_regions);
     //unione tra le regioni essenziali e quelle irridondanti
     candidate_set_of_regions->insert(essential_regions->begin(), essential_regions->end());
+    if(irredundant_regions.size() == 19){
+        cout << "irredundant regions try:" << endl;
+        println(irredundant_regions);
+        cout << "candidate set of regions: " << endl;
+        println(*candidate_set_of_regions);
+    }
+
     for (auto ev: *all_events) {
         //vedo quali regioni dell'evento ev sono rimaste
         auto regions_of_ev = new set<Region *>();
@@ -116,11 +124,13 @@ bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Regi
         if (!ec_satisfied(ev, regions_of_ev)) {
             delete regions_of_ev;
             delete candidate_set_of_regions;
-            cout << "not all ec satisfied: ev = " << ev << endl;
-            cout << "regions of " << ev << " : ";
-            println(*regions_of_ev);
-            cout << "ER of " << ev << ":";
-            println(*er->at(ev));
+            if(irredundant_regions.size() == 19){
+                cout << "not all ec satisfied: ev = " << ev << endl;
+                cout << "regions of " << ev << " : ";
+                println(*regions_of_ev);
+                cout << "ER of " << ev << ": ";
+                println(*er->at(ev));
+            }
             return false;
         }
         delete regions_of_ev;

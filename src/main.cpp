@@ -45,19 +45,20 @@ int main(int argc, char **argv) {
     bool excitation_closure=false;
     double dim_reg;
     do {
+        //todo: calcolare excitation closure sulle pre-regioni
         number_of_events = static_cast<int>(ts_map->size());
         //cout << "number_of_events: " << number_of_events << endl;
         //cout << "num_events: " << num_events  << endl;
         //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         auto rg = new Region_generator(number_of_events);
         regions = rg->generate();
-        cout << "DEBUG: regioni dopo generate " << endl;
+        /*cout << "DEBUG: regioni dopo generate " << endl;
         for (auto rec: *regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(reg);
             }
-        }
+        }*/
         vector_regions = copy_map_to_vector(regions);
 
         // cout << "------------------------------------------------------------ "
@@ -168,6 +169,14 @@ int main(int argc, char **argv) {
     }//end prova do while
     while (!excitation_closure);
     cout << "uscito dal ciclo while" << endl;
+
+    cout << "preregioni dopo il label splitting:" << endl;
+    for (auto rec: *regions) {
+        cout << "evento: " << rec.first << endl;
+        for (auto reg: *rec.second) {
+            println(reg);
+        }
+    }
 
 
     /*cout<<"ts map debug:"<<endl;
