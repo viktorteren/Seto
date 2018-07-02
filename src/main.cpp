@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input7.ts";
+        file = "../test/input14.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -198,13 +198,13 @@ int main(int argc, char **argv) {
 
     Merging_Minimal_Preregions_module *merging_module = nullptr;
 
-    cout << "pre-regioni essenziali" << endl;
-    print(*essential_regions);
+    //cout << "pre-regioni essenziali" << endl;
+    //print(*essential_regions);
 
     if (irredundant_regions != nullptr) {
 
-        cout << "pre-regioni irridondanti" << endl;
-        print(*irredundant_regions);
+        //cout << "pre-regioni irridondanti" << endl;
+        //print(*irredundant_regions);
 
 
         merging_module = new Merging_Minimal_Preregions_module(
@@ -225,12 +225,11 @@ int main(int argc, char **argv) {
     if (merged_map == nullptr) {
         merged_map = merging_module->get_total_preregions_map();
     }
-    else{
-        cout << "merged pre-regions: " << endl;
-        //toodo: modificare total in merged
-        merged_map = merging_module->get_total_preregions_map();
-        print(*merging_module->get_total_preregions_map());
-    }
+
+    //cout << "merged pre-regions: " << endl;
+    //print(*merging_module->get_merged_preregions_map());
+
+
 
     /*cout << "merged map nel main: " << endl;
     print(*merged_map);*/

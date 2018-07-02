@@ -156,10 +156,10 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
             auto reg1 = *it;
             auto reg2 = *it2;
 
-             /*cout << "r1: ";
-             println(*reg1);
-             cout << "r2: ";
-             println(*reg2);*/
+            /*cout << "r1: ";
+            println(*reg1);
+            cout << "r2: ";
+            println(*reg2);*/
             cont_preregions = 0;
             // le regioni sono disgiunte!!!
             auto inter = regions_intersection(reg1, reg2);
@@ -169,7 +169,19 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
 
                     reg_union = regions_union(reg1, reg2);
 
-                    if(reg_union->size() != num_states) {
+                    auto prova = new Region();
+                    prova->insert(0);
+                    prova->insert(8);
+                    auto prova2 = new Region();
+                    prova2->insert(1);
+                    prova2->insert(3);
+                    prova2->insert(4);
+                    prova2->insert(7);
+                    if(are_equal(reg1, prova) && are_equal(reg2, prova2)){
+                        cout << "" << endl;
+                    }
+
+                    if (reg_union->size() != num_states) {
                         bool ec_and_pre_region = false;
 
 
@@ -200,50 +212,49 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             }
                             // inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
                             if (event_contains_reg) {
-                                //if(Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
-                                tmp_set->insert(reg_union);
+                                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
+                                    tmp_set->insert(reg_union);
 
-                                // tmp_set->erase(tmp_set->find(reg1));
-                                // tmp_set->erase(tmp_set->find(reg2));
-                                // tmp_set->insert(reg_union);
-                                /*if(event == 4){
-                                    cout << "event 0" << endl;
-                                    println(*tmp_set);
-                                }*/
+                                    // tmp_set->erase(tmp_set->find(reg1));
+                                    // tmp_set->erase(tmp_set->find(reg2));
+                                    // tmp_set->insert(reg_union);
+                                    /*if(event == 4){
+                                        cout << "event 0" << endl;
+                                        println(*tmp_set);
+                                    }*/
 
-                                auto intersection = regions_intersection(tmp_set);
-                                auto er = ER_map->at(event);
+                                    auto intersection = regions_intersection(tmp_set);
+                                    auto er = ER_map->at(event);
 
-                                /* cout << "intersection:" << endl;
-                                 println(*intersection);*/
+                                    /* cout << "intersection:" << endl;
+                                     println(*intersection);*/
 
-                                // cout << "er:" << endl;
-                                //println(*er);
+                                    // cout << "er:" << endl;
+                                    //println(*er);
 
-                                // controlla ec ER(ev)==intersec(prereg(ev))
-                                ec_and_pre_region = are_equal(intersection, er);
-                                //cout << "ec and pre region = " << ec_and_pre_region << endl;
+                                    // controlla ec ER(ev)==intersec(prereg(ev))
+                                    ec_and_pre_region = are_equal(intersection, er);
+                                    //cout << "ec and pre region = " << ec_and_pre_region << endl;
 
-                                delete intersection;
+                                    delete intersection;
 
-                                // provo altre 2 regioni perchè per un evento non vale la EC
-                                if (!ec_and_pre_region) {
-                                    // cout << "BREAK l'evento non soddisfa EC-provo altre regioni"
-                                    //<< endl;
-                                    delete tmp_set;
-                                    delete reg_union;
-                                    break;
+                                    // provo altre 2 regioni perchè per un evento non vale la EC
+                                    if (!ec_and_pre_region) {
+                                        // cout << "BREAK l'evento non soddisfa EC-provo altre regioni"
+                                        //<< endl;
+                                        delete tmp_set;
+                                        delete reg_union;
+                                        break;
+                                    } else {
+                                        delete (*tmp_map)[event];
+                                        (*tmp_map)[event] = tmp_set;
+                                        union_ptr = reg_union;
+                                    }
                                 } else {
-                                    delete (*tmp_map)[event];
-                                    (*tmp_map)[event] = tmp_set;
-                                    union_ptr = reg_union;
+                                    ec_and_pre_region = false;
+                                    delete tmp_set;
+                                    break;
                                 }
-                                //}
-                                //else{
-                                //   ec_and_pre_region = false;
-                                //   delete tmp_set;
-                                //    break;
-                                // }
                             } else {
                                 delete tmp_set;
                                 // cout << "event:" << event << endl;
@@ -257,8 +268,8 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                         if (ec_and_pre_region) {
                             delete preregions_set;
                             cout << "merging ok" << endl;
-                            //println(*reg1);
-                            //println(*reg2);
+                            println(*reg1);
+                            println(*reg2);
 
                             /* for (auto el : *tmp_map) {
                               // cout << "ev: " << el.first << endl;
