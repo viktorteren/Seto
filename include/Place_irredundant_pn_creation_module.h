@@ -47,11 +47,10 @@ private:
   void cost_map_filling();
   // ritorna il miglior risultato dei rami sottostanti
   int minimum_cost_search_with_label_costraints(set<int> states_to_cover, set<Region *> *used_regions,
-                            int last_best_cost, int father_cost);
+                            int last_best_cost, int father_cost, int level);
   unsigned long region_cost(Region *reg);
   void calculate_irredundant_regions_map();
   set<int>* calculate_events_without_essential_regions();
-  bool all_events_have_at_least_one_pre_region(set<Region *> irredundant_regions);
-    bool all_events_have_ec_satisfied(set<Region*> &irredundant_regions);
-    bool ec_satisfied(int event, set<Region*> *events_regions);
+  bool all_events_have_ec_satisfied(set<Region*> &irredundant_regions);
+  bool ec_satisfied(int event, set<Region*> *events_regions);
 };

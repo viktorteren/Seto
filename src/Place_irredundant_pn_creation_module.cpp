@@ -25,6 +25,8 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
     er = er_map;
     if (!not_essential_regions->empty()) {
         cost_map_filling();
+        cout << "num regioni non essenziali: " << not_essential_regions->size() << endl;
+        //println(*not_essential_regions);
         uncovered_states = search_not_covered_states_per_event();
         if (!uncovered_states->empty()) {
             set<int> states_to_cover = *uncovered_states;
@@ -35,7 +37,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             //     "COST SEARCH --------------------------------------------"
             //<< endl;
             //minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
-            minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0);
+            minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
             /*cout << "insieme di regioni irridondante: " << endl;
             for (auto region : *irredundant_regions) {
@@ -97,31 +99,6 @@ set<int> *Place_irredundant_pn_creation_module::calculate_events_without_essenti
     return events;
 }
 
-bool Place_irredundant_pn_creation_module::all_events_have_at_least_one_pre_region(set<Region *> irredundant_regions) {
-    //per ogni evento che non ha regioni essenziali
-    int cont = 0;
-    for (auto ev: *events_without_essential_regions) {
-        //guardo se tra le regioni irridondanti c'è almeno una sua regione
-        cont = 0;
-        for (Region *reg: *pre_regions->at(ev)) {
-            if (irredundant_regions.find(&*reg) != irredundant_regions.end()) {
-                cont++;
-                break;
-            }
-        }
-        if (cont == 0) {
-            cout << "return false per " << ev << " avendo le seguenti regioni irridondanti: " << endl;
-            for (auto region: irredundant_regions) {
-                println(*region);
-            }
-            return false;
-        }
-
-    }
-    cout << "return true" << endl;
-    return true;
-}
-
 bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Region *> &irredundant_regions) {
     //per ogni evento che non ha regioni essenziali
     auto candidate_set_of_regions = new set<Region *>(irredundant_regions);
@@ -139,13 +116,17 @@ bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Regi
         if (!ec_satisfied(ev, regions_of_ev)) {
             delete regions_of_ev;
             delete candidate_set_of_regions;
-            //cout << "return false all ec satisfied" << endl;
+            cout << "not all ec satisfied: ev = " << ev << endl;
+            cout << "regions of " << ev << " : ";
+            println(*regions_of_ev);
+            cout << "ER of " << ev << ":";
+            println(*er->at(ev));
             return false;
         }
         delete regions_of_ev;
     }
     delete candidate_set_of_regions;
-    //cout << "return true all ec satiisfied" << endl;
+    cout << "all ec satiisfied" << endl;
     return true;
 }
 
@@ -290,7 +271,7 @@ set<int> *Place_irredundant_pn_creation_module::search_not_covered_states_per_ev
 
 int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costraints(
         set<int> states_to_cover, set<Region *> *used_regions, int last_best_cost,
-        int father_cost) {
+        int father_cost, int level) {
     // per l'insieme degli stati non coperti devo trovare le possibili coperture
     // irridondanti
     // trovare quali insiemi di regioni non essenziali
@@ -301,7 +282,10 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     // mi fermo se supero il vecchio risultato migliore -> alla fine  l'insieme è
     // sicuramente irridondante
 
-    Region *candidate;
+    //cout << "Regioni di mio padre: ";
+    //println(*used_regions);
+
+    auto candidate = reinterpret_cast<Region *>(-1);
     int cover_of_candidate;
     int temp_cover;
     // coppio il contenuto del padre per non sovrascrivere i dati con l'insiieme
@@ -317,7 +301,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     // e non utilizzare il parametro in ingresso alla funzione
     // finchè ci sono candidati che aumentano la copertura
     while (true) {
-        cover_of_candidate = 0;
+        cover_of_candidate = -1;
         // scelta del prossimo candidato
         for (auto region : *not_essential_regions) {
             /*if(used_regions->size() == 0){
@@ -336,20 +320,32 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
                     // devo vedere la dimensione dell'intersezione tra gli stati da
                     // coprire e la regione
                     auto cover = regions_intersection(&states_to_cover, region);
-                    temp_cover = cover->size();
+                    temp_cover = static_cast<int>(cover->size());
                     delete cover;
-                    if (temp_cover >= cover_of_candidate) {
+                    if (temp_cover > cover_of_candidate) {
                         // cout << "candidato nuovo" << endl;
                         cover_of_candidate = temp_cover;
                         candidate = region;
                     }
+                    else{
+                        //cout << "temp cover ha una copertura minore di cover of candidate" << endl;
+                    }
                 } else {
-                    // cout << "elemento già presente nella cache" << endl;
+                     //cout << "elemento già presente nella cache" << endl;
                 }
                 // ogni volta che entro nell'if alloco un nuovo spazio di conseguenza
                 // devo deallocarlo
                 delete temp_aggregation;
             }
+        }
+        //non è stato trovato il candidato
+        if(cover_of_candidate == -1){
+            if(level == 19){
+                cout << "chosen candidates level " << level<<": " << endl;
+                println(*chosen_candidates);
+            }
+            cout << "candidato non trovato" << endl;
+            break;
         }
         // cout << "cover of candidate: " << cover_of_candidate << endl;
 
@@ -361,6 +357,10 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
             }
         }
 
+        if(candidate == reinterpret_cast<Region *>(-1)){
+            //cout << "candidate non inizializzato" << endl;
+            break;
+        }
 
         // salvo il nuovo candidato
         chosen_candidates->insert(candidate);
@@ -406,7 +406,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
                 // chiamata ricorsiva per espandere ulteriormente la copertura con il
                 // candidato scelto
                 int cost = minimum_cost_search_with_label_costraints(*new_states_to_cover, new_states_used,
-                                                                     new_best_cost, current_cost);
+                                                                     new_best_cost, current_cost, level+1);
                 if (cost < new_best_cost) {
                     new_best_cost = cost;
                     // non devo salvarmi il risultato migliore dato che è già stato salvato
