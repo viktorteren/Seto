@@ -227,7 +227,9 @@ int main(int argc, char **argv) {
     }
     else{
         cout << "merged pre-regions: " << endl;
-        print(*merging_module->get_merged_preregions_map());
+        //toodo: modificare total in merged
+        merged_map = merging_module->get_total_preregions_map();
+        print(*merging_module->get_total_preregions_map());
     }
 
     /*cout << "merged map nel main: " << endl;

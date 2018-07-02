@@ -168,36 +168,39 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                 if (!are_equal(reg1, reg2)) {
 
                     reg_union = regions_union(reg1, reg2);
-                    bool ec_and_pre_region = false;
 
-                    for (auto record : *total_pre_regions_map) {
-                        auto event = record.first;
+                    if(reg_union->size() != num_states) {
+                        bool ec_and_pre_region = false;
 
-                        /*if(Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)){
-                            //cout << "---" << endl;
-                            cout << "preregione per " << event << endl;
-                            println(*reg_union);
-                            cout << "---" << endl;
-                            cont_preregions++;
-                        }*/
 
-                        // cout << "evento: " << event;
-                        // auto tmp_set = new set<Region
-                        // *>(total_pre_regions_map->at(event)->begin(),
-                        //  total_pre_regions_map->at(event)->end());
+                        for (auto record : *total_pre_regions_map) {
+                            auto event = record.first;
 
-                        auto tmp_set = new set<Region *>();
+                            /*if(Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)){
+                                //cout << "---" << endl;
+                                cout << "preregione per " << event << endl;
+                                println(*reg_union);
+                                cout << "---" << endl;
+                                cont_preregions++;
+                            }*/
 
-                        bool event_contains_reg = false;
-                        for (auto reg : *total_pre_regions_map->at(event)) {
-                            if (!are_equal(reg, reg1) && !are_equal(reg, reg2))
-                                tmp_set->insert(reg);
-                            else
-                                event_contains_reg = true;
-                        }
-                        // inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
-                        if (event_contains_reg) {
-                            if(Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
+                            // cout << "evento: " << event;
+                            // auto tmp_set = new set<Region
+                            // *>(total_pre_regions_map->at(event)->begin(),
+                            //  total_pre_regions_map->at(event)->end());
+
+                            auto tmp_set = new set<Region *>();
+
+                            bool event_contains_reg = false;
+                            for (auto reg : *total_pre_regions_map->at(event)) {
+                                if (!are_equal(reg, reg1) && !are_equal(reg, reg2))
+                                    tmp_set->insert(reg);
+                                else
+                                    event_contains_reg = true;
+                            }
+                            // inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
+                            if (event_contains_reg) {
+                                //if(Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
                                 tmp_set->insert(reg_union);
 
                                 // tmp_set->erase(tmp_set->find(reg1));
@@ -235,39 +238,39 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                     (*tmp_map)[event] = tmp_set;
                                     union_ptr = reg_union;
                                 }
-                            }
-                            else{
-                                ec_and_pre_region = false;
+                                //}
+                                //else{
+                                //   ec_and_pre_region = false;
+                                //   delete tmp_set;
+                                //    break;
+                                // }
+                            } else {
                                 delete tmp_set;
-                                break;
+                                // cout << "event:" << event << endl;
+                                // cout << "l'evento è ok perchè non ha cambiato le sue preregioni "
+                                //   "con questa unione"
+                                //  << endl;
                             }
-                        } else {
-                            delete tmp_set;
-                            // cout << "event:" << event << endl;
-                            // cout << "l'evento è ok perchè non ha cambiato le sue preregioni "
-                            //   "con questa unione"
-                            //  << endl;
+                        }
+
+                        // se per tutti gli eventi la coppia è ok faccio il merge effettivo
+                        if (ec_and_pre_region) {
+                            delete preregions_set;
+                            cout << "merging ok" << endl;
+                            //println(*reg1);
+                            //println(*reg2);
+
+                            /* for (auto el : *tmp_map) {
+                              // cout << "ev: " << el.first << endl;
+                               for (auto r : *el.second) {
+                                 println(*r);
+                               }
+                             }*/
+
+                            return tmp_map;
                         }
                     }
-
-                    // se per tutti gli eventi la coppia è ok faccio il merge effettivo
-                    if (ec_and_pre_region) {
-                        delete preregions_set;
-                        cout << "merging ok" << endl;
-                        //println(*reg1);
-                        //println(*reg2);
-
-                        /* for (auto el : *tmp_map) {
-                          // cout << "ev: " << el.first << endl;
-                           for (auto r : *el.second) {
-                             println(*r);
-                           }
-                         }*/
-
-                        return tmp_map;
-                    }
                 }
-
             } else {
                 delete inter;
                 // cout << "le regioni non sono disgiunte" << endl;

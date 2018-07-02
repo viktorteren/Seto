@@ -586,11 +586,11 @@ map<Region *, int> *get_regions_map(map<int, set<Region *> *> *net) {
     }
   }
   // x debug
-
-  /*for (auto record : *regions_map) {
+  cout<<"reg mapping:"<<endl;
+  for (auto record : *regions_map) {
     cout << record.second << ": ";
     println(*record.first);
-  }*/
+  }
   return regions_map;
 }
 
