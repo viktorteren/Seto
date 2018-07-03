@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input.ts";
+        file = "../test/input17.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     map<int,pair<int,Region*>*>* candidate_regions;
     map<int, set<Region *> *> *pre_regions;
     Label_splitting_module *ls;
-    Pre_and_post_regions_generator *pprg;
+    Pre_and_post_regions_generator *pprg=nullptr;
     map<int, ER> *new_ER;
     vector<Region> *vector_regions;
     map<int, vector<Region> *> *regions;
@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
     double dim_reg;
     num_events_after_splitting=static_cast<int>(ts_map->size());;
     do {
-        //todo: calcolare excitation closure sulle pre-regioni
         number_of_events = static_cast<int>(ts_map->size());
         //cout << "number_of_events: " << number_of_events << endl;
         //cout << "num_events: " << num_events  << endl;
@@ -79,14 +78,14 @@ int main(int argc, char **argv) {
             println(r);
         }*/
 
-        cout<<"regioni"<<endl;
+        /*cout<<"regioni"<<endl;
         for (auto rec: *regions) {
             cout << "event" << rec.first << endl;
             for (auto r: *rec.second) {
                 cout << "reg: ";
                 println(r);
             }
-        }
+        }*/
 
         int cont = 0;
         double somma = 0;
@@ -110,16 +109,17 @@ int main(int argc, char **argv) {
 
 
         tStart_partial = clock();
+        delete pprg;
         pprg = new Pre_and_post_regions_generator(vector_regions);
         pre_regions = pprg->get_pre_regions();
 
-        cout << "preregioni:" << endl;
+        /*cout << "preregioni:" << endl;
         for (auto rec: *pre_regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(*reg);
             }
-        }
+        }*/
 
 
         t_pre_region_gen += (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
         set<int> *events = ls->is_excitation_closed();
 
         excitation_closure = events->empty();
-        cout << "EC*************" << excitation_closure << endl;
+        //cout << "EC*************" << excitation_closure << endl;
 
         set<int> *events_not_satify_EC = nullptr;
 
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
         delete rg;
         //number_of_events++;
-        cout << "ho finito" << endl;
+        //cout << "ho finito" << endl;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -193,13 +193,13 @@ int main(int argc, char **argv) {
 
     print_ts_dot_file(file,aliases);
 
-    cout<<"ts map debug:"<<endl;
+    /*cout<<"ts map debug:"<<endl;
     for(auto tr: *ts_map){
         cout<<"evento "<< tr.first<<endl;
         for(auto r: tr.second){
             cout<<r->first<< "->"<< r->second<<endl;
         }
-    }
+    }*/
 
     tStart_partial = clock();
     // Inizio modulo: ricerca di set irridondanti di regioni
@@ -234,8 +234,8 @@ int main(int argc, char **argv) {
 
     auto merged_map = merging_module->get_merged_preregions_map();
 
-    cout << "not merged pre-regions: " << endl;
-    print(*merging_module->get_total_preregions_map());
+    //cout << "not merged pre-regions: " << endl;
+    //print(*merging_module->get_total_preregions_map());
 
 
     if (merged_map == nullptr) {

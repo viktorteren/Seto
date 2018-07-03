@@ -2,6 +2,7 @@
 // Created by ciuchino on 18/04/18.
 //
 
+#include <utility>
 #include "../include/Utilities.h"
 
 namespace Utilities {
@@ -58,7 +59,7 @@ namespace Utilities {
         return all_states;
     }
 
-    map<int, set<int> *> * do_regions_intersection(map<int, set<Region*> *> *regions) {
+    map<int, set<int> *> *do_regions_intersection(map<int, set<Region *> *> *regions) {
 
         auto pre_regions_intersection = new map<int, set<int> *>;
 
@@ -163,7 +164,7 @@ namespace Utilities {
     void print(Region &region) {
         Region::iterator it;
         int pos = 0;
-        int size = region.size();
+        int size = static_cast<int>(region.size());
         // for (auto state : region) {
         for (it = region.begin(); it != region.end(); ++it) {
             auto state = *it;
@@ -266,11 +267,11 @@ post_essential_region && pre/post_irredundant)
         return vec;
     }
 
-    vector<Region*> *copy_map_to_vector2(map<int, set<Region*> *> *map) {
-        vector<Region*> *vec = new vector<Region*>();
+    vector<Region *> *copy_map_to_vector2(map<int, set<Region *> *> *map) {
+        auto vec = new vector<Region *>();
         for (auto record : *map) {
             for (auto region : *record.second) {
-                if(!contains(vec,region)) {
+                if (!contains(vec, region)) {
                     vec->push_back(region);
                 }
             }
@@ -283,11 +284,12 @@ post_essential_region && pre/post_irredundant)
         auto input = new set<Region *>();
         for (auto record : *map) {
             for (auto region : *record.second) {
+                //cout << "region: ";
+                //println(*region);
                 if (!contains(input, region))
                     input->insert(region);
             }
         }
-
         return input;
     }
 
@@ -348,20 +350,17 @@ post_essential_region && pre/post_irredundant)
     }
 
     bool contains(set<Region *> *set, Region *region) {
-
         for (auto elem : *set) {
             if (are_equal(elem, region)) {
                 return true;
             }
         }
-
         return false;
     }
 
 
-    bool contains(vector<Region *> * vector, Region * region) {
-        for (
-            auto elem : *vector) {
+    bool contains(vector<Region *> *vector, Region *region) {
+        for (auto elem : *vector) {
             if (are_equal(elem, region)) {
                 return true;
             }
@@ -371,7 +370,7 @@ post_essential_region && pre/post_irredundant)
 
     void print_ts_dot_file(string file_path, map<int, int> *aliases) {
         //cout << "CREATION OF INPUT .DOT FILE" << endl;
-        string output_name = file_path;
+        string output_name = std::move(file_path);
         string in_name;
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -421,23 +420,23 @@ post_essential_region && pre/post_irredundant)
                 (*alias_counter_original)[al.second]++;
             }
 
-            cout << "alias counter" << endl;
+            /*cout << "alias counter" << endl;
             for (auto r: *alias_counter)
-                cout << r.first << "->" << r.second << endl;
+                cout << r.first << "->" << r.second << endl;*/
 
         }
 
         for (auto rec : *ts_map) {
             //levento è un alias
             int label;
-            string to_add = "";
+            string to_add;
             if (aliases != nullptr && aliases->find(rec.first) != aliases->end()) {
                 label = aliases->at(rec.first);
                 for (int i = 0; i < (*alias_counter_original)[label] - (*alias_counter)[label] + 1; ++i) {
                     to_add += "'";
                 }
                 (*alias_counter)[label]--;
-                cout << " ev " << rec.first << "to add " << to_add << endl;
+                //cout << " ev " << rec.first << "to add " << to_add << endl;
             } else {
                 label = rec.first;
             }
@@ -448,8 +447,8 @@ post_essential_region && pre/post_irredundant)
 
         }
 
-        if (alias_counter != nullptr) delete alias_counter;
-        if (alias_counter_original != nullptr) delete alias_counter_original;
+        delete alias_counter;
+        delete alias_counter_original;
 
         fout << "}\n";
         fout.close();
@@ -459,7 +458,7 @@ post_essential_region && pre/post_irredundant)
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases, string file_name) {
         auto initial_reg = initial_regions(pre_regions);
-        string output_name = file_name;
+        string output_name = std::move(file_name);
         string in_dot_name;
         string output;
         // creazione della mappa tra il puntatore alla regione ed un intero univoco
@@ -476,7 +475,7 @@ post_essential_region && pre/post_irredundant)
         }
         output_name = output_name.substr(0, output_name.size() - 1);
         int lower = 0;
-        for (int i = output_name.size() - 1; i > 0; i--) {
+        for (int i = static_cast<int>(output_name.size() - 1); i > 0; i--) {
             if (output_name[i] == '/') {
                 lower = i;
                 break;
@@ -557,8 +556,8 @@ post_essential_region && pre/post_irredundant)
                         fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
                     } else {
-                        cout << "regions_mapping non contiene ";
-                        println(*reg);
+                        //cout << "regions_mapping non contiene ";
+                        //println(*reg);
                     }
                 }
             }
@@ -566,24 +565,13 @@ post_essential_region && pre/post_irredundant)
         //evento -> regione
         for (auto record : *post_regions) {
             for (auto reg : *record.second) {
-                if (record.first < num_events) {
-                    if (regions_mapping->find(reg) != regions_mapping->end()) {
-                        fout << "\t" << record.first << " -> "
-                             << "r" << regions_mapping->at(reg) << ";\n";
-                    } else {
-                        // entra qui 2 volte
-                        // cout << "regions_mapping non contiene ";
-                        // println(*reg);
-                    }
+                if (regions_mapping->find(reg) != regions_mapping->end()) {
+                    fout << "\t" << record.first << " -> "
+                         << "r" << regions_mapping->at(reg) << ";\n";
                 } else {
-                    //int label=aliases->at(record.first);
-                    if (regions_mapping->find(reg) != regions_mapping->end()) {
-                        fout << "\t" << record.first << " -> "
-                             << "r" << regions_mapping->at(reg) << ";\n";
-                    } else {
-                        //cout << "regions_mapping non contiene ";
-                        // println(*reg);
-                    }
+                    // entra qui 2 volte
+                    // cout << "regions_mapping non contiene ";
+                    // println(*reg);
                 }
             }
         }
@@ -607,12 +595,12 @@ post_essential_region && pre/post_irredundant)
             }
         }
         // x debug
-       /* cout << "reg mapping:" << endl;
+        /*cout << "reg mapping:" << endl;
         for (auto record : *regions_map) {
             cout << record.second << ": ";
             println(*record.first);
-        }
-        return regions_map;*/
+        }*/
+        return regions_map;
     }
 
     set<Region *> *initial_regions(map<int, set<Region *> *> *reg_map) {
@@ -626,9 +614,10 @@ post_essential_region && pre/post_irredundant)
         }
         // per DEBUG:
         /*cout << "Initial regions:" << endl;
-        for(auto reg: *init_reg){
-        println(*reg);
-      }*/
+        for (auto reg: *init_reg) {
+            println(*reg);
+            //cout << "ind.: " << reg << endl;
+        }*/
 
         return init_reg;
     }
@@ -689,13 +678,13 @@ post_essential_region && pre/post_irredundant)
     void println(set<Region *> &regions) {
         for (auto reg : regions) {
             println(*reg);
+            //cout << "reg. in.: " << reg << endl;
         }
     }
 
     void print(map<int, set<Region *> *> &net) {
         for (auto rec : net) {
             cout << "event: " << rec.first << endl;
-            cout << "reg ptr: " << rec.second << endl;
             println(*rec.second);
         }
     }

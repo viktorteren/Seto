@@ -94,13 +94,14 @@ set<Region *> *Essential_regions_search::search() {
 
     //print per debug
 
-    cout << "prove essential regions:" << endl;
+    /*cout << "prove essential regions:" << endl;
     for(auto rec: *essential_map){
     	cout << "set di regioni dell'evento: " << rec.first << endl;
     	for(auto reg: *rec.second){
-    		println(*reg);
+    		print(*reg);
+    		cout << " indirizzo: " << reg << endl;
     	}
-    }
+    }*/
     /*
     cout << "Regioni essenziali: " << endl;
     for (auto reg: *essential_regions) {
@@ -109,7 +110,7 @@ set<Region *> *Essential_regions_search::search() {
 
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
-    cout << "num. regioni essenziali: " << essential_regions->size() << endl;
+    //cout << "num. regioni essenziali: " << essential_regions->size() << endl;
     return essential_regions;
 }
 
