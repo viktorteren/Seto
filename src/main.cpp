@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input17.ts";
+        file = "../test/input14.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -87,16 +87,9 @@ int main(int argc, char **argv) {
             }
         }*/
 
-        int cont = 0;
-        double somma = 0;
-        for (const auto &reg: *vector_regions) {
-            cont++;
-            somma += reg.size();
-        }
 
-        cout << "media: " << (somma / cont) << endl;
 
-        cout << "numero regioni: " << vector_regions->size() << endl;
+
         num_events_after_splitting = static_cast<int>(ts_map->size());
 
         //messo per non andare in loop ma non sarei exit closure----da togliere
@@ -187,7 +180,17 @@ int main(int argc, char **argv) {
 
     }//end prova do while
     while (!excitation_closure);
-    cout << "uscito dal ciclo while" << endl;
+    //cout << "uscito dal ciclo while" << endl;
+
+    int cont = 0;
+    double somma = 0;
+    for (const auto &reg: *vector_regions) {
+        cont++;
+        somma += reg.size();
+    }
+    cout << "media: " << (somma / cont) << endl;
+
+    cout << "numero regioni: " << vector_regions->size() << endl;
 
     delete ls;
 
@@ -218,13 +221,9 @@ int main(int argc, char **argv) {
     //print(*essential_regions);
 
     if (irredundant_regions != nullptr) {
-
         //cout << "pre-regioni irridondanti" << endl;
         //print(*irredundant_regions);
-
-
-        merging_module = new Merging_Minimal_Preregions_module(
-                essential_regions, irredundant_regions, new_ER);
+        merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions, new_ER);
         // print_PN(essential_regions,irredundant_regions);
     } else {
         merging_module = new Merging_Minimal_Preregions_module(essential_regions,

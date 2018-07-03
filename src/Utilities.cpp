@@ -162,12 +162,9 @@ namespace Utilities {
     }
 
     void print(Region &region) {
-        Region::iterator it;
         int pos = 0;
-        int size = static_cast<int>(region.size());
-        // for (auto state : region) {
-        for (it = region.begin(); it != region.end(); ++it) {
-            auto state = *it;
+        auto size = static_cast<int>(region.size());
+        for (auto state : region) {
             pos++;
             cout << state;
             if (pos != size) {
@@ -195,54 +192,6 @@ namespace Utilities {
                 cout << ",";
         }
     }
-
-/*
-void print_PN(map<int, set<Region*>> * essential_regions,map<int, set<Region*>>
-* irredundant_regions) {
-int pos=0;
-
-set<Region *> *unrepeated_regions = new set<Region *>();
-cout<<"Posti: "<< endl;
-        for(auto record:*essential_regions){
-                for(auto reg: record.second) {
-                        unrepeated_regions->insert(reg);
-                }
-        }
-
-        for(auto reg: *unrepeated_regions) {
-                pos++;
-                print_place(pos,*reg);
-        }
-cout<<endl;
-
-        delete unrepeated_regions;
-
-cout<< "Posti dovuti a regioni non essenziali: " << endl;
-
-        set<Region *> *unrepeated_irredundant_regions = new set<Region *>();
-
-if(irredundant_regions!= nullptr) {
-                for(auto record:*irredundant_regions){
-                        for(auto reg: record.second) {
-                                unrepeated_irredundant_regions->insert(reg);
-                        }
-                }
-                for (auto reg: *unrepeated_irredundant_regions) {
-                        pos++;
-                        print_place(pos, *reg);
-                }
-}
-
-cout << endl;
-
-delete unrepeated_irredundant_regions;
-
-print_transactions();
-
-post_essential_region && pre/post_irredundant)
-
-    cout << endl;
-}*/
 
     set<int> *region_difference(set<int> &first, set<int> &second) {
         auto s = new set<int>();
@@ -336,10 +285,8 @@ post_essential_region && pre/post_irredundant)
     }
 
     bool are_equal(Region *region1, Region *region2) {
-
         if (region1->size() != region2->size())
             return false;
-
         for (auto elem : *region1) {
             if (region2->find(elem) == region2->end()) {
                 return false;
@@ -376,8 +323,8 @@ post_essential_region && pre/post_irredundant)
             output_name = output_name.substr(0, output_name.size() - 1);
         }
         output_name = output_name.substr(0, output_name.size() - 1);
-        int lower = 0;
-        for (int i = output_name.size() - 1; i > 0; i--) {
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
             if (output_name[i] == '/') {
                 lower = i;
                 break;
@@ -464,7 +411,11 @@ post_essential_region && pre/post_irredundant)
         // creazione della mappa tra il puntatore alla regione ed un intero univoco
         // corrispondente
         map<Region *, int> *regions_mapping;
+        /*cout << "preregions prima del print" << endl;
+        print(*pre_regions);*/
         auto regions_set = copy_map_to_set(pre_regions);
+        /*cout << "regions set " << endl;
+        println(*regions_set);*/
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(pre_regions);
@@ -685,6 +636,8 @@ post_essential_region && pre/post_irredundant)
     void print(map<int, set<Region *> *> &net) {
         for (auto rec : net) {
             cout << "event: " << rec.first << endl;
+            if (rec.second == nullptr)
+                cout << "NULL" << endl;
             println(*rec.second);
         }
     }

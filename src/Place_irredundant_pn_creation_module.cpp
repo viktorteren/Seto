@@ -39,7 +39,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             //     "COST SEARCH --------------------------------------------"
             //<< endl;
             //minimum_cost_search(states_to_cover, used_regions, INT_MAX, 0);
-            cout << "-----------IRREDUNDANT REGIONS SEARCH-------------" << endl;
+            //cout << "-----------IRREDUNDANT REGIONS SEARCH-------------" << endl;
             minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
             /*cout << "insieme di regioni irridondante: " << endl;

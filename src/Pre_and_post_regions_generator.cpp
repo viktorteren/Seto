@@ -108,9 +108,7 @@ void Pre_and_post_regions_generator::create_post_regions(
 }
 
 void Pre_and_post_regions_generator::create_pre_regions() {
-    cout
-            << "--------------------------------------------------- CREATING OF PRE-REGIONS --------------------------------------------"
-            << endl;
+    //cout << "--------------------------------------------------- CREATING OF PRE-REGIONS --------------------------------------------" << endl;
 
     //per ogni evento
     //per ogni regione

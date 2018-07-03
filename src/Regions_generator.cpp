@@ -632,7 +632,7 @@ ER createER(int event) {
 }
 
 map<int, vector<Region> *> *Region_generator::generate() {
-    cout << "----------------------- REGIONS GENERATOR --------------------------" << endl;
+    //cout << "----------------------- REGIONS GENERATOR --------------------------" << endl;
     //cout << "GENERATE REGIONS " << endl;
     unsigned int pos = 0;
     int init_pos = 0;

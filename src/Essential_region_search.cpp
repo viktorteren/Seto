@@ -15,7 +15,7 @@ Essential_regions_search::~Essential_regions_search() {
 
 set<Region *> *Essential_regions_search::search() {
 
-    cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
+    //cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
      *  unione delle pre regioni per creare un insieme di tutti gli stati
@@ -77,14 +77,14 @@ set<Region *> *Essential_regions_search::search() {
         }
 
         //una volta trovato tutte le regioni essenziali le salvo nella mappa
-        for (auto record: *pre_regions) {
+        for (auto record2: *pre_regions) {
             for (auto region: *essential_regions) {
-                auto set_of_event = record.second;
+                auto set_of_event = record2.second;
                 if (set_of_event->find(region) != set_of_event->end()) {
-                    if (essential_map->find(record.first) == essential_map->end()) {
-                        (*essential_map)[record.first] = new set<Region *>();
+                    if (essential_map->find(record2.first) == essential_map->end()) {
+                        (*essential_map)[record2.first] = new set<Region *>();
                     }
-                    (*essential_map)[record.first]->insert(region);
+                    (*essential_map)[record2.first]->insert(region);
                 }
 
             }

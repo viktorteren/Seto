@@ -129,7 +129,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::get_total_preregio
 
 map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions(map<int, set<int> *> *ER_map) {
 
-    cout << "MERGING PREREGIONS___________" << endl;
+    //cout << "MERGING PREREGIONS___________" << endl;
 
     set<Region *> *preregions_set = copy_map_to_set(total_pre_regions_map);
     Region *reg_union = nullptr;

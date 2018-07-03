@@ -33,7 +33,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
     // bool res=true;
 
     //for (auto item : *pre_regions) {
-    cout<<"num evens after splitting "<<num_events_after_splitting<<endl;
+    //cout<<"num evens after splitting "<<num_events_after_splitting<<endl;
     for(int event=0;event<num_events_after_splitting;++event){
         //cout << "event: " << item.first;
         //auto event = item.first;
@@ -271,11 +271,10 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
                                           map<int, map<int, int> *> *event_violations,
                                           map<int, map<int, vector<Edge *> *> *> *trans_violations) {
     //per la regione candidata migliore per ogni regione se è contenuta, eventi uscente da candidate rimangono cosi evnti uscenti da new region vengono aggiunti
-
     Region *best_region = nullptr;
     map<int, pair<int, Region *> *>::iterator it;
 
-    int best_region_root_event;
+    int best_region_root_event = -1;
     int best_region_id;
     //map<int, pair<int,Region*>* > *
     for (it = candidate_regions->begin(); it != candidate_regions->end(); ++it) {
@@ -306,7 +305,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             //per l'evento che violava
             // elimino transazioni che violavano se sono per quell'evento e creo quelle nuove più l'alias altrimenti niente
 
-            int total_events = static_cast<int>(ts_map->size());
+            auto total_events = static_cast<int>(ts_map->size());
             //cout << "total events !!!: " << total_events << endl;
             auto event = (*event_violations)[best_region_root_event]->at(best_region_id);
 
