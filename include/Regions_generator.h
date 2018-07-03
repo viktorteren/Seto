@@ -22,11 +22,7 @@ public:
   struct Branches_states_to_add {
     set<int> *states_to_add_exit_or_enter = nullptr;
     set<int> *states_to_add_nocross = nullptr;
-    /*~Branches_states_to_add(){
-            if(states_to_add_exit_or_enter!= nullptr) delete
-       states_to_add_exit_or_enter;
-            if(states_to_add_nocross != nullptr) delete states_to_add_nocross;
-            }*/
+
   };
 
   map<int, vector<Region *> *> *get_middle_set_of_states();
@@ -53,14 +49,7 @@ private:
   // ptr_regione
   map<int, vector<int> *> *number_of_bad_events;
 
-  // indica che l'albero di first inizia con second
-  //map<int, int> *trees_init;
-  //pair contiene <evento, tipo>
-  //map<int, map<Region*, pair<int, int>*>*>* violations;
-  //int last_branch;
-  //int last_exit_enter;
-
-    //il primo intero della mappa intern  id della regione corrispondente alla posizione nella struttura delle regioni intermedie
+    //il primo intero della mappa id della regione corrispondente alla posizione nella struttura delle regioni intermedie
     map<int, map<int, int >*>* event_violations;
     map<int, map<int, vector<Edge*> *>* >* trans_violations;
 

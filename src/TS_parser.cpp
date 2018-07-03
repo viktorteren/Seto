@@ -193,7 +193,7 @@ void TS_parser::parse_APT(ifstream& fin){
         if(tmp.compare(".type") == 0){
             fin >> tmp;
             if(tmp.compare("LTS") != 0){
-                cout << "INPUT NOT SUPPORTED" << endl;
+                cout << "Input non supportato" << endl;
                 exit(1);
             }
         }

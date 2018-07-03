@@ -160,7 +160,6 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
             println(*reg1);
             cout << "r2: ";
             println(*reg2);*/
-            cont_preregions = 0;
             // le regioni sono disgiunte!!!
             auto inter = regions_intersection(reg1, reg2);
             if (inter->empty()) {
@@ -168,18 +167,6 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                 if (!are_equal(reg1, reg2)) {
 
                     reg_union = regions_union(reg1, reg2);
-
-                    auto prova = new Region();
-                    prova->insert(0);
-                    prova->insert(8);
-                    auto prova2 = new Region();
-                    prova2->insert(1);
-                    prova2->insert(3);
-                    prova2->insert(4);
-                    prova2->insert(7);
-                    if(are_equal(reg1, prova) && are_equal(reg2, prova2)){
-                        cout << "" << endl;
-                    }
 
                     if (reg_union->size() != num_states) {
                         bool ec_and_pre_region = false;
@@ -215,13 +202,6 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                 if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
                                     tmp_set->insert(reg_union);
 
-                                    // tmp_set->erase(tmp_set->find(reg1));
-                                    // tmp_set->erase(tmp_set->find(reg2));
-                                    // tmp_set->insert(reg_union);
-                                    /*if(event == 4){
-                                        cout << "event 0" << endl;
-                                        println(*tmp_set);
-                                    }*/
 
                                     auto intersection = regions_intersection(tmp_set);
                                     auto er = ER_map->at(event);
