@@ -18,7 +18,7 @@ public:
 
     set<int> *is_excitation_closed();
 
-    map<int, pair<int, Region *> *> *do_label_splitting(
+    map<int, pair<int, Region *> *> *candidate_search(
             map<int, vector<int> *> *number_of_bad_events,
             set<int> *events_not_satisfy_EC);
 

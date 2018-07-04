@@ -67,7 +67,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
     // return true;
 }
 
-map<int, pair<int,Region*>* > * Label_splitting_module::do_label_splitting(
+map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(
         map<int, vector<int> *> *number_of_bad_events,
         set<int> *events_not_satisfy_EC) {
 

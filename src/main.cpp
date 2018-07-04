@@ -92,11 +92,6 @@ int main(int argc, char **argv) {
 
         num_events_after_splitting = static_cast<int>(ts_map->size());
 
-        //messo per non andare in loop ma non sarei exit closure----da togliere
-        /*if(vec_size==vector_regions->size() && dim_reg==(somma / cont)) break;
-        vec_size=vector_regions->size();
-        dim_reg=(somma / cont);*/
-
 
         t_region_gen = t_region_gen + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -131,16 +126,9 @@ int main(int argc, char **argv) {
 
         if (!excitation_closure) {
             //cout << " not exitation closed " << endl;
-            candidate_regions = ls->do_label_splitting( rg->get_number_of_bad_events(), events);
-            cout << "___________label splitting ok" << endl;
+            candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
+            //cout << "___________label splitting ok" << endl;
             ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
-
-            /*events_not_satify_EC = new set<int>();
-            auto pairs = rg->get_trees_init();
-
-            for (auto el : *events) {
-                events_not_satify_EC->insert(pairs->at(el));
-            }*/
 
             map<int,pair<int,Region*>*>::iterator it2;
             for(it2=candidate_regions->begin();it2!=candidate_regions->end();++it2) {
@@ -164,23 +152,17 @@ int main(int argc, char **argv) {
 
         } else {
             new_ER = rg->get_ER_set();
-            //break;
-            //pprg = new Pre_and_post_regions_generator(vector_regions);
-
         }
 
         delete events;
         delete events_not_satify_EC;
 
         delete rg;
-        //number_of_events++;
-        //cout << "ho finito" << endl;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     }//end prova do while
     while (!excitation_closure);
-    //cout << "uscito dal ciclo while" << endl;
 
     int cont = 0;
     double somma = 0;
@@ -188,9 +170,9 @@ int main(int argc, char **argv) {
         cont++;
         somma += reg.size();
     }
-    cout << "media: " << (somma / cont) << endl;
+    //cout << "media: " << (somma / cont) << endl;
 
-    cout << "numero regioni: " << vector_regions->size() << endl;
+    //cout << "numero regioni: " << vector_regions->size() << endl;
 
     delete ls;
 

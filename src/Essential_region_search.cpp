@@ -110,7 +110,7 @@ set<Region *> *Essential_regions_search::search() {
 
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
-    cout << "num. regioni essenziali: " << essential_regions->size() << endl;
+    //cout << "num. regioni essenziali: " << essential_regions->size() << endl;
     return essential_regions;
 }
 
