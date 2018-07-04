@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input14.ts";
+        file = "../test/input15.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
         if (!excitation_closure) {
             //cout << " not exitation closed " << endl;
             candidate_regions = ls->do_label_splitting( rg->get_number_of_bad_events(), events);
-            //cout << "___________label splitting ok" << endl;
+            cout << "___________label splitting ok" << endl;
             ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
 
             /*events_not_satify_EC = new set<int>();
