@@ -103,9 +103,11 @@ void Pre_and_post_regions_generator::create_post_regions(
       }
     }
   }
-  cout << "Postregioni :" << endl;
-  print(*post_regions);
-  cout << "" << endl;
+    if(print_step_by_step) {
+        cout << "Postregioni :" << endl;
+        print(*post_regions);
+        cout << "" << endl;
+    }
 }
 
 void Pre_and_post_regions_generator::create_pre_regions() {

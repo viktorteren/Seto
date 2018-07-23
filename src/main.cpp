@@ -11,13 +11,21 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input1.ts";
+        print_step_by_step=false;
+        file = "../test/input4.ts";
     } else if (argc == 2) {
         file = args[1];
-    } else {
+    }
+    else if (argc == 3) {
+        if( args[2]=="S")
+        print_step_by_step=true;
+        else  print_step_by_step=false;
+    }
+    else {
         cout << "Numero di argomenti in input errato" << endl;
         exit(0);
     }
+
     TS_parser::parse(file);
 
     map<int,pair<int,Region*>*>* candidate_regions;
@@ -54,11 +62,13 @@ int main(int argc, char **argv) {
         auto rg = new Region_generator(number_of_events);
         regions = rg->generate();
         vector_regions = copy_map_to_vector(regions);
+
+        if(print_step_by_step){
         cout << "Regioni: " << endl;
         for (auto reg: *vector_regions) {
             println(reg);
         }
-        cout << "" << endl;
+        cout << "" << endl;}
 
         // cout << "------------------------------------------------------------ "
         //       "DELETING OF NON MINIMAL REGIONS "
@@ -70,11 +80,13 @@ int main(int argc, char **argv) {
             rg->remove_bigger_regions(*region, vector_regions);
         }
 
+
+        if(print_step_by_step){
         cout << "Regioni minime: " << endl;
         for (auto r: *vector_regions) {
             println(r);
         }
-        cout << "" << endl;
+        cout << "" << endl;}
 
         /*cout<<"regioni"<<endl;
         for (auto rec: *regions) {
@@ -99,14 +111,16 @@ int main(int argc, char **argv) {
         pprg = new Pre_and_post_regions_generator(vector_regions);
         pre_regions = pprg->get_pre_regions();
 
-        cout << "Preregioni:" << endl;
-        for (auto rec: *pre_regions) {
-            cout << "evento: " << rec.first << endl;
-            for (auto reg: *rec.second) {
-                println(*reg);
+        if(print_step_by_step) {
+            cout << "Preregioni:" << endl;
+            for (auto rec: *pre_regions) {
+                cout << "evento: " << rec.first << endl;
+                for (auto reg: *rec.second) {
+                    println(*reg);
+                }
             }
+            cout << "" << endl;
         }
-        cout << "" << endl;
 
 
         t_pre_region_gen += (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -126,7 +140,7 @@ int main(int argc, char **argv) {
         if (!excitation_closure) {
 
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
-            cout << "Splitting delle etichette: ";
+            if(print_step_by_step){cout << "Splitting delle etichette: ";}
             ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
 
             map<int,pair<int,Region*>*>::iterator it2;
@@ -230,6 +244,9 @@ int main(int argc, char **argv) {
 
     /*cout << "merged map nel main: " << endl;
     print(*merged_map);*/
+    /*pprg->create_post_regions(merging_module->get_total_preregions_map());
+    auto post_regions2 = pprg->get_post_regions();
+    print_pn_dot_file(merging_module->get_total_preregions_map(), post_regions2, aliases, file);*/
 
     auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 

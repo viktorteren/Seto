@@ -61,14 +61,16 @@ set<int> *Label_splitting_module::is_excitation_closed() {
        cout << "event not sat EC----------" << ev << endl;
      }*/
 
-    if(events_not_satisfy_EC->size()!=0){
-        cout<<"Ts non è chiuso rispetto all'eccitazione"<<endl;
-        cout << "" << endl;
-    }
-    else{
-        cout<<"Ts è chiuso rispetto all'eccitazione"<<endl;
-        cout << "" << endl;
-    }
+     if(print_step_by_step){
+        if(events_not_satisfy_EC->size()!=0){
+            cout<<"Ts non è chiuso rispetto all'eccitazione"<<endl;
+            cout << "" << endl;
+        }
+        else{
+            cout<<"Ts è chiuso rispetto all'eccitazione"<<endl;
+            cout << "" << endl;
+        }
+     }
 
     return events_not_satisfy_EC;
     // return true;
@@ -327,8 +329,9 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             } else {
                 (*event_alias)[total_events] = event;
             }
+            if(print_step_by_step){
             cout << "evento " << event << " diviso negli eventi " << total_events << " e " << event << endl;
-            cout<<""<< endl;
+            cout<<""<< endl;}
 
             auto to_erase = new set<Edge *>();
 

@@ -376,13 +376,13 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     int last_event_2braches = -1;
     int last_event_nocross = -1;
     auto expanded_regions = new Region[2];
-
-   /* cout << "|||REGIONE: " << region << " --- ";
-    for (auto i : (*region)) {
+  //cout<<"eve:"<<event<<endl;
+  // cout << "|||REGIONE: " << region << " --- ";
+  /*  for (auto i : (*region)) {
       cout << i << " ";
     }
-    cout << endl;
-    cout<<"id position reg: " << region_id_position<<endl;*/
+    cout << endl;*/
+   // cout<<"id position reg: " << region_id_position<<endl;
 
     for (int i = 0; i < number_of_events; i++) {
         event_types[i] = -1;
@@ -419,11 +419,12 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     //cout << "region pass:" << region;
     set_number_of_bad_events(event_types, number_of_events, event);
 
+
     for (int i = 0; i < number_of_events; i++) {
         type = event_types[i];
 
         if (type == NOCROSS) {
-            //  cout << "Break per no_cross " << endl;
+             // cout << "Break per no_cross ev "<< i << endl;
             branch = NOCROSS;
             last_event_nocross = i;
             break;
@@ -471,12 +472,10 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         //cout << "dim primo set vettore: " << branches->states_to_add_nocross->size()
         //   << endl;
-        /* for(auto state : *branches.states_to_add_nocross) {
-             cout << "stati vet: " << state <<endl;
-         }*/
 
         for (auto state : *branches->states_to_add_nocross) {
             expanded_regions[0].insert(state);
+            //cout << "inserisco nella extended Reg: " << state << endl;
         }
 
         //(*trees_init)[event] = last_event_nocross;
@@ -561,6 +560,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *branches->states_to_add_nocross) {
             expanded_regions[0].insert(state);
+            //cout << "inserisco nella extended Reg: " << state << endl;
         }
 
       /*  if(violations->find(event) == violations->end())
@@ -583,6 +583,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *branches->states_to_add_exit_or_enter) {
             expanded_regions[1].insert(state);
+            //cout << "inserisco nella extended Reg: " << state << endl;
         }
 
         /*if(violations->find(event) == violations->end())

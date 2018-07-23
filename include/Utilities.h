@@ -27,6 +27,7 @@ const int NOCROSS = 1;
 const int EXIT_NOCROSS = 2;
 const int ENTER_NOCROSS = 3;
 
+extern bool print_step_by_step;
 
 namespace Utilities {
 

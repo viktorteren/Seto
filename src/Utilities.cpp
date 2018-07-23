@@ -4,6 +4,7 @@
 
 #include <utility>
 #include "../include/Utilities.h"
+bool print_step_by_step;
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
