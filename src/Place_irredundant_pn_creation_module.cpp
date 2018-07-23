@@ -42,21 +42,24 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             //cout << "-----------IRREDUNDANT REGIONS SEARCH-------------" << endl;
             minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
+            if(print_step_by_step){
             cout << "Insieme irridondante di regioni: " << endl;
             for (auto region : *irredundant_regions) {
               // cout << "[" << &(*region)  << "] ";
               println(*region);
             }
-            cout << "" << endl;
+            cout << "" << endl;}
             delete used_regions;
         } else {
+            if(print_step_by_step){
              cout << "Tutte le regioni sono essenziali" << endl;
-             cout << "" << endl;
+             cout << "" << endl;}
         }
 
     } else {
+        if(print_step_by_step){
          cout << "Tutte le regioni sono essenziali" << endl;
-         cout << "" << endl;
+         cout << "" << endl;}
     }
 }
 
