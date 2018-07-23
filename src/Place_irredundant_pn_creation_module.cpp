@@ -42,7 +42,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             //cout << "-----------IRREDUNDANT REGIONS SEARCH-------------" << endl;
             minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
-            cout << "Regioni irridondanti: " << endl;
+            cout << "Insieme irridondante di regioni: " << endl;
             for (auto region : *irredundant_regions) {
               // cout << "[" << &(*region)  << "] ";
               println(*region);
@@ -295,16 +295,17 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     // delle regioni del figlio
     int cost_of_candidate;
     set<int> *new_states_to_cover;
-    set<Region *> *new_states_used = used_regions;
+    set<Region *> *new_states_used = nullptr;
     auto chosen_candidates = new set<Region *>(*used_regions);
     set<Region *> *temp_aggregation;
-    int new_best_cost =
-            last_best_cost; // uno dei sotto-rami potrebbe aver migliorato il
+    int new_best_cost = last_best_cost; // uno dei sotto-rami potrebbe aver migliorato il
     // risultato, di conseguenza devo aggiornare la variabile
     // e non utilizzare il parametro in ingresso alla funzione
     // finchè ci sono candidati che aumentano la copertura
     while (true) {
         cover_of_candidate = -1;
+        delete new_states_used;
+        new_states_used = new set<Region *>(*used_regions);
         // scelta del prossimo candidato
         for (auto region : *not_essential_regions) {
             /*if(used_regions->size() == 0){
@@ -343,10 +344,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
         }
         //non è stato trovato il candidato
         if(cover_of_candidate == -1){
-            if(level == 19){
-                //cout << "chosen candidates level " << level<<": " << endl;
-                //println(*chosen_candidates);
-            }
             //cout << "candidato non trovato" << endl;
             break;
         }
@@ -378,12 +375,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
         int current_cost = cost_of_candidate + father_cost;
         new_states_used->insert(candidate);
 
-        /*cout << "prova con: ";
-        for(auto r: new_states_used){
-                print(*r);
-                cout << "|||";
-        }
-        cout << endl;*/
         // salvo il percorso nella cache per non ripeterlo
         if (current_cost >= new_best_cost) {
             // salvo il percorso nella cache per non ripeterlo
@@ -418,7 +409,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
 
                 delete new_states_to_cover;
         }
-        new_states_used = used_regions;
     }
 
     // salvo il percorso nella cache per non ripeterlo: ho calcolato tutti i
@@ -427,6 +417,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
     //println(*used_regions);
     computed_paths_cache->insert(*used_regions);
     delete chosen_candidates;
+    delete new_states_used;
     //cout << "new best cost: " << new_best_cost << endl;
     return new_best_cost;
 }
