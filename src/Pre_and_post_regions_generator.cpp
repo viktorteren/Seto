@@ -103,8 +103,9 @@ void Pre_and_post_regions_generator::create_post_regions(
       }
     }
   }
- /* cout << "mappa post-regioni :" << endl;
-  print(*post_regions);*/
+  cout << "Postregioni :" << endl;
+  print(*post_regions);
+  cout << "" << endl;
 }
 
 void Pre_and_post_regions_generator::create_pre_regions() {
@@ -155,44 +156,5 @@ map<int, set<Region *> *> *Pre_and_post_regions_generator::get_post_regions() {
   return post_regions;
 }
 
-map<int, ER> *Pre_and_post_regions_generator::get_new_ER() { return er_set; };
 
-map<int, ER> *Pre_and_post_regions_generator::create_ER_after_splitting(
-    map<int, ER> *er_set_old, set<int> *splitted_events) {
 
-  //cout << "ER after splitting" << endl;
-  auto er_set = new map<int, ER>();
-
-  auto it = er_set_old->begin();
-
-  for (unsigned int i = 0; i < er_set_old->size(); i++) {
-    // se l'evento non è stato splittato l'ER è quello di prima
-    if (splitted_events->find(i) == splitted_events->end()) {
-      (*er_set)[i] = (*it).second; // prendo il set dell'er vecchio
-    }
-    // l'ER è l'intersezione delle preregioni dell'evento(EC è valida)
-    else {
-      // cout<<"evento"<<i<<endl;
-      auto event1 = i;
-      delete (*it).second;
-      if(pre_regions->at(event1)!= nullptr) {
-          (*er_set)[i] = regions_intersection(pre_regions->at(event1));
-      }
-      else (*er_set)[i]=new set<int>;
-      /*if (events_alias->find(i) != events_alias->end()) {
-        auto event2 = events_alias->at(i);
-        if(pre_regions->at(event2)!= nullptr)  {
-            (*er_set)[event2] = regions_intersection(pre_regions->at(event2)); }
-        else (*er_set)[event2]=new set<int>;
-      }*/
-    }
-    ++it;
-  }
-
-  /*cout << "debug: er" << endl;
-  for (auto ev : *er_set) {
-    println(*ev.second);
-  }*/
-
-  return er_set;
-}

@@ -42,18 +42,21 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             //cout << "-----------IRREDUNDANT REGIONS SEARCH-------------" << endl;
             minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
-            /*cout << "insieme di regioni irridondante: " << endl;
+            cout << "Regioni irridondanti: " << endl;
             for (auto region : *irredundant_regions) {
               // cout << "[" << &(*region)  << "] ";
               println(*region);
-            }*/
+            }
+            cout << "" << endl;
             delete used_regions;
         } else {
-            //  cout << "ALL STATES ARE COVERED BY ESSENTIAL REGIONS" << endl;
+             cout << "Tutte le regioni sono essenziali" << endl;
+             cout << "" << endl;
         }
 
     } else {
-        // cout << "ALL REGIONS ARE ESSENTIAL" << endl;
+         cout << "Tutte le regioni sono essenziali" << endl;
+         cout << "" << endl;
     }
 }
 
@@ -488,12 +491,5 @@ void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
             }
         }
     }
-    // debug
-    /*cout << "prove irredundant regions:" << endl;
-    for(auto rec: *irredundant_regions_map){
-            cout << "set di regioni dell'evento: " << rec.first << endl;
-            for(auto reg: rec.second){
-                    println(*reg);
-            }
-    }*/
+
 }

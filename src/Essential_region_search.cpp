@@ -102,11 +102,12 @@ set<Region *> *Essential_regions_search::search() {
     		cout << " indirizzo: " << reg << endl;
     	}
     }*/
-    /*
+
     cout << "Regioni essenziali: " << endl;
     for (auto reg: *essential_regions) {
     	println(*reg);
-    }*/
+    }
+    cout << "" << endl;
 
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali

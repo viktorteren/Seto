@@ -9,15 +9,9 @@
 class Pre_and_post_regions_generator {
 public:
   explicit Pre_and_post_regions_generator(vector<Region> *reg);
-  /*Pre_and_post_regions_generator(vector<Region> *reg,
-                                 vector<Region*> *candidate_regions,
-                                 map<int, ER> *Er_set,
-                                 set<int> *events_to_split);*/
   ~Pre_and_post_regions_generator();
   map<int, set<Region *> *> *get_pre_regions();
   map<int, set<Region *> *> *get_post_regions();
-  map<int, ER> *get_new_ER();
-  //map<int, int>* get_events_alias();
   static bool is_pre_region(Edges_list *list, Region *region);
   void create_post_regions(map<int, set<Region *> *> *merged_pre_regions);
 
@@ -25,17 +19,8 @@ private:
   vector<Region> *regions;
   map<int, set<Region *> *> *pre_regions;
   map<int, set<Region *> *> *post_regions = nullptr;
-  set<Region *> *added_regions_ptrs;
-  set<int> *events_to_split;
-  // alias vecchio -> nuovo
-  //map<int, int> *events_alias;
-  map<int, ER> *er_set = nullptr;
 
-  //void create_pre_regions(vector<Region> *candidate_regions);
   void create_pre_regions();
-  // void create_pre_and_post_regions_with_splitting(map<int,Region>*
-  // candidate_regions);
   bool is_post_region(Edges_list *list, Region *region);
-  map<int, ER> *create_ER_after_splitting(map<int, ER> *, set<int> *);
-  //void remove_bigger_regions(Region &new_region, vector<Region> *regions_vector);
+
 };
