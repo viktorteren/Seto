@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        file = "../test/input4.ts";
+        file = "../test/input1.ts";
     } else if (argc == 2) {
         file = args[1];
     } else {
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
         if (!excitation_closure) {
 
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
-            //cout << "___________label splitting ok" << endl;
+            cout << "Splitting delle etichette: ";
             ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
 
             map<int,pair<int,Region*>*>::iterator it2;
@@ -177,14 +177,14 @@ int main(int argc, char **argv) {
 
     print_ts_dot_file(file,aliases);
 
-    cout<<"ECTS:"<<endl;
+    /*cout<<"ECTS:"<<endl;
     for(auto tr: *ts_map){
         cout<<"evento "<< tr.first<<endl;
         for(auto r: tr.second){
             cout<<r->first<< "->"<< r->second<<endl;
         }
     }
-    cout << "" << endl;
+    cout << "" << endl;*/
 
     tStart_partial = clock();
     // Inizio modulo: ricerca di set irridondanti di regioni

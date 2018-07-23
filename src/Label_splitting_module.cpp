@@ -21,8 +21,6 @@ Label_splitting_module::~Label_splitting_module() {
 
 set<int> *Label_splitting_module::is_excitation_closed() {
 
-    //cout << "*************IS EXCITATION CLOSED*****************" << endl;
-
     regions_intersection_map = new map<int, set<int> *>() ;
 
     auto events_not_satisfy_EC = new set<int>;
@@ -321,7 +319,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             if (ts_map->find(total_events) == ts_map->end()) {
                 (*ts_map)[total_events] = Edges_list();
             }
-            // cout << "effettuo uno splitting" << endl;
+
             //crea alias e nuove trans poi erase
             //ts size è il nuovo evento
             if (event_alias->find(event) != event_alias->end()) {
@@ -329,7 +327,8 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             } else {
                 (*event_alias)[total_events] = event;
             }
-             // cout << "aggiungo ad aliases: " << total_events << " : " << event << endl;
+            cout << "evento " << event << " diviso negli eventi " << total_events << " e " << event << endl;
+            cout<<""<< endl;
 
             auto to_erase = new set<Edge *>();
 
