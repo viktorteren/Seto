@@ -27,6 +27,11 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
     er = er_map;
     if (!not_essential_regions->empty()) {
         cost_map_filling();
+        if(print_step_by_step){
+            cout << "Regioni non essenziali:" << endl;
+            println(*not_essential_regions);
+            cout << endl;
+        }
         //cout << "num regioni non essenziali: " << not_essential_regions->size() << endl;
         //println(*not_essential_regions);
         uncovered_states = search_not_covered_states_per_event();
