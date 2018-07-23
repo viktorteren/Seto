@@ -17,6 +17,7 @@ int main(int argc, char **argv) {
         file = args[1];
     }
     else if (argc == 3) {
+        file = args[1];
         if( args[2]=="S")
         print_step_by_step=true;
         else  print_step_by_step=false;
@@ -27,6 +28,7 @@ int main(int argc, char **argv) {
     }
 
     TS_parser::parse(file);
+
 
     map<int,pair<int,Region*>*>* candidate_regions;
     map<int, set<Region *> *> *pre_regions;
