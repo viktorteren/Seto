@@ -1,5 +1,5 @@
-digraph input{
-	label="(name=input,n=7,m=11)";
+digraph input1{
+	label="(name=input1,n=7,m=11)";
 	_nil [style = "invis"];
 	node [shape = doublecircle]; 0;
 	node [shape = circle];

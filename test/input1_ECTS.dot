@@ -1,5 +1,5 @@
-digraph input_ECTS{
-	label="(name=input_ECTS,n=7,m=11)";
+digraph input1_ECTS{
+	label="(name=input1_ECTS,n=7,m=11)";
 	_nil [style = "invis"];
 	node [shape = doublecircle]; 0;
 	node [shape = circle];
