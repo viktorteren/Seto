@@ -53,13 +53,13 @@ int main(int argc, char **argv) {
         //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         auto rg = new Region_generator(number_of_events);
         regions = rg->generate();
-        /*cout << "DEBUG: regioni dopo generate " << endl;
+        cout << "Regioni dopo generate " << endl;
         for (auto rec: *regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(reg);
             }
-        }*/
+        }
         vector_regions = copy_map_to_vector(regions);
 
         // cout << "------------------------------------------------------------ "
@@ -72,11 +72,11 @@ int main(int argc, char **argv) {
             rg->remove_bigger_regions(*region, vector_regions);
         }
 
-        /*cout << "region dopo l'eliminazioni delle regioni più grandi" << endl;
+        cout << "regioni dopo l'eliminazione delle regioni più grandi" << endl;
         for (auto r: *vector_regions) {
             cout << "reg: ";
             println(r);
-        }*/
+        }
 
         /*cout<<"regioni"<<endl;
         for (auto rec: *regions) {
@@ -101,13 +101,13 @@ int main(int argc, char **argv) {
         pprg = new Pre_and_post_regions_generator(vector_regions);
         pre_regions = pprg->get_pre_regions();
 
-        /*cout << "preregioni:" << endl;
+        cout << "preregioni:" << endl;
         for (auto rec: *pre_regions) {
             cout << "evento: " << rec.first << endl;
             for (auto reg: *rec.second) {
                 println(*reg);
             }
-        }*/
+        }
 
 
         t_pre_region_gen += (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
         set<int> *events_not_satify_EC = nullptr;
 
         if (!excitation_closure) {
-            //cout << " not exitation closed " << endl;
+            {}cout << " not exitation closed " << endl;
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
             //cout << "___________label splitting ok" << endl;
             ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
@@ -151,6 +151,7 @@ int main(int argc, char **argv) {
             delete regions;
 
         } else {
+            cout << "excitation closure soddisfatta" << endl;
             new_ER = rg->get_ER_set();
         }
 
