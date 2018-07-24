@@ -18,9 +18,31 @@ int main(int argc, char **argv) {
     }
     else if (argc == 3) {
         file = args[1];
-        if( args[2]=="S")
-        print_step_by_step=true;
-        else  print_step_by_step=false;
+        if( args[2]=="S") {
+            print_step_by_step = true;
+            print_step_by_step_debug = false;
+            approximation = false;
+        }
+        else if( args[2]=="A") {
+            print_step_by_step = false;
+            print_step_by_step_debug = false;
+            approximation = true;
+        }
+        else if( args[2]=="SA") {
+            print_step_by_step = true;
+            print_step_by_step_debug = false;
+            approximation = true;
+        }
+        else if( args[2]=="D") {
+            print_step_by_step = true;
+            print_step_by_step_debug = true;
+            approximation = false;
+        }
+        else{
+            print_step_by_step = false;
+            print_step_by_step_debug = false;
+            approximation = false;
+        }
     }
     else {
         cout << "Numero di argomenti in input errato" << endl;
