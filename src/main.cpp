@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     if (argc == 1) {
         // default input
         print_step_by_step=false;
-        file = "../test/input4.ts";
+        file = "../test/input1.ts";
     } else if (argc == 2) {
         file = args[1];
     }
