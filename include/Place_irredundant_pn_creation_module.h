@@ -53,4 +53,6 @@ private:
   set<int>* calculate_events_without_essential_regions();
   bool all_events_have_ec_satisfied(set<Region*> &irredundant_regions);
   bool ec_satisfied(int event, set<Region*> *events_regions);
+    bool irredundant_set_of_regions(set<Region*>* irredundant_regions);
+    bool irredundant_set_for_event(int event, set<Region*> *events_regions);
 };
