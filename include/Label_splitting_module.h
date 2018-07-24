@@ -24,7 +24,8 @@ public:
 
     void split_ts_map(map<int, pair<int, Region *> *> *candidate_regions, map<int, int> *event_alias,
                       map<int, map<int, int> *> *event_violations,
-                      map<int, map<int, vector<Edge *> *> *> *trans_violations);
+                      map<int, map<int, vector<Edge *> *> *> *trans_violations,
+                      map<int,vector<Region>*> *regions_old);
 
 private:
   map<int, set<Region*> *> *pre_regions;

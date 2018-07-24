@@ -278,7 +278,8 @@ void Label_splitting_module::set_number_of_bad_events(
 void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candidate_regions,
                                           map<int, int> *event_alias,
                                           map<int, map<int, int> *> *event_violations,
-                                          map<int, map<int, vector<Edge *> *> *> *trans_violations) {
+                                          map<int, map<int, vector<Edge *> *> *> *trans_violations,
+                                          map<int,vector<Region>*> *regions_old) {
     //per la regione candidata migliore per ogni regione se è contenuta, eventi uscente da candidate rimangono cosi evnti uscenti da new region vengono aggiunti
     Region *best_region = nullptr;
     map<int, pair<int, Region *> *>::iterator it;
@@ -302,12 +303,18 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
         }
     }
 
-    auto regions_vec = Utilities::copy_map_to_vector2(pre_regions);
+    vector<Region*>* regions_vec;
+    if(pre_regions->size()==0){
+        regions_vec = Utilities::copy_map_to_vector3(regions_old);
+    }
+    else{
+     regions_vec = Utilities::copy_map_to_vector2(pre_regions);
+    }
     vector<Region*>::iterator it2;
     //Region *violations_region;
     for (it2 = regions_vec->begin(); it2 < regions_vec->end(); ++it2) {
         auto reg = (*it2);
-        if (is_bigger_than(reg, best_region)) {
+        //if (is_bigger_than(reg, best_region)) {
             //Region *new_region = region_difference(*it2, *best_region);
             map<int, int>::iterator it;
 
@@ -353,7 +360,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             delete to_erase;
 
             break;
-        }
+        //}
     }
 
         delete regions_vec;

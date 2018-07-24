@@ -40,6 +40,7 @@ set<int> *region_difference(set<int> &first, set<int> &second);
 set<Region *> *region_pointer_difference(set<Region *> *first,
                                          set<Region *> *second);
 vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map);
+    vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map);
     vector<Region*> *copy_map_to_vector2(map<int, set<Region*> *> *map);
 set<Region *> *copy_map_to_set(map<int, set<Region *> *> *map);
 set<Region *> *initial_regions(map<int, set<Region *> *> *reg);

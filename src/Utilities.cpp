@@ -217,6 +217,20 @@ namespace Utilities {
         return vec;
     }
 
+    vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map) {
+        auto vec = new vector<Region *>();
+        for (auto record : *map) {
+            for (auto region : *record.second) {
+                auto r=new set<int>(region);
+                if (!contains(vec, r)) {
+                    vec->push_back(r);
+                }
+            }
+        }
+
+        return vec;
+    }
+
     vector<Region *> *copy_map_to_vector2(map<int, set<Region *> *> *map) {
         auto vec = new vector<Region *>();
         for (auto record : *map) {

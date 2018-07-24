@@ -143,7 +143,10 @@ int main(int argc, char **argv) {
 
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
             if(print_step_by_step){cout << "Splitting delle etichette: ";}
-            ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans());
+            if(!pre_regions->empty())
+                ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
+                                 nullptr);
+            else ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),regions);
 
             map<int,pair<int,Region*>*>::iterator it2;
             for(it2=candidate_regions->begin();it2!=candidate_regions->end();++it2) {
