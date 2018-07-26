@@ -301,6 +301,7 @@ int main(int argc, char **argv) {
     //cout<<"pre regions merged map"<<endl;
     //print(*merged_map);
 
+    //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
     print_pn_dot_file(merged_map, post_regions, aliases, file);
     delete aliases;
 
@@ -324,6 +325,11 @@ int main(int argc, char **argv) {
         }
     }
     delete ts_map;
+    delete aliases_map_number_name;
+    delete aliases_map_name_number;
+    delete aliases_map_state_number_name;
+    delete aliases_map_state_name_number;
+
 
     printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
     printf("Time region gen: %.5fs\n", t_region_gen);
