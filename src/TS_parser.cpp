@@ -236,8 +236,8 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 //si tratta di un'etichetta
                 if(!exit){
-                    add_new_label_with_alias(max, temp);
-                    max++;
+                    //add_new_label_with_alias(max, temp);
+                    //max++;
                 }
             }
         }
@@ -252,10 +252,16 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if(temp == ".internal"){
                     exit = true;
                 }
+                if(temp==".state"){
+                    exit = true;
+                }
+                if(temp==".dummy"){
+                    exit = true;
+                }
                 //si tratta di un'etichetta
                 if(!exit){
-                    add_new_label_with_alias(max, temp);
-                    max++;
+                   // add_new_label_with_alias(max, temp);
+                    //max++;
                 }
             }
         }
@@ -268,6 +274,9 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if(print_step_by_step_debug)
                     cout << "temp: " << temp << endl;
                 if(temp == ".dummy"){
+                    exit = true;
+                }
+                if(temp == ".state"){
                     exit = true;
                 }
                 //si tratta di un'etichetta
@@ -312,6 +321,14 @@ void TS_parser::parse_SIS(ifstream &fin) {
                         break;
                     }
                     fin >> label;
+
+                    if(aliases_map_name_number->find(label) == aliases_map_name_number->end()){
+                        add_new_label_with_alias(max, label);
+                        if(print_step_by_step_debug){
+                        max++;
+                        cout<<"MAX "<<max<<endl;}
+                    }
+
                     fin >> finish;
                     //lo stato start non è presente nella mappa
                     if(aliases_map_state_name_number->find(start) == aliases_map_state_name_number->end()){
@@ -323,6 +340,15 @@ void TS_parser::parse_SIS(ifstream &fin) {
                         max_state++;
                     }
                     label_int = (*aliases_map_name_number)[label];
+
+                    if(print_step_by_step_debug) {
+                        for (auto el: *aliases_map_name_number)
+                            cout << "NAME " << el.first << endl;
+                        cout<<"label:"<<label <<endl;
+                        cout<<"label_int:"<<label_int <<endl;
+                    }
+
+
                     start_int = (*aliases_map_state_name_number)[start];
                     finish_int = (*aliases_map_state_name_number)[finish];
                     if (ts_map->find(label_int) == ts_map->end()) {
@@ -338,9 +364,10 @@ void TS_parser::parse_SIS(ifstream &fin) {
         }
         if(temp == ".marking"){
             fin >> temp;
+            if(print_step_by_step_debug)
             cout << "temp dopo marking: "<< temp << endl;
             //stato iniziale dentrro le parentesi graffe: {s0}
-            cout << "substring: " << temp.substr(1, temp.size()-2) << endl;
+            //cout << "substring: " << temp.substr(1, temp.size()-2) << endl;
             initial_state = (*aliases_map_state_name_number)[temp.substr(1, temp.size()-2)];
             if(print_step_by_step_debug){
                 cout << "stato iniziale: " << initial_state << endl;

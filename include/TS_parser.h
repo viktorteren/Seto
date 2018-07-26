@@ -21,7 +21,7 @@ extern My_Map *ts_map;
 extern int num_states, initial_state, num_events, num_events_after_splitting;
 extern unsigned int num_transactions;
 extern map<int, string> *aliases_map_number_name;
-extern map<string, int> *aliases_map_name_number;
+extern map< string, int> *aliases_map_name_number;
 extern map<int, string> *aliases_map_state_number_name;
 extern map<string, int> *aliases_map_state_name_number;
 extern bool g_input;

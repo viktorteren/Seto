@@ -51,6 +51,15 @@ int main(int argc, char **argv) {
 
     TS_parser::parse(file);
 
+    if(print_step_by_step_debug) {
+        cout << "TS" << endl;
+        for (auto tr: *ts_map) {
+            cout << "evento " << tr.first << endl;
+            for (auto r: tr.second) {
+                cout << r->first << "->" << r->second << endl;
+            }
+        }
+    }
 
     map<int,pair<int,Region*>*>* candidate_regions;
     map<int, set<Region *> *> *pre_regions;
