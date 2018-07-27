@@ -449,12 +449,6 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
             //cout << "risultato trovato: ";
             //println(*irredundant_regions);
             //break;
-            if (approximation) {
-                //verifico se non è ridondante
-                if (irredundant_set_of_regions(new_states_used)) {
-                    break;
-                }
-            }
         } else {
             // essedo già stato scelto il candidato e sapendo che devo fare la
             // chiamata ricorsiva devo calcolarmi il nuovo insieme di stati da coprire

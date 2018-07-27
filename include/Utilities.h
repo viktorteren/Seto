@@ -29,7 +29,6 @@ const int ENTER_NOCROSS = 3;
 
 extern bool print_step_by_step;
 extern bool print_step_by_step_debug;
-extern bool approximation;
 
 namespace Utilities {
 
@@ -51,9 +50,7 @@ map<Region *, int> *get_regions_map(map<int, set<Region *> *> *net);
 void print(Region &region);
 void println(Region &region);
 void println(set<Region *> &regions);
-void println(vector<Region *> &regions);
 void print(map<int, set<Region *> *> &net);
-bool is_bigger_than(Region *region, set<int> *region2);
 bool is_bigger_than_or_equal_to(Region *, set<int> *);
 bool are_equal(Region *r1, Region *r2);
 bool contains(set<Region *> *, Region *);

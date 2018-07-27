@@ -1,10 +1,9 @@
 
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
-#include "../include/Place_irredundant_pn_creation_module.h"
-#include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Regions_generator.h"
-#include <ctime>
+#include "../include/Pre_and_post_regions_generator.h"
+#include "../include/Place_irredundant_pn_creation_module.h"
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
@@ -21,27 +20,14 @@ int main(int argc, char **argv) {
         if( args[2]=="S") {
             print_step_by_step = true;
             print_step_by_step_debug = false;
-            approximation = false;
-        }
-        else if( args[2]=="A") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            approximation = true;
-        }
-        else if( args[2]=="SA") {
-            print_step_by_step = true;
-            print_step_by_step_debug = false;
-            approximation = true;
         }
         else if( args[2]=="D") {
             print_step_by_step = true;
             print_step_by_step_debug = true;
-            approximation = false;
         }
         else{
             print_step_by_step = false;
             print_step_by_step_debug = false;
-            approximation = false;
         }
     }
     else {
@@ -86,7 +72,7 @@ int main(int argc, char **argv) {
 
     bool excitation_closure=false;
     double dim_reg;
-    num_events_after_splitting=static_cast<int>(ts_map->size());;
+    num_events_after_splitting=static_cast<int>(ts_map->size());
     do {
         number_of_events = static_cast<int>(ts_map->size());
         //cout << "number_of_events: " << number_of_events << endl;

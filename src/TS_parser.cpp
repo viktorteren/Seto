@@ -34,6 +34,13 @@ void TS_parser::parse(string file) {
   if ((file[file.size() - 2]) == 't' && (file[file.size() - 1] == 's')) {
     parse_TS(fin);
     print_ts_dot_file(file, nullptr);
+
+    if(print_step_by_step) {
+        cout << "Numero di transizioni: " << num_transactions << endl;
+        cout << "Numero di stati: " << num_states << endl;
+        cout << "Numero di eventi: " << num_events << endl;
+    }
+
   }
   // il file è nel formato dot
   else if ((file[file.size() - 3] == 'd' && (file[file.size() - 2]) == 'o' &&
@@ -395,7 +402,7 @@ void TS_parser::add_new_label_with_alias(int num, string name){
     if(print_step_by_step_debug){
         cout << "aggiunta coppia alias etichetta: " << num << " " << name << endl;
     }
-    if(print_step_by_step){
+    if(print_step_by_step_debug){
         cout << "num events: " << num_events << endl;
         for(auto record: *aliases_map_number_name){
             cout << record.first << " -> " << record.second << endl;

@@ -6,7 +6,7 @@
 #include "../include/Utilities.h"
 bool print_step_by_step;
 bool print_step_by_step_debug;
-bool approximation;
+
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
