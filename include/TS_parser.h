@@ -28,7 +28,6 @@ extern bool g_input;
 
 class TS_parser {
   static void parse_TS(ifstream &fin);
-  static void parse_DOT(ifstream &fin);
     static void parse_SIS(ifstream &fin);
     static void add_new_label_with_alias(int num, string name);
     static void add_new_state_with_alias(int num, string name);
