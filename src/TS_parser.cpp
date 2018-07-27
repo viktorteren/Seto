@@ -324,9 +324,10 @@ void TS_parser::parse_SIS(ifstream &fin) {
 
                     if(aliases_map_name_number->find(label) == aliases_map_name_number->end()){
                         add_new_label_with_alias(max, label);
-                        if(print_step_by_step_debug){
                         max++;
-                        cout<<"MAX "<<max<<endl;}
+                        if(print_step_by_step_debug){
+                            cout<<"MAX "<<max<<endl;
+                        }
                     }
 
                     fin >> finish;
@@ -359,6 +360,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                     if(print_step_by_step_debug){
                         cout << start << " -> " << finish << " con etichetta:" << label << endl;
                     }
+                    num_transactions++;
                 }
             }
         }
@@ -377,13 +379,27 @@ void TS_parser::parse_SIS(ifstream &fin) {
             break;
         }
     }
+    num_events = aliases_map_number_name->size();
+    num_states = aliases_map_state_number_name->size();
+    if(print_step_by_step){
+        cout << "Numero di transizioni: " << num_transactions << endl;
+        cout << "Numero di stati: " << num_states << endl;
+        cout << "Numero di eventi: " << num_events << endl;
+    }
 }
 
 void TS_parser::add_new_label_with_alias(int num, string name){
+    num_events++;
     (*aliases_map_number_name)[num] = name;
     (*aliases_map_name_number)[name] = num;
     if(print_step_by_step_debug){
         cout << "aggiunta coppia alias etichetta: " << num << " " << name << endl;
+    }
+    if(print_step_by_step){
+        cout << "num events: " << num_events << endl;
+        for(auto record: *aliases_map_number_name){
+            cout << record.first << " -> " << record.second << endl;
+        }
     }
 }
 

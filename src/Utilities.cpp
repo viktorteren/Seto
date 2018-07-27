@@ -365,10 +365,21 @@ namespace Utilities {
              << ",m=" << num_transactions << ")\";\n";
         fout << "\t_nil [style = \"invis\"];\n";
         fout << "\tnode [shape = doublecircle]; ";
-        fout << initial_state << ";\n";
+        if(g_input){
+            fout << (*aliases_map_state_number_name)[initial_state] << ";\n";
+        }
+        else{
+            fout << initial_state << ";\n";
+        }
         fout << "\tnode [shape = circle];\n";
         fout << "\t_nil -> ";
-        fout << initial_state << ";\n";
+        if(g_input){
+
+            fout << (*aliases_map_state_number_name)[initial_state] << ";\n";
+        }
+        else{
+            fout << initial_state << ";\n";
+        }
 
         map<int, int> *alias_counter = nullptr;
         map<int, int> *alias_counter_original = nullptr;
@@ -391,7 +402,7 @@ namespace Utilities {
         }
 
         for (auto rec : *ts_map) {
-            //levento è un alias
+            //l'evento è un alias
             int label;
             string to_add;
             if (aliases != nullptr && aliases->find(rec.first) != aliases->end()) {
@@ -405,8 +416,15 @@ namespace Utilities {
                 label = rec.first;
             }
             for (auto edge : rec.second) {
-                fout << "\t" << edge->first << "->" << edge->second << "[label=\""
-                     << label << to_add << "\"];\n";
+                if(!g_input){
+                    fout << "\t" << edge->first << "->" << edge->second << "[label=\""
+                         << label << to_add << "\"];\n";
+                }
+                else{
+                    fout << "\t" << (*aliases_map_state_number_name)[edge->first] << "->" << (*aliases_map_state_number_name)[edge->second] << "[label=\""
+                         << (*aliases_map_number_name)[label] << to_add << "\"];\n";
+                }
+
             }
 
         }
@@ -488,8 +506,14 @@ namespace Utilities {
             int label;
             label = record.second;
             (*alias_counter)[label]++;
-            fout << "\t" << record.first << " [label = \""
-                 << label;
+            /*if(g_input){
+                fout << "\t" << record.first << " [label = \""
+                     << (*aliases_map_number_name)[label];
+            }
+            else{*/
+                fout << "\t" << record.first << " [label = \""
+                     << label;
+            //}
             //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
             for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
                 fout << "'";
@@ -501,7 +525,13 @@ namespace Utilities {
         //transazioni (eventi) iniziali
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
-                fout << "\t" << record.first << ";\n";
+                /*if(g_input){
+                    fout << "\t" << (*aliases_map_number_name)[record.first] << ";\n";
+                }
+                else{*/
+                    fout << "\t" << record.first << ";\n";
+                //}
+
             }
         }
         fout << "}\n";
@@ -512,8 +542,14 @@ namespace Utilities {
             for (auto reg : *record.second) {
                 if (record.first < num_events) {
                     //if (regions_mapping->find(reg) != regions_mapping->end()) {
-                    fout << "\tr" << regions_mapping->at(reg) << " -> "
-                         << record.first << ";\n";
+                    /*if(g_input){
+                        fout << "\tr" << regions_mapping->at(reg) << " -> "
+                             << (*aliases_map_number_name)[record.first] << ";\n";
+                    }
+                    else {*/
+                        fout << "\tr" << regions_mapping->at(reg) << " -> "
+                             << record.first << ";\n";
+                    //}
                     //} else {
                     //cout << "regions_mapping non contiene ";
                     // println(*reg);
@@ -534,8 +570,21 @@ namespace Utilities {
         for (auto record : *post_regions) {
             for (auto reg : *record.second) {
                 if (regions_mapping->find(reg) != regions_mapping->end()) {
-                    fout << "\t" << record.first << " -> "
-                         << "r" << regions_mapping->at(reg) << ";\n";
+                    /*if(g_input){
+                        if (record.first < num_events){
+                            fout << "\t" << (*aliases_map_number_name)[record.first] << " -> "
+                                 << "r" << regions_mapping->at(reg) << ";\n";
+                        }
+                        else{
+                            fout << "\t" << record.first << " -> "
+                                 << "r" << regions_mapping->at(reg) << ";\n";
+                        }
+                    }
+                    else{*/
+                        fout << "\t" << record.first << " -> "
+                             << "r" << regions_mapping->at(reg) << ";\n";
+                    //}
+
                 } else {
                     // entra qui 2 volte
                     // cout << "regions_mapping non contiene ";
