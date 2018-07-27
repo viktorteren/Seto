@@ -506,14 +506,14 @@ namespace Utilities {
             int label;
             label = record.second;
             (*alias_counter)[label]++;
-            /*if(g_input){
+            if(g_input){
                 fout << "\t" << record.first << " [label = \""
                      << (*aliases_map_number_name)[label];
             }
-            else{*/
+            else{
                 fout << "\t" << record.first << " [label = \""
                      << label;
-            //}
+            }
             //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
             for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
                 fout << "'";
@@ -525,12 +525,14 @@ namespace Utilities {
         //transazioni (eventi) iniziali
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
-                /*if(g_input){
-                    fout << "\t" << (*aliases_map_number_name)[record.first] << ";\n";
+                if(g_input){
+                    fout << "\t" << record.first << " [label = \""
+                         << (*aliases_map_number_name)[record.first];
+                    fout << "\"];\n";
                 }
-                else{*/
+                else{
                     fout << "\t" << record.first << ";\n";
-                //}
+                }
 
             }
         }
@@ -542,14 +544,9 @@ namespace Utilities {
             for (auto reg : *record.second) {
                 if (record.first < num_events) {
                     //if (regions_mapping->find(reg) != regions_mapping->end()) {
-                    /*if(g_input){
-                        fout << "\tr" << regions_mapping->at(reg) << " -> "
-                             << (*aliases_map_number_name)[record.first] << ";\n";
-                    }
-                    else {*/
-                        fout << "\tr" << regions_mapping->at(reg) << " -> "
+                    fout << "\tr" << regions_mapping->at(reg) << " -> "
                              << record.first << ";\n";
-                    //}
+
                     //} else {
                     //cout << "regions_mapping non contiene ";
                     // println(*reg);
@@ -570,21 +567,8 @@ namespace Utilities {
         for (auto record : *post_regions) {
             for (auto reg : *record.second) {
                 if (regions_mapping->find(reg) != regions_mapping->end()) {
-                    /*if(g_input){
-                        if (record.first < num_events){
-                            fout << "\t" << (*aliases_map_number_name)[record.first] << " -> "
-                                 << "r" << regions_mapping->at(reg) << ";\n";
-                        }
-                        else{
-                            fout << "\t" << record.first << " -> "
-                                 << "r" << regions_mapping->at(reg) << ";\n";
-                        }
-                    }
-                    else{*/
-                        fout << "\t" << record.first << " -> "
+                    fout << "\t" << record.first << " -> "
                              << "r" << regions_mapping->at(reg) << ";\n";
-                    //}
-
                 } else {
                     // entra qui 2 volte
                     // cout << "regions_mapping non contiene ";
