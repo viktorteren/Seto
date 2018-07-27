@@ -376,12 +376,13 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     int last_event_2braches = -1;
     int last_event_nocross = -1;
     auto expanded_regions = new Region[2];
-  //cout<<"eve:"<<event<<endl;
-  // cout << "|||REGIONE: " << region << " --- ";
-  /*  for (auto i : (*region)) {
+    if(print_step_by_step_debug){
+  cout<<"eve:"<<event<<endl;
+   cout << "|||REGIONE: " << region << " --- ";
+    for (auto i : (*region)) {
       cout << i << " ";
     }
-    cout << endl;*/
+    cout << endl;}
    // cout<<"id position reg: " << region_id_position<<endl;
 
     for (int i = 0; i < number_of_events; i++) {
@@ -424,7 +425,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         type = event_types[i];
 
         if (type == NOCROSS) {
-             // cout << "Break per no_cross ev "<< i << endl;
+            if(print_step_by_step_debug)
+             cout << "Break per no_cross ev "<< i << endl;
             branch = NOCROSS;
             last_event_nocross = i;
             break;
@@ -434,13 +436,15 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
                 branch = EXIT_NOCROSS;
                 last_event_2braches = i;
             }
-           // cout << "2 rami exit" << endl;
+            if(print_step_by_step_debug)
+            cout << "2 rami exit" << endl;
         } else if (type == ENTER_NOCROSS) {
             if (branch == OK) {
                 branch = ENTER_NOCROSS;
                 last_event_2braches = i;
             }
-           //   cout << "2 rami enter" << endl;
+            if(print_step_by_step_debug)
+             cout << "2 rami enter" << endl;
             //cout << "branch: " << branch << endl;
         }
     }
@@ -457,7 +461,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *region) {
             (*expanded_regions).insert(state);
-            //cout << "inserisco nella extended Reg: " << state << endl;
+            if(print_step_by_step_debug)
+            cout << "inserisco nella extended Reg: " << state << endl;
         }
 
 
@@ -475,7 +480,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *branches->states_to_add_nocross) {
             expanded_regions[0].insert(state);
-            //cout << "inserisco nella extended Reg: " << state << endl;
+            if(print_step_by_step_debug)
+            cout << "inserisco nella extended Reg: " << state << endl;
         }
 
         //(*trees_init)[event] = last_event_nocross;
@@ -484,9 +490,11 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         //auto pairs = new pair<int,int>(event, last_branch);
         (*(*event_violations)[event])[region_id_position] = last_event_nocross;
 
-       /* for (auto i : expanded_regions[0]) {
+        if(print_step_by_step_debug)
+        for (auto i : expanded_regions[0]) {
+            if(print_step_by_step_debug)
           cout << "Stato della regione espansa NOCROSS " << i << endl;
-        }*/
+        }
 
         // se la temp regione da inserire c'è già non la inserisco
         if (!region_in_queue(*expanded_regions, init_pos)) {
@@ -536,7 +544,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         for (auto state : *region) {
             (*expanded_regions).insert(state);
             (*(expanded_regions + 1)).insert(state);
-            //cout << "inserisco nella extended Reg: " << state << endl;
+            if(print_step_by_step_debug)
+            cout << "inserisco nella extended Reg: " << state << endl;
         }
 
         /*for (auto i : *region) {
@@ -560,7 +569,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *branches->states_to_add_nocross) {
             expanded_regions[0].insert(state);
-            //cout << "inserisco nella extended Reg: " << state << endl;
+            if(print_step_by_step_debug)
+            cout << "inserisco nella extended Reg: " << state << endl;
         }
 
       /*  if(violations->find(event) == violations->end())
@@ -568,9 +578,10 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         auto pairs = new pair<int,int>(event, last_branch);
         (*(*violations)[event])[region] = pairs;*/
 
-        /*for (auto i : expanded_regions[0]) {
-          cout << "Stato della regione espansa NOCROSS " << i << endl;
-        }*/
+        if(print_step_by_step_debug)
+        for (auto i : expanded_regions[0]) {
+                cout << "Stato della regione espansa NOCROSS " << i << endl;
+        }
 
         if (!region_in_queue(*expanded_regions, init_pos)) {
             queue_temp_regions->push_back(*expanded_regions);
@@ -583,17 +594,18 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
 
         for (auto state : *branches->states_to_add_exit_or_enter) {
             expanded_regions[1].insert(state);
-            //cout << "inserisco nella extended Reg: " << state << endl;
+            if(print_step_by_step_debug)
+            cout << "inserisco nella extended Reg: " << state << endl;
         }
 
         /*if(violations->find(event) == violations->end())
             (*violations)[event] = new map<Region*, pair<int, int>*>();
         pairs = new pair<int,int>(event, last_exit_enter);
         (*(*violations)[event])[region] = pairs;*/
-
-        /*for (auto i : expanded_regions[1]) {
+        if(print_step_by_step_debug)
+        for (auto i : expanded_regions[1]) {
           cout << "Stato della regione espansa ENTER " << i << endl;
-        }*/
+        }
 
         if (!region_in_queue(*(expanded_regions + 1), init_pos)) {
             queue_temp_regions->push_back(*(expanded_regions + 1));

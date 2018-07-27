@@ -76,13 +76,13 @@ int main(int argc, char **argv) {
     int number_of_events;
     //int c=0;
     auto aliases= new map<int,int>();
-    int contatore;
 
     clock_t tStart = clock();
 
     auto tStart_partial = clock();
 
     int vec_size=-1;
+    int num_split=0;
 
     bool excitation_closure=false;
     double dim_reg;
@@ -171,7 +171,7 @@ int main(int argc, char **argv) {
         set<int> *events_not_satify_EC = nullptr;
 
         if (!excitation_closure) {
-
+            num_split++;
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
             if(print_step_by_step){cout << "Splitting delle etichette: ";}
             if(!pre_regions->empty())
@@ -213,16 +213,18 @@ int main(int argc, char **argv) {
     }//end prova do while
     while (!excitation_closure);
 
-    int cont = 0;
-    double somma = 0;
-    for (const auto &reg: *vector_regions) {
-        cont++;
-        somma += reg.size();
+    if(print_step_by_step) {
+        int cont = 0;
+        double somma = 0;
+        for (const auto &reg: *vector_regions) {
+            cont++;
+            somma += reg.size();
+        }
+        cout << "media: " << (somma / cont) << endl;
+
+        cout << "numero regioni: " << vector_regions->size() << endl;
+        cout << "numero splitting: " << num_split << endl;
     }
-    //cout << "media: " << (somma / cont) << endl;
-
-    //cout << "numero regioni: " << vector_regions->size() << endl;
-
     delete ls;
 
     print_ts_dot_file(file,aliases);
