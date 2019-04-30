@@ -34,6 +34,7 @@ extern bool print_step_by_step;
 extern bool print_step_by_step_debug;
 extern bool decomposition;
 extern map<int, Region*>* aliases_region_pointer;
+extern map<Region*, int>* aliases_region_pointer_inverted;
 extern int max_alias_decomp;
 
 namespace Utilities {

@@ -266,6 +266,7 @@ int main(int argc, char **argv) {
         Solver s;
         auto uncovered_states = new set<int>();
         aliases_region_pointer = new map<int, Region*>();
+        aliases_region_pointer_inverted = new map<Region*, int>();
         max_alias_decomp = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
         add_regions_clauses_to_solver(s, merged_map,*uncovered_states);

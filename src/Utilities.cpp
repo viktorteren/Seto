@@ -9,6 +9,7 @@ bool print_step_by_step;
 bool print_step_by_step_debug;
 bool decomposition;
 map<int, Region*>* aliases_region_pointer;
+map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
 
 namespace Utilities {
@@ -744,7 +745,7 @@ namespace Utilities {
     Minisat::vec<Minisat::Lit>& region_to_clause(Region* region) {
         auto clause = new Minisat::vec<Minisat::Lit>();
         (*aliases_region_pointer)[max_alias_decomp] = region;
-
+        (*aliases_region_pointer_inverted)[region] = max_alias_decomp;
         int reg = max_alias_decomp;
         max_alias_decomp++;
         clause->push(  Minisat::mkLit(reg) );
@@ -752,7 +753,13 @@ namespace Utilities {
     }
 
     Minisat::vec<Minisat::Lit>& overlapping_regions_clause(set<Region *> *overlapping_regions){
-        //todo
+        auto clause = new Minisat::vec<Minisat::Lit>();
+        int reg_alias;
+        for(auto reg: *overlapping_regions){
+            reg_alias = (*aliases_region_pointer_inverted)[reg];
+            clause->push(  Minisat::mkLit(reg_alias) );
+        }
+        return *clause;
     }
 
      void add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<int>& uncovered_states){
@@ -761,13 +768,25 @@ namespace Utilities {
         for(auto region: *regions_set){
             solver.addClause(region_to_clause(region));
         }
-        //todo: creare la mappa stato -> regioni che coprono lo stato, su tale mappa eseguire region bounds_tp_set_of_clauses
 
-        //todo: creation of a clause for each state: the clause contain overlapping regions on this state
+        auto map_of_overlapped_regions = new map<int, set<Region*>*>();
         for(auto region: *regions_set){
-            //todo: qui aggiungere la regione alla mappa degli stati (che deve essere creata)
+            //aggiunta della regione alla mappa degli stati
+            for(auto state: *region){
+                if(map_of_overlapped_regions->find(state) == map_of_overlapped_regions->end()){
+                    (*map_of_overlapped_regions)[state] = new set<Region*>();
+                }
+                (*map_of_overlapped_regions)[state]->insert(region);
+            }
         }
+        //creation of a clause for each state: the clause contain overlapping regions on this state
+        for (auto const& record : *map_of_overlapped_regions)
+        {
+             solver.addClause(overlapping_regions_clause(record.second));
+        }
+
         delete regions_set;
+        delete map_of_overlapped_regions;
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {

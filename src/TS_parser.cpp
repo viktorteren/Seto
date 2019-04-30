@@ -244,7 +244,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                     label_int = (*aliases_map_name_number)[label];
 
                     if (print_step_by_step_debug) {
-                        for (auto el: *aliases_map_name_number)
+                        for (const auto& el: *aliases_map_name_number)
                             cout << "NAME " << el.first << endl;
                         cout << "label:" << label << endl;
                         cout << "label_int:" << label_int << endl;
@@ -298,7 +298,7 @@ void TS_parser::add_new_label_with_alias(int num, string name) {
     }
     if (print_step_by_step_debug) {
         cout << "num events: " << num_events << endl;
-        for (auto record: *aliases_map_number_name) {
+        for (const auto& record: *aliases_map_number_name) {
             cout << record.first << " -> " << record.second << endl;
         }
     }
