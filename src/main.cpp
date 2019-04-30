@@ -31,18 +31,26 @@ int main(int argc, char **argv) {
         if( args[2]=="S") {
             print_step_by_step = true;
             print_step_by_step_debug = false;
+            decomposition = false;
         }
         else if( args[2]=="D") {
             print_step_by_step = true;
             print_step_by_step_debug = true;
+            decomposition = false;
+        }
+        else if( args[2]=="M") {
+            print_step_by_step = true; //todo: diventerà false alla fine ell'implementazione
+            print_step_by_step_debug = false;
+            decomposition = true;
         }
         else{
             print_step_by_step = false;
             print_step_by_step_debug = false;
+            decomposition = false;
         }
     }
     else {
-        cout << "Numero di argomenti in input errato" << endl;
+        cout << "Wrong number of input arguments" << endl;
         exit(0);
     }
 
@@ -51,7 +59,7 @@ int main(int argc, char **argv) {
     if(print_step_by_step_debug) {
         cout << "TS" << endl;
         for (auto tr: *ts_map) {
-            cout << "evento " << tr.first << endl;
+            cout << "event " << tr.first << endl;
             for (auto r: tr.second) {
                 cout << r->first << "->" << r->second << endl;
             }
@@ -94,7 +102,7 @@ int main(int argc, char **argv) {
         vector_regions = copy_map_to_vector(regions);
 
         if(print_step_by_step){
-        cout << "Regioni: " << endl;
+        cout << "Regions: " << endl;
         for (auto reg: *vector_regions) {
             println(reg);
         }
@@ -112,7 +120,7 @@ int main(int argc, char **argv) {
 
 
         if(print_step_by_step){
-            cout << "Regioni minime: " << endl;
+            cout << "Minimal regions: " << endl;
             for (auto r: *vector_regions) {
                 println(r);
         }
@@ -142,9 +150,9 @@ int main(int argc, char **argv) {
         pre_regions = pprg->get_pre_regions();
 
         if(print_step_by_step) {
-            cout << "Preregioni:" << endl;
+            cout << "Preregions:" << endl;
             for (auto rec: *pre_regions) {
-                cout << "evento: " << rec.first << endl;
+                cout << "event: " << rec.first << endl;
                 for (auto reg: *rec.second) {
                     println(*reg);
                 }
@@ -170,7 +178,7 @@ int main(int argc, char **argv) {
         if (!excitation_closure) {
             num_split++;
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
-            if(print_step_by_step){cout << "Splitting delle etichette: ";}
+            if(print_step_by_step){cout << "Splitting of the labels: ";}
             if(!pre_regions->empty())
                 ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                  nullptr);
@@ -217,10 +225,10 @@ int main(int argc, char **argv) {
             cont++;
             somma += reg.size();
         }
-        cout << "media: " << (somma / cont) << endl;
+        cout << "average: " << (somma / cont) << endl;
 
-        cout << "numero regioni: " << vector_regions->size() << endl;
-        cout << "numero splitting: " << num_split << endl;
+        cout << "number of regions: " << vector_regions->size() << endl;
+        cout << "number of splits: " << num_split << endl;
     }
     delete ls;
 
@@ -240,122 +248,163 @@ int main(int argc, char **argv) {
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-    //TODO:qui si può effettuare la decomposizione della TS
-    /*
-     * creo un'istanza del solver
-     * chiamo il metodo addClause_ dell'istanza Solver per ogni regione (sia essenziale che non) e in più le clausole per i collegamenti???
-     * salvo le regioni/stati da coprire
-     * eseguo il solver
-     * ricavo il risultato dal solver con una clausola nuova
-     * set di set di regioni prende la nuova clausola ritrasformata in insieme di regioni //ogni set è una SM
-     * ricreo le nuove clausole con la negazione della nuova aggiunta
-     * termino quando la copertura è completa
-     */
-    Solver s;
+    if(decomposition) {
+        cout << "============================[DECOMPOSITION]===================" << endl;
+        //TODO:qui si può effettuare la decomposizione della TS
+        /*
+         * creo un'istanza del solver
+         * trasformo le regioni essenziali+irridondanti(dovrei unire le 2 mappe) in clausole: una clausola per ogni regione con un solo
+         * letterale e una clausola per ogni stato per vedere quali regioni si sovrappongono
+         * chiamo il metodo addClause_ dell'istanza Solver per ogni regione (sia essenziale che non) e in più le clausole per i collegamenti???
+         * salvo le regioni/stati da coprire
+         * eseguo il solver
+         * ricavo il risultato dal solver con una clausola nuova
+         * set di set di regioni prende la nuova clausola ritrasformata in insieme di regioni //ogni set è una SM
+         * ricreo le nuove clausole con la negazione della nuova aggiunta
+         * termino quando la copertura è completa
+         */
+        Solver s;
+        aliases_region_pointer = new map<int, Region*>();
+        max_alias_decomp = 0;
+        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
+        set<vec<Lit>>* clauses = nullptr;
+        clauses = transform_regions_to_clauses(merged_map);
 
-    tStart_partial = clock();
+        //================== FREE ====================
+        delete aliases_region_pointer;
+        delete merged_map;
+        delete aliases;
 
-    auto essential_regions = pn_module->get_essential_regions();
-    map<int, set<Region *> *> *irredundant_regions =
-            pn_module->get_irredundant_regions();
-
-    Merging_Minimal_Preregions_module *merging_module = nullptr;
-
-    //cout << "pre-regioni essenziali" << endl;
-    //print(*essential_regions);
-
-    if (irredundant_regions != nullptr) {
-        //cout << "pre-regioni irridondanti" << endl;
-        //print(*irredundant_regions);
-        merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions, new_ER);
-        // print_PN(essential_regions,irredundant_regions);
-    } else {
-        merging_module = new Merging_Minimal_Preregions_module(essential_regions,
-                                                               nullptr, new_ER);
-        // print_PN(essential_regions, nullptr);
-    }
-
-    auto merged_map = merging_module->get_merged_preregions_map();
-
-    //cout << "not merged pre-regions: " << endl;
-    //print(*merging_module->get_total_preregions_map());
-
-
-    if (merged_map == nullptr) {
-        merged_map = merging_module->get_total_preregions_map();
-    }
-
-    //cout << "merged pre-regions: " << endl;
-    //print(*merging_module->get_merged_preregions_map());
-
-
-
-    /*cout << "merged map nel main: " << endl;
-    print(*merged_map);*/
-    /*pprg->create_post_regions(merging_module->get_total_preregions_map());
-    auto post_regions2 = pprg->get_post_regions();
-    print_pn_dot_file(merging_module->get_total_preregions_map(), post_regions2, aliases, file);*/
-
-    auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-
-    pprg->create_post_regions(merged_map);
-    // pprg->create_post_regions(pprg->get_pre_regions());
-
-    auto post_regions = pprg->get_post_regions();
-
-    // restore_default_labels(merged_map, pprg->get_events_alias());
-    // print_pn_dot_file( pprg->get_pre_regions(), post_regions,
-    // pprg->get_events_alias(), file);
-    /*cout << "print aliases" << endl;
-    for(auto rec: *aliases){
-        cout << rec.first << " : " << rec.second << endl;
-    }*/
-
-    /*cout << "aliases: " << endl;
-    for(auto al: *aliases){
-        cout<<al.first<<"->"<<al.second<<endl;
-    }*/
-
-    //cout<<"print finale PN"<<endl;
-    //cout<<"post regions"<<endl;
-    //print(*post_regions);
-    //cout<<"pre regions merged map"<<endl;
-    //print(*merged_map);
-
-    //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
-    print_pn_dot_file(merged_map, post_regions, aliases, file);
-    delete aliases;
-
-    // dealloco regions e tutti i suoi vettori
-    for (auto record : *regions) {
-        delete record.second;
-    }
-    delete regions;
-    delete vector_regions;
-
-    // cout << "fine ricerca " << endl;
-
-    delete pn_module;
-    delete pprg;
-
-    delete merging_module;
-
-    for (auto el : *ts_map) {
-        for (auto p : el.second) {
-            delete p;
+        // dealloco regions e tutti i suoi vettori
+        for (auto record : *regions) {
+            delete record.second;
         }
+        delete regions;
+        delete vector_regions;
+
+        // cout << "fine ricerca " << endl;
+
+        delete pn_module;
+        delete pprg;
+
+        for (auto el : *ts_map) {
+            for (auto p : el.second) {
+                delete p;
+            }
+        }
+        delete ts_map;
+        delete aliases_map_number_name;
+        delete aliases_map_name_number;
+        delete aliases_map_state_number_name;
+        delete aliases_map_state_name_number;
     }
-    delete ts_map;
-    delete aliases_map_number_name;
-    delete aliases_map_name_number;
-    delete aliases_map_state_number_name;
-    delete aliases_map_state_name_number;
+    else{
+        tStart_partial = clock();
+
+        auto essential_regions = pn_module->get_essential_regions();
+        map<int, set<Region *> *> *irredundant_regions =
+                pn_module->get_irredundant_regions();
+
+        Merging_Minimal_Preregions_module *merging_module = nullptr;
+
+        //cout << "pre-regioni essenziali" << endl;
+        //print(*essential_regions);
+
+        if (irredundant_regions != nullptr) {
+            //cout << "pre-regioni irridondanti" << endl;
+            //print(*irredundant_regions);
+            merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions, new_ER);
+            // print_PN(essential_regions,irredundant_regions);
+        } else {
+            merging_module = new Merging_Minimal_Preregions_module(essential_regions,
+                                                                   nullptr, new_ER);
+            // print_PN(essential_regions, nullptr);
+        }
+
+        auto merged_map = merging_module->get_merged_preregions_map();
+
+        //cout << "not merged pre-regions: " << endl;
+        //print(*merging_module->get_total_preregions_map());
 
 
-    printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
-    printf("Time region gen: %.5fs\n", t_region_gen);
-    printf("Time splitting: %.5fs\n", t_splitting);
-    printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-    printf("Time essential+irredundant: %.5fs\n", t_irred);
-    printf("Time merge: %.5fs\n", t_merge);
+        if (merged_map == nullptr) {
+            merged_map = merging_module->get_total_preregions_map();
+        }
+
+        //cout << "merged pre-regions: " << endl;
+        //print(*merging_module->get_merged_preregions_map());
+
+
+
+        /*cout << "merged map nel main: " << endl;
+        print(*merged_map);*/
+        /*pprg->create_post_regions(merging_module->get_total_preregions_map());
+        auto post_regions2 = pprg->get_post_regions();
+        print_pn_dot_file(merging_module->get_total_preregions_map(), post_regions2, aliases, file);*/
+
+        auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+        pprg->create_post_regions(merged_map);
+        // pprg->create_post_regions(pprg->get_pre_regions());
+
+        auto post_regions = pprg->get_post_regions();
+
+        // restore_default_labels(merged_map, pprg->get_events_alias());
+        // print_pn_dot_file( pprg->get_pre_regions(), post_regions,
+        // pprg->get_events_alias(), file);
+        /*cout << "print aliases" << endl;
+        for(auto rec: *aliases){
+            cout << rec.first << " : " << rec.second << endl;
+        }*/
+
+        /*cout << "aliases: " << endl;
+        for(auto al: *aliases){
+            cout<<al.first<<"->"<<al.second<<endl;
+        }*/
+
+        //cout<<"print finale PN"<<endl;
+        //cout<<"post regions"<<endl;
+        //print(*post_regions);
+        //cout<<"pre regions merged map"<<endl;
+        //print(*merged_map);
+
+        //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
+        print_pn_dot_file(merged_map, post_regions, aliases, file);
+        delete aliases;
+
+        // dealloco regions e tutti i suoi vettori
+        for (auto record : *regions) {
+            delete record.second;
+        }
+        delete regions;
+        delete vector_regions;
+
+        // cout << "fine ricerca " << endl;
+
+        delete pn_module;
+        delete pprg;
+
+        delete merging_module;
+
+        for (const auto& el : *ts_map) {
+            for (auto p : el.second) {
+                delete p;
+            }
+        }
+        delete ts_map;
+        delete aliases_map_number_name;
+        delete aliases_map_name_number;
+        delete aliases_map_state_number_name;
+        delete aliases_map_state_name_number;
+
+
+        printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
+        printf("Time region gen: %.5fs\n", t_region_gen);
+        printf("Time splitting: %.5fs\n", t_splitting);
+        printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
+        printf("Time essential+irredundant: %.5fs\n", t_irred);
+        printf("Time merge: %.5fs\n", t_merge);
+    }
+
+
 }

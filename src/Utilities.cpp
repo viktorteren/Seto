@@ -4,9 +4,12 @@
 
 #include <utility>
 #include "../include/Utilities.h"
+
 bool print_step_by_step;
 bool print_step_by_step_debug;
-
+bool decomposition;
+map<int, Region*>* aliases_region_pointer;
+int max_alias_decomp;
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
@@ -734,5 +737,118 @@ namespace Utilities {
         }
         /*cout << "nuova mappa:" << endl;
         print(*net);*/
+    }
+
+    //for each region is created a clause with only thi region identifier
+    //set on true value and also
+    Minisat::vec<Minisat::Lit>& region_to_clause(Region* region) {
+        auto clause = new Minisat::vec<Minisat::Lit>();
+        (*aliases_region_pointer)[max_alias_decomp] = region;
+
+        int reg = max_alias_decomp;
+        max_alias_decomp++;
+        clause->push(  Minisat::mkLit(reg) );
+        return *clause;
+    }
+
+    Minisat::vec<Minisat::Lit>& overlapping_regions_clause(set<Region *> *overlapping_regions){
+        //todo
+    }
+
+    set<Minisat::vec<Minisat::Lit>> *transform_regions_to_clauses(map<int, set<Region *> *> *irredundant_regions){
+        //todo
+        //todo:trasformare la mappa in un set per conoscere quali regioni distinte esistono e su quelle chiamare region_to_clause
+        //todo: creare la mappa stato -> regioni che coprono lo stato, su tale mappa eseguire region bounds_tp_set_of_clauses
+
+        return nullptr;
+    }
+
+    map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {
+        //  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
+
+        map<int, set<Region *> *> *total_pre_regions_map = nullptr;
+        total_pre_regions_map = new map<int, set<Region *> *>();
+
+        /*cout << "first" << endl;
+        for (auto el : *first) {
+            cout << "ev " << el.first << endl;
+            for (auto reg : *el.second)
+                println(*reg);
+        }*/
+
+        //second può essere nullptr
+        /*cout << "  SECOND" << endl;
+        for (auto el:*second) {
+            cout << "ev " << el.first << endl;
+            for (auto reg:*el.second)
+                println(*reg);
+        }*/
+
+        if (second != nullptr) {
+            for (int event = 0; event < num_events_after_splitting; event++) {
+                // cout << "evento:" << event << endl;
+
+                // trovo entrambi gli eventi
+                if (first->find(event) != first->end() &&
+                    second->find(event) != second->end()) {
+
+                    auto merged_vector = new vector<Region *>(first->at(event)->size() +
+                                                              second->at(event)->size());
+
+                    set_union(first->at(event)->begin(), first->at(event)->end(),
+                              second->at(event)->begin(), second->at(event)->end(),
+                              merged_vector->begin());
+
+                    /*cout << "merged vector: ";
+                    for (auto el : *merged_vector)
+                      println(*el);*/
+
+                    (*total_pre_regions_map)[event] =
+                            new set<Region *>(merged_vector->begin(), merged_vector->end());
+                    delete merged_vector;
+                    /*cout<<"entrambe"<<endl;
+                    for(auto el: *total_pre_regions_map->at(event))
+                        println(*el);*/
+                }
+                    // l'evento è solo in first(essential)
+                else if (first->find(event) != first->end()) {
+                    auto merged_vector = new vector<Region *>(first->at(event)->size());
+
+                    (*total_pre_regions_map)[event] = new set<Region *>(
+                            first->at(event)->begin(), first->at(event)->end());
+                    delete merged_vector;
+                    /*cout<<"first"<<endl;
+                    for(auto el: *total_pre_regions_map->at(event))
+                            println(*el);*/
+                }
+                    // l'evento è solo in second(irredundant)
+                else if (second->find(event) != second->end()) {
+                    auto merged_vector = new vector<Region *>(second->at(event)->size());
+
+                    (*total_pre_regions_map)[event] = new set<Region *>(
+                            second->at(event)->begin(), second->at(event)->end());
+                    delete merged_vector;
+                    /* cout<<"secodn"<<endl;
+                     for(auto el: *total_pre_regions_map->at(event))
+                         println(*el);*/
+                }
+            }
+        } else {
+            for (auto record : *first) {
+                auto event = record.first;
+                (*total_pre_regions_map)[event] =
+                        new set<Region *>(first->at(event)->begin(), first->at(event)->end());
+            }
+        }
+
+        /*cout << "debug merging 2 mappe" << endl;
+        for (auto el : *total_pre_regions_map) {
+            cout << "ev: " << el.first << endl;
+            for (auto r : *el.second) {
+                print(*r);
+                cout << " ind.: " << r << endl;
+            }
+        }*/
+        return total_pre_regions_map;
     }
 }

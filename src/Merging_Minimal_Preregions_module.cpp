@@ -9,7 +9,7 @@ Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
         map<int, set<Region *> *> *irredundant_preregions, map<int, ER> *ER) {
     er = ER;
 
-    merging_2_maps(essential_preregions, irredundant_preregions);
+    total_pre_regions_map = merge_2_maps(essential_preregions, irredundant_preregions);
     merged_pre_regions_map = merging_preregions(ER);
 }
 
@@ -30,94 +30,6 @@ Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
     delete er;
 }
 
-void Merging_Minimal_Preregions_module::merging_2_maps(
-        map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {
-
-//  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
-
-    total_pre_regions_map = new map<int, set<Region *> *>();
-
-    /*cout << "first" << endl;
-    for (auto el : *first) {
-        cout << "ev " << el.first << endl;
-        for (auto reg : *el.second)
-            println(*reg);
-    }*/
-
-    //second può essere nullptr
-    /*cout << "  SECOND" << endl;
-    for (auto el:*second) {
-        cout << "ev " << el.first << endl;
-        for (auto reg:*el.second)
-            println(*reg);
-    }*/
-
-    if (second != nullptr) {
-        for (int event = 0; event < num_events_after_splitting; event++) {
-            // cout << "evento:" << event << endl;
-
-            // trovo entrambi gli eventi
-            if (first->find(event) != first->end() &&
-                second->find(event) != second->end()) {
-
-                auto merged_vector = new vector<Region *>(first->at(event)->size() +
-                                                          second->at(event)->size());
-
-                set_union(first->at(event)->begin(), first->at(event)->end(),
-                          second->at(event)->begin(), second->at(event)->end(),
-                          merged_vector->begin());
-
-                /*cout << "merged vector: ";
-                for (auto el : *merged_vector)
-                  println(*el);*/
-
-                (*total_pre_regions_map)[event] =
-                        new set<Region *>(merged_vector->begin(), merged_vector->end());
-                delete merged_vector;
-                /*cout<<"entrambe"<<endl;
-                for(auto el: *total_pre_regions_map->at(event))
-                    println(*el);*/
-            }
-                // l'evento è solo in first(essential)
-            else if (first->find(event) != first->end()) {
-                auto merged_vector = new vector<Region *>(first->at(event)->size());
-
-                (*total_pre_regions_map)[event] = new set<Region *>(
-                        first->at(event)->begin(), first->at(event)->end());
-                delete merged_vector;
-                /*cout<<"first"<<endl;
-                for(auto el: *total_pre_regions_map->at(event))
-                        println(*el);*/
-            }
-                // l'evento è solo in second(irredundant)
-            else if (second->find(event) != second->end()) {
-                auto merged_vector = new vector<Region *>(second->at(event)->size());
-
-                (*total_pre_regions_map)[event] = new set<Region *>(
-                        second->at(event)->begin(), second->at(event)->end());
-                delete merged_vector;
-                /* cout<<"secodn"<<endl;
-                 for(auto el: *total_pre_regions_map->at(event))
-                     println(*el);*/
-            }
-        }
-    } else {
-        for (auto record : *first) {
-            auto event = record.first;
-            (*total_pre_regions_map)[event] =
-                    new set<Region *>(first->at(event)->begin(), first->at(event)->end());
-        }
-    }
-
-    /*cout << "debug merging 2 mappe" << endl;
-    for (auto el : *total_pre_regions_map) {
-        cout << "ev: " << el.first << endl;
-        for (auto r : *el.second) {
-            print(*r);
-            cout << " ind.: " << r << endl;
-        }
-    }*/
-}
 
 map<int, set<Region *> *> *Merging_Minimal_Preregions_module::get_merged_preregions_map() {
     return merged_pre_regions_map;

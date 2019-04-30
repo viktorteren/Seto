@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "minisat/core/Solver.h"
 #include "../include/TS_parser.h"
 #include "numeric"
 #include <algorithm>
@@ -15,7 +16,9 @@
 #include <tuple>
 #include <vector>
 
+
 using namespace std;
+using namespace Minisat;
 
 typedef set<int> Region;
 typedef std::pair<int, int> Edge;
@@ -29,6 +32,9 @@ const int ENTER_NOCROSS = 3;
 
 extern bool print_step_by_step;
 extern bool print_step_by_step_debug;
+extern bool decomposition;
+extern map<int, Region*>* aliases_region_pointer;
+extern int max_alias_decomp;
 
 namespace Utilities {
 
@@ -59,4 +65,8 @@ void print_ts_dot_file(string file_path,map<int, int> *aliases);
 void print_pn_dot_file(map<int, set<Region *> *> *net,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases, string file_name);
+Minisat::vec<Minisat::Lit> region_to_clause(map<int, set<Region *> *> *irredundant_regions);
+Minisat::vec<Minisat::Lit>& overlapping_regions_clause(set<Region *> *overlapping_regions);
+set<Minisat::vec<Minisat::Lit>> *transform_regions_to_clauses(map<int, set<Region *> *> *regions_map);
+map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
 };

@@ -17,7 +17,7 @@ public:
 
 private:
   vector<Region> *regions;
-  map<int, set<Region *> *> *pre_regions;
+  map<int, set<Region *> *> *pre_regions; //the map contain <event e, regions which covers the event e>
   map<int, set<Region *> *> *post_regions = nullptr;
 
   void create_pre_regions();
