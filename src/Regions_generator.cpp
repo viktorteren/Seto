@@ -511,7 +511,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             Region *i_ptr = &(*it);
             // for(auto i: *queue_temp_regions){
             //cout << "coda:" << i_ptr << endl;
-            /*for (auto state : i)
+            for (auto state : i)
               cout << "stati" << state << endl;
         }*/
         // capire gli stati da aggiungere
@@ -621,7 +621,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
           Region *i_ptr = &(*it);
           // for(auto i: *queue_temp_regions){
          // cout << "coda:" << i_ptr << endl;
-          /*for (auto state : i)
+          for (auto state : i)
             cout << "stati" << state << endl;
         }*/
     }

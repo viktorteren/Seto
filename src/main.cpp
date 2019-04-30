@@ -264,13 +264,15 @@ int main(int argc, char **argv) {
          * termino quando la copertura è completa
          */
         Solver s;
+        auto uncovered_states = new set<int>();
         aliases_region_pointer = new map<int, Region*>();
         max_alias_decomp = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        set<vec<Lit>>* clauses = nullptr;
-        clauses = transform_regions_to_clauses(merged_map);
+        add_regions_clauses_to_solver(s, merged_map,*uncovered_states);
+
 
         //================== FREE ====================
+        delete uncovered_states;
         delete aliases_region_pointer;
         delete merged_map;
         delete aliases;

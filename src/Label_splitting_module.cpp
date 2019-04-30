@@ -227,9 +227,9 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
         }
     }
 
-    int it = 0;
-    // cout << ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
-    /*for (auto i : *trans) {
+    /*int it = 0;
+     cout << ">> IN = 0/OUT = 1/EXIT = 2/ENTER = 3" << endl;
+    for (auto i : *trans) {
       cout << "num trans " << it << ": " << i << endl;
       it++;
     }*/

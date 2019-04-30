@@ -755,12 +755,19 @@ namespace Utilities {
         //todo
     }
 
-    set<Minisat::vec<Minisat::Lit>> *transform_regions_to_clauses(map<int, set<Region *> *> *irredundant_regions){
-        //todo
-        //todo:trasformare la mappa in un set per conoscere quali regioni distinte esistono e su quelle chiamare region_to_clause
+     void add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<int>& uncovered_states){
+        auto regions_set = copy_map_to_set(regions);
+        //creation of a clause for each region
+        for(auto region: *regions_set){
+            solver.addClause(region_to_clause(region));
+        }
         //todo: creare la mappa stato -> regioni che coprono lo stato, su tale mappa eseguire region bounds_tp_set_of_clauses
 
-        return nullptr;
+        //todo: creation of a clause for each state: the clause contain overlapping regions on this state
+        for(auto region: *regions_set){
+            //todo: qui aggiungere la regione alla mappa degli stati (che deve essere creata)
+        }
+        delete regions_set;
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {

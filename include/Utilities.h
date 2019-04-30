@@ -47,8 +47,8 @@ set<int> *region_difference(set<int> &first, set<int> &second);
 set<Region *> *region_pointer_difference(set<Region *> *first,
                                          set<Region *> *second);
 vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map);
-    vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map);
-    vector<Region*> *copy_map_to_vector2(map<int, set<Region*> *> *map);
+vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map);
+vector<Region*> *copy_map_to_vector2(map<int, set<Region*> *> *map);
 set<Region *> *copy_map_to_set(map<int, set<Region *> *> *map);
 set<Region *> *initial_regions(map<int, set<Region *> *> *reg);
 map<Region *, int> *get_regions_map(map<int, set<Region *> *> *net);
@@ -67,6 +67,6 @@ void print_pn_dot_file(map<int, set<Region *> *> *net,
                        map<int, int>* aliases, string file_name);
 Minisat::vec<Minisat::Lit> region_to_clause(map<int, set<Region *> *> *irredundant_regions);
 Minisat::vec<Minisat::Lit>& overlapping_regions_clause(set<Region *> *overlapping_regions);
-set<Minisat::vec<Minisat::Lit>> *transform_regions_to_clauses(map<int, set<Region *> *> *regions_map);
+void add_regions_clauses_to_solver(Solver& s, map<int, set<Region *> *> *regions_map, set<int>& uncovered_states); //s vill recieve new clauses and uncovered_states the states to cover
 map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
 };
