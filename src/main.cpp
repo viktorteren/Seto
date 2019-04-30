@@ -1,9 +1,17 @@
-
+//#include <errno.h>
+//#include <signal.h>
+//#include "minisat/utils/System.h"
+//#include "minisat/utils/ParseUtils.h"
+//#include "minisat/utils/Options.h"
+//#include "minisat/core/Dimacs.h"
+#include "minisat/core/Solver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
+
+using namespace Minisat;
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
@@ -11,12 +19,15 @@ int main(int argc, char **argv) {
     if (argc == 1) {
         // default input
         print_step_by_step=false;
-        file = "../test/input1.ts";
+        file = "../input/etff.g";
+        //cout << "sono qui" << endl;
     } else if (argc == 2) {
         file = args[1];
+        cout << file << endl;
     }
     else if (argc == 3) {
         file = args[1];
+        cout << file << endl;
         if( args[2]=="S") {
             print_step_by_step = true;
             print_step_by_step_debug = false;
@@ -101,9 +112,9 @@ int main(int argc, char **argv) {
 
 
         if(print_step_by_step){
-        cout << "Regioni minime: " << endl;
-        for (auto r: *vector_regions) {
-            println(r);
+            cout << "Regioni minime: " << endl;
+            for (auto r: *vector_regions) {
+                println(r);
         }
         cout << "" << endl;}
 
@@ -228,6 +239,19 @@ int main(int argc, char **argv) {
     // Inizio modulo: ricerca di set irridondanti di regioni
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+    //TODO:qui si può effettuare la decomposizione della TS
+    /*
+     * creo un'istanza del solver
+     * chiamo il metodo addClause_ dell'istanza Solver per ogni regione (sia essenziale che non) e in più le clausole per i collegamenti???
+     * salvo le regioni/stati da coprire
+     * eseguo il solver
+     * ricavo il risultato dal solver con una clausola nuova
+     * set di set di regioni prende la nuova clausola ritrasformata in insieme di regioni //ogni set è una SM
+     * ricreo le nuove clausole con la negazione della nuova aggiunta
+     * termino quando la copertura è completa
+     */
+    Solver s;
 
     tStart_partial = clock();
 

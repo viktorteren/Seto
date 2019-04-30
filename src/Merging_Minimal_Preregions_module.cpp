@@ -127,6 +127,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::get_total_preregio
     return total_pre_regions_map;
 }
 
+//execute te first merge and then return the result, could be modified to do it on all possible combinations
 map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions(map<int, set<int> *> *ER_map) {
 
     //cout << "MERGING PREREGIONS___________" << endl;
@@ -263,8 +264,6 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                              }
                             cout << "" << endl;
                             }
-
-
                             return tmp_map;
                         }
                     }

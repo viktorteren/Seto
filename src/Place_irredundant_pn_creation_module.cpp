@@ -428,9 +428,9 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
         new_states_used->insert(candidate);
 
         if (print_step_by_step_debug) {
-            /*cout << "sono al livello " << level << endl;
-            cout << "l'insieme dei candidati è: " << endl;
-            println(*new_states_used);*/
+            //cout << "sono al livello " << level << endl;
+            //cout << "l'insieme dei candidati è: " << endl;
+            //println(*new_states_used);
         }
 
         // salvo il percorso nella cache per non ripeterlo
@@ -438,7 +438,7 @@ int Place_irredundant_pn_creation_module::minimum_cost_search_with_label_costrai
         if (current_cost >= new_best_cost) {
             //non prosegue su questa strada
             //if (print_step_by_step_debug)
-                //cout << "taglio" << endl;
+               // cout << "taglio" << endl;
         }
             // ho completato la copertura ed è meglio di quella precedente
         else if (states_to_cover.size() - cover_of_candidate == 0 && all_events_have_ec_satisfied(*new_states_used)) {
