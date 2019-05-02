@@ -11,6 +11,7 @@ bool decomposition;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
+int num_clauses;
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
@@ -226,7 +227,7 @@ namespace Utilities {
     vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map) {
         auto vec = new vector<Region *>();
         for (auto record : *map) {
-            for (auto region : *record.second) {
+            for (const auto& region : *record.second) {
                 auto r=new set<int>(region);
                 if (!contains(vec, r)) {
                     vec->push_back(r);
@@ -405,7 +406,7 @@ namespace Utilities {
 
         }
 
-        for (auto rec : *ts_map) {
+        for (const auto& rec : *ts_map) {
             //l'evento è un alias
             int label;
             string to_add;
@@ -439,6 +440,41 @@ namespace Utilities {
         fout << "}\n";
         fout.close();
     }
+
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses){
+        cout << "================[DIMACS FILE CREATION]====================" << endl;
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        // cout << "out name: " << in_dot_name << endl;
+
+        output_name = output_name + ".dimacs";
+
+
+        ofstream fout(output_name);
+        fout << "p c ";
+        fout << num_var << " " << num_clauses << endl;
+        for(auto clause: *clauses){
+            for(auto lit: *clause){
+                fout << lit << " ";
+            }
+            fout << "0" << endl;
+        }
+        fout.close();
+        return output_name;
+    }
+
 
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
@@ -742,31 +778,36 @@ namespace Utilities {
 
     //for each region is created a clause with only thi region identifier
     //set on true value and also
-    Minisat::vec<Minisat::Lit>& region_to_clause(Region* region) {
-        auto clause = new Minisat::vec<Minisat::Lit>();
+    vec<int>* region_to_clause(Region* region) {
+        auto clause = new vec<int>;
         (*aliases_region_pointer)[max_alias_decomp] = region;
         (*aliases_region_pointer_inverted)[region] = max_alias_decomp;
         int reg = max_alias_decomp;
         max_alias_decomp++;
-        clause->push(  Minisat::mkLit(reg) );
-        return *clause;
+        clause->push(  reg );
+        return clause;
     }
 
-    Minisat::vec<Minisat::Lit>& overlapping_regions_clause(set<Region *> *overlapping_regions){
-        auto clause = new Minisat::vec<Minisat::Lit>();
+    vec<int>* overlapping_regions_clause(set<Region *> *overlapping_regions){
+        auto clause = new vec<int>();
         int reg_alias;
         for(auto reg: *overlapping_regions){
             reg_alias = (*aliases_region_pointer_inverted)[reg];
-            clause->push(  Minisat::mkLit(reg_alias) );
+            clause->push(  -reg_alias );
         }
-        return *clause;
+        return clause;
     }
 
-     void add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<int>& uncovered_states){
+     vec<vec<int>*>* add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<int>& uncovered_states){
+        auto clauses = new vec<vec<int>*>();
         auto regions_set = copy_map_to_set(regions);
         //creation of a clause for each region
         for(auto region: *regions_set){
-            solver.addClause(region_to_clause(region));
+            vec<int>* lits;
+            lits = region_to_clause(region);
+            clauses->push(lits);
+            num_clauses++;
+            //solver.addClause(*lits);
         }
 
         auto map_of_overlapped_regions = new map<int, set<Region*>*>();
@@ -782,11 +823,13 @@ namespace Utilities {
         //creation of a clause for each state: the clause contain overlapping regions on this state
         for (auto const& record : *map_of_overlapped_regions)
         {
-             solver.addClause(overlapping_regions_clause(record.second));
+            clauses->push(overlapping_regions_clause(record.second));
+            num_clauses++;
+            //solver.addClause(overlapping_regions_clause(record.second));
         }
-
         delete regions_set;
         delete map_of_overlapped_regions;
+        return clauses;
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {

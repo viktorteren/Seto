@@ -3,7 +3,7 @@
 //#include "minisat/utils/System.h"
 //#include "minisat/utils/ParseUtils.h"
 //#include "minisat/utils/Options.h"
-//#include "minisat/core/Dimacs.h"
+#include "minisat/core/Dimacs.h"
 #include "minisat/core/Solver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
@@ -263,16 +263,21 @@ int main(int argc, char **argv) {
          * ricreo le nuove clausole con la negazione della nuova aggiunta
          * termino quando la copertura è completa
          */
-        Solver s;
+        auto s = new Solver();
         auto uncovered_states = new set<int>();
         aliases_region_pointer = new map<int, Region*>();
         aliases_region_pointer_inverted = new map<Region*, int>();
-        max_alias_decomp = 0;
+        max_alias_decomp = 1;
+        num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        add_regions_clauses_to_solver(s, merged_map,*uncovered_states);
-
+        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map,*uncovered_states);
+        string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
+        //FILE* f;
+        //f = fopen(dimacs_file.c_str(), "r");
+        //Minisat::parse_DIMACS(f, s);
 
         //================== FREE ====================
+        delete s;
         delete uncovered_states;
         delete aliases_region_pointer;
         delete merged_map;
@@ -290,7 +295,7 @@ int main(int argc, char **argv) {
         delete pn_module;
         delete pprg;
 
-        for (auto el : *ts_map) {
+        for (const auto& el : *ts_map) {
             for (auto p : el.second) {
                 delete p;
             }
