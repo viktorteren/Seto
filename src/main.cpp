@@ -272,10 +272,12 @@ int main(int argc, char **argv) {
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
         vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map,*uncovered_states);
         string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
-        //FILE* f;
-        //f = fopen(dimacs_file.c_str(), "r");
-        //Minisat::parse_DIMACS(f, s);
+        FILE* f;
+        f = fopen(dimacs_file.c_str(), "r");
+        Minisat::parse_DIMACS(f, *s);
 
+
+        fclose(f);
         //================== FREE ====================
         delete s;
         delete uncovered_states;

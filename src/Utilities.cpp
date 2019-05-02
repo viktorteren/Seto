@@ -463,7 +463,7 @@ namespace Utilities {
 
 
         ofstream fout(output_name);
-        fout << "p c ";
+        fout << "p cnf ";
         fout << num_var << " " << num_clauses << endl;
         for(auto clause: *clauses){
             for(auto lit: *clause){
