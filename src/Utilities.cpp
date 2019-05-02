@@ -778,14 +778,19 @@ namespace Utilities {
 
     //for each region is created a clause with only thi region identifier
     //set on true value and also
-    vec<int>* region_to_clause(Region* region) {
+    /*vec<int>* region_to_clause(Region* region) {
         auto clause = new vec<int>;
-        (*aliases_region_pointer)[max_alias_decomp] = region;
-        (*aliases_region_pointer_inverted)[region] = max_alias_decomp;
-        int reg = max_alias_decomp;
+        region_mapping(region);
         max_alias_decomp++;
+        int reg = max_alias_decomp -1;
         clause->push(  reg );
         return clause;
+    }*/
+
+    void region_mapping(Region* region){
+        (*aliases_region_pointer)[max_alias_decomp] = region;
+        (*aliases_region_pointer_inverted)[region] = max_alias_decomp;
+        max_alias_decomp++;
     }
 
     vec<int>* overlapping_regions_clause(set<Region *> *overlapping_regions){
@@ -798,16 +803,22 @@ namespace Utilities {
         return clause;
     }
 
+    vec<int>* covering_state_clause(set<Region *> *overlapping_regions){
+        auto clause = new vec<int>();
+        int reg_alias;
+        for(auto reg: *overlapping_regions){
+            reg_alias = (*aliases_region_pointer_inverted)[reg];
+            clause->push(  reg_alias );
+        }
+        return clause;
+    }
+
      vec<vec<int>*>* add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<int>& uncovered_states){
         auto clauses = new vec<vec<int>*>();
         auto regions_set = copy_map_to_set(regions);
-        //creation of a clause for each region
+        //mapping of region aliases
         for(auto region: *regions_set){
-            vec<int>* lits;
-            lits = region_to_clause(region);
-            clauses->push(lits);
-            num_clauses++;
-            //solver.addClause(*lits);
+            region_mapping(region);
         }
 
         auto map_of_overlapped_regions = new map<int, set<Region*>*>();
@@ -823,8 +834,9 @@ namespace Utilities {
         //creation of a clause for each state: the clause contain overlapping regions on this state
         for (auto const& record : *map_of_overlapped_regions)
         {
+            clauses->push(covering_state_clause(record.second));
             clauses->push(overlapping_regions_clause(record.second));
-            num_clauses++;
+            num_clauses+=2;
             //solver.addClause(overlapping_regions_clause(record.second));
         }
         delete regions_set;
