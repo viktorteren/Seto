@@ -48,7 +48,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             minimum_cost_search_with_label_costraints(states_to_cover, used_regions, INT_MAX, 0, 0);
             //  cout << "min cost: " << min << endl;
             if (print_step_by_step) {
-                cout << "Insieme irridondante di regioni: " << endl;
+                cout << "Irredundant set of regions: " << endl;
                 for (auto region : *irredundant_regions) {
                     // cout << "[" << &(*region)  << "] ";
                     println(*region);
@@ -58,14 +58,14 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
             delete used_regions;
         } else {
             if (print_step_by_step) {
-                cout << "Tutte le regioni sono essenziali" << endl;
+                cout << "Each region is essential" << endl;
                 cout << "" << endl;
             }
         }
 
     } else {
         if (print_step_by_step) {
-            cout << "Tutte le regioni sono essenziali" << endl;
+            cout << "Each region is essential" << endl;
             cout << "" << endl;
         }
     }

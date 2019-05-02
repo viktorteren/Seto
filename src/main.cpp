@@ -264,13 +264,14 @@ int main(int argc, char **argv) {
          * termino quando la copertura è completa
          */
         auto s = new Solver();
-        auto uncovered_states = new set<int>();
+        auto new_results_to_avoid = new set<set<int>*>();
+        auto uncovered_regions = new set<Region *>();
         aliases_region_pointer = new map<int, Region*>();
         aliases_region_pointer_inverted = new map<Region*, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map,*uncovered_states);
+        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map, uncovered_regions);
         string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
         FILE* f;
         f = fopen(dimacs_file.c_str(), "r");
@@ -279,46 +280,70 @@ int main(int argc, char **argv) {
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
 
         //=======================SAT SOLVER PART =====================
-        FILE* res = stdout;
-        if (!s->simplify()){
-            if (res != NULL) fprintf(res, "UNSAT\n"), fclose(res);
-            if (s->verbosity > 0){
-                fprintf(stderr, "===============================================================================\n");
-                fprintf(stderr, "Solved by unit propagation\n");
-                //printStats(*s);
-                fprintf(stderr, "\n"); }
-            fprintf(stderr, "UNSATISFIABLE\n");
-            exit(20);
-        }
+        int iteration_counter=0;
+        do {
+            cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+            FILE *res = stdout;
+            if (!s->simplify()) {
+                if (res != NULL) fprintf(res, "UNSAT\n"), fclose(res);
+                if (s->verbosity > 0) {
+                    fprintf(stderr,
+                            "===============================================================================\n");
+                    fprintf(stderr, "Solved by unit propagation\n");
+                    //printStats(*s);
+                    fprintf(stderr, "\n");
+                }
+                fprintf(stderr, "UNSATISFIABLE\n");
+                exit(20);
+            }
 
-        vec<Lit> dummy;
-        lbool ret = s->solveLimited(dummy);
-        //if (s->verbosity > 0){
+            vec<Lit> dummy;
+            lbool ret = s->solveLimited(dummy);
+            //if (s->verbosity > 0){
             //printStats(*s);
             //fprintf(stderr, "\n");
-        //}
-        //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
-        if (res != NULL){
-            if (ret == l_True){
-                fprintf(res, "SAT\n");
-                auto SM = new set<Region *>();
-                for (int i = 0; i < s->nVars(); i++) {
-                    if (s->model[i] != l_Undef) {
-                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
-                        if(s->model[i] == l_True)
-                            add_region_to_SM(SM, (*aliases_region_pointer)[i+1]);
+            //}
+            //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
+            if (res != NULL) {
+                if (ret == l_True) {
+                    fprintf(res, "SAT\n");
+                    auto SM = new set<Region *>();
+                    auto clause_to_avoid = new set<int>();
+                    for (int i = 0; i < s->nVars(); i++) {
+                        if (s->model[i] != l_Undef) {
+                            fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
+                            if (s->model[i] == l_True) {
+                                add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
+                                clause_to_avoid->insert(i + 1);
+                            }
+                        }
                     }
-                }
-                SMs->insert(SM);
-                fprintf(res, " 0\n");
-            }else if (ret == l_False)
-                fprintf(res, "UNSAT\n");
-            else
-                fprintf(res, "INDET\n");
-            fclose(res);
+                    SMs->insert(SM);
+                    //remove the regions of SM from uncovered regions set
+                    for (auto region: *SM) {
+                        uncovered_regions->erase(region);
+                    }
+                    new_results_to_avoid->insert(clause_to_avoid);
+                    //add the negation of the new clause found to the model
+                    auto lits = new vec<Lit>();
+                    for (auto lit: *clause_to_avoid) {
+                        lits->push(~mkLit(lit));
+                        s->addClause(*lits);
+                    }
+                    delete lits;
+                    fprintf(res, " 0\n");
+                } else if (ret == l_False)
+                    fprintf(res, "UNSAT\n");
+                else
+                    fprintf(res, "INDET\n");
+                fclose(res);
+            }
+            iteration_counter++;
+            cout << "iteration " << iteration_counter << endl;
         }
+        while(uncovered_regions->size() > 0);
 
-
+        //todo: aggiustare il ciclo do while??? rileggere da capo un nuovo file dimacs aggiornato??
 
 
 
@@ -326,7 +351,7 @@ int main(int argc, char **argv) {
         //================== FREE ====================
         delete SMs;
         delete s;
-        delete uncovered_states;
+        //delete uncovered_regions;
         delete aliases_region_pointer;
         delete merged_map;
         delete aliases;
