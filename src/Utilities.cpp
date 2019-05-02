@@ -933,4 +933,8 @@ namespace Utilities {
         }*/
         return total_pre_regions_map;
     }
+
+    void add_region_to_SM(set<Region*>* SM, Region* region){
+        SM->insert(region);
+    }
 }

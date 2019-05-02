@@ -274,8 +274,9 @@ int main(int argc, char **argv) {
         string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
         FILE* f;
         f = fopen(dimacs_file.c_str(), "r");
-        s->verbosity = 1;
+        s->verbosity = 0;
         Minisat::parse_DIMACS(f, *s);
+        auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
 
         //=======================SAT SOLVER PART =====================
         FILE* res = stdout;
@@ -292,16 +293,23 @@ int main(int argc, char **argv) {
 
         vec<Lit> dummy;
         lbool ret = s->solveLimited(dummy);
-        if (s->verbosity > 0){
+        //if (s->verbosity > 0){
             //printStats(*s);
-            fprintf(stderr, "\n"); }
-        fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
+            //fprintf(stderr, "\n");
+        //}
+        //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
         if (res != NULL){
             if (ret == l_True){
                 fprintf(res, "SAT\n");
-                for (int i = 0; i < s->nVars(); i++)
-                    if (s->model[i] != l_Undef)
-                        fprintf(res, "%s%s%d", (i==0)?"":" ", (s->model[i]==l_True)?"":"-", i+1);
+                auto SM = new set<Region *>();
+                for (int i = 0; i < s->nVars(); i++) {
+                    if (s->model[i] != l_Undef) {
+                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
+                        if(s->model[i] == l_True)
+                            add_region_to_SM(SM, (*aliases_region_pointer)[i+1]);
+                    }
+                }
+                SMs->insert(SM);
                 fprintf(res, " 0\n");
             }else if (ret == l_False)
                 fprintf(res, "UNSAT\n");
@@ -316,6 +324,7 @@ int main(int argc, char **argv) {
 
         fclose(f);
         //================== FREE ====================
+        delete SMs;
         delete s;
         delete uncovered_states;
         delete aliases_region_pointer;

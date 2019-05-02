@@ -74,4 +74,5 @@ namespace Utilities {
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses);
     vec<int>* covering_state__clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);
+    void add_region_to_SM(set<Region*>* SM, Region* region);
 };
