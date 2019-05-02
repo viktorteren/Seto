@@ -836,6 +836,7 @@ namespace Utilities {
         {
             clauses->push(covering_state_clause(record.second));
             clauses->push(overlapping_regions_clause(record.second));
+            uncovered_states.insert(record.first);
             num_clauses+=2;
             //solver.addClause(overlapping_regions_clause(record.second));
         }

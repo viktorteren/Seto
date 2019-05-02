@@ -274,7 +274,44 @@ int main(int argc, char **argv) {
         string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
         FILE* f;
         f = fopen(dimacs_file.c_str(), "r");
+        s->verbosity = 1;
         Minisat::parse_DIMACS(f, *s);
+
+        //=======================SAT SOLVER PART =====================
+        FILE* res = stdout;
+        if (!s->simplify()){
+            if (res != NULL) fprintf(res, "UNSAT\n"), fclose(res);
+            if (s->verbosity > 0){
+                fprintf(stderr, "===============================================================================\n");
+                fprintf(stderr, "Solved by unit propagation\n");
+                //printStats(*s);
+                fprintf(stderr, "\n"); }
+            fprintf(stderr, "UNSATISFIABLE\n");
+            exit(20);
+        }
+
+        vec<Lit> dummy;
+        lbool ret = s->solveLimited(dummy);
+        if (s->verbosity > 0){
+            //printStats(*s);
+            fprintf(stderr, "\n"); }
+        fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
+        if (res != NULL){
+            if (ret == l_True){
+                fprintf(res, "SAT\n");
+                for (int i = 0; i < s->nVars(); i++)
+                    if (s->model[i] != l_Undef)
+                        fprintf(res, "%s%s%d", (i==0)?"":" ", (s->model[i]==l_True)?"":"-", i+1);
+                fprintf(res, " 0\n");
+            }else if (ret == l_False)
+                fprintf(res, "UNSAT\n");
+            else
+                fprintf(res, "INDET\n");
+            fclose(res);
+        }
+
+
+
 
 
         fclose(f);
