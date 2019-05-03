@@ -441,7 +441,7 @@ namespace Utilities {
         fout.close();
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses){
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
         string in_name;
@@ -464,10 +464,17 @@ namespace Utilities {
 
         ofstream fout(output_name);
         fout << "p cnf ";
-        fout << num_var << " " << num_clauses << endl;
+        fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
         for(auto clause: *clauses){
             for(auto lit: *clause){
                 fout << lit << " ";
+            }
+            fout << "0" << endl;
+        }
+        //add the new clauses found in the previous iterations
+        for(auto clause: *new_results_to_avoid){
+            for(auto lit: *clause){
+                fout << "-" <<lit << " ";
             }
             fout << "0" << endl;
         }
@@ -730,6 +737,11 @@ namespace Utilities {
                 cout << "NULL" << endl;
             println(*rec.second);
         }
+    }
+
+    void print_SM(set<Region *>* SM){
+        println(*SM);
+        cout << endl;
     }
 
     set<Region *> *region_pointer_union(set<Region *> *first,

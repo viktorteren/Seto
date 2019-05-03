@@ -272,18 +272,20 @@ int main(int argc, char **argv) {
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
         vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map, uncovered_regions);
-        string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses);
-        FILE* f;
-        f = fopen(dimacs_file.c_str(), "r");
         s->verbosity = 0;
-        Minisat::parse_DIMACS(f, *s);
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
-
+        FILE *res = stdout;
         //=======================SAT SOLVER PART =====================
         int iteration_counter=0;
         do {
+            cout << "===============================[DIMACS FILE PARSING]=====================" << endl;
+            string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses, new_results_to_avoid);
+            FILE* f;
+            f = fopen(dimacs_file.c_str(), "r");
+            Minisat::parse_DIMACS(f, *s);
+            fclose(f);
             cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
-            FILE *res = stdout;
+
             if (!s->simplify()) {
                 if (res != NULL) fprintf(res, "UNSAT\n"), fclose(res);
                 if (s->verbosity > 0) {
@@ -318,36 +320,59 @@ int main(int argc, char **argv) {
                             }
                         }
                     }
+                    fprintf(res, " 0\n");
                     SMs->insert(SM);
                     //remove the regions of SM from uncovered regions set
                     for (auto region: *SM) {
-                        uncovered_regions->erase(region);
+                        if(uncovered_regions->find(region) != uncovered_regions->end())
+                            uncovered_regions->erase(region);
                     }
                     new_results_to_avoid->insert(clause_to_avoid);
-                    //add the negation of the new clause found to the model
-                    auto lits = new vec<Lit>();
+                    //add (append) the new clause to avoid to the dimacs file
+                    /*ofstream fout(dimacs_file, std::ios_base::app);
+                    for(auto lit: *clause_to_avoid){
+                        fout << "-" << lit << " ";
+                    }
+                    fout << "0" << endl;
+                    fout.close();*/
+                    //modify the number of clauses in the dimacs file
+                    //string line;
+                    //ifstream infile(dimacs_file);
+                    //FILE * infile;
+                    //const char* dimacs = dimacs_file.c_str();
+                    //std::fopen(dimacs, "r");
+                    //std::getline(infile, line);
+                    //int tmp = parseInt(line);
+                    //ifstream infile(dimacs_file);
+
+
+
+                    //add the negation of the new clause found to the model: the best way to update the sat-solvere but it doesn't works
+                    /*auto lits = new vec<Lit>();
                     for (auto lit: *clause_to_avoid) {
                         lits->push(~mkLit(lit));
                         s->addClause(*lits);
                     }
-                    delete lits;
-                    fprintf(res, " 0\n");
+                    delete lits;*/
+
                 } else if (ret == l_False)
                     fprintf(res, "UNSAT\n");
                 else
                     fprintf(res, "INDET\n");
-                fclose(res);
+                //fclose(res);
             }
             iteration_counter++;
             cout << "iteration " << iteration_counter << endl;
+            cout << "uncovered regions size: " << uncovered_regions->size() << endl;
         }
-        while(uncovered_regions->size() > 0);
+        //while(iteration_counter <= 2);
+        while(!uncovered_regions->empty());
 
-        //todo: aggiustare il ciclo do while??? rileggere da capo un nuovo file dimacs aggiornato??
+        cout << "=======================[ FINAL SMs / S-COMPONENTS ]================" << endl;
+        for(auto SM: *SMs){
+            print_SM(SM);
+        }
 
-
-
-        fclose(f);
         //================== FREE ====================
         delete SMs;
         delete s;
