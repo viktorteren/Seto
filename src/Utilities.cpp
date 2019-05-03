@@ -805,15 +805,23 @@ namespace Utilities {
         max_alias_decomp++;
     }
 
-    //todo: modificare questo metodo, per ogni insieme di di regioni che si sovrappongono sullo stesso stato si deve creare una clique -> coppie di negazioni in ogni clausola e non una clausola con tutti fin da subito
-    vec<int>* overlapping_regions_clause(set<Region *> *overlapping_regions){
-        auto clause = new vec<int>();
+    set<vec<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions){
+        vector<Region *>* v = new vector<Region *>(overlapping_regions->begin(), overlapping_regions->end());
+        auto clauses = new set<vec<int>*>();
         int reg_alias;
-        for(auto reg: *overlapping_regions){
-            reg_alias = (*aliases_region_pointer_inverted)[reg];
-            clause->push(  -reg_alias );
+        //create a clause for each couple of regions of the overlapping set
+        for(int i=0; i < overlapping_regions->size();i++){
+            for(int k = i+1; k< overlapping_regions->size();k++){
+                auto clause = new vec<int>();
+                reg_alias = (*aliases_region_pointer_inverted)[(*v)[i]];
+                clause->push(  -reg_alias );
+                reg_alias = (*aliases_region_pointer_inverted)[(*v)[k]];
+                clause->push(  -reg_alias );
+                clauses->insert(clause);
+            }
         }
-        return clause;
+        delete v;
+        return clauses;
     }
 
     vec<int>* covering_state_clause(set<Region *> *overlapping_regions){
@@ -849,8 +857,13 @@ namespace Utilities {
         for (auto const& record : *map_of_overlapped_regions)
         {
             clauses->push(covering_state_clause(record.second));
-            clauses->push(overlapping_regions_clause(record.second));
-            num_clauses+=2;
+
+
+            auto overlapping_regions_clauses = overlapping_regions_clause(record.second);
+            for(auto clause: * overlapping_regions_clauses){
+                clauses->push(clause);
+            }
+            num_clauses+=(1+overlapping_regions_clauses->size());
             //solver.addClause(overlapping_regions_clause(record.second));
         }
         delete regions_set;
