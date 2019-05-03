@@ -271,7 +271,8 @@ int main(int argc, char **argv) {
         max_alias_decomp = 1;
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, merged_map, uncovered_regions);
+        uncovered_regions = copy_map_to_set(pre_regions);
+        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, pre_regions);
         s->verbosity = 0;
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
         FILE *res = stdout;

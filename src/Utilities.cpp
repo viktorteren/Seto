@@ -834,13 +834,12 @@ namespace Utilities {
         return clause;
     }
 
-     vec<vec<int>*>* add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions, set<Region*>* uncovered_regions){
+     vec<vec<int>*>* add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions){
         auto clauses = new vec<vec<int>*>();
         auto regions_set = copy_map_to_set(regions);
         //mapping of region aliases
         for(auto region: *regions_set){
             region_mapping(region);
-            uncovered_regions->insert(region);
         }
 
         auto map_of_overlapped_regions = new map<int, set<Region*>*>();
@@ -857,8 +856,6 @@ namespace Utilities {
         for (auto const& record : *map_of_overlapped_regions)
         {
             clauses->push(covering_state_clause(record.second));
-
-
             auto overlapping_regions_clauses = overlapping_regions_clause(record.second);
             for(auto clause: * overlapping_regions_clauses){
                 clauses->push(clause);

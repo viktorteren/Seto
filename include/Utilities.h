@@ -68,7 +68,7 @@ namespace Utilities {
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases, string file_name);
     //Minisat::vec<Minisat::Lit>* region_to_clause(map<int, set<Region *> *> *irredundant_regions);
-    vec<vec<int>*>* add_regions_clauses_to_solver(Solver& s, map<int, set<Region *> *> *regions_map, set<Region *>* uncovered_regions); //s vill recieve new clauses and uncovered_states the states to cover
+    vec<vec<int>*>* add_regions_clauses_to_solver(Solver& s, map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
     set<vec<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
