@@ -271,12 +271,13 @@ int main(int argc, char **argv) {
         max_alias_decomp = 1;
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        uncovered_regions = copy_map_to_set(pre_regions);
+        uncovered_regions = copy_map_to_set(merged_map);
         vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, pre_regions);
         s->verbosity = 0;
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
         FILE *res = stdout;
         //=======================SAT SOLVER PART =====================
+        int last_uncovered_regions = uncovered_regions->size();
         int iteration_counter=0;
         do {
             cout << "===============================[DIMACS FILE PARSING]=====================" << endl;
@@ -306,11 +307,12 @@ int main(int argc, char **argv) {
             //printStats(*s);
             //fprintf(stderr, "\n");
             //}
+            set<Region *> *SM;
             //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
             if (res != NULL) {
                 if (ret == l_True) {
                     fprintf(res, "SAT\n");
-                    auto SM = new set<Region *>();
+                    SM = new set<Region *>();
                     auto clause_to_avoid = new set<int>();
                     for (int i = 0; i < s->nVars(); i++) {
                         if (s->model[i] != l_Undef) {
@@ -322,7 +324,7 @@ int main(int argc, char **argv) {
                         }
                     }
                     fprintf(res, " 0\n");
-                    SMs->insert(SM);
+
                     //remove the regions of SM from uncovered regions set
                     for (auto region: *SM) {
                         if(uncovered_regions->find(region) != uncovered_regions->end())
@@ -365,6 +367,12 @@ int main(int argc, char **argv) {
             iteration_counter++;
             cout << "iteration " << iteration_counter << endl;
             cout << "uncovered regions size: " << uncovered_regions->size() << endl;
+            //the new SM is not redundant
+            if(last_uncovered_regions > uncovered_regions->size()){
+                SMs->insert(SM);
+            }
+
+            last_uncovered_regions = uncovered_regions->size();
         }
         //while(iteration_counter <= 2);
         while(!uncovered_regions->empty());
