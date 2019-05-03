@@ -86,11 +86,11 @@ int main(int argc, char **argv) {
 
     auto tStart_partial = clock();
 
-    int vec_size=-1;
+    //int vec_size=-1;
     int num_split=0;
 
     bool excitation_closure=false;
-    double dim_reg;
+    //double dim_reg;
     num_events_after_splitting=static_cast<int>(ts_map->size());
     do {
         number_of_events = static_cast<int>(ts_map->size());
@@ -250,7 +250,6 @@ int main(int argc, char **argv) {
 
     if(decomposition) {
         cout << "============================[DECOMPOSITION]===================" << endl;
-        //TODO:qui si può effettuare la decomposizione della TS
         /*
          * creo un'istanza del solver
          * trasformo le regioni essenziali+irridondanti(dovrei unire le 2 mappe) in clausole: una clausola per ogni regione con un solo
@@ -265,14 +264,13 @@ int main(int argc, char **argv) {
          */
         auto s = new Solver();
         auto new_results_to_avoid = new set<set<int>*>();
-        auto uncovered_regions = new set<Region *>();
         aliases_region_pointer = new map<int, Region*>();
         aliases_region_pointer_inverted = new map<Region*, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        uncovered_regions = copy_map_to_set(merged_map);
-        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(*s, pre_regions);
+        auto uncovered_regions = copy_map_to_set(merged_map);
+        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(pre_regions);
         s->verbosity = 0;
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
         FILE *res = stdout;
@@ -331,33 +329,6 @@ int main(int argc, char **argv) {
                             uncovered_regions->erase(region);
                     }
                     new_results_to_avoid->insert(clause_to_avoid);
-                    //add (append) the new clause to avoid to the dimacs file
-                    /*ofstream fout(dimacs_file, std::ios_base::app);
-                    for(auto lit: *clause_to_avoid){
-                        fout << "-" << lit << " ";
-                    }
-                    fout << "0" << endl;
-                    fout.close();*/
-                    //modify the number of clauses in the dimacs file
-                    //string line;
-                    //ifstream infile(dimacs_file);
-                    //FILE * infile;
-                    //const char* dimacs = dimacs_file.c_str();
-                    //std::fopen(dimacs, "r");
-                    //std::getline(infile, line);
-                    //int tmp = parseInt(line);
-                    //ifstream infile(dimacs_file);
-
-
-
-                    //add the negation of the new clause found to the model: the best way to update the sat-solvere but it doesn't works
-                    /*auto lits = new vec<Lit>();
-                    for (auto lit: *clause_to_avoid) {
-                        lits->push(~mkLit(lit));
-                        s->addClause(*lits);
-                    }
-                    delete lits;*/
-
                 } else if (ret == l_False)
                     fprintf(res, "UNSAT\n");
                 else
@@ -368,13 +339,14 @@ int main(int argc, char **argv) {
             cout << "iteration " << iteration_counter << endl;
             cout << "uncovered regions size: " << uncovered_regions->size() << endl;
             //the new SM is not redundant
-            if(last_uncovered_regions > uncovered_regions->size()){
+            if(last_uncovered_regions > (int) uncovered_regions->size()){
                 SMs->insert(SM);
             }
-
+            else{
+                delete SM;
+            }
             last_uncovered_regions = uncovered_regions->size();
         }
-        //while(iteration_counter <= 2);
         while(!uncovered_regions->empty());
 
         cout << "=======================[ FINAL SMs / S-COMPONENTS ]================" << endl;
@@ -383,9 +355,15 @@ int main(int argc, char **argv) {
         }
 
         //================== FREE ====================
+        for(auto SM: *SMs){
+            delete SM;
+        }
         delete SMs;
         delete s;
-        //delete uncovered_regions;
+        for(auto region: *uncovered_regions){
+            delete region;
+        }
+        delete uncovered_regions;
         delete aliases_region_pointer;
         delete merged_map;
         delete aliases;

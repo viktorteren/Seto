@@ -834,7 +834,7 @@ namespace Utilities {
         return clause;
     }
 
-     vec<vec<int>*>* add_regions_clauses_to_solver(Solver& solver, map<int, set<Region *> *> *regions){
+     vec<vec<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions){
         auto clauses = new vec<vec<int>*>();
         auto regions_set = copy_map_to_set(regions);
         //mapping of region aliases
