@@ -805,6 +805,7 @@ namespace Utilities {
         max_alias_decomp++;
     }
 
+    //todo: modificare questo metodo, per ogni insieme di di regioni che si sovrappongono sullo stesso stato si deve creare una clique -> coppie di negazioni in ogni clausola e non una clausola con tutti fin da subito
     vec<int>* overlapping_regions_clause(set<Region *> *overlapping_regions){
         auto clause = new vec<int>();
         int reg_alias;
