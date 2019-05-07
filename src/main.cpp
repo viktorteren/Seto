@@ -396,6 +396,10 @@ int main(int argc, char **argv) {
         delete aliases_map_name_number;
         delete aliases_map_state_number_name;
         delete aliases_map_state_name_number;
+        for(auto set: *new_results_to_avoid){
+            delete set;
+        }
+        delete new_results_to_avoid;
     }
     else{
         tStart_partial = clock();
