@@ -882,8 +882,12 @@ namespace Utilities {
             }
             num_clauses+=(1+overlapping_regions_clauses->size());
             //solver.addClause(overlapping_regions_clause(record.second));
+            delete overlapping_regions_clauses;
         }
         delete regions_set;
+        for(auto rec: *map_of_overlapped_regions){
+            delete rec.second;
+        }
         delete map_of_overlapped_regions;
         return clauses;
     }

@@ -53,6 +53,10 @@ Region_generator::~Region_generator() {
         delete elem.second;
     }
     delete event_violations;
+    /*for(auto rec: *ER_set){
+        delete rec.second;
+    }
+    delete ER_set;*/
 }
 
 

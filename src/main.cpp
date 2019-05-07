@@ -370,6 +370,9 @@ int main(int argc, char **argv) {
         }
         delete uncovered_regions;
         delete aliases_region_pointer;
+        for(auto rec: *merged_map){
+            delete rec.second;
+        }
         delete merged_map;
         delete aliases;
         delete overlaps_cache;
@@ -400,6 +403,10 @@ int main(int argc, char **argv) {
             delete set;
         }
         delete new_results_to_avoid;
+        for(auto vect: *clauses){
+            delete vect;
+        }
+        delete clauses;
     }
     else{
         tStart_partial = clock();
