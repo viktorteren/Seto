@@ -270,6 +270,8 @@ int main(int argc, char **argv) {
         num_clauses = 0;
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
         auto uncovered_regions = copy_map_to_set(merged_map);
+        cout << "===============================[REDUCTION TO SAT]=====================" << endl;
+        overlaps_cache = new map<pair<Region*, Region*>, bool>();
         vec<vec<int>*>* clauses = add_regions_clauses_to_solver(pre_regions);
         s->verbosity = 0;
         auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
@@ -278,7 +280,7 @@ int main(int argc, char **argv) {
         int last_uncovered_regions = uncovered_regions->size();
         int iteration_counter=0;
         do {
-            cout << "===============================[DIMACS FILE PARSING]=====================" << endl;
+            cout << "===============================[DIMACS FILE CREATION AND PARSING]=====================" << endl;
             string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses, new_results_to_avoid);
             FILE* f;
             f = fopen(dimacs_file.c_str(), "r");
@@ -307,7 +309,7 @@ int main(int argc, char **argv) {
             //}
             set<Region *> *SM;
             //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
-            if (res != NULL) {
+            if (res != nullptr) {
                 if (ret == l_True) {
                     fprintf(res, "SAT\n");
                     SM = new set<Region *>();
@@ -334,6 +336,9 @@ int main(int argc, char **argv) {
                 else
                     fprintf(res, "INDET\n");
                 //fclose(res);
+            }
+            else{
+                fprintf(stderr, "res is nullptr1n");
             }
             iteration_counter++;
             cout << "iteration " << iteration_counter << endl;
@@ -367,6 +372,7 @@ int main(int argc, char **argv) {
         delete aliases_region_pointer;
         delete merged_map;
         delete aliases;
+        delete overlaps_cache;
 
         // dealloco regions e tutti i suoi vettori
         for (auto record : *regions) {

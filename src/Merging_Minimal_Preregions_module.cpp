@@ -46,7 +46,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
 
     set<Region *> *preregions_set = copy_map_to_set(total_pre_regions_map);
     Region *reg_union = nullptr;
-    int cont_preregions = 0;
+    //int cont_preregions = 0;
 
     /* for (auto el : *preregions_set) {
        println(*el);

@@ -37,6 +37,7 @@ extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern int max_alias_decomp;
 extern int num_clauses;
+extern map<pair<Region*, Region*>, bool> *overlaps_cache;
 
 namespace Utilities {
 

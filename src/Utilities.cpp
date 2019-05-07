@@ -12,6 +12,7 @@ map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
 int num_clauses;
+map<pair<Region*, Region*>, bool> *overlaps_cache;
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
@@ -460,25 +461,33 @@ namespace Utilities {
         // cout << "out name: " << in_dot_name << endl;
 
         output_name = output_name + ".dimacs";
-
+        //====================== END OF FILE CREATION =====================
 
         ofstream fout(output_name);
-        fout << "p cnf ";
-        fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
+        string temp;
+        //temp.append("p cnf");
         for(auto clause: *clauses){
             for(auto lit: *clause){
-                fout << lit << " ";
+                //fout << lit << " ";
+                temp.append(to_string(lit)+" ");
             }
-            fout << "0" << endl;
+            //fout << "0" << endl;
+            temp.append("0\n");
         }
         //add the new clauses found in the previous iterations
         for(auto clause: *new_results_to_avoid){
             for(auto lit: *clause){
-                fout << "-" <<lit << " ";
+                //fout << "-" <<lit << " ";
+                temp.append("-"+to_string(lit)+" ");
             }
-            fout << "0" << endl;
+            //fout << "0" << endl;
+            temp.append("0\n");
         }
+        fout << "p cnf ";
+        fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
+        fout << temp;
         fout.close();
+        //f.close();
         return output_name;
     }
 
@@ -812,12 +821,23 @@ namespace Utilities {
         //create a clause for each couple of regions of the overlapping set
         for(int i=0; i < overlapping_regions->size();i++){
             for(int k = i+1; k< overlapping_regions->size();k++){
-                auto clause = new vec<int>();
-                reg_alias = (*aliases_region_pointer_inverted)[(*v)[i]];
-                clause->push(  -reg_alias );
-                reg_alias = (*aliases_region_pointer_inverted)[(*v)[k]];
-                clause->push(  -reg_alias );
-                clauses->insert(clause);
+                if(overlaps_cache->find(make_pair((*v)[i], (*v)[k])) == overlaps_cache->end()){
+                    if(overlaps_cache->find(make_pair((*v)[k], (*v)[i])) == overlaps_cache->end()){
+                        auto clause = new vec<int>();
+                        reg_alias = (*aliases_region_pointer_inverted)[(*v)[i]];
+                        clause->push(  -reg_alias );
+                        reg_alias = (*aliases_region_pointer_inverted)[(*v)[k]];
+                        clause->push(  -reg_alias );
+                        clauses->insert(clause);
+                        (*overlaps_cache)[make_pair((*v)[i], (*v)[k])] = true;
+                    }
+                    /*else{
+                        cout << "CACHE USED !!!!" << endl;
+                    }*/
+                }
+                /*else{
+                    cout << "CACHE USED !!!!" << endl;
+                }*/
             }
         }
         delete v;
@@ -844,7 +864,7 @@ namespace Utilities {
 
         auto map_of_overlapped_regions = new map<int, set<Region*>*>();
         for(auto region: *regions_set){
-            //aggiunta della regione alla mappa degli stati
+            //adding of the region to the aliases map
             for(auto state: *region){
                 if(map_of_overlapped_regions->find(state) == map_of_overlapped_regions->end()){
                     (*map_of_overlapped_regions)[state] = new set<Region*>();
@@ -852,7 +872,7 @@ namespace Utilities {
                 (*map_of_overlapped_regions)[state]->insert(region);
             }
         }
-        //creation of a clause for each state: the clause contain overlapping regions on this state
+        //creation of set of clauses for each set of overlapping regions on a state
         for (auto const& record : *map_of_overlapped_regions)
         {
             clauses->push(covering_state_clause(record.second));
