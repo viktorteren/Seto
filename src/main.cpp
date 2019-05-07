@@ -377,8 +377,8 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            pprg->create_post_regions(SM_pre_regions_map);
-            auto post_regions_SM = pprg->get_post_regions();
+
+            auto post_regions_SM = pprg->create_post_regions_for_SM(SM_pre_regions_map);
             string SM_name = file;
             SM_name = SM_name.substr(0, SM_name.size() - 3);
             int lower = 0;
@@ -391,6 +391,9 @@ int main(int argc, char **argv) {
 
             SM_name += "_SM_"+to_string(counter)+".g";
             print_pn_dot_file(merged_map, post_regions_SM, aliases, SM_name);
+            for(auto rec: *post_regions_SM){
+                delete rec.second;
+            }
             delete post_regions_SM;
             for(auto rec: *SM_pre_regions_map){
                 delete rec.second;
