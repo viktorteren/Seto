@@ -526,7 +526,7 @@ namespace Utilities {
         in_dot_name = output_name.substr(lower + 1, output_name.size());
         // cout << "out name: " << in_dot_name << endl;
 
-        output_name = output_name + "_PN.dot";
+        output_name += "_PN.dot";
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);

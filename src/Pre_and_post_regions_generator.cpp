@@ -89,7 +89,7 @@ void Pre_and_post_regions_generator::create_post_regions(
   for (auto rec : *merged_pre_regions) {
     for (auto reg : *rec.second) {
       if (ts_map->find(rec.first) != ts_map->end()) {
-        for (auto r : *ts_map) {
+        for (const auto& r : *ts_map) {
           if (is_post_region(&(ts_map->at(r.first)), reg)) {
             if (post_regions->find(r.first) == post_regions->end()) {
               (*post_regions)[r.first] = new set<Region *>();
@@ -104,7 +104,7 @@ void Pre_and_post_regions_generator::create_post_regions(
     }
   }
     if(print_step_by_step) {
-        cout << "Postregioni :" << endl;
+        cout << "Postregions :" << endl;
         print(*post_regions);
         cout << "" << endl;
     }

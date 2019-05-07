@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
             decomposition = false;
         }
         else if( args[2]=="M") {
-            print_step_by_step = true; //todo: diventerà false alla fine ell'implementazione
+            print_step_by_step = false; //todo: diventerà false alla fine ell'implementazione
             print_step_by_step_debug = false;
             decomposition = true;
         }
@@ -354,9 +354,48 @@ int main(int argc, char **argv) {
         }
         while(!uncovered_regions->empty());
 
-        cout << "=======================[ FINAL SMs / S-COMPONENTS ]================" << endl;
+        cout << "=======================[ FINAL SM's STATES  ]================" << endl;
         for(auto SM: *SMs){
             print_SM(SM);
+        }
+
+        cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
+        //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
+        int counter = 0;
+        for(auto SM: *SMs){
+            counter++;
+            cout << "SM " <<counter << endl;
+            auto SM_pre_regions_map = new map<int, set<Region *> *>();
+            //todo: i need all the pre-regions not only merged map, the resultant file have too much regions, WHY?? NEED A CORRECTION
+            for(auto rec: *pprg->get_pre_regions()){
+                for(auto reg: *rec.second){
+                    if(SM->find(reg)!= SM->end()){
+                        if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
+                            (*SM_pre_regions_map)[rec.first] = new set<Region *>;
+                        }
+                        (*SM_pre_regions_map)[rec.first]->insert(reg);
+                    }
+                }
+            }
+            pprg->create_post_regions(SM_pre_regions_map);
+            auto post_regions_SM = pprg->get_post_regions();
+            string SM_name = file;
+            SM_name = SM_name.substr(0, SM_name.size() - 3);
+            int lower = 0;
+            for (int i = static_cast<int>(SM_name.size() - 1); i > 0; i--) {
+                if (SM_name[i] == '/') {
+                    lower = i;
+                    break;
+                }
+            }
+
+            SM_name += "_SM_"+to_string(counter)+".g";
+            print_pn_dot_file(merged_map, post_regions_SM, aliases, SM_name);
+            delete post_regions_SM;
+            for(auto rec: *SM_pre_regions_map){
+                delete rec.second;
+            }
+            delete SM_pre_regions_map;
         }
 
         //================== FREE ====================
@@ -374,31 +413,8 @@ int main(int argc, char **argv) {
             delete rec.second;
         }
         delete merged_map;
-        delete aliases;
         delete overlaps_cache;
 
-        // dealloco regions e tutti i suoi vettori
-        for (auto record : *regions) {
-            delete record.second;
-        }
-        delete regions;
-        delete vector_regions;
-
-        // cout << "fine ricerca " << endl;
-
-        delete pn_module;
-        delete pprg;
-
-        for (const auto& el : *ts_map) {
-            for (auto p : el.second) {
-                delete p;
-            }
-        }
-        delete ts_map;
-        delete aliases_map_number_name;
-        delete aliases_map_name_number;
-        delete aliases_map_state_number_name;
-        delete aliases_map_state_name_number;
         for(auto set: *new_results_to_avoid){
             delete set;
         }
@@ -480,33 +496,11 @@ int main(int argc, char **argv) {
 
         //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
         print_pn_dot_file(merged_map, post_regions, aliases, file);
-        delete aliases;
-
-        // dealloco regions e tutti i suoi vettori
-        for (auto record : *regions) {
-            delete record.second;
-        }
-        delete regions;
-        delete vector_regions;
 
         // cout << "fine ricerca " << endl;
 
-        delete pn_module;
-        delete pprg;
-
+        //===============FREE ============
         delete merging_module;
-
-        for (const auto& el : *ts_map) {
-            for (auto p : el.second) {
-                delete p;
-            }
-        }
-        delete ts_map;
-        delete aliases_map_number_name;
-        delete aliases_map_name_number;
-        delete aliases_map_state_number_name;
-        delete aliases_map_state_name_number;
-
 
         printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
         printf("Time region gen: %.5fs\n", t_region_gen);
@@ -516,5 +510,30 @@ int main(int argc, char **argv) {
         printf("Time merge: %.5fs\n", t_merge);
     }
 
+    // ============== COMMON BRANCH FREE ============
+
+    delete aliases;
+
+    // dealloco regions e tutti i suoi vettori
+    for (auto record : *regions) {
+        delete record.second;
+    }
+    delete regions;
+    delete vector_regions;
+
+    delete pn_module;
+    delete pprg;
+
+    for (const auto& el : *ts_map) {
+        for (auto p : el.second) {
+            delete p;
+        }
+    }
+
+    delete ts_map;
+    delete aliases_map_number_name;
+    delete aliases_map_name_number;
+    delete aliases_map_state_number_name;
+    delete aliases_map_state_name_number;
 
 }
