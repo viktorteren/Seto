@@ -1,8 +1,3 @@
-//#include <errno.h>
-//#include <signal.h>
-//#include "minisat/utils/System.h"
-//#include "minisat/utils/ParseUtils.h"
-//#include "minisat/utils/Options.h"
 #include "minisat/core/Dimacs.h"
 #include "minisat/core/Solver.h"
 #include "../include/Label_splitting_module.h"
@@ -58,7 +53,7 @@ int main(int argc, char **argv) {
 
     if(print_step_by_step_debug) {
         cout << "TS" << endl;
-        for (auto tr: *ts_map) {
+        for (const auto& tr: *ts_map) {
             cout << "event " << tr.first << endl;
             for (auto r: tr.second) {
                 cout << r->first << "->" << r->second << endl;
@@ -250,18 +245,7 @@ int main(int argc, char **argv) {
 
     if(decomposition) {
         cout << "============================[DECOMPOSITION]===================" << endl;
-        /*
-         * creo un'istanza del solver
-         * trasformo le regioni essenziali+irridondanti(dovrei unire le 2 mappe) in clausole: una clausola per ogni regione con un solo
-         * letterale e una clausola per ogni stato per vedere quali regioni si sovrappongono
-         * chiamo il metodo addClause_ dell'istanza Solver per ogni regione (sia essenziale che non) e in più le clausole per i collegamenti???
-         * salvo le regioni/stati da coprire
-         * eseguo il solver
-         * ricavo il risultato dal solver con una clausola nuova
-         * set di set di regioni prende la nuova clausola ritrasformata in insieme di regioni //ogni set è una SM
-         * ricreo le nuove clausole con la negazione della nuova aggiunta
-         * termino quando la copertura è completa
-         */
+
         auto s = new Solver();
         auto new_results_to_avoid = new set<set<int>*>();
         aliases_region_pointer = new map<int, Region*>();
@@ -289,7 +273,7 @@ int main(int argc, char **argv) {
             cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
 
             if (!s->simplify()) {
-                if (res != NULL) fprintf(res, "UNSAT\n"), fclose(res);
+                if (res != nullptr) fprintf(res, "UNSAT\n"), fclose(res);
                 if (s->verbosity > 0) {
                     fprintf(stderr,
                             "===============================================================================\n");
@@ -303,12 +287,7 @@ int main(int argc, char **argv) {
 
             vec<Lit> dummy;
             lbool ret = s->solveLimited(dummy);
-            //if (s->verbosity > 0){
-            //printStats(*s);
-            //fprintf(stderr, "\n");
-            //}
             set<Region *> *SM;
-            //fprintf(stderr, ret == l_True ? "SATISFIABLE\n" : ret == l_False ? "UNSATISFIABLE\n" : "INDETERMINATE\n");
             if (res != nullptr) {
                 if (ret == l_True) {
                     fprintf(res, "SAT\n");
@@ -335,7 +314,6 @@ int main(int argc, char **argv) {
                     fprintf(res, "UNSAT\n");
                 else
                     fprintf(res, "INDET\n");
-                //fclose(res);
             }
             else{
                 fprintf(stderr, "res is nullptr1n");
