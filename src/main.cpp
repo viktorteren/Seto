@@ -361,15 +361,17 @@ int main(int argc, char **argv) {
 
         cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
+        //cout << "pre-regions" << endl;
+        //print(*pprg->get_pre_regions());
         int counter = 0;
         for(auto SM: *SMs){
             counter++;
             cout << "SM " <<counter << endl;
             auto SM_pre_regions_map = new map<int, set<Region *> *>();
-            //todo: i need all the pre-regions not only merged map, the resultant file have too much regions, WHY?? NEED A CORRECTION
             for(auto rec: *pprg->get_pre_regions()){
                 for(auto reg: *rec.second){
                     if(SM->find(reg)!= SM->end()){
+                        //cout << "FOUND" << endl;
                         if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
                             (*SM_pre_regions_map)[rec.first] = new set<Region *>;
                         }
@@ -378,7 +380,11 @@ int main(int argc, char **argv) {
                 }
             }
 
+            //cout << "pre-regions" << endl;
+            //print(*SM_pre_regions_map);
             auto post_regions_SM = pprg->create_post_regions_for_SM(SM_pre_regions_map);
+            //cout << "post-regions" << endl;
+            //print(*post_regions_SM);
             string SM_name = file;
             SM_name = SM_name.substr(0, SM_name.size() - 3);
             int lower = 0;
@@ -390,7 +396,7 @@ int main(int argc, char **argv) {
             }
 
             SM_name += "_SM_"+to_string(counter)+".g";
-            print_pn_dot_file(merged_map, post_regions_SM, aliases, SM_name);
+            print_pn_dot_file(SM_pre_regions_map, post_regions_SM, aliases, SM_name);
             for(auto rec: *post_regions_SM){
                 delete rec.second;
             }
