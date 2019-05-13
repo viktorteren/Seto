@@ -442,7 +442,7 @@ namespace Utilities {
         fout.close();
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
         string in_name;
@@ -814,20 +814,20 @@ namespace Utilities {
         max_alias_decomp++;
     }
 
-    set<vec<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions){
+    set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions){
         vector<Region *>* v = new vector<Region *>(overlapping_regions->begin(), overlapping_regions->end());
-        auto clauses = new set<vec<int>*>();
+        auto clauses = new set<vector<int>*>();
         int reg_alias;
         //create a clause for each couple of regions of the overlapping set
         for(int i=0; i < overlapping_regions->size();i++){
             for(int k = i+1; k< overlapping_regions->size();k++){
                 if(overlaps_cache->find(make_pair((*v)[i], (*v)[k])) == overlaps_cache->end()){
                     if(overlaps_cache->find(make_pair((*v)[k], (*v)[i])) == overlaps_cache->end()){
-                        auto clause = new vec<int>();
+                        auto clause = new vector<int>();
                         reg_alias = (*aliases_region_pointer_inverted)[(*v)[i]];
-                        clause->push(  -reg_alias );
+                        clause->push_back(  -reg_alias );
                         reg_alias = (*aliases_region_pointer_inverted)[(*v)[k]];
-                        clause->push(  -reg_alias );
+                        clause->push_back(  -reg_alias );
                         clauses->insert(clause);
                         (*overlaps_cache)[make_pair((*v)[i], (*v)[k])] = true;
                     }
@@ -844,18 +844,18 @@ namespace Utilities {
         return clauses;
     }
 
-    vec<int>* covering_state_clause(set<Region *> *overlapping_regions){
-        auto clause = new vec<int>();
+    vector<int>* covering_state_clause(set<Region *> *overlapping_regions){
+        auto clause = new vector<int>();
         int reg_alias;
         for(auto reg: *overlapping_regions){
             reg_alias = (*aliases_region_pointer_inverted)[reg];
-            clause->push(  reg_alias );
+            clause->push_back(reg_alias);
         }
         return clause;
     }
 
-     vec<vec<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions){
-        auto clauses = new vec<vec<int>*>();
+     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions){
+        auto clauses = new vector<vector<int>*>();
         auto regions_set = copy_map_to_set(regions);
         //mapping of region aliases
         for(auto region: *regions_set){
@@ -875,10 +875,10 @@ namespace Utilities {
         //creation of set of clauses for each set of overlapping regions on a state
         for (auto const& record : *map_of_overlapped_regions)
         {
-            clauses->push(covering_state_clause(record.second));
+            clauses->push_back(covering_state_clause(record.second));
             auto overlapping_regions_clauses = overlapping_regions_clause(record.second);
             for(auto clause: * overlapping_regions_clauses){
-                clauses->push(clause);
+                clauses->push_back(clause);
             }
             num_clauses+=(1+overlapping_regions_clauses->size());
             //solver.addClause(overlapping_regions_clause(record.second));

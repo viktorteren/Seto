@@ -3,7 +3,6 @@
 //
 
 #pragma once
-#include "minisat/core/Solver.h"
 #include "../include/TS_parser.h"
 #include "numeric"
 #include <algorithm>
@@ -18,7 +17,6 @@
 
 
 using namespace std;
-using namespace Minisat;
 
 typedef set<int> Region;
 typedef std::pair<int, int> Edge;
@@ -53,7 +51,7 @@ namespace Utilities {
     vector<Region*> *copy_map_to_vector3(map<int, vector<Region> *> *map);
     vector<Region*> *copy_map_to_vector2(map<int, set<Region*> *> *map);
     set<Region *> *copy_map_to_set(map<int, set<Region *> *> *map);
-    set<Region *> *initial_regions(map<int, set<Region *> *> *reg);
+    set<Region *> *initial_regions(map<int, set<Region *> *> *reg); //regions that contains initial states
     map<Region *, int> *get_regions_map(map<int, set<Region *> *> *net);
 
     void print(Region &region);
@@ -69,10 +67,10 @@ namespace Utilities {
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases, string file_name);
     //Minisat::vec<Minisat::Lit>* region_to_clause(map<int, set<Region *> *> *irredundant_regions);
-    vec<vec<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
+    vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vec<vec<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
-    set<vec<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
+    set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);
     void add_region_to_SM(set<Region*>* SM, Region* region);
     void print_SM(set<Region *>* SM);

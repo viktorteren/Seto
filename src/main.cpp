@@ -1,12 +1,11 @@
-#include "minisat/core/Dimacs.h"
-#include "minisat/core/Solver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
+#include "../pblib/pb2cnf.h"
 
-using namespace Minisat;
+using namespace PBLib;
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
@@ -34,7 +33,7 @@ int main(int argc, char **argv) {
             decomposition = false;
         }
         else if( args[2]=="M") {
-            print_step_by_step = false; //todo: diventerà false alla fine ell'implementazione
+            print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
         }
@@ -129,8 +128,6 @@ int main(int argc, char **argv) {
                 println(r);
             }
         }*/
-
-
 
 
         num_events_after_splitting = static_cast<int>(ts_map->size());
@@ -244,172 +241,18 @@ int main(int argc, char **argv) {
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     if(decomposition) {
-        cout << "============================[DECOMPOSITION]===================" << endl;
+        int numStates;
+        int numRegions;
+        int minValueToCheck = 1;
+        //devo ordinare le regioni per dimensione decrescente e prendere il quantitativo che basta per superare la copertura ipotetica di tutti gli stati
 
-        auto s = new Solver();
-        auto new_results_to_avoid = new set<set<int>*>();
-        aliases_region_pointer = new map<int, Region*>();
-        aliases_region_pointer_inverted = new map<Region*, int>();
-        max_alias_decomp = 1;
-        num_clauses = 0;
-        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
-        auto uncovered_regions = copy_map_to_set(merged_map);
-        cout << "===============================[REDUCTION TO SAT]=====================" << endl;
-        overlaps_cache = new map<pair<Region*, Region*>, bool>();
-        vec<vec<int>*>* clauses = add_regions_clauses_to_solver(pre_regions);
-        s->verbosity = 0;
-        auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
-        FILE *res = stdout;
-        //=======================SAT SOLVER PART =====================
-        int last_uncovered_regions = uncovered_regions->size();
-        int iteration_counter=0;
-        do {
-            cout << "===============================[DIMACS FILE CREATION AND PARSING]=====================" << endl;
-            string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses, new_results_to_avoid);
-            FILE* f;
-            f = fopen(dimacs_file.c_str(), "r");
-            Minisat::parse_DIMACS(f, *s);
-            fclose(f);
-            cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+        PBConfig config = make_shared< PBConfigClass >();
+        VectorClauseDatabase formula(config);
+        PB2CNF pb2cnf(config);
+        AuxVarManager auxvars(11);
 
-            if (!s->simplify()) {
-                if (res != nullptr) fprintf(res, "UNSAT\n"), fclose(res);
-                if (s->verbosity > 0) {
-                    fprintf(stderr,
-                            "===============================================================================\n");
-                    fprintf(stderr, "Solved by unit propagation\n");
-                    //printStats(*s);
-                    fprintf(stderr, "\n");
-                }
-                fprintf(stderr, "UNSATISFIABLE\n");
-                exit(20);
-            }
+        vector< WeightedLit > literals; //quui aggiungerò i pesi sui letterali
 
-            vec<Lit> dummy;
-            lbool ret = s->solveLimited(dummy);
-            set<Region *> *SM;
-            if (res != nullptr) {
-                if (ret == l_True) {
-                    fprintf(res, "SAT\n");
-                    SM = new set<Region *>();
-                    auto clause_to_avoid = new set<int>();
-                    for (int i = 0; i < s->nVars(); i++) {
-                        if (s->model[i] != l_Undef) {
-                            fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
-                            if (s->model[i] == l_True) {
-                                add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
-                                clause_to_avoid->insert(i + 1);
-                            }
-                        }
-                    }
-                    fprintf(res, " 0\n");
-
-                    //remove the regions of SM from uncovered regions set
-                    for (auto region: *SM) {
-                        if(uncovered_regions->find(region) != uncovered_regions->end())
-                            uncovered_regions->erase(region);
-                    }
-                    new_results_to_avoid->insert(clause_to_avoid);
-                } else if (ret == l_False)
-                    fprintf(res, "UNSAT\n");
-                else
-                    fprintf(res, "INDET\n");
-            }
-            else{
-                fprintf(stderr, "res is nullptr1n");
-            }
-            iteration_counter++;
-            cout << "iteration " << iteration_counter << endl;
-            cout << "uncovered regions size: " << uncovered_regions->size() << endl;
-            //the new SM is not redundant
-            if(last_uncovered_regions > (int) uncovered_regions->size()){
-                SMs->insert(SM);
-            }
-            else{
-                delete SM;
-            }
-            last_uncovered_regions = uncovered_regions->size();
-        }
-        while(!uncovered_regions->empty());
-
-        cout << "=======================[ FINAL SM's STATES  ]================" << endl;
-        for(auto SM: *SMs){
-            print_SM(SM);
-        }
-
-        cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
-        //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
-        //cout << "pre-regions" << endl;
-        //print(*pprg->get_pre_regions());
-        int counter = 0;
-        for(auto SM: *SMs){
-            counter++;
-            cout << "SM " <<counter << endl;
-            auto SM_pre_regions_map = new map<int, set<Region *> *>();
-            for(auto rec: *pprg->get_pre_regions()){
-                for(auto reg: *rec.second){
-                    if(SM->find(reg)!= SM->end()){
-                        //cout << "FOUND" << endl;
-                        if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
-                            (*SM_pre_regions_map)[rec.first] = new set<Region *>;
-                        }
-                        (*SM_pre_regions_map)[rec.first]->insert(reg);
-                    }
-                }
-            }
-
-            //cout << "pre-regions" << endl;
-            //print(*SM_pre_regions_map);
-            auto post_regions_SM = pprg->create_post_regions_for_SM(SM_pre_regions_map);
-            //cout << "post-regions" << endl;
-            //print(*post_regions_SM);
-            string SM_name = file;
-            SM_name = SM_name.substr(0, SM_name.size() - 3);
-            int lower = 0;
-            for (int i = static_cast<int>(SM_name.size() - 1); i > 0; i--) {
-                if (SM_name[i] == '/') {
-                    lower = i;
-                    break;
-                }
-            }
-
-            SM_name += "_SM_"+to_string(counter)+".g";
-            print_pn_dot_file(SM_pre_regions_map, post_regions_SM, aliases, SM_name);
-            for(auto rec: *post_regions_SM){
-                delete rec.second;
-            }
-            delete post_regions_SM;
-            for(auto rec: *SM_pre_regions_map){
-                delete rec.second;
-            }
-            delete SM_pre_regions_map;
-        }
-
-        //================== FREE ====================
-        for(auto SM: *SMs){
-            delete SM;
-        }
-        delete SMs;
-        delete s;
-        for(auto region: *uncovered_regions){
-            delete region;
-        }
-        delete uncovered_regions;
-        delete aliases_region_pointer;
-        for(auto rec: *merged_map){
-            delete rec.second;
-        }
-        delete merged_map;
-        delete overlaps_cache;
-
-        for(auto set: *new_results_to_avoid){
-            delete set;
-        }
-        delete new_results_to_avoid;
-        for(auto vect: *clauses){
-            delete vect;
-        }
-        delete clauses;
     }
     else{
         tStart_partial = clock();
