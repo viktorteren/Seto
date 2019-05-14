@@ -243,15 +243,118 @@ int main(int argc, char **argv) {
     if(decomposition) {
         int numStates;
         int numRegions;
-        int minValueToCheck = 1;
+        int minValueToCheck = 4;
         //devo ordinare le regioni per dimensione decrescente e prendere il quantitativo che basta per superare la copertura ipotetica di tutti gli stati
+
+        cout << "============================[DECOMPOSITION]===================" << endl;
+
+        auto new_results_to_avoid = new set<set<int>*>();
+        aliases_region_pointer = new map<int, Region*>();
+        aliases_region_pointer_inverted = new map<Region*, int>();
+        max_alias_decomp = 1;
+        num_clauses = 0;
+        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
+        auto uncovered_regions = copy_map_to_set(merged_map);
+        cout << "===============================[REDUCTION TO SAT]=====================" << endl;
+        overlaps_cache = new map<pair<Region*, Region*>, bool>();
+        vector<vector<int32_t>*>* clauses = add_regions_clauses_to_solver(pre_regions);
+        auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
+        FILE *res = stdout;
+        //=======================SAT SOLVER PART =====================
+        int last_uncovered_regions = uncovered_regions->size();
+        int iteration_counter=0;
+        //do {
+            //cout << "===============================[DIMACS FILE CREATION AND PARSING]=====================" << endl;
+            //string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses, new_results_to_avoid);
+            /*FILE* f;
+            f = fopen(dimacs_file.c_str(), "r");
+            //Minisat::parse_DIMACS(f, *s);
+            fclose(f);*/
+            //cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+
+
+
+            //iteration_counter++;
+            //cout << "iteration " << iteration_counter << endl;
+            //cout << "uncovered regions size: " << uncovered_regions->size() << endl;
+            //the new SM is not redundant
+            /*if(last_uncovered_regions > (int) uncovered_regions->size()){
+                SMs->insert(SM);
+            }
+            else{
+                delete SM;
+            }*/
+            //last_uncovered_regions = uncovered_regions->size();
+        //}while(!uncovered_regions->empty());
+
 
         PBConfig config = make_shared< PBConfigClass >();
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(11);
+        AuxVarManager auxvars(num_events_after_splitting+1);
+        vector< WeightedLit > literals =
+                {WeightedLit(1, 1), WeightedLit(2, 1), WeightedLit(3, 1),
+                 WeightedLit(4, 1), WeightedLit(5, 1)};
+        //do {
+            IncPBConstraint constraint(literals, LEQ,
+                                       minValueToCheck); //imposto che la somma delle variabili deve essere maggiore o uguale a 1
+            pb2cnf.encodeIncInital(constraint, formula, auxvars);
 
-        vector< WeightedLit > literals; //quui aggiungerò i pesi sui letterali
+        formula.clearDatabase();
+            //aggiungo il vincolo per ogni letterale della lista per dire che deve essere solo 1
+            for(auto lit: literals){
+                cout << "Lit: " << lit.lit <<endl;
+                vector< WeightedLit > lits;
+                lits.push_back(lit);
+                VectorClauseDatabase formula2(config);
+                IncPBConstraint constraint2(lits, BOTH, 1, 0); //la variabile può avere valori tra solo 0 e 1
+                pb2cnf.encodeIncInital(constraint2, formula2, auxvars);
+                formula.addClauses(formula2.getClauses());
+                formula.printFormula(cout);
+                cout << "=======================" << endl;
+            }
+
+            formula.printFormula(cout);
+
+            if(formula.isSetToUnsat()){
+                cout << "UNSAT" << endl;
+            }
+            else{
+                cout << "SAT" << endl;
+            }
+            //minValueToCheck++;
+            //constraint.encodeNewLeq(minValueToCheck, formula, auxvars); //update vincolo minore uguale
+            //auto clausole = formula.getClauses();
+            formula.clearDatabase();
+            cout << "clauses of the overlapping regions" << endl;
+            for(auto clause: *clauses){
+                formula.addClause(*clause);
+            }
+
+            cout << "=======================" << endl;
+            formula.printFormula(cout);
+
+            //todo: aggiungere il vincolo sul valore 1 di ciascuna variabile (usare formula.addClause oppure addFormula)
+            //todo: combinare questa parte con la risoluzione dell'altra parte sat -> fare il merge tra le formule (posso usare addClause per ogni clausola dei vincoli)
+        //}while(!formula.isSetToUnsat());
+
+
+
+        /*PB2CNF pb2cnf;
+        vector< int64_t > weights = {3, -2, 7};
+        vector< int32_t > literals = {-1, -2, 3};
+        vector< vector< int32_t > > formula;
+        int32_t firstAuxVar = 4;
+        int64_t k = -4;
+        pb2cnf.encodeGeq(weights, literals, k, formula, firstAuxVar);*/ //il risultato della traduzione si salva nel vettore formula
+
+
+        /*PBConfig config = make_shared< PBConfigClass >();
+        VectorClauseDatabase formula(config);
+        PB2CNF pb2cnf(config);
+        AuxVarManager auxvars(11);*/
+
+        //vector< WeightedLit > literals; //qui aggiungerò i pesi sui letterali
 
     }
     else{
@@ -289,7 +392,6 @@ int main(int argc, char **argv) {
 
         //cout << "merged pre-regions: " << endl;
         //print(*merging_module->get_merged_preregions_map());
-
 
 
         /*cout << "merged map nel main: " << endl;

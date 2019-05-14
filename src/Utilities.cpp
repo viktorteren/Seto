@@ -875,12 +875,12 @@ namespace Utilities {
         //creation of set of clauses for each set of overlapping regions on a state
         for (auto const& record : *map_of_overlapped_regions)
         {
-            clauses->push_back(covering_state_clause(record.second));
+            //clauses->push_back(covering_state_clause(record.second));
             auto overlapping_regions_clauses = overlapping_regions_clause(record.second);
             for(auto clause: * overlapping_regions_clauses){
                 clauses->push_back(clause);
             }
-            num_clauses+=(1+overlapping_regions_clauses->size());
+            num_clauses+=overlapping_regions_clauses->size(); //+1 with covering state_clause
             //solver.addClause(overlapping_regions_clause(record.second));
             delete overlapping_regions_clauses;
         }
