@@ -5,6 +5,7 @@
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../pblib/pb2cnf.h"
+#include <algorithm>
 
 using namespace PBLib;
 using namespace Minisat;
@@ -242,9 +243,33 @@ int main(int argc, char **argv) {
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     if (decomposition) {
-        int numStates;
-        int numRegions =  copy_map_to_set(pre_regions)->size();
-        int minValueToCheck = 1; //todo: creare un metodo che ordina le regioni per dimensione e calcola tale valore
+        int numStates; //todo: assegnare il valore a numStates
+        auto regions_set = copy_map_to_set(pre_regions);
+        int numRegions =  regions_set->size();
+        int minValueToCheck = 0; //todo: creare un metodo che ordina le regioni per dimensione e calcola tale valore
+        auto regions_sorted = new vector<Region>();
+        for(auto reg: *regions_set){
+            regions_sorted->push_back(*reg);
+        }
+
+        cout << "regions before sort" << endl;
+        for(auto reg: *regions_sorted){
+            println(reg);
+        }
+
+        //sorting of the regions in descending size order
+        sort( regions_sorted->begin( ), regions_sorted->end( ), [ ]( const Region& lhs, const Region& rhs )
+        {
+            return lhs.size() > rhs.size();
+        });
+        cout << "regions sorted" << endl;
+        for(auto reg: *regions_sorted){
+            println(reg);
+        }
+
+        //todo: settare qui il valore di minValueToCheck
+
+
         //devo ordinare le regioni per dimensione decrescente e prendere il quantitativo che basta per superare la copertura ipotetica di tutti gli stati
 
         cout << "============================[DECOMPOSITION]===================" << endl;
