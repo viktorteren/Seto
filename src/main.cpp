@@ -12,47 +12,42 @@ int main(int argc, char **argv) {
     string file;
     if (argc == 1) {
         // default input
-        print_step_by_step=false;
+        print_step_by_step = false;
         file = "../input/etff.g";
         //cout << "sono qui" << endl;
     } else if (argc == 2) {
         file = args[1];
         cout << file << endl;
-    }
-    else if (argc == 3) {
+    } else if (argc == 3) {
         file = args[1];
         cout << file << endl;
-        if( args[2]=="S") {
+        if (args[2] == "S") {
             print_step_by_step = true;
             print_step_by_step_debug = false;
             decomposition = false;
-        }
-        else if( args[2]=="D") {
+        } else if (args[2] == "D") {
             print_step_by_step = true;
             print_step_by_step_debug = true;
             decomposition = false;
-        }
-        else if( args[2]=="M") {
+        } else if (args[2] == "M") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
-        }
-        else{
+        } else {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = false;
         }
-    }
-    else {
+    } else {
         cout << "Wrong number of input arguments" << endl;
         exit(0);
     }
 
     TS_parser::parse(file);
 
-    if(print_step_by_step_debug) {
+    if (print_step_by_step_debug) {
         cout << "TS" << endl;
-        for (const auto& tr: *ts_map) {
+        for (const auto &tr: *ts_map) {
             cout << "event " << tr.first << endl;
             for (auto r: tr.second) {
                 cout << r->first << "->" << r->second << endl;
@@ -60,32 +55,32 @@ int main(int argc, char **argv) {
         }
     }
 
-    map<int,pair<int,Region*>*>* candidate_regions;
+    map<int, pair<int, Region *> *> *candidate_regions;
     map<int, set<Region *> *> *pre_regions;
     Label_splitting_module *ls;
-    Pre_and_post_regions_generator *pprg=nullptr;
+    Pre_and_post_regions_generator *pprg = nullptr;
     map<int, ER> *new_ER;
     vector<Region> *vector_regions;
     map<int, vector<Region> *> *regions;
 
 
-    double t_pre_region_gen=0.0;
-    double t_region_gen=0.0;
-    double t_splitting=0.0;
+    double t_pre_region_gen = 0.0;
+    double t_region_gen = 0.0;
+    double t_splitting = 0.0;
     int number_of_events;
     //int c=0;
-    auto aliases= new map<int,int>();
+    auto aliases = new map<int, int>();
 
     clock_t tStart = clock();
 
     auto tStart_partial = clock();
 
     //int vec_size=-1;
-    int num_split=0;
+    int num_split = 0;
 
-    bool excitation_closure=false;
+    bool excitation_closure = false;
     //double dim_reg;
-    num_events_after_splitting=static_cast<int>(ts_map->size());
+    num_events_after_splitting = static_cast<int>(ts_map->size());
     do {
         number_of_events = static_cast<int>(ts_map->size());
         //cout << "number_of_events: " << number_of_events << endl;
@@ -95,12 +90,13 @@ int main(int argc, char **argv) {
         regions = rg->generate();
         vector_regions = copy_map_to_vector(regions);
 
-        if(print_step_by_step){
-        cout << "Regions: " << endl;
-        for (auto reg: *vector_regions) {
-            println(reg);
+        if (print_step_by_step) {
+            cout << "Regions: " << endl;
+            for (auto reg: *vector_regions) {
+                println(reg);
+            }
+            cout << "" << endl;
         }
-        cout << "" << endl;}
 
         // cout << "------------------------------------------------------------ "
         //       "DELETING OF NON MINIMAL REGIONS "
@@ -113,12 +109,13 @@ int main(int argc, char **argv) {
         }
 
 
-        if(print_step_by_step){
+        if (print_step_by_step) {
             cout << "Minimal regions: " << endl;
             for (auto r: *vector_regions) {
                 println(r);
+            }
+            cout << "" << endl;
         }
-        cout << "" << endl;}
 
         /*cout<<"regioni"<<endl;
         for (auto rec: *regions) {
@@ -141,7 +138,7 @@ int main(int argc, char **argv) {
         pprg = new Pre_and_post_regions_generator(vector_regions);
         pre_regions = pprg->get_pre_regions();
 
-        if(print_step_by_step) {
+        if (print_step_by_step) {
             cout << "Preregions:" << endl;
             for (auto rec: *pre_regions) {
                 cout << "event: " << rec.first << endl;
@@ -158,7 +155,7 @@ int main(int argc, char **argv) {
 
         tStart_partial = clock();
 
-        ls = new Label_splitting_module(pre_regions, rg->get_ER_set(),rg->get_middle_set_of_states());
+        ls = new Label_splitting_module(pre_regions, rg->get_ER_set(), rg->get_middle_set_of_states());
 
         set<int> *events = ls->is_excitation_closed();
 
@@ -170,15 +167,17 @@ int main(int argc, char **argv) {
         if (!excitation_closure) {
             num_split++;
             candidate_regions = ls->candidate_search(rg->get_number_of_bad_events(), events);
-            if(print_step_by_step){cout << "Splitting of the labels: ";}
-            if(!pre_regions->empty())
+            if (print_step_by_step) { cout << "Splitting of the labels: "; }
+            if (!pre_regions->empty())
                 ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                  nullptr);
-            else ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),regions);
+            else
+                ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
+                                 regions);
 
-            map<int,pair<int,Region*>*>::iterator it2;
-            for(it2=candidate_regions->begin();it2!=candidate_regions->end();++it2) {
-               delete it2->second;
+            map<int, pair<int, Region *> *>::iterator it2;
+            for (it2 = candidate_regions->begin(); it2 != candidate_regions->end(); ++it2) {
+                delete it2->second;
             }
             delete candidate_regions;
 
@@ -191,7 +190,7 @@ int main(int argc, char **argv) {
                 delete el.second;
             delete new_ER;
 
-            for(auto reg_vec: *regions) {
+            for (auto reg_vec: *regions) {
                 delete reg_vec.second;
             }
             delete regions;
@@ -210,7 +209,7 @@ int main(int argc, char **argv) {
     }//end prova do while
     while (!excitation_closure);
 
-    if(print_step_by_step) {
+    if (print_step_by_step) {
         int cont = 0;
         double somma = 0;
         for (const auto &reg: *vector_regions) {
@@ -224,7 +223,7 @@ int main(int argc, char **argv) {
     }
     delete ls;
 
-    print_ts_dot_file(file,aliases);
+    print_ts_dot_file(file, aliases);
 
     /*cout<<"ECTS:"<<endl;
     for(auto tr: *ts_map){
@@ -240,124 +239,70 @@ int main(int argc, char **argv) {
     auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
     auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-    if(decomposition) {
+    if (decomposition) {
         int numStates;
         int numRegions;
-        int minValueToCheck = 4;
+        int minValueToCheck = 1; //todo: creare un metodo che ordina le regioni per dimensione e calcola tale valore
         //devo ordinare le regioni per dimensione decrescente e prendere il quantitativo che basta per superare la copertura ipotetica di tutti gli stati
 
         cout << "============================[DECOMPOSITION]===================" << endl;
 
-        auto new_results_to_avoid = new set<set<int>*>();
-        aliases_region_pointer = new map<int, Region*>();
-        aliases_region_pointer_inverted = new map<Region*, int>();
+        auto new_results_to_avoid = new set<set<int> *>();
+        aliases_region_pointer = new map<int, Region *>();
+        aliases_region_pointer_inverted = new map<Region *, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
-        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(), pn_module->get_irredundant_regions());
+        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(),
+                                                                        pn_module->get_irredundant_regions());
         auto uncovered_regions = copy_map_to_set(merged_map);
         cout << "===============================[REDUCTION TO SAT]=====================" << endl;
-        overlaps_cache = new map<pair<Region*, Region*>, bool>();
-        vector<vector<int32_t>*>* clauses = add_regions_clauses_to_solver(pre_regions);
-        auto SMs = new set<set<Region *>*>(); //set of SMs, each SM is a set of regions
-        FILE *res = stdout;
+        overlaps_cache = new map<pair<Region *, Region *>, bool>();
+        vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
+        auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
+        //FILE *res = stdout;
         //=======================SAT SOLVER PART =====================
         int last_uncovered_regions = uncovered_regions->size();
-        int iteration_counter=0;
-        //do {
-            //cout << "===============================[DIMACS FILE CREATION AND PARSING]=====================" << endl;
-            //string dimacs_file = convert_to_dimacs(file, max_alias_decomp-1, num_clauses, clauses, new_results_to_avoid);
-            /*FILE* f;
-            f = fopen(dimacs_file.c_str(), "r");
-            //Minisat::parse_DIMACS(f, *s);
-            fclose(f);*/
-            //cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
 
+        auto all_pre_regions = copy_map_to_set(pre_regions);
 
-
-            //iteration_counter++;
-            //cout << "iteration " << iteration_counter << endl;
-            //cout << "uncovered regions size: " << uncovered_regions->size() << endl;
-            //the new SM is not redundant
-            /*if(last_uncovered_regions > (int) uncovered_regions->size()){
-                SMs->insert(SM);
-            }
-            else{
-                delete SM;
-            }*/
-            //last_uncovered_regions = uncovered_regions->size();
-        //}while(!uncovered_regions->empty());
-
-
-        PBConfig config = make_shared< PBConfigClass >();
+        PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(num_events_after_splitting+1);
-        vector< WeightedLit > literals =
-                {WeightedLit(1, 1), WeightedLit(2, 1), WeightedLit(3, 1),
-                 WeightedLit(4, 1), WeightedLit(5, 1)};
-        //do {
-            IncPBConstraint constraint(literals, LEQ,
-                                       minValueToCheck); //imposto che la somma delle variabili deve essere maggiore o uguale a 1
-            pb2cnf.encodeIncInital(constraint, formula, auxvars);
-
-        formula.clearDatabase();
-            //aggiungo il vincolo per ogni letterale della lista per dire che deve essere solo 1
-            for(auto lit: literals){
-                cout << "Lit: " << lit.lit <<endl;
-                vector< WeightedLit > lits;
-                lits.push_back(lit);
-                VectorClauseDatabase formula2(config);
-                IncPBConstraint constraint2(lits, BOTH, 1, 0); //la variabile può avere valori tra solo 0 e 1
-                pb2cnf.encodeIncInital(constraint2, formula2, auxvars);
-                formula.addClauses(formula2.getClauses());
-                formula.printFormula(cout);
-                cout << "=======================" << endl;
-            }
-
-            formula.printFormula(cout);
-
-            if(formula.isSetToUnsat()){
-                cout << "UNSAT" << endl;
-            }
-            else{
-                cout << "SAT" << endl;
-            }
-            //minValueToCheck++;
-            //constraint.encodeNewLeq(minValueToCheck, formula, auxvars); //update vincolo minore uguale
-            //auto clausole = formula.getClauses();
-            formula.clearDatabase();
-            cout << "clauses of the overlapping regions" << endl;
-            for(auto clause: *clauses){
-                formula.addClause(*clause);
-            }
-
-            cout << "=======================" << endl;
-            formula.printFormula(cout);
-
-            //todo: aggiungere il vincolo sul valore 1 di ciascuna variabile (usare formula.addClause oppure addFormula)
-            //todo: combinare questa parte con la risoluzione dell'altra parte sat -> fare il merge tra le formule (posso usare addClause per ogni clausola dei vincoli)
-        //}while(!formula.isSetToUnsat());
+        AuxVarManager auxvars(all_pre_regions->size() + 1);
 
 
+        //cout << "pre regions size " << all_pre_regions->size() <<endl;
+        vector<WeightedLit> literals_from_regions = {};
 
-        /*PB2CNF pb2cnf;
-        vector< int64_t > weights = {3, -2, 7};
-        vector< int32_t > literals = {-1, -2, 3};
-        vector< vector< int32_t > > formula;
-        int32_t firstAuxVar = 4;
-        int64_t k = -4;
-        pb2cnf.encodeGeq(weights, literals, k, formula, firstAuxVar);*/ //il risultato della traduzione si salva nel vettore formula
+        //modificare il ciclo per identificare se le regioni sono ostate già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
+        for (unsigned long i = 1; i <= all_pre_regions->size(); i++) {
+            literals_from_regions.emplace_back(i, 1);
+        }
 
+        IncPBConstraint constraint(literals_from_regions, GEQ,
+                                   minValueToCheck); //imposto che la somma delle variabili deve essere maggiore o uguale a 1
+        pb2cnf.encodeIncInital(constraint, formula, auxvars);
 
-        /*PBConfig config = make_shared< PBConfigClass >();
-        VectorClauseDatabase formula(config);
-        PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(11);*/
+        cout << "Clauses inequality" << endl;
+        formula.printFormula(cout);
+        cout << "clauses of the overlapping regions + clauses inequality" << endl;
+        for (auto clause: *clauses) {
+            formula.addClause(*clause);
+        }
 
-        //vector< WeightedLit > literals; //qui aggiungerò i pesi sui letterali
+        cout << "=======================" << endl;
+        formula.printFormula(cout);
+        cout << "=======================" << endl;
 
-    }
-    else{
+        do {
+            cout << "SAT with value " << minValueToCheck - 1 << endl;
+            minValueToCheck++;
+            constraint.encodeNewGeq(minValueToCheck, formula, auxvars);
+        } while (!formula.isSetToUnsat());
+
+        //todo: qui dovrei avere l'ultimo assegnamento valido da passare alla nuova SM (posso prendere la formula SAT e passarla a minisat)
+
+    } else {
         tStart_partial = clock();
 
         auto essential_regions = pn_module->get_essential_regions();
@@ -456,7 +401,7 @@ int main(int argc, char **argv) {
     delete pn_module;
     delete pprg;
 
-    for (const auto& el : *ts_map) {
+    for (const auto &el : *ts_map) {
         for (auto p : el.second) {
             delete p;
         }
