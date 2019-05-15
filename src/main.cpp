@@ -1,3 +1,4 @@
+#include "minisat/core/Solver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
@@ -6,6 +7,7 @@
 #include "../pblib/pb2cnf.h"
 
 using namespace PBLib;
+using namespace Minisat;
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
@@ -241,7 +243,7 @@ int main(int argc, char **argv) {
 
     if (decomposition) {
         int numStates;
-        int numRegions;
+        int numRegions =  copy_map_to_set(pre_regions)->size();
         int minValueToCheck = 1; //todo: creare un metodo che ordina le regioni per dimensione e calcola tale valore
         //devo ordinare le regioni per dimensione decrescente e prendere il quantitativo che basta per superare la copertura ipotetica di tutti gli stati
 
@@ -263,19 +265,19 @@ int main(int argc, char **argv) {
         //=======================SAT SOLVER PART =====================
         int last_uncovered_regions = uncovered_regions->size();
 
-        auto all_pre_regions = copy_map_to_set(pre_regions);
+
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(all_pre_regions->size() + 1);
+        AuxVarManager auxvars(numRegions + 1);
 
 
         //cout << "pre regions size " << all_pre_regions->size() <<endl;
         vector<WeightedLit> literals_from_regions = {};
 
         //modificare il ciclo per identificare se le regioni sono ostate già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
-        for (unsigned long i = 1; i <= all_pre_regions->size(); i++) {
+        for (int i = 1; i <= numRegions; i++) {
             literals_from_regions.emplace_back(i, 1);
         }
 
@@ -300,7 +302,63 @@ int main(int argc, char **argv) {
             constraint.encodeNewGeq(minValueToCheck, formula, auxvars);
         } while (!formula.isSetToUnsat());
 
+
         //todo: qui dovrei avere l'ultimo assegnamento valido da passare alla nuova SM (posso prendere la formula SAT e passarla a minisat)
+        auto s = new Solver();
+        FILE *res = stdout;
+
+        //todo: QUI aggiungere le clausole dell'ultima formula SAT
+
+        cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+
+        if (!s->simplify()) {
+            if (res != nullptr) fprintf(res, "UNSAT\n"), fclose(res);
+            if (s->verbosity > 0) {
+                fprintf(stderr,
+                        "===============================================================================\n");
+                fprintf(stderr, "Solved by unit propagation\n");
+                //printStats(*s);
+                fprintf(stderr, "\n");
+            }
+            fprintf(stderr, "UNSATISFIABLE\n");
+            exit(20);
+        }
+
+        vec<Minisat::Lit> dummy;
+        lbool ret = s->solveLimited(dummy);
+        set<Region *> *SM;
+        if (res != nullptr) {
+            if (ret == l_True) {
+                fprintf(res, "SAT\n");
+                SM = new set<Region *>();
+                auto clause_to_avoid = new set<int>();
+                for (int i = 0; i < s->nVars(); i++) {
+                    if (s->model[i] != l_Undef) {
+                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
+                        if (s->model[i] == l_True) {
+                            add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
+                            clause_to_avoid->insert(i + 1);
+                        }
+                    }
+                }
+                fprintf(res, " 0\n");
+
+                //remove the regions of SM from uncovered regions set
+                for (auto region: *SM) {
+                    if(uncovered_regions->find(region) != uncovered_regions->end())
+                        uncovered_regions->erase(region);
+                }
+                new_results_to_avoid->insert(clause_to_avoid);
+            } else if (ret == l_False)
+                fprintf(res, "UNSAT\n");
+            else
+                fprintf(res, "INDET\n");
+        }
+        else{
+            fprintf(stderr, "res is nullptr1n");
+        }
+
+
 
     } else {
         tStart_partial = clock();
