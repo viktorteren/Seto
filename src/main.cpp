@@ -388,12 +388,14 @@ int main(int argc, char **argv) {
             FILE *res = stdout;
 
             set<Region *> *SM;
-            fprintf(res, "Last SAT with: ");
             SM = new set<Region *>();
+            if(decomposition_debug)
+                fprintf(res, "Last SAT with: ");
             //auto clause_to_avoid = new set<int>();
             for (int i = 0; i < solver.nVars(); i++) {
                 if (true_model[i] != l_Undef) {
-                    fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
+                    if(decomposition_debug)
+                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
                     if (true_model[i] == l_True) {
                         if (i < numRegions) {
                             add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
@@ -483,12 +485,12 @@ int main(int argc, char **argv) {
             delete SM_pre_regions_map;
         }
 
-        printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
-        printf("Time region gen: %.5fs\n", t_region_gen);
+        printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
         printf("Time essential+irredundant: %.5fs\n", t_irred);
         printf("Time decomposition: %.5fs\n", t_decomposition);
+        printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
     } else {
 
@@ -566,12 +568,12 @@ int main(int argc, char **argv) {
         //===============FREE ============
         delete merging_module;
 
-        printf("Time total: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
-        printf("Time region gen: %.5fs\n", t_region_gen);
+        printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
         printf("Time essential+irredundant: %.5fs\n", t_irred);
         printf("Time merge: %.5fs\n", t_merge);
+        printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
     }
 
     // ============== COMMON BRANCH FREE ============

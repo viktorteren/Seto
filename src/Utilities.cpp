@@ -1051,7 +1051,8 @@ namespace Utilities {
         Minisat::parse_DIMACS(f, solver);
         fclose(f);
 
-        cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+        if(decomposition_debug)
+            cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
 
         if (!solver.simplify()) {
             return false;
