@@ -1,4 +1,4 @@
-#include "minisat/core/Solver.h"
+//#include "../pblib/BasicPBSolver/BasicSATSolver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
@@ -246,15 +246,10 @@ int main(int argc, char **argv) {
         int numStates; //todo: assegnare il valore a numStates
         auto regions_set = copy_map_to_set(pre_regions);
         int numRegions =  regions_set->size();
-        int minValueToCheck = 0; //todo: creare un metodo che ordina le regioni per dimensione e calcola tale valore
+        int minValueToCheck = 0;
         auto regions_sorted = new vector<Region>();
         for(auto reg: *regions_set){
             regions_sorted->push_back(*reg);
-        }
-
-        cout << "regions before sort" << endl;
-        for(auto reg: *regions_sorted){
-            println(reg);
         }
 
         //sorting of the regions in descending size order
@@ -262,10 +257,7 @@ int main(int argc, char **argv) {
         {
             return lhs.size() > rhs.size();
         });
-        cout << "regions sorted" << endl;
-        for(auto reg: *regions_sorted){
-            println(reg);
-        }
+
 
         //todo: settare qui il valore di minValueToCheck
 
@@ -282,7 +274,7 @@ int main(int argc, char **argv) {
         map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(),
                                                                         pn_module->get_irredundant_regions());
         auto uncovered_regions = copy_map_to_set(merged_map);
-        cout << "===============================[REDUCTION TO SAT]=====================" << endl;
+        //cout << "===============================[REDUCTION TO SAT]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
         auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
@@ -291,9 +283,9 @@ int main(int argc, char **argv) {
         int last_uncovered_regions = uncovered_regions->size();
 
 
-
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
+        VectorClauseDatabase last_sat_formula(config);
         PB2CNF pb2cnf(config);
         AuxVarManager auxvars(numRegions + 1);
 
@@ -310,78 +302,99 @@ int main(int argc, char **argv) {
                                    minValueToCheck); //imposto che la somma delle variabili deve essere maggiore o uguale a 1
         pb2cnf.encodeIncInital(constraint, formula, auxvars);
 
-        cout << "Clauses inequality" << endl;
-        formula.printFormula(cout);
-        cout << "clauses of the overlapping regions + clauses inequality" << endl;
+        /*cout << "Clauses inequality" << endl;
+        formula.printFormula(cout);*/
+
         for (auto clause: *clauses) {
             formula.addClause(*clause);
         }
-
+        /*cout << "clauses of the overlapping regions + clauses inequality" << endl;
         cout << "=======================" << endl;
         formula.printFormula(cout);
-        cout << "=======================" << endl;
+        cout << "=======================" << endl;*/
 
-        do {
-            cout << "SAT with value " << minValueToCheck - 1 << endl;
-            minValueToCheck++;
+        Minisat::Solver solver;
+
+        //todo: formulaissettounsat non è affidabile, bisogna far andare il sat solver ogni volta per capire la situazione
+        //todo: creare il metodo che crea il file dimacs e chiama il sat solver
+        bool sat = true;
+        vec<lbool> true_model;
+        do{
+            last_sat_formula.clearDatabase();
+            last_sat_formula.addClauses(formula.getClauses());
             constraint.encodeNewGeq(minValueToCheck, formula, auxvars);
-        } while (!formula.isSetToUnsat());
+            int num_clauses_formula =  last_sat_formula.getClauses().size();
+            string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula, last_sat_formula.getClauses(), nullptr);
+            sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+            if(sat){
+                //cout << "----------" << endl;
+                cout << "SAT with value " << minValueToCheck << endl;
+                //cout << "formula: " << endl;
+                //formula.printFormula(cout);
+                cout << "Model: ";
+                for (int i = 0; i < solver.nVars(); i++) {
+                    if (solver.model[i] != l_Undef) {
+                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-", i + 1);
+                    }
+                }
+                cout << endl;
+                true_model.clear(true);
+                for(auto val: solver.model){
+                    true_model.push(val);
+                }
+            }
+            else{
+                break;
+            }
+            minValueToCheck++;
+        }while (sat);
+        cout << "UNSAT with value " << minValueToCheck << endl;
+        //cout << "formula: " << endl;
+        //formula.printFormula(cout);
 
 
         //todo: qui dovrei avere l'ultimo assegnamento valido da passare alla nuova SM (posso prendere la formula SAT e passarla a minisat)
-        auto s = new Solver();
+
+
         FILE *res = stdout;
 
         //todo: QUI aggiungere le clausole dell'ultima formula SAT
 
-        cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
-
-        if (!s->simplify()) {
-            if (res != nullptr) fprintf(res, "UNSAT\n"), fclose(res);
-            if (s->verbosity > 0) {
-                fprintf(stderr,
-                        "===============================================================================\n");
-                fprintf(stderr, "Solved by unit propagation\n");
-                //printStats(*s);
-                fprintf(stderr, "\n");
-            }
-            fprintf(stderr, "UNSATISFIABLE\n");
-            exit(20);
-        }
-
-        vec<Minisat::Lit> dummy;
-        lbool ret = s->solveLimited(dummy);
         set<Region *> *SM;
-        if (res != nullptr) {
-            if (ret == l_True) {
-                fprintf(res, "SAT\n");
-                SM = new set<Region *>();
-                auto clause_to_avoid = new set<int>();
-                for (int i = 0; i < s->nVars(); i++) {
-                    if (s->model[i] != l_Undef) {
-                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (s->model[i] == l_True) ? "" : "-", i + 1);
-                        if (s->model[i] == l_True) {
-                            add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
-                            clause_to_avoid->insert(i + 1);
-                        }
-                    }
+        fprintf(res, "Last SAT with: ");
+        SM = new set<Region *>();
+        auto clause_to_avoid = new set<int>();
+        for (int i = 0; i < solver.nVars(); i++) {
+            if (true_model[i] != l_Undef) {
+                fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
+                if (true_model[i] == l_True) {
+                    add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
+                    clause_to_avoid->insert(i + 1);
                 }
-                fprintf(res, " 0\n");
+            }
+        }
+        //fprintf(res, " 0\n");
 
-                //remove the regions of SM from uncovered regions set
-                for (auto region: *SM) {
-                    if(uncovered_regions->find(region) != uncovered_regions->end())
-                        uncovered_regions->erase(region);
-                }
-                new_results_to_avoid->insert(clause_to_avoid);
-            } else if (ret == l_False)
-                fprintf(res, "UNSAT\n");
-            else
-                fprintf(res, "INDET\n");
+        //remove the regions of SM from uncovered regions set
+        for (auto region: *SM) {
+            if(uncovered_regions->find(region) != uncovered_regions->end())
+                uncovered_regions->erase(region);
+        }
+        new_results_to_avoid->insert(clause_to_avoid);
+
+        cout << "uncovered regions size: " << uncovered_regions->size() << endl;
+        //the new SM is not redundant
+        if(last_uncovered_regions > (int) uncovered_regions->size()){
+            SMs->insert(SM);
         }
         else{
-            fprintf(stderr, "res is nullptr1n");
+            delete SM;
         }
+        last_uncovered_regions = uncovered_regions->size();
+
+
+
+
 
 
 

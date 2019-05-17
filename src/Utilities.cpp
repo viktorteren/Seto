@@ -2,7 +2,7 @@
 // Created by ciuchino on 18/04/18.
 //
 
-#include <utility>
+//#include <utility>
 #include "../include/Utilities.h"
 
 bool print_step_by_step;
@@ -475,16 +475,75 @@ namespace Utilities {
             temp.append("0\n");
         }
         //add the new clauses found in the previous iterations
-        for(auto clause: *new_results_to_avoid){
-            for(auto lit: *clause){
-                //fout << "-" <<lit << " ";
-                temp.append("-"+to_string(lit)+" ");
+        if(new_results_to_avoid != nullptr) {
+            for (auto clause: *new_results_to_avoid) {
+                for (auto lit: *clause) {
+                    //fout << "-" <<lit << " ";
+                    temp.append("-" + to_string(lit) + " ");
+                }
+                //fout << "0" << endl;
+                temp.append("0\n");
+            }
+        }
+        fout << "p cnf ";
+        if(new_results_to_avoid != nullptr)
+            fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
+        else
+            fout << num_var << " " << num_clauses << endl;
+        fout << temp;
+        fout.close();
+        //f.close();
+        return output_name;
+    }
+
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int32_t>> clauses, set<set<int>*>* new_results_to_avoid){
+        //cout << "================[DIMACS FILE CREATION]====================" << endl;
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        // cout << "out name: " << in_dot_name << endl;
+
+        output_name = output_name + ".dimacs";
+        //====================== END OF FILE CREATION =====================
+
+        ofstream fout(output_name);
+        string temp;
+        //temp.append("p cnf");
+        for(auto clause: clauses){
+            for(auto lit: clause){
+                //fout << lit << " ";
+                temp.append(to_string(lit)+" ");
             }
             //fout << "0" << endl;
             temp.append("0\n");
         }
+        //add the new clauses found in the previous iterations
+        if(new_results_to_avoid != nullptr) {
+            for (auto clause: *new_results_to_avoid) {
+                for (auto lit: *clause) {
+                    //fout << "-" <<lit << " ";
+                    temp.append("-" + to_string(lit) + " ");
+                }
+                //fout << "0" << endl;
+                temp.append("0\n");
+            }
+        }
         fout << "p cnf ";
-        fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
+        if(new_results_to_avoid != nullptr)
+            fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
+        else
+            fout << num_var << " " << num_clauses << endl;
         fout << temp;
         fout.close();
         //f.close();
@@ -983,5 +1042,31 @@ namespace Utilities {
 
     void add_region_to_SM(set<Region*>* SM, Region* region){
         SM->insert(region);
+    }
+
+    bool check_sat_formula_from_dimacs(Minisat::Solver& solver, string file_path){
+        FILE* f;
+        f = fopen(file_path.c_str(), "r");
+        Minisat::parse_DIMACS(f, solver);
+        fclose(f);
+
+        cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+
+        if (!solver.simplify()) {
+            return false;
+        }
+
+        Minisat::vec<Minisat::Lit> dummy;
+        Minisat::lbool ret = solver.solveLimited(dummy);
+        set<Region *> *SM;
+        //True return value
+        if (ret == Minisat::lbool((uint8_t)0)) {
+            return true;
+            //false return value
+        } else if (ret == Minisat::lbool((uint8_t)1))
+            return false;
+        else
+            cerr << "NO RESULT" << endl;
+            exit(1);
     }
 }
