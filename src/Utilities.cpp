@@ -8,6 +8,7 @@
 bool print_step_by_step;
 bool print_step_by_step_debug;
 bool decomposition;
+bool decomposition_debug;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
