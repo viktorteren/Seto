@@ -267,7 +267,6 @@ namespace Utilities {
     }
 
     bool is_bigger_than(Region *region, set<int> *region2) {
-
         if (region->size() > region2->size()) {
             for (auto elem : *region2) {
                 // nella regione non trovo un elem
@@ -879,8 +878,8 @@ namespace Utilities {
         auto clauses = new set<vector<int>*>();
         int reg_alias;
         //create a clause for each couple of regions of the overlapping set
-        for(int i=0; i < overlapping_regions->size();i++){
-            for(int k = i+1; k< overlapping_regions->size();k++){
+        for(unsigned int i=0; i < overlapping_regions->size();i++){
+            for(unsigned int k = i+1; k < overlapping_regions->size();k++){
                 if(overlaps_cache->find(make_pair((*v)[i], (*v)[k])) == overlaps_cache->end()){
                     if(overlaps_cache->find(make_pair((*v)[k], (*v)[i])) == overlaps_cache->end()){
                         auto clause = new vector<int>();
@@ -942,7 +941,10 @@ namespace Utilities {
             }
             num_clauses+=overlapping_regions_clauses->size(); //+1 with covering state_clause
             //solver.addClause(overlapping_regions_clause(record.second));
-            delete overlapping_regions_clauses;
+            /*for(auto rec: *overlapping_regions_clauses){
+                delete rec;
+            }*/
+            //delete overlapping_regions_clauses;
         }
         delete regions_set;
         for(auto rec: *map_of_overlapped_regions){

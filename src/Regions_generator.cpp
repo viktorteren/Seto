@@ -57,6 +57,10 @@ Region_generator::~Region_generator() {
         delete rec.second;
     }
     delete ER_set;*/
+    /*for(auto rec: *regions){
+        delete rec.second;
+    }
+    delete regions;*/
 }
 
 

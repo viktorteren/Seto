@@ -451,6 +451,8 @@ int main(int argc, char **argv) {
                     cout << "NO EXCITATION CLOSURE" << endl;
                 }
             }
+            delete events;
+            delete ls;
         }
 
         if(decomposition_debug) {
@@ -535,10 +537,23 @@ int main(int argc, char **argv) {
             delete SM_pre_regions_map;
         }
 
+        //===========FREE===========
+        for(auto rec: *used_regions_map){
+            delete rec.second;
+        }
+        for(auto SM: *SMs){
+            delete SM;
+        }
+        delete SMs;
+        delete used_regions_map;
+        delete rg;
+        delete clauses;
+        delete regions_set;
+        delete regions_sorted;
+
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-        //printf("Time essential+irredundant: %.5fs\n", t_irred);
         printf("Time decomposition: %.5fs\n", t_decomposition);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
