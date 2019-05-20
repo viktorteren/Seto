@@ -247,10 +247,6 @@ int main(int argc, char **argv) {
     cout << "" << endl;*/
 
     tStart_partial = clock();
-    // Start of module: search of the irredundant set of regions
-    auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
-    auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-    tStart_partial = clock();
 
     if (decomposition) {
         cout << "============================[DECOMPOSITION]===================" << endl;
@@ -285,18 +281,26 @@ int main(int argc, char **argv) {
         aliases_region_pointer_inverted = new map<Region *, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
-        map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(),
-                                                                        pn_module->get_irredundant_regions());
-        auto uncovered_regions = copy_map_to_set(merged_map);
+        //map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(),
+        //                                                                pn_module->get_irredundant_regions());
+        //auto uncovered_regions = copy_map_to_set(merged_map);
         //auto all_new_regions = copy_map_to_set(pre_regions);
         set<int> used_regions;
+        auto used_regions_map = new map<int,set< Region *>*>();
+        for(auto rec: *pre_regions){
+            (*used_regions_map)[rec.first] = new set<Region *>();
+        }
         //cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
         auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
-        int last_uncovered_regions = uncovered_regions->size();
+        //int last_uncovered_regions = uncovered_regions->size();
 
-        while(last_uncovered_regions > 0) {
+        auto rg = new Region_generator(number_of_events);
+        regions = rg->generate();
+        excitation_closure = false;
+        while(!excitation_closure) {
+
             minValueToCheck = startingMinValueToCheck;
             PBConfig config = make_shared<PBConfigClass>();
             VectorClauseDatabase formula(config);
@@ -409,20 +413,66 @@ int main(int argc, char **argv) {
             //remove the regions of SM from uncovered regions set
             for (auto region: *SM) {
                 used_regions.insert((*aliases_region_pointer_inverted)[region]);
-                if (uncovered_regions->find(region) != uncovered_regions->end())
-                    uncovered_regions->erase(region);
+                /*if (uncovered_regions->find(region) != uncovered_regions->end())
+                    uncovered_regions->erase(region);*/
             }
             //new_results_to_avoid->insert(clause_to_avoid);
 
-            cout << "Uncovered regions size: " << uncovered_regions->size() << endl;
+            /*cout << "Uncovered regions size: " << uncovered_regions->size() << endl;
             //the new SM is not redundant
             if (last_uncovered_regions > (int) uncovered_regions->size()) {
                 SMs->insert(SM);
             } else {
                 delete SM;
-            }
-            last_uncovered_regions = uncovered_regions->size();
+            }*/
+            SMs->insert(SM);
+            //last_uncovered_regions = uncovered_regions->size();
 
+            //control excitation closure used regions
+
+            //update of used regions map
+            for(auto reg: used_regions){
+                for(auto rec: *pre_regions){
+                    if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
+                        (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                    }
+                }
+            }
+
+            ls = new Label_splitting_module(used_regions_map, rg->get_ER_set(), rg->get_middle_set_of_states());
+
+            set<int> *events = ls->is_excitation_closed();
+
+            excitation_closure = events->empty();
+            if(decomposition_debug) {
+                if (excitation_closure) {
+                    cout << "EXCITATION CLOSURE OK!!!" << endl;
+                } else {
+                    cout << "NO EXCITATION CLOSURE" << endl;
+                }
+            }
+        }
+
+        if(decomposition_debug) {
+            //update of used regions map
+            for (auto reg: used_regions) {
+                for (auto rec: *pre_regions) {
+                    if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
+                        (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                    }
+                }
+            }
+
+            ls = new Label_splitting_module(used_regions_map, rg->get_ER_set(), rg->get_middle_set_of_states());
+
+            set<int> *events = ls->is_excitation_closed();
+
+            excitation_closure = events->empty();
+            if (excitation_closure) {
+                cout << "EXCITATION CLOSURE OK!!!" << endl;
+            } else {
+                cout << "NO EXCITATION CLOSURE" << endl;
+            }
         }
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -488,12 +538,15 @@ int main(int argc, char **argv) {
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-        printf("Time essential+irredundant: %.5fs\n", t_irred);
+        //printf("Time essential+irredundant: %.5fs\n", t_irred);
         printf("Time decomposition: %.5fs\n", t_decomposition);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
     } else {
-
+        tStart_partial = clock();
+        // Start of module: search of the irredundant set of regions
+        auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
+        auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
         auto essential_regions = pn_module->get_essential_regions();
         map<int, set<Region *> *> *irredundant_regions =
                 pn_module->get_irredundant_regions();
@@ -566,6 +619,7 @@ int main(int argc, char **argv) {
         // cout << "fine ricerca " << endl;
 
         //===============FREE ============
+        delete pn_module;
         delete merging_module;
 
         printf("\nTime region gen: %.5fs\n", t_region_gen);
@@ -587,7 +641,7 @@ int main(int argc, char **argv) {
     delete regions;
     delete vector_regions;
 
-    delete pn_module;
+
     delete pprg;
 
     for (const auto &el : *ts_map) {
