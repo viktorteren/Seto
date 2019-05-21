@@ -936,7 +936,7 @@ namespace Utilities {
             /*for(auto rec: *overlapping_regions_clauses){
                 delete rec;
             }*/
-            //delete overlapping_regions_clauses;
+            delete overlapping_regions_clauses;
         }
         delete regions_set;
         for(auto rec: *map_of_overlapped_regions){

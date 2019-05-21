@@ -11,8 +11,10 @@ using namespace std;
 class Region_generator {
 
 public:
-  Region_generator(int n);
+  explicit Region_generator(int n);
   ~Region_generator();
+  void delete_ER_set();
+  void delete_regions_map();
 
   map<int, vector<Region> *> *generate();
 
@@ -29,12 +31,12 @@ public:
   map<int, vector<int> *> *get_number_of_bad_events();
   map<int, int> *get_trees_init();
   void remove_bigger_regions(Region &new_region,vector<Region>* regions);
-    //il primo intero della mappa intern  id della regione corrispondente alla posizione nella struttura delle regioni intermedie
-    map<int, map<int, int >*>* get_violations_event();
-    map<int, map< int , vector<Edge*> *>* >* get_violations_trans();
+  //il primo intero della mappa intern  id della regione corrispondente alla posizione nella struttura delle regioni intermedie
+  map<int, map<int, int >*>* get_violations_event();
+  map<int, map< int , vector<Edge*> *>* >* get_violations_trans();
 
 private:
-  map<int, ER> *ER_set;
+  map<int, ER> *ER_set=nullptr;
   map<int, vector<Region> *> *regions;
   vector<Region> *queue_temp_regions;
 

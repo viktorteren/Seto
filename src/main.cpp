@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     Pre_and_post_regions_generator *pprg = nullptr;
     map<int, ER> *new_ER;
     vector<Region> *vector_regions;
-    map<int, vector<Region> *> *regions;
+    map<int, vector<Region> *> *regions = nullptr;
 
     double t_pre_region_gen = 0.0;
     double t_region_gen = 0.0;
@@ -88,9 +88,11 @@ int main(int argc, char **argv) {
     bool excitation_closure;
     //double dim_reg;
     num_events_after_splitting = static_cast<int>(ts_map->size());
+    Region_generator* rg = nullptr;
     do {
         number_of_events = static_cast<int>(ts_map->size());
-        auto rg = new Region_generator(number_of_events);
+        delete rg;
+        rg = new Region_generator(number_of_events);
         regions = rg->generate();
         vector_regions = copy_map_to_vector(regions);
 
@@ -212,12 +214,13 @@ int main(int argc, char **argv) {
         delete events;
         delete events_not_satify_EC;
 
-        delete rg;
-
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     }//end prova do while
     while (!excitation_closure);
+    rg->delete_ER_set();
+    delete rg;
+
 
     if (print_step_by_step) {
         int cont = 0;
@@ -292,7 +295,7 @@ int main(int argc, char **argv) {
         auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
         //int last_uncovered_regions = uncovered_regions->size();
 
-        auto rg = new Region_generator(number_of_events);
+        rg = new Region_generator(number_of_events);
         regions = rg->generate();
         excitation_closure = false;
         while(!excitation_closure) {
@@ -321,7 +324,7 @@ int main(int argc, char **argv) {
                 }
             }
 
-            //speedup fix: at the firs iteration all regions are not used and have weight=2
+            //speedup fix: at the first iteration all regions are not used and have weight=2
             if(used_regions.empty()){
                 minValueToCheck*=2;
             }
@@ -525,6 +528,8 @@ int main(int argc, char **argv) {
         }
         delete SMs;
         delete used_regions_map;
+        rg->delete_ER_set();
+        //rg->delete_regions_map();
         delete rg;
         delete clauses;
         delete regions_set;

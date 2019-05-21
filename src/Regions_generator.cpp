@@ -18,6 +18,20 @@ Region_generator::Region_generator(int n) {
     trans_violations = new map<int, map<int, vector<Edge*>* >*>();
 }
 
+void Region_generator::delete_ER_set(){
+    for(auto rec: *ER_set){
+        delete rec.second;
+    }
+    delete ER_set;
+}
+
+void Region_generator::delete_regions_map(){
+    for(auto rec: *regions){
+        delete rec.second;
+    }
+    delete regions;
+}
+
 Region_generator::~Region_generator() {
     for (auto record : *map_states_to_add) {
         delete record.second->states_to_add_nocross;
