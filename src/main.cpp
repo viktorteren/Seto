@@ -1,4 +1,3 @@
-//#include "../pblib/BasicPBSolver/BasicSATSolver.h"
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
@@ -16,8 +15,7 @@ int main(int argc, char **argv) {
     if (argc == 1) {
         // default input
         print_step_by_step = false;
-        file = "../input/etff.g";
-        //cout << "sono qui" << endl;
+        file = "../test/input1.ts";
     } else if (argc == 2) {
         file = args[1];
         cout << file << endl;
@@ -75,29 +73,23 @@ int main(int argc, char **argv) {
     vector<Region> *vector_regions;
     map<int, vector<Region> *> *regions;
 
-
     double t_pre_region_gen = 0.0;
     double t_region_gen = 0.0;
     double t_splitting = 0.0;
     int number_of_events;
-    //int c=0;
     auto aliases = new map<int, int>();
 
     clock_t tStart = clock();
 
     auto tStart_partial = clock();
 
-    //int vec_size=-1;
     int num_split = 0;
 
-    bool excitation_closure = false;
+    bool excitation_closure;
     //double dim_reg;
     num_events_after_splitting = static_cast<int>(ts_map->size());
     do {
         number_of_events = static_cast<int>(ts_map->size());
-        //cout << "number_of_events: " << number_of_events << endl;
-        //cout << "num_events: " << num_events  << endl;
-        //cout << "contatore = " << contatore << " ts_map->size() = " << ts_map->size() << endl;
         auto rg = new Region_generator(number_of_events);
         regions = rg->generate();
         vector_regions = copy_map_to_vector(regions);
@@ -110,10 +102,12 @@ int main(int argc, char **argv) {
             cout << "" << endl;
         }
 
-        // cout << "------------------------------------------------------------ "
-        //       "DELETING OF NON MINIMAL REGIONS "
-        //     "-------------------------------------------"
-        //<< endl;
+        if(print_step_by_step_debug) {
+             cout << "------------------------------------------------------------ "
+                   "DELETING OF NON MINIMAL REGIONS "
+                 "-------------------------------------------"
+            << endl;
+        }
         vector<Region>::iterator it;
         for (it = vector_regions->begin(); it < vector_regions->end(); ++it) {
             Region *region = &(*it);
@@ -129,14 +123,17 @@ int main(int argc, char **argv) {
             cout << "" << endl;
         }
 
-        /*cout<<"regioni"<<endl;
-        for (auto rec: *regions) {
-            cout << "event" << rec.first << endl;
-            for (auto r: *rec.second) {
-                cout << "reg: ";
-                println(r);
+        if(print_step_by_step_debug) {
+            cout<<"regions"<<endl;
+            for (auto rec: *regions) {
+                cout << "event" << rec.first << endl;
+                for (auto r: *rec.second) {
+                    cout << "reg: ";
+                    println(r);
+                }
             }
-        }*/
+        }
+
 
 
         num_events_after_splitting = static_cast<int>(ts_map->size());
@@ -172,7 +169,8 @@ int main(int argc, char **argv) {
         set<int> *events = ls->is_excitation_closed();
 
         excitation_closure = events->empty();
-        //cout << "EC*************" << excitation_closure << endl;
+        if(print_step_by_step_debug)
+            cout << "EC*************" << excitation_closure << endl;
 
         set<int> *events_not_satify_EC = nullptr;
 
@@ -237,14 +235,16 @@ int main(int argc, char **argv) {
 
     print_ts_dot_file(file, aliases);
 
-    /*cout<<"ECTS:"<<endl;
-    for(auto tr: *ts_map){
-        cout<<"evento "<< tr.first<<endl;
-        for(auto r: tr.second){
-            cout<<r->first<< "->"<< r->second<<endl;
+    if(print_step_by_step_debug) {
+        cout<<"ECTS:"<<endl;
+        for(const auto& tr: *ts_map){
+            cout<<"evento "<< tr.first<<endl;
+            for(auto r: tr.second){
+                cout<<r->first<< "->"<< r->second<<endl;
+            }
         }
+        cout << "" << endl;
     }
-    cout << "" << endl;*/
 
     tStart_partial = clock();
 
@@ -255,42 +255,38 @@ int main(int argc, char **argv) {
         cout << "Number of regions: " << numRegions << endl;
         int startingMinValueToCheck = 0;
         int minValueToCheck;
-        auto regions_sorted = new vector<Region>();
+        auto regions_sorted = new vector<Region*>();
         for(auto reg: *regions_set){
-            regions_sorted->push_back(*reg);
+            regions_sorted->push_back(reg);
         }
 
         //sorting of the regions in descending size order
-        sort( regions_sorted->begin( ), regions_sorted->end( ), [ ]( const Region& lhs, const Region& rhs )
+        sort( regions_sorted->begin( ), regions_sorted->end( ), [ ](  Region *lhs,  Region *rhs )
         {
-            return lhs.size() > rhs.size();
+            return lhs->size() > rhs->size();
         });
 
         //Setting up the first value to overcom in the inequality
-        int sum = 0;
-        for(unsigned int i=0; i < regions_sorted->size();i++){
-            sum+=regions_sorted[i].size();
+        unsigned long sum = 0;
+        for(auto & i : *regions_sorted){
+            sum += i->size();
             startingMinValueToCheck++;
             if(sum >= num_states)
                 break;
         }
-
 
         //auto new_results_to_avoid = new set<set<int> *>();
         aliases_region_pointer = new map<int, Region *>();
         aliases_region_pointer_inverted = new map<Region *, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
-        //map<int, set<Region *> *> *merged_map = Utilities::merge_2_maps(pn_module->get_essential_regions(),
-        //                                                                pn_module->get_irredundant_regions());
-        //auto uncovered_regions = copy_map_to_set(merged_map);
-        //auto all_new_regions = copy_map_to_set(pre_regions);
         set<int> used_regions;
         auto used_regions_map = new map<int,set< Region *>*>();
         for(auto rec: *pre_regions){
             (*used_regions_map)[rec.first] = new set<Region *>();
         }
-        //cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
+        if(decomposition_debug)
+            cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
         auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
@@ -300,7 +296,6 @@ int main(int argc, char **argv) {
         regions = rg->generate();
         excitation_closure = false;
         while(!excitation_closure) {
-
             minValueToCheck = startingMinValueToCheck;
             PBConfig config = make_shared<PBConfigClass>();
             VectorClauseDatabase formula(config);
@@ -348,7 +343,7 @@ int main(int argc, char **argv) {
 
             Minisat::Solver solver;
 
-            bool sat = true;
+            bool sat;
             vec<lbool> true_model;
 
             //iteration in the search of a correct assignment for a single SM
@@ -395,7 +390,6 @@ int main(int argc, char **argv) {
             SM = new set<Region *>();
             if(decomposition_debug)
                 fprintf(res, "Last SAT with: ");
-            //auto clause_to_avoid = new set<int>();
             for (int i = 0; i < solver.nVars(); i++) {
                 if (true_model[i] != l_Undef) {
                     if(decomposition_debug)
@@ -404,29 +398,18 @@ int main(int argc, char **argv) {
                         if (i < numRegions) {
                             add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
                         }
-                        //clause_to_avoid->insert(i + 1);
                     }
                 }
             }
             //fprintf(res, " 0\n");
 
-            //remove the regions of SM from uncovered regions set
+            //update the used regions
             for (auto region: *SM) {
                 used_regions.insert((*aliases_region_pointer_inverted)[region]);
-                /*if (uncovered_regions->find(region) != uncovered_regions->end())
-                    uncovered_regions->erase(region);*/
             }
-            //new_results_to_avoid->insert(clause_to_avoid);
 
-            /*cout << "Uncovered regions size: " << uncovered_regions->size() << endl;
-            //the new SM is not redundant
-            if (last_uncovered_regions > (int) uncovered_regions->size()) {
-                SMs->insert(SM);
-            } else {
-                delete SM;
-            }*/
+            //update the set of SMs
             SMs->insert(SM);
-            //last_uncovered_regions = uncovered_regions->size();
 
             //control excitation closure used regions
 
@@ -510,21 +493,17 @@ int main(int argc, char **argv) {
                 }
             }
 
-            //cout << "pre-regions" << endl;
-            //print(*SM_pre_regions_map);
             auto post_regions_SM = pprg->create_post_regions_for_SM(SM_pre_regions_map);
-            //cout << "post-regions" << endl;
-            //print(*post_regions_SM);
             string SM_name = file;
-            SM_name = SM_name.substr(0, SM_name.size() - 3);
+            //generic cut for .ts file path and other extensions
             int lower = 0;
             for (int i = static_cast<int>(SM_name.size() - 1); i > 0; i--) {
-                if (SM_name[i] == '/') {
+                if (SM_name[i] == '.') {
                     lower = i;
                     break;
                 }
             }
-
+            SM_name = SM_name.substr(0, lower);
             SM_name += "_SM_"+to_string(counter)+".g";
             print_pn_dot_file(SM_pre_regions_map, post_regions_SM, aliases, SM_name);
             for(auto rec: *post_regions_SM){

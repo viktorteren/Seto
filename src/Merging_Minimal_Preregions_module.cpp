@@ -167,9 +167,9 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             //println(*reg2);
 
                             if(print_step_by_step){
-                            cout << "Preregioni dopo la fusione: "<< endl;
+                            cout << "Preregions after the fusion: "<< endl;
                              for (auto el : *tmp_map) {
-                               cout << "evento: " << el.first << endl;
+                               cout << "event: " << el.first << endl;
                                for (auto r : *el.second) {
                                  println(*r);
                                }
@@ -192,7 +192,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
 
     // non ho fatto il merge
     if(print_step_by_step){
-    cout << "Nessuna fusione effettuata" << endl;
+    cout << "Any fusion done" << endl;
     cout << "" << endl;}
 
     for (auto el : *tmp_map) {

@@ -2,7 +2,6 @@
 // Created by ciuchino on 18/04/18.
 //
 
-//#include <utility>
 #include "../include/Utilities.h"
 
 bool print_step_by_step;
@@ -458,30 +457,24 @@ namespace Utilities {
             }
         }
         in_name = output_name.substr(lower + 1, output_name.size());
-        // cout << "out name: " << in_dot_name << endl;
 
         output_name = output_name + ".dimacs";
         //====================== END OF FILE CREATION =====================
 
         ofstream fout(output_name);
         string temp;
-        //temp.append("p cnf");
         for(auto clause: *clauses){
             for(auto lit: *clause){
-                //fout << lit << " ";
                 temp.append(to_string(lit)+" ");
             }
-            //fout << "0" << endl;
             temp.append("0\n");
         }
         //add the new clauses found in the previous iterations
         if(new_results_to_avoid != nullptr) {
             for (auto clause: *new_results_to_avoid) {
                 for (auto lit: *clause) {
-                    //fout << "-" <<lit << " ";
                     temp.append("-" + to_string(lit) + " ");
                 }
-                //fout << "0" << endl;
                 temp.append("0\n");
             }
         }
@@ -492,12 +485,12 @@ namespace Utilities {
             fout << num_var << " " << num_clauses << endl;
         fout << temp;
         fout.close();
-        //f.close();
         return output_name;
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int32_t>> clauses, set<set<int>*>* new_results_to_avoid){
-        //cout << "================[DIMACS FILE CREATION]====================" << endl;
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, set<set<int>*>* new_results_to_avoid){
+        if(print_step_by_step_debug || decomposition_debug)
+            cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
         string in_name;
         while (output_name[output_name.size() - 1] != '.') {
@@ -512,7 +505,6 @@ namespace Utilities {
             }
         }
         in_name = output_name.substr(lower + 1, output_name.size());
-        // cout << "out name: " << in_dot_name << endl;
 
         output_name = output_name + ".dimacs";
         //====================== END OF FILE CREATION =====================
@@ -520,7 +512,7 @@ namespace Utilities {
         ofstream fout(output_name);
         string temp;
         //temp.append("p cnf");
-        for(auto clause: clauses){
+        for(const auto& clause: clauses){
             for(auto lit: clause){
                 //fout << lit << " ";
                 temp.append(to_string(lit)+" ");
@@ -1047,7 +1039,7 @@ namespace Utilities {
         SM->insert(region);
     }
 
-    bool check_sat_formula_from_dimacs(Minisat::Solver& solver, string file_path){
+    bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path){
         FILE* f;
         f = fopen(file_path.c_str(), "r");
         Minisat::parse_DIMACS(f, solver);
@@ -1062,15 +1054,15 @@ namespace Utilities {
 
         Minisat::vec<Minisat::Lit> dummy;
         Minisat::lbool ret = solver.solveLimited(dummy);
-        set<Region *> *SM;
         //True return value
         if (ret == Minisat::lbool((uint8_t)0)) {
             return true;
             //false return value
         } else if (ret == Minisat::lbool((uint8_t)1))
             return false;
-        else
+        else {
             cerr << "NO RESULT" << endl;
             exit(1);
+        }
     }
 }

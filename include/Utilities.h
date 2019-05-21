@@ -80,10 +80,10 @@ namespace Utilities {
     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int32_t>> clauses, set<set<int>*>* new_results_to_avoid);
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, set<set<int>*>* new_results_to_avoid);
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);
     void add_region_to_SM(set<Region*>* SM, Region* region);
     void print_SM(set<Region *>* SM);
-    bool check_sat_formula_from_dimacs(Minisat::Solver& solver, string file_path);
+    bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
 };
