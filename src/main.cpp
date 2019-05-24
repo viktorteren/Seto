@@ -478,8 +478,12 @@ int main(int argc, char **argv) {
         int counter = 0;
         for(auto SM: *SMs){
             counter++;
-            if(decomposition_debug)
+            if(decomposition_debug) {
                 cout << "SM " << counter << endl;
+                for(auto reg: *SM){
+                    println(*reg);
+                }
+            }
             auto SM_pre_regions_map = new map<int, set<Region *> *>();
             for(auto rec: *pprg->get_pre_regions()){
                 for(auto reg: *rec.second){
