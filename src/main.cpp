@@ -462,14 +462,6 @@ int main(int argc, char **argv) {
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-
-        if(decomposition_debug) {
-            cout << "=======================[ FINAL SM's STATES  ]================" << endl;
-            for (auto SM: *SMs) {
-                print_SM(SM);
-            }
-        }
-
         if(decomposition_debug)
             cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
