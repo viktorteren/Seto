@@ -385,12 +385,12 @@ int main(int argc, char **argv) {
 
             set<Region *> *SM;
             SM = new set<Region *>();
-            if(decomposition_debug)
-                fprintf(res, "Last SAT with: ");
+            /*if(decomposition_debug)
+                fprintf(res, "Last SAT with: ");*/
             for (int i = 0; i < solver.nVars(); i++) {
                 if (true_model[i] != l_Undef) {
-                    if(decomposition_debug)
-                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
+                    /*if(decomposition_debug)
+                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);*/
                     if (true_model[i] == l_True) {
                         if (i < numRegions) {
                             add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
@@ -398,7 +398,8 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            //fprintf(res, " 0\n");
+            /*if(decomposition_debug)
+                fprintf(res, " 0\n");*/
 
             //update the used regions
             for (auto region: *SM) {

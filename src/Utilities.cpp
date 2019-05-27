@@ -1073,8 +1073,6 @@ namespace Utilities {
 
         auto regions_intersection_map = new map<int, set<int> *>() ;
 
-        auto events_not_satisfy_EC = new set<int>;
-
         // per ogni evento
         // se per un evento non vale che l'intersezione è uguale all'er la TS non è
         // exitation-closed
@@ -1090,11 +1088,14 @@ namespace Utilities {
             //println(*er);
             //l'evento non ha preregioni allora non vale la EC
             if(pre_regions->find(event)==pre_regions->end()){
-                events_not_satisfy_EC->insert(event);
-                (*regions_intersection_map)[event] = new set<int>();
                 if(print_step_by_step_debug || decomposition_debug){
-                    cout << "rvent " << event << "not satisfy EC becouse it havent preregions" << endl;
+                    cout << "event " << event << "not satisfy EC becouse it havent preregions" << endl;
                 }
+                for(auto rec: *regions_intersection_map){
+                    delete rec.second;
+                }
+                delete regions_intersection_map;
+                return false;
             } else {
                 auto intersec = regions_intersection(pre_regions->at(event));
                 (*regions_intersection_map)[event] = intersec;
@@ -1103,7 +1104,7 @@ namespace Utilities {
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
                     if(print_step_by_step_debug || decomposition_debug){
-                        cout << "event not satisfy ec becouse the intersection of regions is different from er" << endl;
+                        cout << "event " << event << " not satisfy ec becouse the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
                             cout << "empty" << endl;
@@ -1114,30 +1115,18 @@ namespace Utilities {
                         cout << "er: ";
                         println(*er);
                     }
-                    events_not_satisfy_EC->insert(event);
-                    // res=false;
+                    for(auto rec: *regions_intersection_map){
+                        delete rec.second;
+                    }
+                    delete regions_intersection_map;
+                    return false;
                 }
             }
         }
-
-        // ritorna chi non soddisfa così faccio lo splitting solo per quelli eventi
-        // la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
-        /*for (auto ev : *events_not_satisfy_EC) {
-          cout << "event not sat EC----------" << ev << endl;
-        }*/
-
-        if(print_step_by_step || decomposition_debug){
-            if(!events_not_satisfy_EC->empty())
-                cout<<"Ts not excitation closed"<<endl << endl;
-            else
-                cout<<"Ts excitation closed"<<endl << endl;
-        }
-        bool ret_val = events_not_satisfy_EC->empty();
-        delete events_not_satisfy_EC;
         for(auto rec: *regions_intersection_map){
             delete rec.second;
         }
         delete regions_intersection_map;
-        return ret_val;
+        return true;
     }
 }
