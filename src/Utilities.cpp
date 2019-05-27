@@ -1092,6 +1092,9 @@ namespace Utilities {
             if(pre_regions->find(event)==pre_regions->end()){
                 events_not_satisfy_EC->insert(event);
                 (*regions_intersection_map)[event] = new set<int>();
+                if(print_step_by_step_debug || decomposition_debug){
+                    cout << "rvent " << event << "not satisfy EC becouse it havent preregions" << endl;
+                }
             } else {
                 auto intersec = regions_intersection(pre_regions->at(event));
                 (*regions_intersection_map)[event] = intersec;
@@ -1099,6 +1102,18 @@ namespace Utilities {
                 //println(*intersec);
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
+                    if(print_step_by_step_debug || decomposition_debug){
+                        cout << "event not satisfy ec becouse the intersection of regions is different from er" << endl;
+                        cout << "the intersection is ";
+                        if(intersec->empty()){
+                            cout << "empty" << endl;
+                        }
+                        else{
+                            println(*intersec);
+                        }
+                        cout << "er: ";
+                        println(*er);
+                    }
                     events_not_satisfy_EC->insert(event);
                     // res=false;
                 }
@@ -1111,7 +1126,7 @@ namespace Utilities {
           cout << "event not sat EC----------" << ev << endl;
         }*/
 
-        if(print_step_by_step){
+        if(print_step_by_step || decomposition_debug){
             if(!events_not_satisfy_EC->empty())
                 cout<<"Ts not excitation closed"<<endl << endl;
             else
