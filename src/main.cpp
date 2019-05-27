@@ -473,6 +473,10 @@ int main(int argc, char **argv) {
             changed = false;
 
             for(auto SM: *new_SMs){
+                if(decomposition_debug){
+                    cout << "trying to rermove the SM: " << endl;
+                    println(*SM);
+                }
                 auto tmp_SMs = new set<set<Region *> *>();
                 //tmp_SM prende tutto tranne SM
                 for(auto set: *new_SMs){
@@ -482,7 +486,7 @@ int main(int argc, char **argv) {
                 set<int> new_used_regions_tmp;
                 for(auto tmp_SM: *tmp_SMs){
                     for (auto region: *tmp_SM) {
-                        new_used_regions.insert((*aliases_region_pointer_inverted)[region]);
+                        new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
                     }
                 }
                 auto new_used_regions_map_tmp = new map<int,set< Region *>*>();
@@ -504,15 +508,18 @@ int main(int argc, char **argv) {
                 }
                 delete new_used_regions_map_tmp;
                 if(excitation_closure){
-                    cout << "ok senza SM" << endl;
-                    println(*SM);
+                    if(decomposition_debug){
+                        cout << "ok without SM" << endl;
+                        //println(*SM);
+                    }
                     delete new_SMs;
                     new_SMs = tmp_SMs;
                     new_used_regions = new_used_regions_tmp;
                     //removal of the SM
                     changed = true;
-                    cout << "new SM set size:" << new_SMs->size() << endl;
-                    //break;
+                    //cout << "new SM set size:" << new_SMs->size() << endl;
+                    //serve per l'iteratore delle SM
+                    break;
 
                 }
                 else{
@@ -540,7 +547,7 @@ int main(int argc, char **argv) {
         //cout << "pre-regions" << endl;
         //print(*pprg->get_pre_regions());
         int counter = 0;
-        for(auto SM: *SMs){
+        for(auto SM: *new_SMs){
             counter++;
             if(decomposition_debug) {
                 cout << "SM " << counter << endl;
