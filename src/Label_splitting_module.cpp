@@ -55,25 +55,20 @@ set<int> *Label_splitting_module::is_excitation_closed() {
         }
     }
 
-    // ritorna chi non soddisfa così faccio lo splitting solo per quegli eventi
+    // ritorna chi non soddisfa così faccio lo splitting solo per quelli eventi
     // la mappa contiene le regioni candidate solo per gli eventi che le hanno!!
      /*for (auto ev : *events_not_satisfy_EC) {
        cout << "event not sat EC----------" << ev << endl;
      }*/
 
      if(print_step_by_step){
-        if(events_not_satisfy_EC->size()!=0){
-            cout<<"Ts non è chiuso rispetto all'eccitazione"<<endl;
-            cout << "" << endl;
-        }
-        else{
-            cout<<"Ts è chiuso rispetto all'eccitazione"<<endl;
-            cout << "" << endl;
-        }
+        if(!events_not_satisfy_EC->empty())
+            cout<<"Ts not excitation closed"<<endl << endl;
+        else
+            cout<<"Ts excitation closed"<<endl << endl;
      }
 
     return events_not_satisfy_EC;
-    // return true;
 }
 
 map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(

@@ -204,7 +204,6 @@ int main(int argc, char **argv) {
                 delete reg_vec.second;
             }
             delete regions;
-
         } else {
             new_ER = rg->get_ER_set();
         }
@@ -292,8 +291,6 @@ int main(int argc, char **argv) {
         auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
         //int last_uncovered_regions = uncovered_regions->size();
 
-        auto rg = new Region_generator(number_of_events);
-        regions = rg->generate();
         excitation_closure = false;
         while(!excitation_closure) {
             minValueToCheck = startingMinValueToCheck;
@@ -422,11 +419,9 @@ int main(int argc, char **argv) {
                 }
             }
 
-            ls = new Label_splitting_module(used_regions_map, rg->get_ER_set(), rg->get_middle_set_of_states());
+            excitation_closure = is_excitation_closed(used_regions_map, new_ER);
 
-            set<int> *events = ls->is_excitation_closed();
-
-            excitation_closure = events->empty();
+            //excitation_closure = events->empty();
             if(decomposition_debug) {
                 if (excitation_closure) {
                     cout << "EXCITATION CLOSURE OK!!!" << endl;
@@ -434,8 +429,6 @@ int main(int argc, char **argv) {
                     cout << "NO EXCITATION CLOSURE" << endl;
                 }
             }
-            delete events;
-            delete ls;
         }
 
         if(decomposition_debug) {
@@ -448,11 +441,8 @@ int main(int argc, char **argv) {
                 }
             }
 
-            ls = new Label_splitting_module(used_regions_map, rg->get_ER_set(), rg->get_middle_set_of_states());
+            excitation_closure = is_excitation_closed(used_regions_map, new_ER);
 
-            set<int> *events = ls->is_excitation_closed();
-
-            excitation_closure = events->empty();
             if (excitation_closure) {
                 cout << "EXCITATION CLOSURE OK!!!" << endl;
             } else {
@@ -461,6 +451,87 @@ int main(int argc, char **argv) {
         }
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+        if(decomposition_debug)
+            cout << "=======================[ GREEDY REMOVAL OF SMs CHECKING EC ]================" << endl;
+
+        auto new_SMs = new set<set<Region *> *>();
+        for(auto set: *SMs){
+            new_SMs->insert(set);
+        }
+        bool changed = true;
+
+        set<int> new_used_regions;
+        for(auto SM: *new_SMs){
+            for (auto region: *SM) {
+                new_used_regions.insert((*aliases_region_pointer_inverted)[region]);
+            }
+        }
+
+        while(changed){
+            changed = false;
+
+            for(auto SM: *new_SMs){
+                auto tmp_SMs = new set<set<Region *> *>();
+                //tmp_SM prende tutto tranne SM
+                for(auto set: *new_SMs){
+                    if(set != SM)
+                        tmp_SMs->insert(set);
+                }
+                set<int> new_used_regions_tmp;
+                for(auto tmp_SM: *tmp_SMs){
+                    for (auto region: *tmp_SM) {
+                        new_used_regions.insert((*aliases_region_pointer_inverted)[region]);
+                    }
+                }
+                auto new_used_regions_map_tmp = new map<int,set< Region *>*>();
+                for(auto rec: *pre_regions){
+                    (*new_used_regions_map_tmp)[rec.first] = new set<Region *>();
+                }
+
+                for(auto reg: new_used_regions_tmp){
+                    for(auto rec: *pre_regions){
+                        if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
+                            (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                        }
+                    }
+                }
+
+                excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+                for(auto rec: *new_used_regions_map_tmp){
+                    delete rec.second;
+                }
+                delete new_used_regions_map_tmp;
+                if(excitation_closure){
+                    cout << "ok senza SM" << endl;
+                    println(*SM);
+                    delete new_SMs;
+                    new_SMs = tmp_SMs;
+                    new_used_regions = new_used_regions_tmp;
+                    //removal of the SM
+                    changed = true;
+                    cout << "new SM set size:" << new_SMs->size() << endl;
+                    //break;
+
+                }
+                else{
+                    delete tmp_SMs;
+                }
+            }
+        }
+
+        /*if(decomposition_debug)
+            cout << "=======================[ MERGING MODULE ON RESULT OF DECOMPOSITION ]================" << endl;
+
+        Merging_Minimal_Preregions_module *merging_module = nullptr;
+
+        merging_module = new Merging_Minimal_Preregions_module(used_regions_map, nullptr, new_ER);
+
+        //auto merged_map = merging_module->get_merged_preregions_map();*/
+
+
+
+
 
         if(decomposition_debug)
             cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
@@ -516,12 +587,13 @@ int main(int argc, char **argv) {
         for(auto rec: *used_regions_map){
             delete rec.second;
         }
+        delete used_regions_map;
         for(auto SM: *SMs){
             delete SM;
         }
         delete SMs;
-        delete used_regions_map;
-        delete rg;
+        delete new_SMs;
+        //delete rg;
         delete clauses;
         delete regions_set;
         delete regions_sorted;

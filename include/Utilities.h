@@ -70,6 +70,7 @@ namespace Utilities {
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);
     bool are_equal(Region *r1, Region *r2);
+    bool are_equal(const Region& r1, Region r2);
     bool contains(set<Region *> *, Region *);
     bool contains(vector<Region*> *, Region *);
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
@@ -86,4 +87,5 @@ namespace Utilities {
     void add_region_to_SM(set<Region*>* SM, Region* region);
     void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
+    bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
 };

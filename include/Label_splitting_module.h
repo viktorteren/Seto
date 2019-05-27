@@ -30,9 +30,9 @@ public:
 private:
   map<int, set<Region*> *> *pre_regions;
   map<int, ER> *ER_set;
-  map<int, set<int> *> *regions_intersection_map;
+  map<int, set<int> *> *regions_intersection_map{};
   map<int, vector<Region *> *> *middle_set_of_states;
-  My_Map* ts;
+  My_Map* ts{};
   int branch_selection(Edges_list *list, Region *region);
   void set_number_of_bad_events(vector<int> *event_type, int event,
                                 vector<int> *number_of_bad_events, int pos);

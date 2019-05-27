@@ -162,19 +162,20 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                         // se per tutti gli eventi la coppia è ok faccio il merge effettivo
                         if (ec_and_pre_region) {
                             delete preregions_set;
-                            //cout << "merging ok" << endl;
+                            if (print_step_by_step || decomposition_debug)
+                                cout << "merging ok" << endl;
                             //println(*reg1);
                             //println(*reg2);
 
-                            if(print_step_by_step){
-                            cout << "Preregions after the fusion: "<< endl;
-                             for (auto el : *tmp_map) {
-                               cout << "event: " << el.first << endl;
-                               for (auto r : *el.second) {
-                                 println(*r);
-                               }
-                             }
-                            cout << "" << endl;
+                            if(print_step_by_step || decomposition_debug){
+                                cout << "Preregions after the fusion: "<< endl;
+                                for (auto el : *tmp_map) {
+                                    cout << "event: " << el.first << endl;
+                                    for (auto r : *el.second) {
+                                        println(*r);
+                                    }
+                                }
+                                cout << "" << endl;
                             }
                             return tmp_map;
                         }
@@ -191,9 +192,10 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
     }
 
     // non ho fatto il merge
-    if(print_step_by_step){
-    cout << "Any fusion done" << endl;
-    cout << "" << endl;}
+    if(print_step_by_step || decomposition_debug){
+        cout << "Any fusion done" << endl;
+        cout << "" << endl;
+    }
 
     for (auto el : *tmp_map) {
         delete el.second;
