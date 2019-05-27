@@ -15,12 +15,13 @@ Essential_regions_search::~Essential_regions_search() {
 
 set<Region *> *Essential_regions_search::search() {
 
-    //cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
+    if(print_step_by_step)
+        cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
     //ALGORITMO:
     /*Per ogni evento
-     *  unione delle pre regioni per creare un insieme di tutti gli stati
+     *  unione delle pre regioni di quel evento per creare un insieme di tutti gli stati
      *  per ogni stato
-     *      controllo le regioni che non hanno tale stato
+     *      controllo le pre-regioni dell'evento che non hanno tale stato
      *      se c'è una sola regione che non ha tale stato allora la regione è essenziale
      */
 
@@ -44,6 +45,10 @@ set<Region *> *Essential_regions_search::search() {
         if (record.second->size() == 1) {
             auto it = record.second->begin();
             essential_regions->insert(*it);
+            if(print_step_by_step_debug){
+                cout << "found essential region for event "<< record.first  <<": ";
+                println(**it);
+            }
         } else {
             //unisco tutte le pre-regioni
             temp_union = regions_union(record.second);
@@ -53,7 +58,7 @@ set<Region *> *Essential_regions_search::search() {
             //per ogni stato dell'unione
             for (auto state: *temp_union) {
                 counter = 0;
-                //per ogni regione
+                //per ogni regione dell'evento
                 for (auto region: *record.second) {
                     if (region->find(state) == region->end()) {
                         if (counter == 0) {
@@ -68,8 +73,10 @@ set<Region *> *Essential_regions_search::search() {
                 }
                 //se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
                 if (counter == 1) {
-                    //cout << "trovato regione essenziale: ";
-                    //println(*last_essential_candidate);
+                    if(print_step_by_step_debug){
+                        cout << "found essential region for event "<< record.first  <<": ";
+                        println(*last_essential_candidate);
+                    }
                     essential_regions->insert(last_essential_candidate);
                 }
             }
@@ -104,7 +111,7 @@ set<Region *> *Essential_regions_search::search() {
     }*/
 
     if(print_step_by_step) {
-        cout << "Regioni essenziali: " << endl;
+        cout << "Essential regions: " << endl;
         for (auto reg: *essential_regions) {
             println(*reg);
         }
@@ -114,7 +121,7 @@ set<Region *> *Essential_regions_search::search() {
 
     //ritornerò un vettore di puntatori a pre-regioni essenziali
     if(print_step_by_step)
-        cout << "num. regioni essenziali: " << essential_regions->size() << endl;
+        cout << "num. essential regions: " << essential_regions->size() << endl;
     return essential_regions;
 }
 
