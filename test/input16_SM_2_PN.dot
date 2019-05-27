@@ -1,0 +1,61 @@
+digraph input16_SM_2_PN{
+subgraph initial_place {
+	node [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = gray, style = filled];
+	r1;
+}
+subgraph place {     
+	node [shape=circle,fixedsize=true, fixedsize = 2];
+	r4;
+	r3;
+	r2;
+	r8;
+	r6;
+	r5;
+	r0;
+	r7;
+}
+subgraph transitions {
+	node [shape=rect,height=0.2,width=2, forcelabels = false];
+	12 [label = "2'"];
+	13 [label = "7'"];
+	14 [label = "0'"];
+	15 [label = "5'"];
+	16 [label = "11'"];
+	17 [label = "11''"];
+	0;
+	3;
+	4;
+	5;
+	6;
+	7;
+	9;
+	11;
+}
+	r0 -> 0;
+	r1 -> 3;
+	r2 -> 4;
+	r3 -> 5;
+	r4 -> 6;
+	r5 -> 7;
+	r6 -> 9;
+	r7 -> 11;
+	r0 -> 12;
+	r5 -> 13;
+	r1 -> 14;
+	r7 -> 15;
+	r0 -> 16;
+	r8 -> 17;
+	0 -> r8;
+	3 -> r4;
+	5 -> r1;
+	6 -> r6;
+	7 -> r0;
+	9 -> r2;
+	11 -> r3;
+	12 -> r8;
+	13 -> r8;
+	14 -> r2;
+	15 -> r0;
+	16 -> r1;
+	17 -> r4;
+}

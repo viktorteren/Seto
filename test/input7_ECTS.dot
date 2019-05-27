@@ -1,0 +1,19 @@
+digraph input7_ECTS{
+	label="(name=input7_ECTS,n=10,m=12)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; 0;
+	node [shape = circle];
+	_nil -> 0;
+	0->7[label="0"];
+	8->4[label="0"];
+	9->2[label="1"];
+	7->1[label="1"];
+	7->9[label="2"];
+	1->2[label="2"];
+	5->0[label="3"];
+	2->8[label="3"];
+	3->5[label="4"];
+	4->6[label="4"];
+	6->5[label="5"];
+	4->3[label="5"];
+}

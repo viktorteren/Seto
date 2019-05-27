@@ -1,0 +1,26 @@
+digraph input13_SM_1_PN{
+subgraph initial_place {
+	node [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = gray, style = filled];
+	r0;
+}
+subgraph place {     
+	node [shape=circle,fixedsize=true, fixedsize = 2];
+	r1;
+	r2;
+}
+subgraph transitions {
+	node [shape=rect,height=0.2,width=2, forcelabels = false];
+	0;
+	2;
+	3;
+	4;
+}
+	r0 -> 0;
+	r1 -> 2;
+	r1 -> 3;
+	r2 -> 4;
+	0 -> r1;
+	2 -> r0;
+	3 -> r2;
+	4 -> r0;
+}

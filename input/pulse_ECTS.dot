@@ -1,0 +1,19 @@
+digraph pulse_ECTS{
+	label="(name=pulse_ECTS,n=12,m=12)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; s0;
+	node [shape = circle];
+	_nil -> s0;
+	s5->s9[label="x2+"];
+	s0->s3[label="x3-"];
+	s9->s6[label="x1-"];
+	s3->s8[label="x1-"];
+	s10->s1[label="x1-"];
+	s2->s11[label="x1-"];
+	s7->s2[label="x2-"];
+	s4->s10[label="x3+"];
+	s8->s4[label="x1+"];
+	s6->s0[label="x1+"];
+	s1->s7[label="x1+"];
+	s11->s5[label="x1+"];
+}

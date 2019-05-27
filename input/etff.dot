@@ -1,0 +1,27 @@
+digraph etff{
+	label="(name=etff,n=8,m=20)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; s2r0z1;
+	node [shape = circle];
+	_nil -> s2r0z1;
+	s2r0z1->s2r2z1[label="10"];
+	s0r1z1->s1r0z0[label="10"];
+	s1r1z0->s1r0z0[label="10"];
+	s2r0z0->s2r2z1[label="10"];
+	s0r1z0->s1r0z0[label="10"];
+	s2r0z1->s0r1z1[label="01"];
+	s2r2z1->s0r1z1[label="01"];
+	s1r1z0->s0r1z0[label="01"];
+	s1r0z0->s0r1z0[label="01"];
+	s2r0z0->s0r1z0[label="01"];
+	s2r0z1->error[label="11"];
+	s0r1z1->s1r1z0[label="11"];
+	s1r0z0->s1r1z0[label="11"];
+	s2r0z0->error[label="11"];
+	s0r1z0->s1r1z0[label="11"];
+	s2r2z1->s2r0z1[label="00"];
+	s0r1z1->s2r0z1[label="00"];
+	s1r1z0->s2r0z0[label="00"];
+	s1r0z0->s2r0z0[label="00"];
+	s0r1z0->s2r0z0[label="00"];
+}

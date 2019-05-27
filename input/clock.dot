@@ -1,0 +1,17 @@
+digraph clock{
+	label="(name=clock,n=10,m=10)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; s0;
+	node [shape = circle];
+	_nil -> s0;
+	s7->s2[label="c+"];
+	s1->s8[label="c+"];
+	s5->s0[label="c+"];
+	s4->s6[label="c-"];
+	s3->s7[label="c-"];
+	s9->s5[label="c-"];
+	s6->s1[label="a-"];
+	s2->s9[label="a-"];
+	s8->s3[label="a+"];
+	s0->s4[label="a+"];
+}

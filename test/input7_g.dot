@@ -1,0 +1,19 @@
+digraph input7_g{
+	label="(name=input7_g,n=10,m=12)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; s0;
+	node [shape = circle];
+	_nil -> s0;
+	s7->s9[label="c"];
+	s1->s2[label="c"];
+	s5->s0[label="d"];
+	s2->s8[label="d"];
+	s9->s2[label="b"];
+	s7->s1[label="b"];
+	s6->s5[label="f"];
+	s4->s3[label="f"];
+	s3->s5[label="e"];
+	s4->s6[label="e"];
+	s0->s7[label="a"];
+	s8->s4[label="a"];
+}

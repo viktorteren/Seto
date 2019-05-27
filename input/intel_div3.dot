@@ -1,0 +1,15 @@
+digraph intel_div3{
+	label="(name=intel_div3,n=8,m=8)";
+	_nil [style = "invis"];
+	node [shape = doublecircle]; s0;
+	node [shape = circle];
+	_nil -> s0;
+	s0->s1[label="q1+"];
+	s5->s6[label="clk+"];
+	s7->s0[label="clk+"];
+	s2->s3[label="clk+"];
+	s3->s4[label="clk-"];
+	s6->s7[label="clk-"];
+	s1->s2[label="clk-"];
+	s4->s5[label="q1-"];
+}

@@ -1,0 +1,60 @@
+digraph rcv-setup_PN{
+subgraph initial_place {
+	node [shape=doublecircle,fixedsize=true, fixedsize = 2, color = black, fillcolor = gray, style = filled];
+	r8;
+}
+subgraph place {     
+	node [shape=circle,fixedsize=true, fixedsize = 2];
+	r0;
+	r1;
+	r2;
+	r3;
+	r4;
+	r5;
+	r7;
+	r10;
+	r6;
+	r9;
+}
+subgraph transitions {
+	node [shape=rect,height=0.2,width=2, forcelabels = false];
+	10 [label = "reqrcv+'"];
+	11 [label = "sending-'"];
+	0 [label = "reqrcv-"];
+	1 [label = "enwoq-"];
+	2 [label = "enwoq+"];
+	3 [label = "rejsend-"];
+	4 [label = "acksend-"];
+	5 [label = "sending-"];
+	6 [label = "acksend+"];
+	7 [label = "reqrcv+"];
+	8 [label = "rejsend+"];
+	9 [label = "sending+"];
+}
+	r0 -> 0;
+	r1 -> 1;
+	r2 -> 2;
+	r3 -> 3;
+	r4 -> 3;
+	r5 -> 4;
+	r6 -> 5;
+	r7 -> 6;
+	r8 -> 7;
+	r9 -> 8;
+	r8 -> 9;
+	r6 -> 10;
+	r10 -> 11;
+	0 -> r1;
+	1 -> r8;
+	2 -> r0;
+	3 -> r5;
+	4 -> r2;
+	5 -> r8;
+	6 -> r4;
+	7 -> r2;
+	8 -> r7;
+	8 -> r10;
+	9 -> r6;
+	10 -> r9;
+	11 -> r3;
+}
