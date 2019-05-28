@@ -456,77 +456,138 @@ int main(int argc, char **argv) {
         if(decomposition_debug)
             cout << "=======================[ GREEDY REMOVAL OF SMs CHECKING EC ]================" << endl;
 
-        auto new_SMs = new set<set<Region *> *>();
+        /*auto new_SMs = new set<set<Region *> *>();
         for(auto set: *SMs){
             new_SMs->insert(set);
-        }
-        bool changed = true;
+        }*/
+        //bool changed = true;
 
-        set<int> new_used_regions;
-        for(auto SM: *new_SMs){
+        //set<int> new_used_regions;
+        /*for(auto SM: *new_SMs){
             for (auto region: *SM) {
                 new_used_regions.insert((*aliases_region_pointer_inverted)[region]);
             }
-        }
+        }*/
 
-        while(changed){
-            changed = false;
+        set<set<Region *> *> SMs_to_remove;
 
-            for(auto SM: *new_SMs){
-                if(decomposition_debug){
-                    cout << "trying to rermove the SM: " << endl;
+        for(auto SM: *SMs) {
+            if (decomposition_debug) {
+                cout << "check if can rermove the SM: " << endl;
+                println(*SM);
+            }
+            auto tmp_SMs = new set < set < Region * > * > ();
+            //tmp_SM prende tutto tranne SM
+            //std::copy_n ( SMs->begin(), SMs->size(), tmp_SMs->begin());
+            for (auto set: *SMs) {
+                if (set != SM)
+                    tmp_SMs->insert(set);
+            }
+            set<int> new_used_regions_tmp;
+            for (auto tmp_SM: *tmp_SMs) {
+                for (auto region: *tmp_SM) {
+                    new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+                }
+            }
+            auto new_used_regions_map_tmp = new map<int, set < Region * > * > ();
+            for (auto rec: *pre_regions) {
+                (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+            }
+
+            for (auto reg: new_used_regions_tmp) {
+                for (auto rec: *pre_regions) {
+                    if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
+                        (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                    }
+                }
+            }
+
+            excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+            for (auto rec: *new_used_regions_map_tmp) {
+                delete rec.second;
+            }
+            delete new_used_regions_map_tmp;
+            if (excitation_closure) {
+                SMs_to_remove.insert(SM);
+                if (decomposition_debug) {
+                    cout << "ok without SM" << endl;
                     println(*SM);
                 }
-                auto tmp_SMs = new set<set<Region *> *>();
+                //delete new_SMs;
+
+                //new_SMs = tmp_SMs;
+                //new_used_regions = new_used_regions_tmp;
+                //removal of the SM
+                //changed = true;
+                //cout << "new SM set size:" << new_SMs->size() << endl;
+                //serve per l'iteratore delle SM
+                //break;
+            }
+            delete tmp_SMs;
+        }
+
+        if(decomposition_debug) {
+            cout << "SM candidate for removal: " << endl;
+            for(auto reg: SMs_to_remove){
+                cout << "SM:" <<endl;
+                println(*reg);
+            }
+        }
+
+        //todo: this part will be modified with the search of max ind set of SMs to remove
+        bool removed = true;
+        while(removed){
+            removed = false;
+            for(auto SM: SMs_to_remove){
+                auto tmp_SMs = new set < set < Region * > * > ();
                 //tmp_SM prende tutto tranne SM
-                for(auto set: *new_SMs){
-                    if(set != SM)
+                for (auto set: *SMs) {
+                    if (set != SM)
                         tmp_SMs->insert(set);
                 }
+
                 set<int> new_used_regions_tmp;
-                for(auto tmp_SM: *tmp_SMs){
+                for (auto tmp_SM: *tmp_SMs) {
                     for (auto region: *tmp_SM) {
                         new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
                     }
                 }
-                auto new_used_regions_map_tmp = new map<int,set< Region *>*>();
-                for(auto rec: *pre_regions){
-                    (*new_used_regions_map_tmp)[rec.first] = new set<Region *>();
+                auto new_used_regions_map_tmp = new map<int, set < Region * > * > ();
+                for (auto rec: *pre_regions) {
+                    (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
                 }
 
-                for(auto reg: new_used_regions_tmp){
-                    for(auto rec: *pre_regions){
-                        if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
+                for (auto reg: new_used_regions_tmp) {
+                    for (auto rec: *pre_regions) {
+                        if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
                             (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
                         }
                     }
                 }
 
                 excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
-                for(auto rec: *new_used_regions_map_tmp){
+                for (auto rec: *new_used_regions_map_tmp) {
                     delete rec.second;
                 }
                 delete new_used_regions_map_tmp;
-                if(excitation_closure){
-                    if(decomposition_debug){
-                        cout << "ok without SM" << endl;
-                        //println(*SM);
+                if (excitation_closure) {
+                    if (decomposition_debug) {
+                        cout << "removed SM" << endl;
+                        println(*SM);
                     }
-                    delete new_SMs;
-                    new_SMs = tmp_SMs;
-                    new_used_regions = new_used_regions_tmp;
+                    SMs->erase(SM);
+                    SMs_to_remove.erase(SM);
                     //removal of the SM
-                    changed = true;
+                    removed = true;
                     //cout << "new SM set size:" << new_SMs->size() << endl;
                     //serve per l'iteratore delle SM
                     break;
-
                 }
-                else{
-                    delete tmp_SMs;
-                }
+                delete tmp_SMs;
             }
         }
+
+
 
         /*if(decomposition_debug)
             cout << "=======================[ MERGING MODULE ON RESULT OF DECOMPOSITION ]================" << endl;
@@ -547,7 +608,7 @@ int main(int argc, char **argv) {
         //cout << "pre-regions" << endl;
         //print(*pprg->get_pre_regions());
         int counter = 0;
-        for(auto SM: *new_SMs){
+        for(auto SM: *SMs){
             counter++;
             if(decomposition_debug) {
                 cout << "SM " << counter << endl;
@@ -600,7 +661,6 @@ int main(int argc, char **argv) {
             delete SM;
         }
         delete SMs;
-        delete new_SMs;
         //delete rg;
         delete clauses;
         delete regions_set;

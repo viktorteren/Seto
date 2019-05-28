@@ -107,7 +107,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             bool event_contains_reg = false;
                             for (auto reg : *total_pre_regions_map->at(event)) {
                                 if (!are_equal(reg, reg1) && !are_equal(reg, reg2))
-                                    tmp_set->insert(reg);
+                                    tmp_set->insert(reg); //inserisco in temp_set tutte le regioni tranne quelle del merge
                                 else
                                     event_contains_reg = true;
                             }
@@ -115,8 +115,6 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             if (event_contains_reg) {
                                 if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
                                     tmp_set->insert(reg_union);
-
-
                                     auto intersection = regions_intersection(tmp_set);
                                     auto er = ER_map->at(event);
 
