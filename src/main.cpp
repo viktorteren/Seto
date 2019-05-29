@@ -464,8 +464,9 @@ int main(int argc, char **argv) {
         if(decomposition_debug)
             cout << "=======================[ GREEDY REMOVAL OF SMs CHECKING EC ]================" << endl;
 
+        tStart_partial = clock();
         //for debug
-        cout << "====DEBUG====="<<endl;
+        /*cout << "====DEBUG====="<<endl;
        for(auto reg: used_regions){
            set<int> new_used_regions;
            for(auto r: used_regions){
@@ -493,7 +494,7 @@ int main(int argc, char **argv) {
            }
            delete new_used_regions_map_tmp;
        }
-        cout << "====END DEBUG====="<<endl;
+        cout << "====END DEBUG====="<<endl;*/
 
 
         set<set<Region *> *> SMs_to_remove;
@@ -619,8 +620,14 @@ int main(int argc, char **argv) {
             }
         }
 
+        if((num_SMs - num_candidates) == SMs->size()){
+            cout << "All candidate SMs has been removed" << endl;
+        }
+
+        auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
         //for debug
-        cout << "====DEBUG====="<<endl;
+        /*cout << "====DEBUG====="<<endl;
 
         used_regions.clear();
         for (auto tmp_SM: *SMs) {
@@ -655,7 +662,7 @@ int main(int argc, char **argv) {
             }
             delete new_used_regions_map_tmp;
         }
-        cout << "====END DEBUG====="<<endl;
+        cout << "====END DEBUG====="<<endl;*/
 
 
         /*if(decomposition_debug)
@@ -739,6 +746,7 @@ int main(int argc, char **argv) {
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
         printf("Time decomposition: %.5fs\n", t_decomposition);
+        printf("Time greedy SM removal: %.5fs\n", t_greedy);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
     } else {
