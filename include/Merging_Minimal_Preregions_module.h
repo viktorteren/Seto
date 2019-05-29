@@ -17,6 +17,7 @@ private:
   map<int, set<Region *> *> *merged_pre_regions_map = nullptr;
   map<int, ER> *er = nullptr;
   Region *union_ptr = nullptr;
+  bool generic=false;
 
   map<int, set<Region *> *> *merging_preregions(map<int, ER> *);
   //void merge_2_maps(map<int, set<Region *> *> *, map<int, set<Region *> *> *);
@@ -27,5 +28,8 @@ public:
   Merging_Minimal_Preregions_module(map<int, set<Region *> *> * essential_regions,
                                     map<int, set<Region *> *> * irredundant_regions,
                                     map<int, ER> *new_ER);
+  Merging_Minimal_Preregions_module(map<int, set<Region *> *> * regions,
+                                    map<int, ER> *new_ER,
+                                    bool generic);
   ~Merging_Minimal_Preregions_module();
 };

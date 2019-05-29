@@ -453,21 +453,48 @@ int main(int argc, char **argv) {
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
+
+
+
+        if(decomposition_debug)
+            cout << "=======================[ MERGING TEST ]================" << endl;
+
+        auto merging_module = new Merging_Minimal_Preregions_module(used_regions_map, new_ER, true);
+
         if(decomposition_debug)
             cout << "=======================[ GREEDY REMOVAL OF SMs CHECKING EC ]================" << endl;
 
-        /*auto new_SMs = new set<set<Region *> *>();
-        for(auto set: *SMs){
-            new_SMs->insert(set);
-        }*/
-        //bool changed = true;
+        //for debug
+        cout << "====DEBUG====="<<endl;
+       for(auto reg: used_regions){
+           set<int> new_used_regions;
+           for(auto r: used_regions){
+               if(r != reg)
+                new_used_regions.insert(r);
+           }
+           auto new_used_regions_map_tmp = new map<int, set < Region * > * > ();
+           for (auto rec: *pre_regions) {
+               (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+           }
+           for (auto reg1: new_used_regions) {
+               for (auto rec: *pre_regions) {
+                   if (rec.second->find((*aliases_region_pointer)[reg1]) != rec.second->end()) {
+                       (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg1]);
+                   }
+               }
+           }
+           excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+           if(excitation_closure){
+               cout << "candidate region to be removed: ";
+               println(*(*aliases_region_pointer)[reg]);
+           }
+           for(auto rec: *new_used_regions_map_tmp){
+               delete rec.second;
+           }
+           delete new_used_regions_map_tmp;
+       }
+        cout << "====END DEBUG====="<<endl;
 
-        //set<int> new_used_regions;
-        /*for(auto SM: *new_SMs){
-            for (auto region: *SM) {
-                new_used_regions.insert((*aliases_region_pointer_inverted)[region]);
-            }
-        }*/
 
         set<set<Region *> *> SMs_to_remove;
 
@@ -534,7 +561,12 @@ int main(int argc, char **argv) {
             }
         }
 
-        //todo: this part will be modified with the search of max ind set of SMs to remove
+        int num_SMs = SMs->size();
+        int num_candidates = SMs_to_remove.size();
+
+        //todo: this part will be modified with the search of max ind set of SMs to remove or greedy search of all possible subsets with decreasing size order
+        //un altro algoritmo possibile :
+        //dato il set di sm da eliminare prendo un'sm la rimuovo e vedo se ciascuna delle rimanenti può essere ancora rimossa, se si allora la rimuovo definitivamente
         bool removed = true;
         while(removed){
             removed = false;
@@ -587,6 +619,43 @@ int main(int argc, char **argv) {
             }
         }
 
+        //for debug
+        cout << "====DEBUG====="<<endl;
+
+        used_regions.clear();
+        for (auto tmp_SM: *SMs) {
+            for (auto region: *tmp_SM) {
+                used_regions.insert((*aliases_region_pointer_inverted)[region]);
+            }
+        }
+        for(auto reg: used_regions){
+            set<int> new_used_regions;
+            for(auto r: used_regions){
+                if(r != reg)
+                    new_used_regions.insert(r);
+            }
+            auto new_used_regions_map_tmp = new map<int, set < Region * > * > ();
+            for (auto rec: *pre_regions) {
+                (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+            }
+            for (auto reg1: new_used_regions) {
+                for (auto rec: *pre_regions) {
+                    if (rec.second->find((*aliases_region_pointer)[reg1]) != rec.second->end()) {
+                        (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg1]);
+                    }
+                }
+            }
+            excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+            if(excitation_closure){
+                cout << "candidate region to be removed: ";
+                println(*(*aliases_region_pointer)[reg]);
+            }
+            for(auto rec: *new_used_regions_map_tmp){
+                delete rec.second;
+            }
+            delete new_used_regions_map_tmp;
+        }
+        cout << "====END DEBUG====="<<endl;
 
 
         /*if(decomposition_debug)

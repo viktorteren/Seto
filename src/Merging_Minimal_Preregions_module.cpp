@@ -13,6 +13,16 @@ Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
     merged_pre_regions_map = merging_preregions(ER);
 }
 
+Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
+                                                                    map<int, set<Region *> *> *preregions,
+                                                                    map<int, ER> *ER,
+                                                                    bool gen) {
+    er = ER;
+    generic = gen;
+    total_pre_regions_map = preregions;
+    merged_pre_regions_map = merging_preregions(ER);
+}
+
 Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
     for (auto el : *total_pre_regions_map)
         delete el.second;
@@ -82,7 +92,8 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                 if (!are_equal(reg1, reg2)) {
                     reg_union = regions_union(reg1, reg2);
 
-                    if (reg_union->size() != num_states) {
+                    //generic bool gives the possibility to merge two regions which merge create the entire set of states
+                    if (reg_union->size() != num_states || generic) {
                         bool ec_and_pre_region = false;
 
 
