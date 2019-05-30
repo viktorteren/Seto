@@ -383,8 +383,7 @@ int main(int argc, char **argv) {
 
             //FILE *res = stdout;
 
-            set<Region *> *SM;
-            SM = new set<Region *>();
+            auto SM = new set<Region *>();
             /*if(decomposition_debug)
                 fprintf(res, "Last SAT with: ");*/
             for (int i = 0; i < solver.nVars(); i++) {
@@ -562,7 +561,8 @@ int main(int argc, char **argv) {
                     println(*SM);
                 }
                 //removal of the SM
-                SMs->erase(SM);
+                delete *SMs->find(SM); //removes the regions of the SM
+                SMs->erase(SM); //removes the pointer for the regions of the SM
                 SMs_to_remove.erase(SMs_to_remove.begin());
             }
             delete tmp_SMs;
@@ -575,10 +575,12 @@ int main(int argc, char **argv) {
         auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
 
-        /*if(decomposition_debug)
-            cout << "=======================[ MERGING MODULE ON RESULT OF DECOMPOSITION ]================" << endl;
 
-        Merging_Minimal_Preregions_module *merging_module = nullptr;
+        if(decomposition_debug)
+            cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================" << endl;
+        tStart_partial = clock();
+
+        /*Merging_Minimal_Preregions_module *merging_module = nullptr;
 
         merging_module = new Merging_Minimal_Preregions_module(used_regions_map, nullptr, new_ER);
 
@@ -587,6 +589,7 @@ int main(int argc, char **argv) {
 
 
 
+        auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         if(decomposition_debug)
             cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
@@ -657,6 +660,7 @@ int main(int argc, char **argv) {
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
         printf("Time decomposition: %.5fs\n", t_decomposition);
         printf("Time greedy SM removal: %.5fs\n", t_greedy);
+        printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
 
     } else {
