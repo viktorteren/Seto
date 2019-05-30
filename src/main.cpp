@@ -580,13 +580,18 @@ int main(int argc, char **argv) {
             cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================" << endl;
         tStart_partial = clock();
 
-        /*Merging_Minimal_Preregions_module *merging_module = nullptr;
 
-        merging_module = new Merging_Minimal_Preregions_module(used_regions_map, nullptr, new_ER);
-
-        //auto merged_map = merging_module->get_merged_preregions_map();*/
-
-
+        //todo: STEPS TO IMPLEMENT:
+        // 1. create the map between regions used in the FSMs and integers from 1 to N
+        // 2. create clauses to satisfy at leas one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
+        // 3. create the map between event and linked regions for each FSM
+        // 4. translate the map into clauses
+        // 5. create clauses for the events with pbLib
+        // 6. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
+        // ENCODINGS:
+        // N regions, K FSMs, M labels
+        // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 0 <= i < M, 0 < j <= K
+        // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 0 <= i < M, 0 < j <= K
 
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
