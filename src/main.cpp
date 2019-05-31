@@ -371,10 +371,8 @@ int main(int argc, char **argv) {
                     for (auto val: solver.model) {
                         true_model.push(val);
                     }
-                } else {
-                    break;
+                    minValueToCheck++;
                 }
-                minValueToCheck++;
             } while (sat);
             cout << "UNSAT with value " << minValueToCheck << endl;
             //cout << "formula: " << endl;
@@ -582,16 +580,168 @@ int main(int argc, char **argv) {
 
 
         //todo: STEPS TO IMPLEMENT:
-        // 1. create the map between regions used in the FSMs and integers from 1 to N
-        // 2. create clauses to satisfy at leas one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
-        // 3. create the map between event and linked regions for each FSM
-        // 4. translate the map into clauses
-        // 5. create clauses for the events with pbLib
-        // 6. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
+        // 1. (DONE) create the map between SMs and integers from 1 to K
+        // 2. (DONE) create the map between regions used in the FSMs and integers from 1 to N
+        // 3. (DONE) create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
+        // 4. (DONE) create the map between event and linked regions for each FSM
+        // 5. (DONE) translate the map into clauses
+        // 6. (DONE) create clauses for the events with pbLib
+        // 7. (TO DEBUG) solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
+        // 8. decode the result
         // ENCODINGS:
         // N regions, K FSMs, M labels
-        // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 0 <= i < M, 0 < j <= K
-        // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 0 <= i < M, 0 < j <= K
+        // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1 it's an invalid variable value
+        // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= M, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+M]
+
+        //STEP 1:
+        map<set<Region *>*, int> SMs_map;
+        int counter = 1;
+        for(auto SM: *SMs){
+            SMs_map[SM] = counter;
+            counter++;
+        }
+
+        //STEP 2:
+        map<Region *, int> regions_map_for_sat;
+        counter = 1;
+        for(auto SM: *SMs){
+            for(auto reg: *SM){
+                if(regions_map_for_sat.find(reg) == regions_map_for_sat.end()){
+                    regions_map_for_sat[reg] = counter;
+                    counter++;
+                }
+            }
+        }
+
+        // STEP 3 using encoding for regions
+        int K = SMs->size();
+        int N = counter;
+        int M = number_of_events;
+        for(auto vec: *clauses){
+            delete vec;
+        }
+        clauses->clear();
+        vector<int32_t>* clause;
+        for(auto rec: regions_map_for_sat){
+            auto region = rec.first;
+            auto region_counter = rec.second;
+            clause = new vector<int32_t>();
+            for(auto SM : *SMs){
+                int SM_counter = SMs_map[SM];
+                if(SM->find(region) != SM->end()){
+                    clause->push_back((M*K)+N*(SM_counter-1)+region_counter);
+                }
+            }
+            clauses->push_back(clause);
+        }
+
+        set<int> encoded_events_set; //will be used in the 6th step
+
+        //STEPS 4 and 5: creation of pre and post region maps for each SM and conversion into clauses
+        for(auto SM: *SMs){
+            //creation of map for pre regions and post regions
+            int SM_counter = SMs_map[SM];
+            auto SM_pre_regions_map = new map<int, set<Region *> *>();
+            for(auto rec: *pprg->get_pre_regions()){
+                for(auto reg: *rec.second){
+                    if(SM->find(reg)!= SM->end()){
+                        //cout << "FOUND" << endl;
+                        if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
+                            (*SM_pre_regions_map)[rec.first] = new set<Region *>;
+                        }
+                        (*SM_pre_regions_map)[rec.first]->insert(reg);
+                    }
+                }
+            }
+
+            auto SM_post_regions_map = pprg->create_post_regions_for_SM(SM_pre_regions_map);
+
+            auto regions_connected_to_labels = merge_2_maps(SM_pre_regions_map, SM_post_regions_map);
+            //todo: qui bisogna probabilmente eliminare le 2 mappe precedenti
+
+            //conversion into clauses
+            for(auto rec: *regions_connected_to_labels){
+                auto ev = rec.first+1; //events range must start from 1 not 0
+                auto ev_encoding = M*(SM_counter-1)+ev;
+                encoded_events_set.insert(ev_encoding);
+                for(auto reg: *rec.second){
+                    int region_counter = regions_map_for_sat[reg];
+                    int region_encoding = (M*K)+N*(SM_counter-1)+region_counter;
+                    clause = new vector<int32_t>();
+                    clause->push_back(-region_encoding);
+                    clause->push_back(ev_encoding);
+                    clauses->push_back(clause);
+                }
+            }
+        }
+
+        //STEP 6:
+        PBConfig config = make_shared<PBConfigClass>();
+        VectorClauseDatabase formula(config);
+        VectorClauseDatabase last_sat_formula(config);
+        PB2CNF pb2cnf(config);
+        AuxVarManager auxvars(K*(N+M) + 1);
+
+
+        vector<WeightedLit> literals_from_events = {};
+
+        literals_from_events.reserve(encoded_events_set.size()); //improves the speed
+        for(auto ev_encoded: encoded_events_set){
+            literals_from_events.emplace_back(ev_encoded, 1);
+        }
+
+        int maxValueToCheck = encoded_events_set.size();
+
+        IncPBConstraint constraint(literals_from_events, LEQ,
+                                   maxValueToCheck); //the sum have to be lesser or equal to minValueToCheck
+        pb2cnf.encodeIncInital(constraint, formula, auxvars);
+
+        /*for (auto cl: *clauses) {
+            formula.addClause(*cl);
+        }*/
+
+        Minisat::Solver solver;
+
+        bool sat;
+        vec<lbool> true_model;
+
+        //STEP 7:
+
+        //iteration in the search of a correct assignment decreasing the total weight
+        do {
+            last_sat_formula.clearDatabase();
+            last_sat_formula.addClauses(formula.getClauses());
+            constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
+            int num_clauses_formula = last_sat_formula.getClauses().size();
+            string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+                                                   last_sat_formula.getClauses(), nullptr);
+            sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+            if (sat) {
+                if (decomposition_debug) {
+                    //cout << "----------" << endl;
+                    cout << "SAT with value " << maxValueToCheck << endl;
+                    //cout << "formula: " << endl;
+                    //formula.printFormula(cout);
+                    cout << "Model: ";
+                    for (int i = 0; i < solver.nVars(); i++) {
+                        if (solver.model[i] != l_Undef) {
+                            fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                    i + 1);
+                        }
+                    }
+                    cout << endl;
+                }
+                true_model.clear(true);
+                for (auto val: solver.model) {
+                    true_model.push(val);
+                }
+                maxValueToCheck--;
+            }
+        } while (sat);
+        cout << "UNSAT with value " << maxValueToCheck << endl;
+
+        //STEP 8:
+
 
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -601,7 +751,7 @@ int main(int argc, char **argv) {
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
         //cout << "pre-regions" << endl;
         //print(*pprg->get_pre_regions());
-        int counter = 0;
+        counter = 0;
         for(auto SM: *SMs){
             counter++;
             if(decomposition_debug) {
@@ -656,6 +806,9 @@ int main(int argc, char **argv) {
         }
         delete SMs;
         //delete rg;
+        for(auto vec: *clauses){
+            delete vec;
+        }
         delete clauses;
         delete regions_set;
         delete regions_sorted;
