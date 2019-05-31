@@ -351,7 +351,13 @@ int main(int argc, char **argv) {
                 int num_clauses_formula = last_sat_formula.getClauses().size();
                 string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                        last_sat_formula.getClauses(), nullptr);
-                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+                //check for empty clause
+                if(formula.getClauses().at(formula.getClauses().size()-1).empty()){
+                    sat = false;
+                }
+                else{
+                    sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+                }
                 if (sat) {
                     if (decomposition_debug) {
                         //cout << "----------" << endl;
@@ -682,7 +688,6 @@ int main(int argc, char **argv) {
         PB2CNF pb2cnf(config);
         AuxVarManager auxvars(K*(N+M) + 1);
 
-
         vector<WeightedLit> literals_from_events = {};
 
         literals_from_events.reserve(encoded_events_set.size()); //improves the speed
@@ -696,9 +701,9 @@ int main(int argc, char **argv) {
                                    maxValueToCheck); //the sum have to be lesser or equal to minValueToCheck
         pb2cnf.encodeIncInital(constraint, formula, auxvars);
 
-        /*for (auto cl: *clauses) {
+        for (auto cl: *clauses) {
             formula.addClause(*cl);
-        }*/
+        }
 
         Minisat::Solver solver;
 
@@ -712,10 +717,20 @@ int main(int argc, char **argv) {
             last_sat_formula.clearDatabase();
             last_sat_formula.addClauses(formula.getClauses());
             constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
+            cout << "clauses of the formula:" << endl;
+            cout << "=======================" << endl;
+            formula.printFormula(cout);
+            cout << "=======================" << endl;
             int num_clauses_formula = last_sat_formula.getClauses().size();
             string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                    last_sat_formula.getClauses(), nullptr);
-            sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+            //check for empty clause
+            if(formula.getClauses().at(formula.getClauses().size()-1).empty()){
+                sat = false;
+            }
+            else{
+                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+            }
             if (sat) {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
@@ -723,7 +738,7 @@ int main(int argc, char **argv) {
                     //cout << "formula: " << endl;
                     //formula.printFormula(cout);
                     cout << "Model: ";
-                    for (int i = 0; i < solver.nVars(); i++) {
+                    for (int i = 0; i < solver.nVars(); ++i) {
                         if (solver.model[i] != l_Undef) {
                             fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
                                     i + 1);
@@ -741,7 +756,6 @@ int main(int argc, char **argv) {
         cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
-
 
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
