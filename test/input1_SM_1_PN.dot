@@ -6,21 +6,15 @@ subgraph initial_place {
 subgraph place {     
 	node [shape=circle,fixedsize=true, fixedsize = 2];
 	r1;
-	r2;
 }
 subgraph transitions {
 	node [shape=rect,height=0.2,width=2, forcelabels = false];
 	4 [label = "1'"];
 	0;
-	1;
-	2;
+	3;
 }
 	r0 -> 0;
-	r1 -> 1;
-	r1 -> 2;
-	r2 -> 4;
+	r1 -> 3;
 	0 -> r1;
-	1 -> r0;
-	2 -> r2;
-	4 -> r0;
+	3 -> r0;
 }

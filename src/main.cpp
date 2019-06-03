@@ -642,6 +642,7 @@ int main(int argc, char **argv) {
         }
 
         set<int> encoded_events_set; //will be used in the 6th step
+        set<int> encoded_regions_set; //will be used in the 6th step
 
         //STEPS 4 and 5: creation of pre and post region maps for each SM and conversion into clauses
         for(auto SM: *SMs){
@@ -673,6 +674,7 @@ int main(int argc, char **argv) {
                 for(auto reg: *rec.second){
                     int region_counter = regions_map_for_sat[reg];
                     int region_encoding = (M*K)+N*(SM_counter-1)+region_counter;
+                    encoded_regions_set.insert(region_encoding);
                     clause = new vector<int32_t>();
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
@@ -682,11 +684,7 @@ int main(int argc, char **argv) {
         }
 
         //STEP 6:
-        PBConfig config = make_shared<PBConfigClass>();
-        VectorClauseDatabase formula(config);
-        VectorClauseDatabase last_sat_formula(config);
-        PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(K*(N+M) + 1);
+
 
         vector<WeightedLit> literals_from_events = {};
 
@@ -694,41 +692,53 @@ int main(int argc, char **argv) {
         for(auto ev_encoded: encoded_events_set){
             literals_from_events.emplace_back(ev_encoded, 1);
         }
+        for(auto reg_encoded: encoded_regions_set){
+            literals_from_events.emplace_back(reg_encoded, 0);
+        }
 
         int maxValueToCheck = encoded_events_set.size();
 
-        IncPBConstraint constraint(literals_from_events, LEQ,
-                                   maxValueToCheck); //the sum have to be lesser or equal to minValueToCheck
+        PBConfig config = make_shared<PBConfigClass>();
+        VectorClauseDatabase formula(config);
+        //VectorClauseDatabase last_sat_formula(config);
+        PB2CNF pb2cnf(config);
+        AuxVarManager auxvars(K*(N+M) + 1);
+        IncPBConstraint constraint(literals_from_events, LEQ, maxValueToCheck); //the sum have to be lesser or equal to minValueToCheck
         pb2cnf.encodeIncInital(constraint, formula, auxvars);
-
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
 
+
+        /*for (auto cl: *clauses) {
+            formula.addClause(*cl);
+        }*/
+
         Minisat::Solver solver;
 
-        bool sat;
+        bool sat=true;
         vec<lbool> true_model;
+
+        //
+        //constraint.encodeNewGeq(2, formula, auxvars);
 
         //STEP 7:
 
         //iteration in the search of a correct assignment decreasing the total weight
         do {
-            last_sat_formula.clearDatabase();
-            last_sat_formula.addClauses(formula.getClauses());
             constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
-            cout << "clauses of the formula:" << endl;
             cout << "=======================" << endl;
             formula.printFormula(cout);
             cout << "=======================" << endl;
-            int num_clauses_formula = last_sat_formula.getClauses().size();
-            string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                                   last_sat_formula.getClauses(), nullptr);
+            int num_clauses_formula = formula.getClauses().size();
+            string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
+                                                   formula.getClauses(), nullptr);
             //check for empty clause
-            if(formula.getClauses().at(formula.getClauses().size()-1).empty()){
-                sat = false;
+            for(const auto& cl: formula.getClauses()){
+                if(cl.empty())
+                    sat = false;
             }
-            else{
+            if(sat){
                 sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             }
             if (sat) {
@@ -756,6 +766,7 @@ int main(int argc, char **argv) {
         cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
+
 
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;

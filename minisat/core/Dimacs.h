@@ -70,8 +70,11 @@ static void parse_DIMACS_main(B& in, Solver& S) {
             readClause(in, S, lits);
             S.addClause_(lits); }
     }
-    if (vars != S.nVars())
+    if (vars != S.nVars()){
+        fprintf(stderr, "Vars %d nVars %d \n", vars, S.nVars());
         fprintf(stderr, "WARNING! DIMACS header mismatch: wrong number of variables.\n");
+    }
+
     if (cnt  != clauses)
         fprintf(stderr, "WARNING! DIMACS header mismatch: wrong number of clauses.\n");
 }
