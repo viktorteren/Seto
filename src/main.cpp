@@ -585,19 +585,19 @@ int main(int argc, char **argv) {
         tStart_partial = clock();
 
 
-        //todo: STEPS TO IMPLEMENT:
-        // 1. (DONE) create the map between SMs and integers from 1 to K
-        // 2. (DONE) create the map between regions used in the FSMs and integers from 1 to N
-        // 3. (DONE) create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
-        // 4. (DONE) create the map between event and linked regions for each FSM
-        // 5. (DONE) translate the map into clauses
-        // 6. (DONE) create clauses for the events with pbLib
-        // 7. (TO DEBUG) solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
-        // 8. decode the result
+        //STEPS OF THE ALGORITHM
+        // 1. create the map between SMs and integers from 1 to K
+        // 2. create the map between regions used in the FSMs and integers from 1 to N -> one index for all different instances of the same region
+        // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
+        // 4. create the map between event and linked regions for each FSM
+        // 5. translate the map into clauses
+        // 6. create clauses for the events with pbLib
+        // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
+        // 8. decode the result leaving only the states corresponding to regions of the model
         // ENCODINGS:
         // N regions, K FSMs, M labels
         // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1 it's an invalid variable value
-        // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= M, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+M]
+        // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
 
         //STEP 1:
         map<set<Region *>*, int> SMs_map;
@@ -685,7 +685,6 @@ int main(int argc, char **argv) {
 
         //STEP 6:
 
-
         vector<WeightedLit> literals_from_events = {};
 
         literals_from_events.reserve(encoded_events_set.size()); //improves the speed
@@ -695,6 +694,8 @@ int main(int argc, char **argv) {
         for(auto reg_encoded: encoded_regions_set){
             literals_from_events.emplace_back(reg_encoded, 0);
         }
+
+        //STEP 7:
 
         int maxValueToCheck = encoded_events_set.size();
 
@@ -709,27 +710,14 @@ int main(int argc, char **argv) {
             formula.addClause(*cl);
         }
 
-
-        /*for (auto cl: *clauses) {
-            formula.addClause(*cl);
-        }*/
-
         Minisat::Solver solver;
 
         bool sat=true;
         vec<lbool> true_model;
 
-        //
-        //constraint.encodeNewGeq(2, formula, auxvars);
-
-        //STEP 7:
-
         //iteration in the search of a correct assignment decreasing the total weight
         do {
             constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
-            cout << "=======================" << endl;
-            formula.printFormula(cout);
-            cout << "=======================" << endl;
             int num_clauses_formula = formula.getClauses().size();
             string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
                                                    formula.getClauses(), nullptr);
@@ -766,6 +754,53 @@ int main(int argc, char **argv) {
         cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
+        //decode for the regions emoval, it's not ok because the model can be sat without a region but with tthe related event
+        /*for(auto SM: *SMs){
+            vector<Region *> to_remove;
+            for(auto reg: *SM){
+                int SM_counter = SMs_map[SM];
+                int region_counter = regions_map_for_sat[reg];
+                int encoded_region = (M*K)+N*(SM_counter-1)+region_counter;
+                //the region "decoded_region" is no more in the model
+                if(solver.model[encoded_region-1] == l_False){
+                    cout << "add " << encoded_region << " to remove" << endl;
+                    to_remove.push_back(reg);
+                }
+            }
+            for(auto reg: to_remove){
+                if(decomposition_debug) {
+                    cout << "removal of the region" << endl;
+                    println(*reg);
+                }
+                SM->erase(reg);
+            }
+        }*/
+
+        //new decode algorithm:
+        //take all negated events
+        //given a negated event check the two connected regions, at least one of them will be negated
+        //take it and remove the region and event connecting to other parts of the SM
+
+        vector<int> to_remove;
+        for(auto encoded_event: encoded_events_set){
+            if(solver.model[encoded_event-1] == l_False){
+                cout << "add " << encoded_event << " to removed events" << endl;
+                to_remove.push_back(encoded_event);
+            }
+        }
+        for(auto encoded_event: to_remove){
+            int SM_counter;
+            int decoded_event;
+            for(int i=1; i < SMs->size(); i++){
+                if(M*(i-1) > encoded_event){
+                    SM_counter = i-1;
+                    break;
+                }
+            }
+            decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
+            //todo: finire la parte scegliendo come effettuare il merge tra 2 regioni in modo da creare il file finale che purtroppo sfrutta i riferimenti alla mappa originale
+
+        }
 
 
 
