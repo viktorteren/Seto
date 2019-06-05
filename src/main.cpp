@@ -578,7 +578,23 @@ int main(int argc, char **argv) {
 
         auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
+        if(decomposition_debug)
+            cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
 
+        //map with key the pointer to SM
+        auto map_of_SM_pre_regions = new map<SM*, map<int, Region *>*>();
+        auto map_of_SM_post_regions = new map<SM*, map<int, Region *>*>();
+        for(auto sm: *SMs){
+            (*map_of_SM_pre_regions)[sm] = new map<int, Region *>();
+            for(auto rec: *pprg->get_pre_regions()){
+                for(auto reg: *rec.second){
+                    if(sm->find(reg)!= sm->end()){
+                        (*(*map_of_SM_pre_regions)[sm])[rec.first] = reg;
+                    }
+                }
+            }
+            (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
+        }
 
         if(decomposition_debug)
             cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================" << endl;
@@ -600,10 +616,12 @@ int main(int argc, char **argv) {
         // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
 
         //STEP 1:
-        map<set<Region *>*, int> SMs_map;
+        map<SM*, int> SMs_map;
+        map<int, SM*> SMs_map_inverted;
         int counter = 1;
         for(auto SM: *SMs){
             SMs_map[SM] = counter;
+            SMs_map_inverted[counter] = SM;
             counter++;
         }
 
@@ -782,12 +800,20 @@ int main(int argc, char **argv) {
         //take it and remove the region and event connecting to other parts of the SM
 
         vector<int> to_remove;
-        for(auto encoded_event: encoded_events_set){
-            if(solver.model[encoded_event-1] == l_False){
+        for(auto encoded_event: encoded_events_set) {
+            if (solver.model[encoded_event - 1] == l_False) {
                 cout << "add " << encoded_event << " to removed events" << endl;
                 to_remove.push_back(encoded_event);
             }
         }
+        //for debug only the first element
+        //todo: debug the new part
+        for(auto ev: encoded_events_set){
+            to_remove.push_back(ev);
+            break;
+        }
+
+
         for(auto encoded_event: to_remove){
             int SM_counter;
             int decoded_event;
@@ -798,8 +824,32 @@ int main(int argc, char **argv) {
                 }
             }
             decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
+            SM* current_SM = SMs_map_inverted[SM_counter];
             //todo: finire la parte scegliendo come effettuare il merge tra 2 regioni in modo da creare il file finale che purtroppo sfrutta i riferimenti alla mappa originale
-
+            //dato che si usa pre regions map per calcolare le post regioni forse è sufficiente intervenire soltanto sulle post regioni
+            //devo creare la mappa delle pre-regioni e post-regioni (forse non servono le post regioni) per ogni SM e poi eseguire questo step
+            Region *region_to_remove = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
+            if(is_initial_region(region_to_remove)){
+                region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
+            }
+            //removal of the region
+            int event_before;
+            for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
+                if(rec.second == region_to_remove){
+                    event_before = rec.first;
+                    break;
+                }
+            }
+            int event_after;
+            for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
+                if(rec.second == region_to_remove){
+                    event_before = rec.first;
+                    break;
+                }
+            }
+            (*(*map_of_SM_post_regions)[current_SM])[event_before] = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
+            ((*map_of_SM_post_regions)[current_SM])->erase(decoded_event);
+            ((*map_of_SM_pre_regions)[current_SM])->erase(decoded_event);
         }
 
 
@@ -812,48 +862,18 @@ int main(int argc, char **argv) {
         //cout << "pre-regions" << endl;
         //print(*pprg->get_pre_regions());
         counter = 0;
-        for(auto SM: *SMs){
+        for(auto sm: *SMs){
             counter++;
             if(decomposition_debug) {
                 cout << "SM " << counter << endl;
-                for(auto reg: *SM){
+                for(auto reg: *sm){
                     println(*reg);
                 }
             }
-            auto SM_pre_regions_map = new map<int, set<Region *> *>();
-            for(auto rec: *pprg->get_pre_regions()){
-                for(auto reg: *rec.second){
-                    if(SM->find(reg)!= SM->end()){
-                        //cout << "FOUND" << endl;
-                        if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
-                            (*SM_pre_regions_map)[rec.first] = new set<Region *>;
-                        }
-                        (*SM_pre_regions_map)[rec.first]->insert(reg);
-                    }
-                }
-            }
 
-            auto post_regions_SM = pprg->create_post_regions_for_SM(SM_pre_regions_map);
-            string SM_name = file;
-            //generic cut for .ts file path and other extensions
-            int lower = 0;
-            for (int i = static_cast<int>(SM_name.size() - 1); i > 0; i--) {
-                if (SM_name[i] == '.') {
-                    lower = i;
-                    break;
-                }
-            }
-            SM_name = SM_name.substr(0, lower);
+            string SM_name = remove_extension(file);
             SM_name += "_SM_"+to_string(counter)+".g";
-            print_pn_dot_file(SM_pre_regions_map, post_regions_SM, aliases, SM_name);
-            for(auto rec: *post_regions_SM){
-                delete rec.second;
-            }
-            delete post_regions_SM;
-            for(auto rec: *SM_pre_regions_map){
-                delete rec.second;
-            }
-            delete SM_pre_regions_map;
+            print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm],  aliases, SM_name);
         }
 
         //===========FREE===========
@@ -872,6 +892,20 @@ int main(int argc, char **argv) {
         delete clauses;
         delete regions_set;
         delete regions_sorted;
+        for(auto map: *map_of_SM_pre_regions){
+            /*for(auto rec: *map.second){
+                delete rec.second;
+            }*/
+            delete map.second;
+        }
+        delete map_of_SM_pre_regions;
+        for(auto map: *map_of_SM_post_regions){
+            /*for(auto rec: *map.second){
+                delete rec.second;
+            }*/
+            delete map.second;
+        }
+        delete map_of_SM_post_regions;
 
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
