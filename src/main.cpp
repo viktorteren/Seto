@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
             //cout << "pre regions size " << all_pre_regions->size() <<endl;
             vector<WeightedLit> literals_from_regions = {};
 
-            //modificare il ciclo per identificare se le regioni sono ostate già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
+            //modificare il ciclo per identificare se le regioni sono state già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
             for (int i = 1; i <= numRegions; i++) {
                 if(used_regions.find(i) == used_regions.end()){
                     literals_from_regions.emplace_back(i, 2);
@@ -446,7 +446,7 @@ int main(int argc, char **argv) {
 
             delete lastLits;
             lastLits = new vector<WeightedLit>();
-            for(auto lit: literals_from_regions){
+            for(const auto& lit: literals_from_regions){
                 lastLits->push_back(lit);
             }
         }
