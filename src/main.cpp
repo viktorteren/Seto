@@ -458,10 +458,10 @@ int main(int argc, char **argv) {
         vector<set<Region *>*> SMs_to_remove;
 
         for(auto SM: *SMs) {
-            if (decomposition_debug) {
+            /*if (decomposition_debug) {
                 cout << "check if can rermove the SM: " << endl;
                 println(*SM);
-            }
+            }*/
             auto tmp_SMs = new set < set < Region * > * > ();
             //tmp_SM prende tutto tranne SM
             for (auto set: *SMs) {
@@ -653,7 +653,8 @@ int main(int argc, char **argv) {
             clauses->push_back(clause);
         }
 
-        set<int> encoded_events_set; //will be used in the 6th step
+        //set<int> encoded_events_set; //will be used in the 6th step
+        map<int, pair<int, int>> encoded_events_map; //map <encoded value, pair<sm, decoded_value>
         set<int> encoded_regions_set; //will be used in the 6th step
 
         //STEPS 4 and 5: conversion into clauses of pre and post regions for each SM
@@ -665,7 +666,7 @@ int main(int argc, char **argv) {
             for(auto rec: *regions_connected_to_labels){
                 auto ev = rec.first+1; //events range must start from 1 not 0
                 auto ev_encoding = M*(SM_counter-1)+ev;
-                encoded_events_set.insert(ev_encoding);
+                (encoded_events_map)[ev_encoding] = make_pair(SM_counter, ev-1);
                 for(auto reg: *rec.second){
                     int region_counter = regions_map_for_sat[reg];
                     int region_encoding = (M*K)+N*(SM_counter-1)+region_counter;
@@ -686,8 +687,9 @@ int main(int argc, char **argv) {
 
         vector<WeightedLit> literals_from_events = {};
 
-        literals_from_events.reserve(encoded_events_set.size()); //improves the speed
-        for(auto ev_encoded: encoded_events_set){
+        literals_from_events.reserve(encoded_events_map.size()); //improves the speed
+        for(auto rec: encoded_events_map){
+            auto ev_encoded = rec.first;
             literals_from_events.emplace_back(ev_encoded, 1);
         }
         for(auto reg_encoded: encoded_regions_set){
@@ -696,7 +698,7 @@ int main(int argc, char **argv) {
 
         //STEP 7:
 
-        int maxValueToCheck = encoded_events_set.size();
+        int maxValueToCheck = encoded_events_map.size();
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
@@ -752,7 +754,8 @@ int main(int argc, char **argv) {
         //take it and remove the region and event connecting to other parts of the SM
 
         vector<int> to_remove;
-        for(auto encoded_event: encoded_events_set) {
+        for(auto rec: encoded_events_map) {
+            auto encoded_event = rec.first;
             if (solver.model[encoded_event - 1] == l_False) {
                 if(decomposition_debug)
                     cout << "add encoding " << encoded_event << " to removal events" << endl;
@@ -769,16 +772,8 @@ int main(int argc, char **argv) {
 
 
         for(auto encoded_event: to_remove){
-            int SM_counter;
-            int decoded_event;
-            for(int i=0; i < SMs->size(); i++){
-                if(M*i > encoded_event){
-                    SM_counter = i;
-                    break;
-                }
-            }
-
-            decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
+            int SM_counter =  encoded_events_map[encoded_event].first;
+            int decoded_event = encoded_events_map[encoded_event].second;
 
             SM* current_SM = SMs_map_inverted[SM_counter];
             bool remove_before = true;
