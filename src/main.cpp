@@ -351,13 +351,7 @@ int main(int argc, char **argv) {
                 int num_clauses_formula = last_sat_formula.getClauses().size();
                 string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                        last_sat_formula.getClauses(), nullptr);
-                //check for empty clause
-                if(formula.getClauses().at(formula.getClauses().size()-1).empty()){
-                    sat = false;
-                }
-                else{
-                    sat = check_sat_formula_from_dimacs(solver, dimacs_file);
-                }
+                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
                 if (sat) {
                     if (decomposition_debug) {
                         //cout << "----------" << endl;
@@ -739,14 +733,7 @@ int main(int argc, char **argv) {
             int num_clauses_formula = formula.getClauses().size();
             string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
                                                    formula.getClauses(), nullptr);
-            //check for empty clause
-            for(const auto& cl: formula.getClauses()){
-                if(cl.empty())
-                    sat = false;
-            }
-            if(sat){
-                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
-            }
+            sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             if (sat) {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
@@ -772,28 +759,6 @@ int main(int argc, char **argv) {
         cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
-        //decode for the regions emoval, it's not ok because the model can be sat without a region but with tthe related event
-        /*for(auto SM: *SMs){
-            vector<Region *> to_remove;
-            for(auto reg: *SM){
-                int SM_counter = SMs_map[SM];
-                int region_counter = regions_map_for_sat[reg];
-                int encoded_region = (M*K)+N*(SM_counter-1)+region_counter;
-                //the region "decoded_region" is no more in the model
-                if(solver.model[encoded_region-1] == l_False){
-                    cout << "add " << encoded_region << " to remove" << endl;
-                    to_remove.push_back(reg);
-                }
-            }
-            for(auto reg: to_remove){
-                if(decomposition_debug) {
-                    cout << "removal of the region" << endl;
-                    println(*reg);
-                }
-                SM->erase(reg);
-            }
-        }*/
-
         //new decode algorithm:
         //take all negated events
         //given a negated event check the two connected regions, at least one of them will be negated
@@ -825,34 +790,37 @@ int main(int argc, char **argv) {
             }
             decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
             SM* current_SM = SMs_map_inverted[SM_counter];
-            //todo: finire la parte scegliendo come effettuare il merge tra 2 regioni in modo da creare il file finale che purtroppo sfrutta i riferimenti alla mappa originale
-            //dato che si usa pre regions map per calcolare le post regioni forse è sufficiente intervenire soltanto sulle post regioni
-            //devo creare la mappa delle pre-regioni e post-regioni (forse non servono le post regioni) per ogni SM e poi eseguire questo step
+            bool remove_before = true;
             Region *region_to_remove = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
             if(is_initial_region(region_to_remove)){
                 region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
+                remove_before = false;
             }
             //removal of the region
-            int event_before;
-            for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
-                if(rec.second == region_to_remove){
-                    event_before = rec.first;
-                    break;
+            if(remove_before){
+                int event_before;
+                for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
+                    if(rec.second == region_to_remove){
+                        event_before = rec.first;
+                        break;
+                    }
                 }
+                (*(*map_of_SM_post_regions)[current_SM])[event_before] = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
+
             }
-            int event_after;
-            for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
-                if(rec.second == region_to_remove){
-                    event_before = rec.first;
-                    break;
+            else{
+                int event_after;
+                for(auto rec: *(*map_of_SM_pre_regions)[current_SM]){
+                    if(rec.second == region_to_remove){
+                        event_after = rec.first;
+                        break;
+                    }
                 }
+                (*(*map_of_SM_pre_regions)[current_SM])[event_after] = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
             }
-            (*(*map_of_SM_post_regions)[current_SM])[event_before] = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
             ((*map_of_SM_post_regions)[current_SM])->erase(decoded_event);
             ((*map_of_SM_pre_regions)[current_SM])->erase(decoded_event);
         }
-
-
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
