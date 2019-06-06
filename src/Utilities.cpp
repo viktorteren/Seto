@@ -771,23 +771,30 @@ namespace Utilities {
         }
         for (auto record : *aliases) {
             //fout << "\t" << record.first << ";\n";
-            int label;
-            label = record.second;
-            (*alias_counter)[label]++;
-            if(g_input){
-                fout << "\t" << record.first << " [label = \""
-                     << (*aliases_map_number_name)[label];
+            //control if this label is used in this SM
+            bool used = false;
+            if (pre_regions->find(record.first) != pre_regions->end()) {
+                used = true;
+            } else if (post_regions->find(record.first) != post_regions->end()) {
+                used = true;
             }
-            else{
-                fout << "\t" << record.first << " [label = \""
-                     << label;
+            if(used){
+                int label;
+                label = record.second;
+                (*alias_counter)[label]++;
+                if (g_input) {
+                    fout << "\t" << record.first << " [label = \""
+                         << (*aliases_map_number_name)[label];
+                } else {
+                    fout << "\t" << record.first << " [label = \""
+                         << label;
+                }
+                //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
+                for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
+                    fout << "'";
+                }
+                fout << "\"];\n";
             }
-            //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
-            for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
-                fout << "'";
-            }
-            fout << "\"];\n";
-
         }
         delete alias_counter;
         //transazioni (eventi) iniziali

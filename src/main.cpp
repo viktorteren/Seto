@@ -754,7 +754,8 @@ int main(int argc, char **argv) {
         vector<int> to_remove;
         for(auto encoded_event: encoded_events_set) {
             if (solver.model[encoded_event - 1] == l_False) {
-                cout << "add " << encoded_event << " to removed events" << endl;
+                if(decomposition_debug)
+                    cout << "add encoding " << encoded_event << " to removal events" << endl;
                 to_remove.push_back(encoded_event);
             }
         }
@@ -766,6 +767,7 @@ int main(int argc, char **argv) {
         }*/
 
 
+
         for(auto encoded_event: to_remove){
             int SM_counter;
             int decoded_event;
@@ -775,8 +777,9 @@ int main(int argc, char **argv) {
                     break;
                 }
             }
-            cout << "in SM " << SM_counter << endl;
+
             decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
+
             SM* current_SM = SMs_map_inverted[SM_counter];
             bool remove_before = true;
             Region *region_to_remove = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
@@ -784,8 +787,12 @@ int main(int argc, char **argv) {
                 region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
                 remove_before = false;
             }
-            cout << "region to remove: ";
-            println(*region_to_remove);
+            if(decomposition_debug){
+                cout << "in SM " << SM_counter << endl;
+                cout << "removing event " << decoded_event << endl;
+                cout << "region to remove: ";
+                println(*region_to_remove);
+            }
             //removal of the region
             if(remove_before){
                 vector<int> events_before;
@@ -821,9 +828,9 @@ int main(int argc, char **argv) {
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
         //cout << "pre-regions" << endl;
         //print(*pprg->get_pre_regions());
-        counter = 0;
+
         for(auto sm: *SMs){
-            counter++;
+            counter = (SMs_map)[sm];
             if(decomposition_debug) {
                 cout << "SM " << counter << endl;
                 for(auto reg: *sm){
