@@ -429,25 +429,6 @@ int main(int argc, char **argv) {
             }
         }
 
-        if(decomposition_debug) {
-            //update of used regions map
-            for (auto reg: used_regions) {
-                for (auto rec: *pre_regions) {
-                    if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
-                        (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
-                    }
-                }
-            }
-
-            excitation_closure = is_excitation_closed(used_regions_map, new_ER);
-
-            if (excitation_closure) {
-                cout << "EXCITATION CLOSURE OK!!!" << endl;
-            } else {
-                cout << "NO EXCITATION CLOSURE" << endl;
-            }
-        }
-
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         if(decomposition_debug)
