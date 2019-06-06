@@ -656,26 +656,10 @@ int main(int argc, char **argv) {
         set<int> encoded_events_set; //will be used in the 6th step
         set<int> encoded_regions_set; //will be used in the 6th step
 
-        //STEPS 4 and 5: creation of pre and post region maps for each SM and conversion into clauses
-        for(auto SM: *SMs){
-            //creation of map for pre regions and post regions
-            int SM_counter = SMs_map[SM];
-            auto SM_pre_regions_map = new map<int, set<Region *> *>();
-            for(auto rec: *pprg->get_pre_regions()){
-                for(auto reg: *rec.second){
-                    if(SM->find(reg)!= SM->end()){
-                        //cout << "FOUND" << endl;
-                        if(SM_pre_regions_map->find(rec.first) == SM_pre_regions_map->end()){
-                            (*SM_pre_regions_map)[rec.first] = new set<Region *>;
-                        }
-                        (*SM_pre_regions_map)[rec.first]->insert(reg);
-                    }
-                }
-            }
-
-            auto SM_post_regions_map = pprg->create_post_regions_for_SM(SM_pre_regions_map);
-
-            auto regions_connected_to_labels = merge_2_maps(SM_pre_regions_map, SM_post_regions_map);
+        //STEPS 4 and 5: conversion into clauses of pre and post regions for each SM
+        for(auto sm: *SMs){
+            int SM_counter = SMs_map[sm];
+            auto regions_connected_to_labels = merge_2_maps((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm]);
             //todo: qui bisogna probabilmente eliminare le 2 mappe precedenti
 
             //conversion into clauses
@@ -693,6 +677,10 @@ int main(int argc, char **argv) {
                     clauses->push_back(clause);
                 }
             }
+            for(auto rec: *regions_connected_to_labels){
+                delete rec.second;
+            }
+            delete regions_connected_to_labels;
         }
 
         //STEP 6:
