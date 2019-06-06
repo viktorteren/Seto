@@ -660,7 +660,6 @@ int main(int argc, char **argv) {
         for(auto sm: *SMs){
             int SM_counter = SMs_map[sm];
             auto regions_connected_to_labels = merge_2_maps((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm]);
-            //todo: qui bisogna probabilmente eliminare le 2 mappe precedenti
 
             //conversion into clauses
             for(auto rec: *regions_connected_to_labels){
@@ -761,7 +760,7 @@ int main(int argc, char **argv) {
         }
         //for debug only the first element
         /*for(auto ev: encoded_events_set){
-            cout << "to remove added: " << ev << endl;
+            cout << "event to remove: " << ev << endl;
             to_remove.push_back(ev);
             break;
         }*/
@@ -770,13 +769,13 @@ int main(int argc, char **argv) {
         for(auto encoded_event: to_remove){
             int SM_counter;
             int decoded_event;
-            for(int i=1; i < SMs->size(); i++){
-                if(M*(i-1) > encoded_event){
-                    SM_counter = i-1;
+            for(int i=0; i < SMs->size(); i++){
+                if(M*i > encoded_event){
+                    SM_counter = i;
                     break;
                 }
             }
-            cout << "SM " << SM_counter << endl;
+            cout << "in SM " << SM_counter << endl;
             decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
             SM* current_SM = SMs_map_inverted[SM_counter];
             bool remove_before = true;
@@ -812,6 +811,7 @@ int main(int argc, char **argv) {
             }
             ((*map_of_SM_post_regions)[current_SM])->erase(decoded_event);
             ((*map_of_SM_pre_regions)[current_SM])->erase(decoded_event);
+            current_SM->erase(region_to_remove);
         }
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -853,16 +853,10 @@ int main(int argc, char **argv) {
         delete regions_set;
         delete regions_sorted;
         for(auto map: *map_of_SM_pre_regions){
-            /*for(auto rec: *map.second){
-                delete rec.second;
-            }*/
             delete map.second;
         }
         delete map_of_SM_pre_regions;
         for(auto map: *map_of_SM_post_regions){
-            /*for(auto rec: *map.second){
-                delete rec.second;
-            }*/
             delete map.second;
         }
         delete map_of_SM_post_regions;
