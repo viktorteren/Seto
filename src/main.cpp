@@ -292,6 +292,8 @@ int main(int argc, char **argv) {
         //int last_uncovered_regions = uncovered_regions->size();
 
         excitation_closure = false;
+        vector<WeightedLit> *lastLits = nullptr;
+
         while(!excitation_closure) {
             minValueToCheck = startingMinValueToCheck;
             PBConfig config = make_shared<PBConfigClass>();
@@ -315,6 +317,20 @@ int main(int argc, char **argv) {
                     literals_from_regions.emplace_back(i, 1);
                     if(decomposition_debug)
                         cout << "Added the region number " << i << " with value " << 1 << endl;
+                }
+            }
+
+            if(lastLits != nullptr){
+                bool not_equal = false;
+                for(int i=0; i < literals_from_regions.size(); ++i){
+                    if(lastLits->at(i).weight != literals_from_regions.at(i).weight) {
+                        not_equal = true;
+                        break;
+                    }
+                }
+                if(!not_equal){
+                    cout << "loop, cannot have EC choosing each time the same weights" << endl;
+                    exit(1);
                 }
             }
 
@@ -427,7 +443,14 @@ int main(int argc, char **argv) {
                     cout << "NO EXCITATION CLOSURE" << endl;
                 }
             }
+
+            delete lastLits;
+            lastLits = new vector<WeightedLit>();
+            for(auto lit: literals_from_regions){
+                lastLits->push_back(lit);
+            }
         }
+        delete lastLits;
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
