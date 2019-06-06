@@ -772,11 +772,11 @@ int main(int argc, char **argv) {
             }
         }
         //for debug only the first element
-        //todo: debug the new part
-        for(auto ev: encoded_events_set){
+        /*for(auto ev: encoded_events_set){
+            cout << "to remove added: " << ev << endl;
             to_remove.push_back(ev);
             break;
-        }
+        }*/
 
 
         for(auto encoded_event: to_remove){
@@ -788,6 +788,7 @@ int main(int argc, char **argv) {
                     break;
                 }
             }
+            cout << "SM " << SM_counter << endl;
             decoded_event = encoded_event - (M*(SM_counter-1)) - 1;
             SM* current_SM = SMs_map_inverted[SM_counter];
             bool remove_before = true;
@@ -796,27 +797,30 @@ int main(int argc, char **argv) {
                 region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
                 remove_before = false;
             }
+            cout << "region to remove: ";
+            println(*region_to_remove);
             //removal of the region
             if(remove_before){
-                int event_before;
+                vector<int> events_before;
                 for(auto rec: *(*map_of_SM_post_regions)[current_SM]){
                     if(rec.second == region_to_remove){
-                        event_before = rec.first;
-                        break;
+                        events_before.push_back(rec.first);
                     }
                 }
-                (*(*map_of_SM_post_regions)[current_SM])[event_before] = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
-
+                for(auto event_before: events_before){
+                    (*(*map_of_SM_post_regions)[current_SM])[event_before] = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
+                }
             }
             else{
-                int event_after;
+                vector<int> events_after;
                 for(auto rec: *(*map_of_SM_pre_regions)[current_SM]){
                     if(rec.second == region_to_remove){
-                        event_after = rec.first;
-                        break;
+                        events_after.push_back(rec.first);
                     }
                 }
-                (*(*map_of_SM_pre_regions)[current_SM])[event_after] = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
+                for(auto event_after: events_after) {
+                    (*(*map_of_SM_pre_regions)[current_SM])[event_after] = (*(*map_of_SM_pre_regions)[current_SM])[decoded_event];
+                }
             }
             ((*map_of_SM_post_regions)[current_SM])->erase(decoded_event);
             ((*map_of_SM_pre_regions)[current_SM])->erase(decoded_event);
