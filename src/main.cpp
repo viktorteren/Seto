@@ -329,8 +329,16 @@ int main(int argc, char **argv) {
                     }
                 }
                 if(!not_equal){
-                    cout << "loop, cannot have EC choosing each time the same weights" << endl;
-                    exit(1);
+                    for(auto sm: *SMs){
+                        auto clause = new vector<int32_t>();
+                        for(auto reg: *sm){
+                            clause->push_back(-(*aliases_region_pointer_inverted)[reg]);
+                        }
+                        formula.addClause(*clause);
+                        delete clause;
+                    }
+                    cout << "avoiding loop case" << endl;
+                    //exit(1);
                 }
             }
 
@@ -565,8 +573,8 @@ int main(int argc, char **argv) {
                 //removal of the SM
                 delete *SMs->find(SM); //removes the regions of the SM
                 SMs->erase(SM); //removes the pointer for the regions of the SM
-                SMs_to_remove.erase(SMs_to_remove.begin());
             }
+            SMs_to_remove.erase(SMs_to_remove.begin());
             delete tmp_SMs;
         }
 
