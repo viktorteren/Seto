@@ -265,7 +265,7 @@ int main(int argc, char **argv) {
             return lhs->size() > rhs->size();
         });
 
-        //Setting up the first value to overcom in the inequality
+        //Setting up the first value to overcome in the inequality
         unsigned long sum = 0;
         for(auto & i : *regions_sorted){
             sum += i->size();
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
             cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
-        auto SMs = new set<set<Region *> *>(); //set of SMs, each SM is a set of regions
+        auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
         //int last_uncovered_regions = uncovered_regions->size();
 
         excitation_closure = false;
@@ -462,7 +462,9 @@ int main(int argc, char **argv) {
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-        if(decomposition_debug)
+        auto states_sum = getStatesSum(SMs);
+
+        //if(decomposition_debug)
             cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTICS WHICH REMOVES BIGGEST SMs FIRST ]======" << endl;
 
         tStart_partial = clock();
@@ -584,7 +586,9 @@ int main(int argc, char **argv) {
 
         auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-        if(decomposition_debug)
+        auto states_after_sms_removal = getStatesSum(SMs);
+
+        //if(decomposition_debug)
             cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
 
         //map with key the pointer to SM
@@ -602,7 +606,7 @@ int main(int argc, char **argv) {
             (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
         }
 
-        if(decomposition_debug)
+        //if(decomposition_debug)
             cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================" << endl;
         tStart_partial = clock();
 
@@ -757,7 +761,8 @@ int main(int argc, char **argv) {
                 maxValueToCheck--;
             }
         } while (sat);
-        cout << "UNSAT with value " << maxValueToCheck << endl;
+        if(decomposition_debug)
+            cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
         //new decode algorithm:
@@ -794,12 +799,12 @@ int main(int argc, char **argv) {
                 region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
                 remove_before = false;
             }
-            if(decomposition_debug){
+            //if(decomposition_debug){
                 cout << "in SM " << SM_counter << endl;
                 cout << "removing event " << decoded_event << endl;
                 cout << "region to remove: ";
                 println(*region_to_remove);
-            }
+            //}
             //removal of the region
             if(remove_before){
                 vector<int> events_before;
@@ -830,7 +835,9 @@ int main(int argc, char **argv) {
 
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-        if(decomposition_debug)
+        auto final_sum = getStatesSum(SMs);
+
+        //if(decomposition_debug)
             cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
         //cout << "pre-regions" << endl;
@@ -882,6 +889,10 @@ int main(int argc, char **argv) {
         printf("Time greedy SM removal: %.5fs\n", t_greedy);
         printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
+        cout << "SIZE STATISTICS:" << endl;
+        cout << "States sum after the decomposition: " << states_sum << endl;
+        cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
+        cout << "states sum after final optimization: " << final_sum << endl;
 
     } else {
         tStart_partial = clock();

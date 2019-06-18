@@ -1467,4 +1467,17 @@ namespace Utilities {
     bool is_initial_region(Region *reg){
         return reg->find(initial_state) != reg->end();
     }
+
+    int getStatesSum(set<SM*>* SMs){
+        int sum = 0;
+        for(auto SM: *SMs){
+            sum += getNumStates(SM);
+        }
+        return sum;
+
+    }
+
+    int getNumStates(SM* sm){
+        return sm->size();
+    }
 }

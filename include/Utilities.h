@@ -95,4 +95,6 @@ namespace Utilities {
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);
+    int getStatesSum(set<SM*>* SMs);
+    int getNumStates(SM* sm);
 };
