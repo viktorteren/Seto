@@ -27,26 +27,37 @@ int main(int argc, char **argv) {
             print_step_by_step_debug = false;
             decomposition = false;
             decomposition_debug = false;
+            decomposition_output = false;
         } else if (args[2] == "D") {
             print_step_by_step = true;
             print_step_by_step_debug = true;
             decomposition = false;
             decomposition_debug = false;
+            decomposition_output = false;
         } else if (args[2] == "M") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
             decomposition_debug = false;
+            decomposition_output = false;
         } else if (args[2] == "MD") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
             decomposition_debug = true;
+            decomposition_output = false;
+        } else if (args[2] == "MO") {
+            print_step_by_step = false;
+            print_step_by_step_debug = false;
+            decomposition = true;
+            decomposition_debug = false;
+            decomposition_output = true;
         } else {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = false;
             decomposition_debug = false;
+            decomposition_output = false;
         }
     } else {
         cout << "Wrong number of input arguments" << endl;
@@ -232,7 +243,8 @@ int main(int argc, char **argv) {
     }
     delete ls;
 
-    print_ts_dot_file(file, aliases);
+    if(!decomposition)
+        print_ts_dot_file(file, aliases);
 
     if(print_step_by_step_debug) {
         cout<<"ECTS:"<<endl;
@@ -366,6 +378,7 @@ int main(int argc, char **argv) {
 
             bool sat;
             vec<lbool> true_model;
+            string dimacs_file;
 
             //iteration in the search of a correct assignment for a single SM
             do {
@@ -373,7 +386,7 @@ int main(int argc, char **argv) {
                 last_sat_formula.addClauses(formula.getClauses());
                 constraint.encodeNewGeq(minValueToCheck, formula, auxvars);
                 int num_clauses_formula = last_sat_formula.getClauses().size();
-                string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+                dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                        last_sat_formula.getClauses(), nullptr);
                 sat = check_sat_formula_from_dimacs(solver, dimacs_file);
                 if (sat) {
@@ -731,12 +744,13 @@ int main(int argc, char **argv) {
 
         bool sat=true;
         vec<lbool> true_model;
+        string dimacs_file;
 
         //iteration in the search of a correct assignment decreasing the total weight
         do {
             constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
             int num_clauses_formula = formula.getClauses().size();
-            string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
+            dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
                                                    formula.getClauses(), nullptr);
             sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             if (sat) {
@@ -838,6 +852,7 @@ int main(int argc, char **argv) {
         auto final_sum = getStatesSum(SMs);
 
         //if(decomposition_debug)
+        if(decomposition_output)
             cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
         //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
         //cout << "pre-regions" << endl;
@@ -852,9 +867,11 @@ int main(int argc, char **argv) {
                 }
             }
 
-            string SM_name = remove_extension(file);
-            SM_name += "_SM_"+to_string(counter)+".g";
-            print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm],  aliases, SM_name);
+            if(decomposition_output) {
+                string SM_name = remove_extension(file);
+                SM_name += "_SM_" + to_string(counter) + ".g";
+                print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+            }
         }
 
         //===========FREE===========
@@ -881,6 +898,16 @@ int main(int argc, char **argv) {
             delete map.second;
         }
         delete map_of_SM_post_regions;
+
+        int n = dimacs_file.length();
+
+        // declaring character array
+        char dimacs_file_array[n + 1];
+
+        // copying the contents of the
+        // string to char array
+        strcpy(dimacs_file_array, dimacs_file.c_str());
+        remove(dimacs_file_array);
 
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
@@ -966,7 +993,8 @@ int main(int argc, char **argv) {
         //print(*merged_map);
 
         //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
-        print_pn_dot_file(merged_map, post_regions, aliases, file);
+        if(!decomposition_output)
+            print_pn_dot_file(merged_map, post_regions, aliases, file);
 
         // cout << "fine ricerca " << endl;
 
