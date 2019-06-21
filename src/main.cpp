@@ -228,9 +228,10 @@ int main(int argc, char **argv) {
 
         delete events;
         delete events_not_satify_EC;
-        rg->delete_regions_map();
         rg->basic_delete();
-        rg->delete_ER_set();
+        //NON so se commentare o no i seguenti 2 delete, con pulse non si hanno memory leak, con altri non si può rimuovere
+        //rg->delete_regions_map();
+        //rg->delete_ER_set();
         delete rg;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -430,18 +431,18 @@ int main(int argc, char **argv) {
             //cout << "formula: " << endl;
             //formula.printFormula(cout);
 
-            FILE *res;
+            /*FILE *res = stdout;
             if(log_file) {
                 res = fopen("log_file", "w");
-            }
+            }*/
 
             auto SM = new set<Region *>();
             /*if(decomposition_debug)
                 fprintf(res, "Last SAT with: ");*/
             for (int i = 0; i < solver.nVars(); i++) {
                 if (true_model[i] != l_Undef) {
-                    if(log_file)
-                        fprintf(res, "%s%s%d\n", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
+                    //if(log_file)
+                    //fprintf(res, "%s%s%d\n", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
                     if (true_model[i] == l_True) {
                         if (i < numRegions) {
                             add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
@@ -458,7 +459,11 @@ int main(int argc, char **argv) {
             }
 
             //update the set of SMs
-            SMs->insert(SM);
+            if(SMs->find(SM) == SMs->end())
+                SMs->insert(SM);
+            else{
+                cout << "SM già presente" << endl;
+            }
 
             //control excitation closure used regions
 
