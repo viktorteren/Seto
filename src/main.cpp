@@ -222,6 +222,8 @@ int main(int argc, char **argv) {
         delete events;
         delete events_not_satify_EC;
         rg->delete_regions_map();
+        rg->basic_delete();
+        rg->delete_ER_set();
         delete rg;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -889,7 +891,8 @@ int main(int argc, char **argv) {
             delete SM;
         }
         delete SMs;
-        delete rg;
+        rg->basic_delete();
+        rg->delete_ER_set();
         for(auto vec: *clauses){
             delete vec;
         }
@@ -1008,6 +1011,8 @@ int main(int argc, char **argv) {
         delete pn_module;
         delete merging_module;
 
+        rg->basic_delete();
+
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
@@ -1027,7 +1032,7 @@ int main(int argc, char **argv) {
     delete regions;
     delete vector_regions;
 
-
+    delete rg;
     delete pprg;
 
     for (const auto &el : *ts_map) {
