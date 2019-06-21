@@ -221,13 +221,17 @@ int main(int argc, char **argv) {
 
         delete events;
         delete events_not_satify_EC;
-
+        rg->delete_regions_map();
         delete rg;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
     }//end prova do while
     while (!excitation_closure);
+
+    auto rg = new Region_generator(number_of_events);
+    regions = rg->generate();
+    new_ER = rg->get_ER_set();
 
     if (print_step_by_step) {
         int cont = 0;
@@ -341,15 +345,17 @@ int main(int argc, char **argv) {
                     }
                 }
                 if(!not_equal){
+                    int temp_counter = 0;
                     for(auto sm: *SMs){
                         auto clause = new vector<int32_t>();
                         for(auto reg: *sm){
                             clause->push_back(-(*aliases_region_pointer_inverted)[reg]);
                         }
                         formula.addClause(*clause);
+                        temp_counter++;
                         delete clause;
                     }
-                    cout << "avoiding loop case" << endl;
+                    cout << "avoiding loop case with " << temp_counter << " clauses" << endl;
                     //exit(1);
                 }
             }
@@ -816,8 +822,8 @@ int main(int argc, char **argv) {
             //if(decomposition_debug){
                 cout << "in SM " << SM_counter << endl;
                 cout << "removing event " << decoded_event << endl;
-                cout << "region to remove: ";
-                println(*region_to_remove);
+                /*cout << "region to remove: ";
+                println(*region_to_remove);*/
             //}
             //removal of the region
             if(remove_before){
@@ -883,7 +889,7 @@ int main(int argc, char **argv) {
             delete SM;
         }
         delete SMs;
-        //delete rg;
+        delete rg;
         for(auto vec: *clauses){
             delete vec;
         }
