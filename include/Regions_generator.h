@@ -16,6 +16,7 @@ public:
   void delete_ER_set();
   void delere_ER_set_not_in(map<int, ER> *er);
   void delete_regions_map();
+  void basic_delete();
 
   map<int, vector<Region> *> *generate();
 

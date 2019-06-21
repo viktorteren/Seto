@@ -45,6 +45,17 @@ void Region_generator::delete_regions_map(){
 }
 
 Region_generator::~Region_generator() {
+    /*for(auto rec: *ER_set){
+        delete rec.second;
+    }
+    delete ER_set;*/
+    /*for(auto rec: *regions){
+        delete rec.second;
+    }
+    delete regions;*/
+}
+
+void Region_generator::basic_delete(){
     for (auto record : *map_states_to_add) {
         delete record.second->states_to_add_nocross;
         delete record.second->states_to_add_exit_or_enter;
@@ -79,14 +90,6 @@ Region_generator::~Region_generator() {
         delete elem.second;
     }
     delete event_violations;
-    /*for(auto rec: *ER_set){
-        delete rec.second;
-    }
-    delete ER_set;*/
-    /*for(auto rec: *regions){
-        delete rec.second;
-    }
-    delete regions;*/
 }
 
 

@@ -40,6 +40,13 @@ int main(int argc, char **argv) {
             decomposition = true;
             decomposition_debug = false;
             decomposition_output = false;
+        } else if (args[2] == "ML") {
+            print_step_by_step = false;
+            print_step_by_step_debug = false;
+            decomposition = true;
+            decomposition_debug = false;
+            decomposition_output = false;
+            log_file = true;
         } else if (args[2] == "MD") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
@@ -423,16 +430,18 @@ int main(int argc, char **argv) {
             //cout << "formula: " << endl;
             //formula.printFormula(cout);
 
-
-            //FILE *res = stdout;
+            FILE *res;
+            if(log_file) {
+                res = fopen("log_file", "w");
+            }
 
             auto SM = new set<Region *>();
             /*if(decomposition_debug)
                 fprintf(res, "Last SAT with: ");*/
             for (int i = 0; i < solver.nVars(); i++) {
                 if (true_model[i] != l_Undef) {
-                    /*if(decomposition_debug)
-                        fprintf(res, "%s%s%d", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);*/
+                    if(log_file)
+                        fprintf(res, "%s%s%d\n", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
                     if (true_model[i] == l_True) {
                         if (i < numRegions) {
                             add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
@@ -486,7 +495,7 @@ int main(int argc, char **argv) {
         auto states_sum = getStatesSum(SMs);
 
         //if(decomposition_debug)
-            cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTICS WHICH REMOVES BIGGEST SMs FIRST ]======" << endl;
+            cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======" << endl;
 
         tStart_partial = clock();
 
