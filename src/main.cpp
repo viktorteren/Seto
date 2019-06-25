@@ -290,14 +290,18 @@ int main(int argc, char **argv) {
         auto essential_regions = pn_module->get_essential_regions();
         map<int, set<Region *> *> *irredundant_regions =
                 pn_module->get_irredundant_regions();
-        for(auto rec: *essential_regions){
-            for(auto reg: *rec.second){
-                irredundand_and_essential.insert(reg);
+        if(essential_regions != nullptr) {
+            for (auto rec: *essential_regions) {
+                for (auto reg: *rec.second) {
+                    irredundand_and_essential.insert(reg);
+                }
             }
         }
-        for(auto rec: *irredundant_regions){
-            for(auto reg: *rec.second){
-                irredundand_and_essential.insert(reg);
+        if(irredundant_regions != nullptr) {
+            for (auto rec: *irredundant_regions) {
+                for (auto reg: *rec.second) {
+                    irredundand_and_essential.insert(reg);
+                }
             }
         }
         delete pn_module;
@@ -366,7 +370,7 @@ int main(int argc, char **argv) {
 
             //modificare il ciclo per identificare se le regioni sono state già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
             for (int i = 1; i <= numRegions; i++) {
-                if(irredundant_search){
+                if(irredundant_search && !irredundand_and_essential.empty()){
                     if(irredundand_and_essential.find((*aliases_region_pointer)[i]) == irredundand_and_essential.end()){
                         literals_from_regions.emplace_back(i, 1);
                         if (decomposition_debug)
