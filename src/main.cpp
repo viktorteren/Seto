@@ -159,8 +159,6 @@ int main(int argc, char **argv) {
             }
         }
 
-
-
         num_events_after_splitting = static_cast<int>(ts_map->size());
 
 
@@ -216,28 +214,14 @@ int main(int argc, char **argv) {
             }
             delete candidate_regions;
 
-            new_ER = rg->get_ER_set();
-
             delete vector_regions;
             delete ls;
-
-            for (auto el : *new_ER)
-                delete el.second;
-            delete new_ER;
-
-            for (auto reg_vec: *regions) {
-                delete reg_vec.second;
-            }
-            delete regions;
-        } else {
-            new_ER = rg->get_ER_set();
         }
 
         delete events;
         delete events_not_satify_EC;
         rg->basic_delete();
         //NON so se commentare o no i seguenti 2 delete, con pulse non si hanno memory leak, con altri non si può rimuovere
-        //rg->delete_regions_map();
         //rg->delete_ER_set();
         delete rg;
 
@@ -1090,13 +1074,9 @@ int main(int argc, char **argv) {
 
     delete aliases;
 
-    // dealloco regions e tutti i suoi vettori
-    for (auto record : *regions) {
-        delete record.second;
-    }
-    delete regions;
     delete vector_regions;
 
+    //delete rg dealloca anche regions
     delete rg;
     delete pprg;
 

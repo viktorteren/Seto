@@ -45,14 +45,8 @@ void Region_generator::delete_regions_map(){
 }
 
 Region_generator::~Region_generator() {
-    /*for(auto rec: *ER_set){
-        delete rec.second;
-    }
-    delete ER_set;*/
-    /*for(auto rec: *regions){
-        delete rec.second;
-    }
-    delete regions;*/
+    //delete_ER_set();
+    delete_regions_map();
 }
 
 void Region_generator::basic_delete(){
@@ -124,7 +118,6 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                 }*/
                 regions_vector->erase(regions_vector->begin() + i);
                 i--;
-
             }
         }
     }
