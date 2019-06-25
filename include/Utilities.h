@@ -40,6 +40,7 @@ extern bool decomposition;
 extern bool decomposition_debug;
 extern bool decomposition_output;
 extern bool log_file;
+extern bool irredundant_search;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern int max_alias_decomp;

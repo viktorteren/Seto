@@ -40,6 +40,13 @@ int main(int argc, char **argv) {
             decomposition = true;
             decomposition_debug = false;
             decomposition_output = false;
+        } else if (args[2] == "MI") {
+            print_step_by_step = false;
+            print_step_by_step_debug = false;
+            decomposition = true;
+            decomposition_debug = false;
+            decomposition_output = false;
+            irredundant_search = true;
         } else if (args[2] == "ML") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
@@ -272,6 +279,31 @@ int main(int argc, char **argv) {
     }
 
     tStart_partial = clock();
+    double t_irred;
+    set<Region *> irredundand_and_essential;
+
+    if(irredundant_search){
+        cout << "========[IRREDUNDAND AND ESSENTIAL REGIONS SEARCH]======" << endl;
+        // Start of module: search of the irredundant set of regions
+        auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
+        t_irred =  ((double) clock() - tStart_partial) / CLOCKS_PER_SEC;
+        auto essential_regions = pn_module->get_essential_regions();
+        map<int, set<Region *> *> *irredundant_regions =
+                pn_module->get_irredundant_regions();
+        for(auto rec: *essential_regions){
+            for(auto reg: *rec.second){
+                irredundand_and_essential.insert(reg);
+            }
+        }
+        for(auto rec: *irredundant_regions){
+            for(auto reg: *rec.second){
+                irredundand_and_essential.insert(reg);
+            }
+        }
+        delete pn_module;
+    }
+
+    tStart_partial = clock();
 
     if (decomposition) {
         cout << "============================[DECOMPOSITION]===================" << endl;
@@ -334,15 +366,28 @@ int main(int argc, char **argv) {
 
             //modificare il ciclo per identificare se le regioni sono state già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
             for (int i = 1; i <= numRegions; i++) {
-                if(used_regions.find(i) == used_regions.end()){
-                    literals_from_regions.emplace_back(i, 2);
-                    if(decomposition_debug)
-                        cout << "Added the region number " << i << " with value " << 2 << endl;
+                if(irredundant_search){
+                    if(irredundand_and_essential.find((*aliases_region_pointer)[i]) == irredundand_and_essential.end()){
+                        literals_from_regions.emplace_back(i, 1);
+                        if (decomposition_debug)
+                            cout << "Added the region number " << i << " with value " << 1 << endl;
+                    }
+                    else{
+                        literals_from_regions.emplace_back(i, 2);
+                        if (decomposition_debug)
+                            cout << "Added the region number " << i << " with value " << 2 << endl;
+                    }
                 }
-                else{
-                    literals_from_regions.emplace_back(i, 1);
-                    if(decomposition_debug)
-                        cout << "Added the region number " << i << " with value " << 1 << endl;
+                else {
+                    if (used_regions.find(i) == used_regions.end()) {
+                        literals_from_regions.emplace_back(i, 2);
+                        if (decomposition_debug)
+                            cout << "Added the region number " << i << " with value " << 2 << endl;
+                    } else {
+                        literals_from_regions.emplace_back(i, 1);
+                        if (decomposition_debug)
+                            cout << "Added the region number " << i << " with value " << 1 << endl;
+                    }
                 }
             }
 
@@ -935,6 +980,8 @@ int main(int argc, char **argv) {
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
+        if(irredundant_search)
+            printf("Time irredundant+essenial: %.fs\n", t_irred);
         printf("Time decomposition: %.5fs\n", t_decomposition);
         printf("Time greedy SM removal: %.5fs\n", t_greedy);
         printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
@@ -948,7 +995,7 @@ int main(int argc, char **argv) {
         tStart_partial = clock();
         // Start of module: search of the irredundant set of regions
         auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
-        auto t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+        t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
         auto essential_regions = pn_module->get_essential_regions();
         map<int, set<Region *> *> *irredundant_regions =
                 pn_module->get_irredundant_regions();
