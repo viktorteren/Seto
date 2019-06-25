@@ -406,8 +406,8 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     int last_event_nocross = -1;
     auto expanded_regions = new Region[2];
     if(print_step_by_step_debug){
-  cout<<"eve:"<<event<<endl;
-   cout << "|||REGIONE: " << region << " --- ";
+    cout<<"eve:"<<event<<endl;
+    cout << "|||REGIONE: " << region << " --- ";
     for (auto i : (*region)) {
       cout << i << " ";
     }
@@ -484,21 +484,15 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         // cout<<"push ok"<<endl;
 
     } else if (branch == NOCROSS) {
-    //    cout << "RAMO UNICO NO CROSS" << endl;
-
-
-
+        //    cout << "RAMO UNICO NO CROSS" << endl;
         for (auto state : *region) {
             (*expanded_regions).insert(state);
             if(print_step_by_step_debug)
             cout << "inserisco nella extended Reg: " << state << endl;
         }
-
-
-
-                /*for (auto i : *region) {
-                  cout << "Stati region " << i << endl;
-                }*/
+        /*for (auto i : *region) {
+            cout << "Stati region " << i << endl;
+        }*/
 
         //cout << "map states to add size: " << (*map_states_to_add).size() << endl;
 
@@ -682,7 +676,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
     auto queue_event_index = new map<int, int>;
     ER er_temp = nullptr;
 
-    for (auto e : *ts_map) {
+    for (const auto& e : *ts_map) {
         //cout<<"evento "<<e.first<<endl;
         er_temp = createER(e.first);
         (*ER_set)[e.first] = er_temp;
