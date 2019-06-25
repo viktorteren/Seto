@@ -222,7 +222,7 @@ int main(int argc, char **argv) {
         delete events_not_satify_EC;
         rg->basic_delete();
         //NON so se commentare o no i seguenti 2 delete, con pulse non si hanno memory leak, con altri non si può rimuovere
-        //rg->delete_ER_set();
+        rg->delete_ER_set();
         delete rg;
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -356,14 +356,30 @@ int main(int argc, char **argv) {
             for (int i = 1; i <= numRegions; i++) {
                 if(irredundant_search && !irredundand_and_essential.empty()){
                     if(irredundand_and_essential.find((*aliases_region_pointer)[i]) == irredundand_and_essential.end()){
-                        literals_from_regions.emplace_back(i, 1);
-                        if (decomposition_debug)
-                            cout << "Added the region number " << i << " with value " << 1 << endl;
+                        if (used_regions.find(i) == used_regions.end()) {
+                            //!IRR + NEW
+                            literals_from_regions.emplace_back(i, 3);
+                            if (decomposition_debug)
+                                cout << "Added the region number " << i << " with value " << 3 << endl;
+                        } else {
+                            //!IRR + !NEW
+                            literals_from_regions.emplace_back(i, 1);
+                            if (decomposition_debug)
+                                cout << "Added the region number " << i << " with value " << 1 << endl;
+                        }
                     }
                     else{
-                        literals_from_regions.emplace_back(i, 2);
-                        if (decomposition_debug)
-                            cout << "Added the region number " << i << " with value " << 2 << endl;
+                        if (used_regions.find(i) == used_regions.end()) {
+                            //IRR + NEW
+                            literals_from_regions.emplace_back(i, 4);
+                            if (decomposition_debug)
+                                cout << "Added the region number " << i << " with value " << 4 << endl;
+                        } else {
+                            //!IRR + !NEW
+                            literals_from_regions.emplace_back(i, 2);
+                            if (decomposition_debug)
+                                cout << "Added the region number " << i << " with value " << 2 << endl;
+                        }
                     }
                 }
                 else {
