@@ -1483,4 +1483,13 @@ namespace Utilities {
     int getNumStates(SM* sm){
         return sm->size();
     }
+
+    void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses){
+        ofstream fout("Graph.dimacs");
+        fout << "p " << num_regions << " " << clauses->size() << endl;
+        for(auto clause: *clauses){
+            fout << "a " << clause->at(0)*(-1) << " " << clause->at(1)*(-1) << endl;
+        }
+        fout.close();
+    }
 }

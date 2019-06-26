@@ -105,23 +105,6 @@ int main(int argc, char **argv) {
     int number_of_events;
     auto aliases = new map<int, int>();
 
-    cout << "START PYTHON " << endl;
-
-    string python_code;
-    std::ifstream t("../src/Sample.py");
-    std::stringstream buffer;
-    buffer << t.rdbuf();
-    python_code = buffer.str();
-
-    Py_Initialize();
-
-    //cout << python << endl;
-
-    PyRun_SimpleString(python_code.c_str());
-    Py_Finalize();
-
-    cout << "END PYTHON" << endl;
-
     clock_t tStart = clock();
 
     auto tStart_partial = clock();
@@ -348,12 +331,31 @@ int main(int argc, char **argv) {
         for(auto rec: *pre_regions){
             (*used_regions_map)[rec.first] = new set<Region *>();
         }
+
         if(decomposition_debug)
             cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
+        create_dimacs_graph(numRegions, clauses);
         auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
         //int last_uncovered_regions = uncovered_regions->size();
+
+        cout << "==================[START PYTHON]============= " << endl;
+
+        string python_code;
+        std::ifstream t("../src/MIS-Solver.py");
+        std::stringstream buffer;
+        buffer << t.rdbuf();
+        python_code = buffer.str();
+
+        Py_Initialize();
+
+        //cout << python << endl;
+
+        PyRun_SimpleString(python_code.c_str());
+        Py_Finalize();
+
+        cout << "=================[END PYTHON]=================" << endl;
 
         excitation_closure = false;
         vector<WeightedLit> *lastLits = nullptr;
@@ -529,7 +531,7 @@ int main(int argc, char **argv) {
             if(SMs->find(SM) == SMs->end())
                 SMs->insert(SM);
             else{
-                cout << "SM già presente" << endl;
+                cout << "SM already exists" << endl;
             }
 
             //control excitation closure used regions

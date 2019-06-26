@@ -100,4 +100,5 @@ namespace Utilities {
     bool is_initial_region(Region *);
     int getStatesSum(set<SM*>* SMs);
     int getNumStates(SM* sm);
+    void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses);
 };
