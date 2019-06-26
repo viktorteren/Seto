@@ -62,12 +62,13 @@ add_executable(TS_splitter
         )
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
+target_link_libraries(TS_splitter python2.7)
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-    target_compile_options( TS_splitter PRIVATE -I/usr/include/python2.7 -lpython2.7 )
+    target_compile_options( TS_splitter PRIVATE  -Wall -Wextra  -I/usr/include/python2.7 )
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options( TS_splitter PRIVATE /W4 /wd4267 -I/usr/include/python2.7 -lpython2.7 )
+    target_compile_options( TS_splitter PRIVATE /W4 /wd4267 -I/usr/include/python2.7 )
 endif()
 
 

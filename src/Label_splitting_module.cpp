@@ -132,7 +132,8 @@ map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(
                             (*events_type)[e.first] =
                                     branch_selection(&(ts_map->at(e.first)), *it);
 
-                        set_number_of_bad_events(events_type, event, vec_ptr, pos);
+                        //set_number_of_bad_events(events_type, event, vec_ptr, pos);
+                        set_number_of_bad_events(events_type, vec_ptr, pos);
                     }
 
                     if ((*vec_ptr)[pos] != 0) {
@@ -252,11 +253,8 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
 }
 
 void Label_splitting_module::set_number_of_bad_events(
-        vector<int> *event_type, int event, vector<int> *number_of_bad_events, int pos) {
+        vector<int> *event_type, vector<int> *number_of_bad_events, int pos) {
     // conta per ogni set di stati gli eventi bad
-    // pair<int,Region*> *bad_events=new pair<int,Region*>;
-
-    // cout << "SET BAD NUMBER per " << event << "********" << endl;
 
     int counter = 0;
     for (auto n : *event_type) {
@@ -299,7 +297,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
     }
 
     vector<Region*>* regions_vec;
-    if(pre_regions->size()==0){
+    if(pre_regions->empty()){
         regions_vec = Utilities::copy_map_to_vector3(regions_old);
     }
     else{
@@ -308,7 +306,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
     vector<Region*>::iterator it2;
     //Region *violations_region;
     for (it2 = regions_vec->begin(); it2 < regions_vec->end(); ++it2) {
-        auto reg = (*it2);
+        //auto reg = (*it2);
         //if (is_bigger_than(reg, best_region)) {
             //Region *new_region = region_difference(*it2, *best_region);
             map<int, int>::iterator it;

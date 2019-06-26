@@ -34,7 +34,6 @@ private:
   map<int, vector<Region *> *> *middle_set_of_states;
   My_Map* ts{};
   int branch_selection(Edges_list *list, Region *region);
-  void set_number_of_bad_events(vector<int> *event_type, int event,
-                                vector<int> *number_of_bad_events, int pos);
+  void set_number_of_bad_events(vector<int> *event_type, vector<int> *number_of_bad_events, int pos);
 
 };

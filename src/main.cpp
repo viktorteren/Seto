@@ -5,6 +5,7 @@
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../pblib/pb2cnf.h"
 #include <algorithm>
+#include <Python.h>
 
 using namespace PBLib;
 using namespace Minisat;
@@ -103,6 +104,23 @@ int main(int argc, char **argv) {
     double t_splitting = 0.0;
     int number_of_events;
     auto aliases = new map<int, int>();
+
+    cout << "START PYTHON " << endl;
+
+    string python_code;
+    std::ifstream t("../src/Sample.py");
+    std::stringstream buffer;
+    buffer << t.rdbuf();
+    python_code = buffer.str();
+
+    Py_Initialize();
+
+    //cout << python << endl;
+
+    PyRun_SimpleString(python_code.c_str());
+    Py_Finalize();
+
+    cout << "END PYTHON" << endl;
 
     clock_t tStart = clock();
 
@@ -384,9 +402,9 @@ int main(int argc, char **argv) {
                 }
                 else {
                     if (used_regions.find(i) == used_regions.end()) {
-                        literals_from_regions.emplace_back(i, 2);
+                        literals_from_regions.emplace_back(i, 20);
                         if (decomposition_debug)
-                            cout << "Added the region number " << i << " with value " << 2 << endl;
+                            cout << "Added the region number " << i << " with value " << 20 << endl;
                     } else {
                         literals_from_regions.emplace_back(i, 1);
                         if (decomposition_debug)
@@ -397,7 +415,7 @@ int main(int argc, char **argv) {
 
             if(lastLits != nullptr){
                 bool not_equal = false;
-                for(int i=0; i < literals_from_regions.size(); ++i){
+                for(unsigned int i=0; i < literals_from_regions.size(); ++i){
                     if(lastLits->at(i).weight != literals_from_regions.at(i).weight) {
                         not_equal = true;
                         break;
@@ -541,6 +559,7 @@ int main(int argc, char **argv) {
             for(const auto& lit: literals_from_regions){
                 lastLits->push_back(lit);
             }
+            cout << "USED REGIONS SIZE: " << used_regions.size() << endl;
         }
         delete lastLits;
 
@@ -664,7 +683,7 @@ int main(int argc, char **argv) {
             delete tmp_SMs;
         }
 
-        if((num_SMs - num_candidates) == SMs->size()){
+        if(( (unsigned int) num_SMs - num_candidates) == SMs->size()){
             cout << "All candidate SMs has been removed" << endl;
         }
 
