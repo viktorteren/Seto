@@ -10,7 +10,6 @@ bool decomposition;
 bool decomposition_debug;
 bool decomposition_output;
 bool log_file;
-bool irredundant_search;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
@@ -1491,5 +1490,31 @@ namespace Utilities {
             fout << "a " << clause->at(0)*(-1) << " " << clause->at(1)*(-1) << endl;
         }
         fout.close();
+    }
+
+    void read_SMs(string file, set<SM*>* SMs, map<int, Region *> &aliases){
+        ifstream fin(file);
+        int num_SMs;
+        fin >> num_SMs;
+        //cout << "num SMs: " << num_SMs << endl;
+        string temp;
+        stringstream ss;
+        int temp_region;
+        std::getline(fin, temp);
+        for(int i=0; i < num_SMs; i++) {
+            SM *newSM = new SM();
+            std::getline(fin, temp);
+            //cout << "temp: " << temp << endl;
+            ss.clear();
+            ss << temp;
+            while (!ss.eof()) {
+                ss >> temp_region;
+                newSM->insert(aliases.at(temp_region));
+                //cout << "temp region: " << temp_region << endl;
+            }
+            SMs->insert(newSM);
+            //cout << "new SM: " << endl;
+            //println(*newSM);
+        }
     }
 }

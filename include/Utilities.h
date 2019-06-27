@@ -18,6 +18,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <sstream>
 
 
 
@@ -40,7 +41,6 @@ extern bool decomposition;
 extern bool decomposition_debug;
 extern bool decomposition_output;
 extern bool log_file;
-extern bool irredundant_search;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern int max_alias_decomp;
@@ -101,4 +101,5 @@ namespace Utilities {
     int getStatesSum(set<SM*>* SMs);
     int getNumStates(SM* sm);
     void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses);
+    void read_SMs(string file, set<SM*>* SMs, map<int, Region *> &aliases);
 };

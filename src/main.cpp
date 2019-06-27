@@ -41,13 +41,6 @@ int main(int argc, char **argv) {
             decomposition = true;
             decomposition_debug = false;
             decomposition_output = false;
-        } else if (args[2] == "MI") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = true;
-            decomposition_debug = false;
-            decomposition_output = false;
-            irredundant_search = true;
         } else if (args[2] == "ML") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
@@ -228,7 +221,7 @@ int main(int argc, char **argv) {
 
         t_splitting = t_splitting + (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-    }//end prova do while
+    }
     while (!excitation_closure);
 
     auto rg = new Region_generator(number_of_events);
@@ -243,7 +236,6 @@ int main(int argc, char **argv) {
             somma += reg.size();
         }
         cout << "average: " << (somma / cont) << endl;
-
         cout << "number of regions: " << vector_regions->size() << endl;
         cout << "number of splits: " << num_split << endl;
     }
@@ -265,33 +257,6 @@ int main(int argc, char **argv) {
 
     tStart_partial = clock();
     double t_irred;
-    set<Region *> irredundand_and_essential;
-
-    if(irredundant_search){
-        cout << "========[IRREDUNDAND AND ESSENTIAL REGIONS SEARCH]======" << endl;
-        // Start of module: search of the irredundant set of regions
-        auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
-        t_irred =  ((double) clock() - tStart_partial) / CLOCKS_PER_SEC;
-        auto essential_regions = pn_module->get_essential_regions();
-        map<int, set<Region *> *> *irredundant_regions =
-                pn_module->get_irredundant_regions();
-        if(essential_regions != nullptr) {
-            for (auto rec: *essential_regions) {
-                for (auto reg: *rec.second) {
-                    irredundand_and_essential.insert(reg);
-                }
-            }
-        }
-        if(irredundant_regions != nullptr) {
-            for (auto rec: *irredundant_regions) {
-                for (auto reg: *rec.second) {
-                    irredundand_and_essential.insert(reg);
-                }
-            }
-        }
-        delete pn_module;
-    }
-
     tStart_partial = clock();
 
     if (decomposition) {
@@ -299,46 +264,17 @@ int main(int argc, char **argv) {
         auto regions_set = copy_map_to_set(pre_regions);
         int numRegions =  regions_set->size();
         cout << "Number of regions: " << numRegions << endl;
-        int startingMinValueToCheck = 0;
-        int minValueToCheck;
-        auto regions_sorted = new vector<Region*>();
-        for(auto reg: *regions_set){
-            regions_sorted->push_back(reg);
-        }
 
-        //sorting of the regions in descending size order
-        sort( regions_sorted->begin( ), regions_sorted->end( ), [ ](  Region *lhs,  Region *rhs )
-        {
-            return lhs->size() > rhs->size();
-        });
-
-        //Setting up the first value to overcome in the inequality
-        unsigned long sum = 0;
-        for(auto & i : *regions_sorted){
-            sum += i->size();
-            startingMinValueToCheck++;
-            if(sum >= num_states)
-                break;
-        }
-
-        //auto new_results_to_avoid = new set<set<int> *>();
         aliases_region_pointer = new map<int, Region *>();
         aliases_region_pointer_inverted = new map<Region *, int>();
         max_alias_decomp = 1;
         num_clauses = 0;
-        set<int> used_regions;
-        auto used_regions_map = new map<int,set< Region *>*>();
-        for(auto rec: *pre_regions){
-            (*used_regions_map)[rec.first] = new set<Region *>();
-        }
 
         if(decomposition_debug)
             cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]=====================" << endl;
         overlaps_cache = new map<pair<Region *, Region *>, bool>();
         vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
         create_dimacs_graph(numRegions, clauses);
-        auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
-        //int last_uncovered_regions = uncovered_regions->size();
 
         cout << "==================[START PYTHON]============= " << endl;
 
@@ -350,220 +286,13 @@ int main(int argc, char **argv) {
 
         Py_Initialize();
 
-        //cout << python << endl;
-
         PyRun_SimpleString(python_code.c_str());
         Py_Finalize();
 
         cout << "=================[END PYTHON]=================" << endl;
 
-        excitation_closure = false;
-        vector<WeightedLit> *lastLits = nullptr;
-
-        while(!excitation_closure) {
-            minValueToCheck = startingMinValueToCheck;
-            PBConfig config = make_shared<PBConfigClass>();
-            VectorClauseDatabase formula(config);
-            VectorClauseDatabase last_sat_formula(config);
-            PB2CNF pb2cnf(config);
-            AuxVarManager auxvars(numRegions + 1);
-
-
-            //cout << "pre regions size " << all_pre_regions->size() <<endl;
-            vector<WeightedLit> literals_from_regions = {};
-
-            //modificare il ciclo per identificare se le regioni sono state già usate aumentando il peso per quelle non usate (magari aumentare il peso solo per quelle irridondanti non usate)
-            for (int i = 1; i <= numRegions; i++) {
-                if(irredundant_search && !irredundand_and_essential.empty()){
-                    if(irredundand_and_essential.find((*aliases_region_pointer)[i]) == irredundand_and_essential.end()){
-                        if (used_regions.find(i) == used_regions.end()) {
-                            //!IRR + NEW
-                            literals_from_regions.emplace_back(i, 3);
-                            if (decomposition_debug)
-                                cout << "Added the region number " << i << " with value " << 3 << endl;
-                        } else {
-                            //!IRR + !NEW
-                            literals_from_regions.emplace_back(i, 1);
-                            if (decomposition_debug)
-                                cout << "Added the region number " << i << " with value " << 1 << endl;
-                        }
-                    }
-                    else{
-                        if (used_regions.find(i) == used_regions.end()) {
-                            //IRR + NEW
-                            literals_from_regions.emplace_back(i, 4);
-                            if (decomposition_debug)
-                                cout << "Added the region number " << i << " with value " << 4 << endl;
-                        } else {
-                            //!IRR + !NEW
-                            literals_from_regions.emplace_back(i, 2);
-                            if (decomposition_debug)
-                                cout << "Added the region number " << i << " with value " << 2 << endl;
-                        }
-                    }
-                }
-                else {
-                    if (used_regions.find(i) == used_regions.end()) {
-                        literals_from_regions.emplace_back(i, 20);
-                        if (decomposition_debug)
-                            cout << "Added the region number " << i << " with value " << 20 << endl;
-                    } else {
-                        literals_from_regions.emplace_back(i, 1);
-                        if (decomposition_debug)
-                            cout << "Added the region number " << i << " with value " << 1 << endl;
-                    }
-                }
-            }
-
-            if(lastLits != nullptr){
-                bool not_equal = false;
-                for(unsigned int i=0; i < literals_from_regions.size(); ++i){
-                    if(lastLits->at(i).weight != literals_from_regions.at(i).weight) {
-                        not_equal = true;
-                        break;
-                    }
-                }
-                if(!not_equal){
-                    int temp_counter = 0;
-                    for(auto sm: *SMs){
-                        auto clause = new vector<int32_t>();
-                        for(auto reg: *sm){
-                            clause->push_back(-(*aliases_region_pointer_inverted)[reg]);
-                        }
-                        formula.addClause(*clause);
-                        temp_counter++;
-                        delete clause;
-                    }
-                    cout << "avoiding loop case with " << temp_counter << " clauses" << endl;
-                    //exit(1);
-                }
-            }
-
-            //speedup fix: at the firs iteration all regions are not used and have weight=2
-            if(used_regions.empty()){
-                minValueToCheck*=2;
-            }
-
-            IncPBConstraint constraint(literals_from_regions, GEQ,
-                                       minValueToCheck); //imposto che la somma delle variabili deve essere maggiore o uguale a 1
-            pb2cnf.encodeIncInital(constraint, formula, auxvars);
-
-            /*cout << "Clauses inequality" << endl;
-            formula.printFormula(cout);*/
-
-            for (auto clause: *clauses) {
-                formula.addClause(*clause);
-            }
-            /*cout << "clauses of the overlapping regions + clauses inequality" << endl;
-            cout << "=======================" << endl;
-            formula.printFormula(cout);
-            cout << "=======================" << endl;*/
-
-            Minisat::Solver solver;
-
-            bool sat;
-            vec<lbool> true_model;
-            string dimacs_file;
-
-            //iteration in the search of a correct assignment for a single SM
-            do {
-                last_sat_formula.clearDatabase();
-                last_sat_formula.addClauses(formula.getClauses());
-                constraint.encodeNewGeq(minValueToCheck, formula, auxvars);
-                int num_clauses_formula = last_sat_formula.getClauses().size();
-                dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                                       last_sat_formula.getClauses(), nullptr);
-                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
-                if (sat) {
-                    if (decomposition_debug) {
-                        //cout << "----------" << endl;
-                        cout << "SAT with value " << minValueToCheck << endl;
-                        //cout << "formula: " << endl;
-                        //formula.printFormula(cout);
-                        cout << "Model: ";
-                        for (int i = 0; i < solver.nVars(); i++) {
-                            if (solver.model[i] != l_Undef) {
-                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
-                                        i + 1);
-                            }
-                        }
-                        cout << endl;
-                    }
-                    true_model.clear(true);
-                    for (auto val: solver.model) {
-                        true_model.push(val);
-                    }
-                    minValueToCheck++;
-                }
-            } while (sat);
-            cout << "UNSAT with value " << minValueToCheck << endl;
-            //cout << "formula: " << endl;
-            //formula.printFormula(cout);
-
-            /*FILE *res = stdout;
-            if(log_file) {
-                res = fopen("log_file", "w");
-            }*/
-
-            auto SM = new set<Region *>();
-            /*if(decomposition_debug)
-                fprintf(res, "Last SAT with: ");*/
-            for (int i = 0; i < solver.nVars(); i++) {
-                if (true_model[i] != l_Undef) {
-                    //if(log_file)
-                    //fprintf(res, "%s%s%d\n", (i == 0) ? "" : " ", (true_model[i] == l_True) ? "" : "-", i + 1);
-                    if (true_model[i] == l_True) {
-                        if (i < numRegions) {
-                            add_region_to_SM(SM, (*aliases_region_pointer)[i + 1]);
-                        }
-                    }
-                }
-            }
-            /*if(decomposition_debug)
-                fprintf(res, " 0\n");*/
-
-            //update the used regions
-            for (auto region: *SM) {
-                used_regions.insert((*aliases_region_pointer_inverted)[region]);
-            }
-
-            //update the set of SMs
-            if(SMs->find(SM) == SMs->end())
-                SMs->insert(SM);
-            else{
-                cout << "SM already exists" << endl;
-            }
-
-            //control excitation closure used regions
-
-            //update of used regions map
-            for(auto reg: used_regions){
-                for(auto rec: *pre_regions){
-                    if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
-                        (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
-                    }
-                }
-            }
-
-            excitation_closure = is_excitation_closed(used_regions_map, new_ER);
-
-            //excitation_closure = events->empty();
-            if(decomposition_debug) {
-                if (excitation_closure) {
-                    cout << "EXCITATION CLOSURE OK!!!" << endl;
-                } else {
-                    cout << "NO EXCITATION CLOSURE" << endl;
-                }
-            }
-
-            delete lastLits;
-            lastLits = new vector<WeightedLit>();
-            for(const auto& lit: literals_from_regions){
-                lastLits->push_back(lit);
-            }
-            cout << "USED REGIONS SIZE: " << used_regions.size() << endl;
-        }
-        delete lastLits;
+        auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
+        read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -967,10 +696,6 @@ int main(int argc, char **argv) {
         }
 
         //===========FREE===========
-        for(auto rec: *used_regions_map){
-            delete rec.second;
-        }
-        delete used_regions_map;
         for(auto SM: *SMs){
             delete SM;
         }
@@ -982,7 +707,6 @@ int main(int argc, char **argv) {
         }
         delete clauses;
         delete regions_set;
-        delete regions_sorted;
         for(auto map: *map_of_SM_pre_regions){
             delete map.second;
         }
@@ -1005,8 +729,6 @@ int main(int argc, char **argv) {
         printf("\nTime region gen: %.5fs\n", t_region_gen);
         printf("Time splitting: %.5fs\n", t_splitting);
         printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-        if(irredundant_search)
-            printf("Time irredundant+essenial: %.fs\n", t_irred);
         printf("Time decomposition: %.5fs\n", t_decomposition);
         printf("Time greedy SM removal: %.5fs\n", t_greedy);
         printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
