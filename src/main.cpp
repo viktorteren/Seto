@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
     while (!excitation_closure);
 
     auto rg = new Region_generator(number_of_events);
-    regions = rg->generate();
+    rg->generate();
     new_ER = rg->get_ER_set();
 
     if (print_step_by_step) {
@@ -255,7 +255,6 @@ int main(int argc, char **argv) {
         cout << "" << endl;
     }
 
-    tStart_partial = clock();
     double t_irred;
     tStart_partial = clock();
 
@@ -293,6 +292,33 @@ int main(int argc, char **argv) {
 
         auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
         read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
+
+        /* EC CHECK
+         * set<int> used_regions;
+        auto used_regions_map = new map<int,set< Region *>*>();
+
+        //update the used regions
+        for(auto SM: *SMs) {
+            for (auto region: *SM) {
+                used_regions.insert((*aliases_region_pointer_inverted)[region]);
+            }
+        }
+
+        //update of used regions map
+        for(auto reg: used_regions){
+            for(auto rec: *pre_regions){
+                if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
+                    if(used_regions_map->find(rec.first) == used_regions_map->end())
+                        (*used_regions_map)[rec.first] = new set<Region *>();
+                    (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                }
+            }
+        }
+
+        excitation_closure = is_excitation_closed(used_regions_map, new_ER);
+
+        if(!excitation_closure)
+            exit(20);*/
 
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -548,15 +574,16 @@ int main(int argc, char **argv) {
 
         //STEP 7:
 
-        int maxValueToCheck = encoded_events_map.size();
+        //int maxValueToCheck = encoded_events_map.size();
+        int current_value = encoded_events_map.size();
+        int min = 0;
+        int max = encoded_events_map.size();
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         //VectorClauseDatabase last_sat_formula(config);
         PB2CNF pb2cnf(config);
         AuxVarManager auxvars(K*(N+M) + 1);
-        IncPBConstraint constraint(literals_from_events, LEQ, maxValueToCheck); //the sum have to be lesser or equal to minValueToCheck
-        pb2cnf.encodeIncInital(constraint, formula, auxvars);
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
@@ -569,7 +596,8 @@ int main(int argc, char **argv) {
 
         //iteration in the search of a correct assignment decreasing the total weight
         do {
-            constraint.encodeNewLeq(maxValueToCheck, formula, auxvars);
+            IncPBConstraint constraint(literals_from_events, LEQ, current_value); //the sum have to be lesser or equal to current_value
+            pb2cnf.encodeIncInital(constraint, formula, auxvars);
             int num_clauses_formula = formula.getClauses().size();
             dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() , num_clauses_formula,
                                                    formula.getClauses(), nullptr);
@@ -577,7 +605,7 @@ int main(int argc, char **argv) {
             if (sat) {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
-                    cout << "SAT with value " << maxValueToCheck << endl;
+                    cout << "SAT with value " << current_value << endl;
                     //cout << "formula: " << endl;
                     //formula.printFormula(cout);
                     cout << "Model: ";
@@ -593,11 +621,20 @@ int main(int argc, char **argv) {
                 for (auto val: solver.model) {
                     true_model.push(val);
                 }
-                maxValueToCheck--;
+                //maxValueToCheck--;
+                max = current_value;
             }
-        } while (sat);
-        if(decomposition_debug)
-            cout << "UNSAT with value " << maxValueToCheck << endl;
+            else{
+                if (decomposition_debug) {
+                    //cout << "----------" << endl;
+                    cout << "UNSAT with value " << current_value << endl;
+                }
+                min = current_value;
+            }
+            current_value = (min+max)/2;
+        } while ((max - min) > 1);
+        //if(decomposition_debug)
+         //   cout << "UNSAT with value " << maxValueToCheck << endl;
 
         //STEP 8:
         //new decode algorithm:
@@ -614,14 +651,6 @@ int main(int argc, char **argv) {
                 to_remove.push_back(encoded_event);
             }
         }
-        //for debug only the first element
-        /*for(auto ev: encoded_events_set){
-            cout << "event to remove: " << ev << endl;
-            to_remove.push_back(ev);
-            break;
-        }*/
-
-
 
         for(auto encoded_event: to_remove){
             int SM_counter =  encoded_events_map[encoded_event].first;
@@ -634,12 +663,12 @@ int main(int argc, char **argv) {
                 region_to_remove = (*(*map_of_SM_post_regions)[current_SM])[decoded_event];
                 remove_before = false;
             }
-            //if(decomposition_debug){
+            if(decomposition_debug){
                 cout << "in SM " << SM_counter << endl;
                 cout << "removing event " << decoded_event << endl;
                 /*cout << "region to remove: ";
                 println(*region_to_remove);*/
-            //}
+            }
             //removal of the region
             if(remove_before){
                 vector<int> events_before;
