@@ -323,6 +323,22 @@ int main(int argc, char **argv) {
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         auto states_sum = getStatesSum(SMs);
+        auto temp_map_of_SM_pre_regions = new map<SM*, map<int, Region *>*>();
+        for(auto sm: *SMs){
+            (*temp_map_of_SM_pre_regions)[sm] = new map<int, Region *>();
+            for(auto rec: *pprg->get_pre_regions()){
+                for(auto reg: *rec.second){
+                    if(sm->find(reg)!= sm->end()){
+                        (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
+                    }
+                }
+            }
+        }
+        auto transitions_sum = getTransitionsSum(temp_map_of_SM_pre_regions, SMs);
+        for(auto map: *temp_map_of_SM_pre_regions){
+            delete map.second;
+        }
+        delete temp_map_of_SM_pre_regions;
 
         //if(decomposition_debug)
             cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======" << endl;
@@ -447,6 +463,22 @@ int main(int argc, char **argv) {
         auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         auto states_after_sms_removal = getStatesSum(SMs);
+        temp_map_of_SM_pre_regions = new map<SM*, map<int, Region *>*>();
+        for(auto sm: *SMs){
+            (*temp_map_of_SM_pre_regions)[sm] = new map<int, Region *>();
+            for(auto rec: *pprg->get_pre_regions()){
+                for(auto reg: *rec.second){
+                    if(sm->find(reg)!= sm->end()){
+                        (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
+                    }
+                }
+            }
+        }
+        auto transitions_after_sms_removal = getTransitionsSum(temp_map_of_SM_pre_regions, SMs);
+        for(auto map: *temp_map_of_SM_pre_regions){
+            delete map.second;
+        }
+        delete temp_map_of_SM_pre_regions;
 
         //if(decomposition_debug)
             cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
@@ -700,6 +732,7 @@ int main(int argc, char **argv) {
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         auto final_sum = getStatesSum(SMs);
+        auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions, SMs);
 
         //if(decomposition_debug)
         if(decomposition_output)
@@ -766,6 +799,9 @@ int main(int argc, char **argv) {
         cout << "States sum after the decomposition: " << states_sum << endl;
         cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
         cout << "states sum after final optimization: " << final_sum << endl;
+        cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
+        cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
+        cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
 
     } else {
         tStart_partial = clock();

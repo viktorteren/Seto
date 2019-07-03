@@ -1492,7 +1492,7 @@ namespace Utilities {
         fout.close();
     }
 
-    void read_SMs(string file, set<SM*>* SMs, map<int, Region *> &aliases){
+    void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases){
         ifstream fin(file);
         int num_SMs;
         fin >> num_SMs;
@@ -1516,5 +1516,15 @@ namespace Utilities {
             //cout << "new SM: " << endl;
             //println(*newSM);
         }
+    }
+
+    int getTransitionsSum(map<SM*, map<int, Region *>*> *pre_regions, set<SM*>* SMs){
+        int sum = 0;
+        for(auto SM: *SMs){
+            for(auto rec: *pre_regions->at(SM)){
+                sum += rec.second->size();
+            }
+        }
+        return sum;
     }
 }
