@@ -216,53 +216,61 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 while (true) {
                     fin >> start;
-                    if (start == ".marking") {
-                        temp = start;
-                        if (print_step_by_step_debug)
-                            cout << "exit from state graph to marking" << endl;
-                        break;
-                    }
-                    fin >> label;
+                    if(start != "#") {
+                        if (start == ".marking") {
+                            temp = start;
+                            if (print_step_by_step_debug)
+                                cout << "exit from state graph to marking" << endl;
+                            break;
+                        }
+                        fin >> label;
 
-                    if (aliases_map_name_number->find(label) == aliases_map_name_number->end()) {
-                        add_new_label_with_alias(max, label);
-                        max++;
+                        if (aliases_map_name_number->find(label) == aliases_map_name_number->end()) {
+                            add_new_label_with_alias(max, label);
+                            max++;
+                            if (print_step_by_step_debug) {
+                                cout << "MAX " << max << endl;
+                            }
+                        }
+
+                        fin >> finish;
+                        //lo stato start non è presente nella mappa
+                        if (aliases_map_state_name_number->find(start) == aliases_map_state_name_number->end()) {
+                            add_new_state_with_alias(max_state, start);
+                            max_state++;
+                        }
+                        if (aliases_map_state_name_number->find(finish) == aliases_map_state_name_number->end()) {
+                            add_new_state_with_alias(max_state, finish);
+                            max_state++;
+                        }
+                        label_int = (*aliases_map_name_number)[label];
+
                         if (print_step_by_step_debug) {
-                            cout << "MAX " << max << endl;
+                            for (const auto &el: *aliases_map_name_number)
+                                cout << "NAME " << el.first << endl;
+                            cout << "label:" << label << endl;
+                            cout << "label_int:" << label_int << endl;
+                        }
+
+
+                        start_int = (*aliases_map_state_name_number)[start];
+                        finish_int = (*aliases_map_state_name_number)[finish];
+                        if (ts_map->find(label_int) == ts_map->end()) {
+                            (*ts_map)[label_int] = Edges_list();
+                        }
+                        pair_ptr = new pair<int, int>(start_int, finish_int);
+                        (*ts_map)[label_int].insert(pair_ptr);
+                        if (print_step_by_step_debug) {
+                            cout << start << " -> " << finish << " with label:" << label << endl;
+                        }
+                        num_transactions++;
+                    }
+                    else{
+                        while ( fin.peek() != '\n'){
+                            string temp;
+                            fin >> temp;
                         }
                     }
-
-                    fin >> finish;
-                    //lo stato start non è presente nella mappa
-                    if (aliases_map_state_name_number->find(start) == aliases_map_state_name_number->end()) {
-                        add_new_state_with_alias(max_state, start);
-                        max_state++;
-                    }
-                    if (aliases_map_state_name_number->find(finish) == aliases_map_state_name_number->end()) {
-                        add_new_state_with_alias(max_state, finish);
-                        max_state++;
-                    }
-                    label_int = (*aliases_map_name_number)[label];
-
-                    if (print_step_by_step_debug) {
-                        for (const auto& el: *aliases_map_name_number)
-                            cout << "NAME " << el.first << endl;
-                        cout << "label:" << label << endl;
-                        cout << "label_int:" << label_int << endl;
-                    }
-
-
-                    start_int = (*aliases_map_state_name_number)[start];
-                    finish_int = (*aliases_map_state_name_number)[finish];
-                    if (ts_map->find(label_int) == ts_map->end()) {
-                        (*ts_map)[label_int] = Edges_list();
-                    }
-                    pair_ptr = new pair<int, int>(start_int, finish_int);
-                    (*ts_map)[label_int].insert(pair_ptr);
-                    if (print_step_by_step_debug) {
-                        cout << start << " -> " << finish << " with label:" << label << endl;
-                    }
-                    num_transactions++;
                 }
             }
         }
