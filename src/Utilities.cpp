@@ -1520,10 +1520,8 @@ namespace Utilities {
 
     int getTransitionsSum(map<SM*, map<int, Region *>*> *pre_regions, set<SM*>* SMs){
         int sum = 0;
-        for(auto SM: *SMs){
-            for(auto rec: *pre_regions->at(SM)){
-                sum += rec.second->size();
-            }
+        for(auto rec: *pre_regions){
+            sum += rec.second->size();
         }
         return sum;
     }
