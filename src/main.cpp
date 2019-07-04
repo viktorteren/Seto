@@ -6,6 +6,7 @@
 #include "../pblib/pb2cnf.h"
 #include <algorithm>
 #include <Python.h>
+#include <iomanip>
 
 using namespace PBLib;
 using namespace Minisat;
@@ -802,6 +803,16 @@ int main(int argc, char **argv) {
         cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
         cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
         cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
+        std::ofstream outfile;
+        outfile.open("stats.csv", std::ios_base::app);
+        outfile << get_file_name(file) << ","
+        << setprecision(4)  << t_decomposition << ","
+        << setprecision(4) << setw(4) << t_greedy << ","
+        << setprecision(4)  << t_labels_removal << ","
+        << states_sum << "," << states_after_sms_removal << ","
+        << final_sum << "," << transitions_sum << ","
+        << transitions_after_sms_removal << ","
+        << final_transitions_sum << "," << endl;
 
     } else {
         tStart_partial = clock();

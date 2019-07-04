@@ -352,6 +352,23 @@ namespace Utilities {
         return false;
     }
 
+    string get_file_name(string path){
+        string output_name = std::move(path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        return output_name.substr(lower + 1, output_name.size());
+    }
+
     void print_ts_dot_file(string file_path, map<int, int> *aliases) {
         //cout << "CREATION OF INPUT .DOT FILE" << endl;
         string output_name = std::move(file_path);
