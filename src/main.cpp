@@ -736,22 +736,22 @@ int main(int argc, char **argv) {
         auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions, SMs);
 
         //if(decomposition_debug)
-        if(decomposition_output)
-            cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================" << endl;
-        //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
-        //cout << "pre-regions" << endl;
-        //print(*pprg->get_pre_regions());
+        if(decomposition_output) {
+            cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
+                 << endl;
+            //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
+            //cout << "pre-regions" << endl;
+            //print(*pprg->get_pre_regions());
 
-        for(auto sm: *SMs){
-            counter = (SMs_map)[sm];
-            if(decomposition_debug) {
-                cout << "SM " << counter << endl;
-                for(auto reg: *sm){
-                    println(*reg);
+            for (auto sm: *SMs) {
+                counter = (SMs_map)[sm];
+                if (decomposition_debug) {
+                    cout << "SM " << counter << endl;
+                    for (auto reg: *sm) {
+                        println(*reg);
+                    }
                 }
-            }
 
-            if(decomposition_output) {
                 string SM_name = remove_extension(file);
                 SM_name += "_SM_" + to_string(counter) + ".g";
                 print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
