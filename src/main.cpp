@@ -242,8 +242,8 @@ int main(int argc, char **argv) {
     }
     delete ls;
 
-    if(!decomposition)
-        print_ts_dot_file(file, aliases);
+    /*if(!decomposition)
+        print_ts_dot_file(file, aliases);*/
 
     if(print_step_by_step_debug) {
         cout<<"ECTS:"<<endl;
@@ -755,6 +755,14 @@ int main(int argc, char **argv) {
                 string SM_name = remove_extension(file);
                 SM_name += "_SM_" + to_string(counter) + ".g";
                 print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+            }
+        }
+
+        //creation of a single PN created by the sum of splitted SMs
+        auto SMs_sum = new SM();
+        for (auto sm: *SMs) {
+            for(auto reg: *sm){
+                SMs_sum->insert(reg);
             }
         }
 
