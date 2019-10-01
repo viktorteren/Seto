@@ -385,7 +385,7 @@ namespace Utilities {
             }
         }
         in_name = output_name.substr(lower + 1, output_name.size());
-        // cout << "out name: " << in_dot_name << endl;
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
 
         if (aliases != nullptr) {
             in_name += "_ECTS";
@@ -607,6 +607,7 @@ namespace Utilities {
             }
         }
         in_dot_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
         // cout << "out name: " << in_dot_name << endl;
 
         output_name += "_PN.dot";
@@ -755,14 +756,15 @@ namespace Utilities {
             }
         }
         in_dot_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
         // cout << "out name: " << in_dot_name << endl;
 
-        output_name += "_PN.dot";
+        output_name += ".dot";
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
-        fout << in_dot_name + "_PN";
+        fout << in_dot_name;
         fout << "{\n";
         // regioni iniziali
         //cout << "scrittura regioni iniziali" << endl;
@@ -827,7 +829,6 @@ namespace Utilities {
                 else{
                     fout << "\t" << record.first << ";\n";
                 }
-
             }
         }
         fout << "}\n";
