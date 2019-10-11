@@ -1,9 +1,0 @@
-Possibili miglioramenti:
-
-- Aumentare il valore della sommatoria per le regioni new
-- Aggiungere direttamente le clausole relative alle SM già trovate per evitare i casi loop (computo di più avendo più clausole ma evito di ripetere lo stesso calcolo)
-
-FIX DA FARE:
-input che non vanno:
-rcd-ra.g
-master-read.g
