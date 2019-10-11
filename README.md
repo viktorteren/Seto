@@ -13,19 +13,6 @@ Input extensions: .g
 
 Output extensions: .dot
 
-<!---
-Directory overview
-------------------
-
-- `minisat/mtl`     Mini Template Library
-- `minisat/utils`   Generic helper code (I/O, Parsing, CPU-time, etc)
-- `minisat/core`    A core version of the solver
-- `minisat/simp`    An extended solver with simplification capabilities
-- `README.md`       This read-me file
-- `LICENSE`         Licence files
--->
-
-
 Building
 --------
 
@@ -34,20 +21,6 @@ make
 cd cmake-build-debug
 make
 ```
-
-<!--
-### b) Traditional way
-
-Release version: without assertions, statically linked, etc
-
-```bash
-export MROOT=<minisat-dir> # or `setenv` in cshell
-cd minisat
-cd { core | simp }
-make rs
-cp minisat_static <install-dir>/minisat
-```
--->
 
 Execution
 ---------
@@ -63,10 +36,12 @@ Quick way (requirese graphviz library)
 Traditional way
 
 ```Bash
-./TS_splitter <file_path> <S>
-./TS_splitter <file_path> <D> //Debug info mode
+./TS_splitter <file_path> S
 ```
-
+Debug info mode
+```Bash
+./TS_splitter <file_path> D
+```
 
 ### b) TS to Synchronized SMs flow
 
@@ -89,19 +64,6 @@ Write output SMs in .dot extension:
 ```Bash
 ./TS_splitter <file_path> MO
 ```
-
-
-
-<!--
-Examples
--------
-
-Run minisat with same heuristics as version 2.0:
-
-```minisat <cnf-file> -no-luby -rinc=1.5 -phase-saving=0 -rnd-freq=0.02```
-
--->
-
 
 PN visualization
 ----------------
