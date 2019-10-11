@@ -1,6 +1,7 @@
-//
-// Created by ciuchino on 09/05/18.
-//
+/*
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ */
 
 #include "../include/Merging_Minimal_Preregions_module.h"
 

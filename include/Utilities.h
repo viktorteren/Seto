@@ -1,6 +1,7 @@
-//
-// Created by ciuchino on 18/04/18.
-//
+/*
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ */
 
 #pragma once
 #include "minisat/core/Solver.h"

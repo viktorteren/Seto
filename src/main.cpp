@@ -1,7 +1,11 @@
+/*
+ * This file is subject to the terms and conditions defined in
+ * file 'LICENSE.txt', which is part of this source code package.
+ */
+
 #include "../include/Label_splitting_module.h"
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
-#include "../include/Pre_and_post_regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
 #include "../pblib/pb2cnf.h"
 #include <algorithm>
@@ -14,11 +18,7 @@ using namespace Minisat;
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
     string file;
-    if (argc == 1) {
-        // default input
-        print_step_by_step = false;
-        file = "../test/input1.ts";
-    } else if (argc == 2) {
+    if (argc == 2) {
         file = args[1];
         cout << file << endl;
     } else if (argc == 3) {
