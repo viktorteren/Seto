@@ -294,6 +294,14 @@ int main(int argc, char **argv) {
         auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
         read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
 
+        if (decomposition_debug) {
+            cout << "Initial SMs" << endl;
+            for(auto SM: *SMs) {
+                cout << "SM:" << endl;
+                println(*SM);
+            }
+        }
+
         /* EC CHECK
          * set<int> used_regions;
         auto used_regions_map = new map<int,set< Region *>*>();
