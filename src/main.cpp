@@ -36,31 +36,22 @@ int main(int argc, char **argv) {
             decomposition = false;
             decomposition_debug = false;
             decomposition_output = false;
-        } else if (args[2] == "M") {
+        } else if (args[2] == "M" || args[2] == "ML" || args[2] == "MD" || args[2] == "MO" || args[2] == "MG") {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
-            decomposition_debug = false;
-            decomposition_output = false;
-        } else if (args[2] == "ML") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = true;
-            decomposition_debug = false;
-            decomposition_output = false;
-            log_file = true;
-        } else if (args[2] == "MD") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = true;
-            decomposition_debug = true;
-            decomposition_output = false;
-        } else if (args[2] == "MO") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = true;
-            decomposition_debug = false;
-            decomposition_output = true;
+            if(args[2] == "MD")
+                decomposition_debug = true;
+            else
+                decomposition_debug = false;
+            if(args[2] == "MO") {
+                decomposition_output = true;
+                if(args[2] == "MG")
+                    decomposition_output_sis = true;
+            }
+            else decomposition_output = false;
+            if(args[2] == "ML")
+                log_file = true;
         } else {
             print_step_by_step = false;
             print_step_by_step_debug = false;
@@ -343,7 +334,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        auto transitions_sum = getTransitionsSum(temp_map_of_SM_pre_regions, SMs);
+        auto transitions_sum = getTransitionsSum(temp_map_of_SM_pre_regions);
         for(auto map: *temp_map_of_SM_pre_regions){
             delete map.second;
         }
@@ -483,7 +474,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        auto transitions_after_sms_removal = getTransitionsSum(temp_map_of_SM_pre_regions, SMs);
+        auto transitions_after_sms_removal = getTransitionsSum(temp_map_of_SM_pre_regions);
         for(auto map: *temp_map_of_SM_pre_regions){
             delete map.second;
         }
@@ -629,6 +620,11 @@ int main(int argc, char **argv) {
             formula.addClause(*cl);
         }
 
+        if(decomposition_debug) {
+            cout << "clauses before merge:" << endl;
+            formula.printFormula(cout);
+        }
+
         Minisat::Solver solver;
 
         bool sat=true;
@@ -741,12 +737,14 @@ int main(int argc, char **argv) {
         auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         auto final_sum = getStatesSum(SMs);
-        auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions, SMs);
+        auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
 
         //if(decomposition_debug)
         if(decomposition_output) {
-            cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
-                 << endl;
+            decomposition_output_sis ? cout << "=======================[ CREATION OF A .g FILE FOR EACH SM / S-COMPONENT  ]================"
+                                            << endl : cout << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
+                                                            << endl;
+
             //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
             //cout << "pre-regions" << endl;
             //print(*pprg->get_pre_regions());
@@ -762,7 +760,12 @@ int main(int argc, char **argv) {
 
                 string SM_name = remove_extension(file);
                 SM_name += "_SM_" + to_string(counter) + ".g";
-                print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+                if(decomposition_output_sis){
+                    print_sm_g_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+                }
+                else{
+                    print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+                }
             }
         }
 

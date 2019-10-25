@@ -10,6 +10,7 @@ bool print_step_by_step_debug;
 bool decomposition;
 bool decomposition_debug;
 bool decomposition_output;
+bool decomposition_output_sis;
 bool log_file;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
@@ -710,7 +711,7 @@ namespace Utilities {
                 if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\t" << record.first << " -> "
                              << "r" << regions_mapping->at(reg) << ";\n";
-                } else {
+                //} else {
                     // entra qui 2 volte
                     // cout << "regions_mapping non contiene ";
                     // println(*reg);
@@ -723,6 +724,12 @@ namespace Utilities {
         delete not_initial_regions;
         delete initial_reg;
         delete regions_mapping;
+    }
+
+    void print_sm_g_file(map<int, Region  *> *pre_regions,
+                           map<int, Region *> *post_regions,
+                           map<int, int> *aliases, string file_name) {
+        cerr << "Not implemented yet" << endl;
     }
 
     void print_sm_dot_file(map<int, Region  *> *pre_regions,
@@ -1537,7 +1544,7 @@ namespace Utilities {
         }
     }
 
-    int getTransitionsSum(map<SM*, map<int, Region *>*> *pre_regions, set<SM*>* SMs){
+    int getTransitionsSum(map<SM*, map<int, Region *>*> *pre_regions){
         int sum = 0;
         for(auto rec: *pre_regions){
             sum += rec.second->size();

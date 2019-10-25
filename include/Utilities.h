@@ -41,6 +41,7 @@ extern bool print_step_by_step_debug;
 extern bool decomposition;
 extern bool decomposition_debug;
 extern bool decomposition_output;
+extern bool decomposition_output_sis;
 extern bool log_file;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
@@ -84,6 +85,9 @@ namespace Utilities {
     void print_sm_dot_file(map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,
                            map<int, int>* aliases, string file_name);
+    void print_sm_g_file(map<int, Region *> *pre_regions,
+                           map<int, Region *> *post_regions,
+                           map<int, int>* aliases, string file_name);
     //Minisat::vec<Minisat::Lit>* region_to_clause(map<int, set<Region *> *> *irredundant_regions);
     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
@@ -101,7 +105,7 @@ namespace Utilities {
     bool is_initial_region(Region *);
     int getStatesSum(set<SM*>* SMs);
     int getNumStates(SM* sm);
-    int getTransitionsSum(map<SM*, map<int, Region *>*>* pre_regions, set<SM*>* SMs);
+    int getTransitionsSum(map<SM*, map<int, Region *>*>* pre_regions);
     void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses);
     void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases);
     string get_file_name(string path);
