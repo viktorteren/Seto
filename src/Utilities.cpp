@@ -795,17 +795,39 @@ namespace Utilities {
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
-        fout << ".model " << in_sis_name << endl;
+        fout << ".model " << in_sis_name;
         //events/transitions
-        fout << ".internal ";
-
-
-        //transitions/events
-        for (auto record : *pre_regions) {
-            if(g_input){
-                fout << (*aliases_map_number_name)[record.first] << " ";
+        if(g_input){
+            if(!inputs.empty()){
+                fout << "\n.inputs ";
+                for(const auto& str: inputs){
+                    fout << str << " ";
+                }
             }
-            else {
+            if(!outputs.empty()){
+                if(!inputs.empty())
+                    fout << endl;
+                fout << "\n.outputs ";
+                for(const auto& str: outputs){
+                    fout << str << " ";
+                }
+            }
+            if(!internals.empty()){
+                fout << "\n.internal ";
+                for(const auto& str: internals){
+                    fout << str << " ";
+                }
+            }
+            if(!dummies.empty()){
+                fout << "\n.dummy ";
+                for(const auto& str: dummies){
+                    fout << str << " ";
+                }
+            }
+        }
+        else{
+            fout << ".internal ";
+            for (auto record : *pre_regions) {
                 if (record.first < num_events) {
                     fout << "e" << record.first << " ";
                 }
@@ -830,10 +852,13 @@ namespace Utilities {
             fout << "r" << regions_mapping->at(reg);
             for(auto ev: *record.second){
                 if(g_input){
-                    int original_label = (*aliases)[ev];
-                    fout << " " << (*aliases_map_number_name)[original_label];
                     if(ev >= num_events){
+                        int original_label = (*aliases)[ev];
+                        fout << " " << (*aliases_map_number_name)[original_label];
                         fout << "/" << (*alias_counter)[original_label];
+                    }
+                    else{
+                        fout << " " << (*aliases_map_number_name)[ev];
                     }
                 }
                 else {
@@ -852,10 +877,13 @@ namespace Utilities {
         for (auto record : *post_regions) {
             auto reg = record.second;
             if(g_input){
-                int original_label = (*aliases)[record.first];
-                fout << (*aliases_map_number_name)[original_label];
                 if(record.first >= num_events){
+                    int original_label = (*aliases)[record.first];
+                    fout << (*aliases_map_number_name)[original_label];
                     fout << "/" << (*alias_counter)[original_label];
+                }
+                else{
+                    fout << (*aliases_map_number_name)[record.first];
                 }
             }
             else {

@@ -16,6 +16,10 @@ map<string, int> *aliases_map_name_number;
 map<int, string> *aliases_map_state_number_name;
 map<string, int> *aliases_map_state_name_number;
 bool g_input;
+set<string> inputs;
+set<string> outputs;
+set<string> internals;
+set<string> dummies;
 
 void TS_parser::parse(string file) {
     g_input = false;
@@ -113,6 +117,12 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if (temp == ".outputs") {
                     exit = true;
                 }
+                if (temp == ".internal") {
+                    exit = true;
+                }
+                if (temp == ".dummy") {
+                    exit = true;
+                }
                 if (temp == ".state") {
                     exit = true;
                 }
@@ -139,6 +149,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 //si tratta di un'etichetta
                 if (!exit) {
+                    inputs.insert(temp);
                     //add_new_label_with_alias(max, temp);
                     //max++;
                 }
@@ -163,6 +174,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 //si tratta di un'etichetta
                 if (!exit) {
+                    outputs.insert(temp);
                     // add_new_label_with_alias(max, temp);
                     //max++;
                 }
@@ -184,8 +196,9 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 //si tratta di un'etichetta
                 if (!exit) {
-                    add_new_label_with_alias(max, temp);
-                    max++;
+                    internals.insert(temp);
+                    //add_new_label_with_alias(max, temp);
+                    //max++;
                 }
             }
         }
@@ -202,8 +215,9 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 //si tratta di un'etichetta
                 if (!exit) {
-                    add_new_label_with_alias(max, temp);
-                    max++;
+                    dummies.insert(temp);
+                    //add_new_label_with_alias(max, temp);
+                    //max++;
                 }
             }
         }

@@ -27,6 +27,10 @@ extern map< string, int> *aliases_map_name_number;
 extern map<int, string> *aliases_map_state_number_name;
 extern map<string, int> *aliases_map_state_name_number;
 extern bool g_input;
+extern set<string> inputs;
+extern set<string> outputs;
+extern set<string> internals;
+extern set<string> dummies;
 
 class TS_parser {
     static void parse_TS(ifstream &fin);

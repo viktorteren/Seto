@@ -775,6 +775,7 @@ int main(int argc, char **argv) {
         }
 
         //===========FREE===========
+        delete SMs_sum;
         for(auto SM: *SMs){
             delete SM;
         }
