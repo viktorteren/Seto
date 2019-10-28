@@ -748,6 +748,7 @@ namespace Utilities {
         for (auto al:*aliases) {
             (*alias_counter)[al.second] = 0;
         }
+        map<int, int> alias_event_index_map;
         for (auto record : *aliases) {
             //fout << "\t" << record.first << ";\n";
             //control if this label is used in this SM
@@ -761,18 +762,7 @@ namespace Utilities {
                 int label;
                 label = record.second;
                 (*alias_counter)[label]++;
-                /*if (g_input) {
-                    fout << "\t" << record.first << " [label = \""
-                         << (*aliases_map_number_name)[label];
-                } else {
-                    fout << "\t" << record.first << " [label = \""
-                         << label;
-                }*/
-                //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
-                /*for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
-                    fout << "'";
-                }
-                fout << "\"];\n";*/
+                alias_event_index_map[record.first]=(*alias_counter)[label];
             }
         }
 
@@ -855,7 +845,7 @@ namespace Utilities {
                     if(ev >= num_events){
                         int original_label = (*aliases)[ev];
                         fout << " " << (*aliases_map_number_name)[original_label];
-                        fout << "/" << (*alias_counter)[original_label];
+                        fout << "/" << alias_event_index_map[ev];
                     }
                     else{
                         fout << " " << (*aliases_map_number_name)[ev];
@@ -867,7 +857,7 @@ namespace Utilities {
                     } else {
                         int original_label = (*aliases)[ev];
                         fout << " e" << original_label; //nome dell'etichetta originale
-                        fout << "/" << (*alias_counter)[original_label];
+                        fout << "/" << alias_event_index_map[ev];
                     }
                 }
             }
@@ -880,7 +870,7 @@ namespace Utilities {
                 if(record.first >= num_events){
                     int original_label = (*aliases)[record.first];
                     fout << (*aliases_map_number_name)[original_label];
-                    fout << "/" << (*alias_counter)[original_label];
+                    fout << "/" << alias_event_index_map[record.first];
                 }
                 else{
                     fout << (*aliases_map_number_name)[record.first];
@@ -892,7 +882,7 @@ namespace Utilities {
                 } else {
                     int original_label = (*aliases)[record.first];
                     fout << "e" << original_label; //nome dell'etichetta originale
-                    fout << "/" << (*alias_counter)[original_label];
+                    fout << "/" << alias_event_index_map[record.first];
                 }
             }
             fout << " r" << regions_mapping->at(reg) << "\n";
@@ -915,11 +905,11 @@ namespace Utilities {
         for(auto record: *pre_regions_inverted){
             delete record.second;
         }
+        delete alias_counter;
         delete pre_regions_inverted;
         delete regions_set;
         delete initial_reg;
         delete regions_mapping;
-        delete alias_counter;
     }
 
     void print_sm_dot_file(map<int, Region  *> *pre_regions,
