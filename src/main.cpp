@@ -40,11 +40,8 @@ int main(int argc, char **argv) {
             print_step_by_step = false;
             print_step_by_step_debug = false;
             decomposition = true;
-            if(args[2] == "MD")
-                decomposition_debug = true;
-            else
-                decomposition_debug = false;
-            if(args[2] == "MO") {
+            decomposition_debug = args[2] == "MD";
+            if(args[2] == "MO" || args[2] == "MG") {
                 decomposition_output = true;
                 if(args[2] == "MG")
                     decomposition_output_sis = true;
@@ -816,6 +813,7 @@ int main(int argc, char **argv) {
         printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
         printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
         cout << "SIZE STATISTICS:" << endl;
+        cout << "Number of SMs: " << SMs->size() << endl;
         cout << "States sum after the decomposition: " << states_sum << endl;
         cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
         cout << "states sum after final optimization: " << final_sum << endl;

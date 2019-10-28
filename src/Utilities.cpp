@@ -729,7 +729,148 @@ namespace Utilities {
     void print_sm_g_file(map<int, Region  *> *pre_regions,
                            map<int, Region *> *post_regions,
                            map<int, int> *aliases, string file_name) {
-        cerr << "Not implemented yet" << endl;
+        auto initial_reg = initial_regions(pre_regions);
+        string output_name = std::move(file_name);
+        string in_sis_name;
+        string output;
+        // creazione della mappa tra il puntatore alla regione ed un intero univoco
+        // corrispondente
+        map<Region *, int> *regions_mapping;
+        /*cout << "preregions prima del print" << endl;
+        print(*pre_regions);*/
+        auto regions_set = copy_map_to_set(pre_regions);
+        /*cout << "regions set " << endl;
+        println(*regions_set);*/
+        regions_mapping = get_regions_map(pre_regions);
+
+        // counter for the number of splits for each label
+        auto alias_counter = new map<int, int>();
+        for (auto al:*aliases) {
+            (*alias_counter)[al.second] = 0;
+        }
+        for (auto record : *aliases) {
+            //fout << "\t" << record.first << ";\n";
+            //control if this label is used in this SM
+            bool used = false;
+            if (pre_regions->find(record.first) != pre_regions->end()) {
+                used = true;
+            } else if (post_regions->find(record.first) != post_regions->end()) {
+                used = true;
+            }
+            if(used){
+                int label;
+                label = record.second;
+                (*alias_counter)[label]++;
+                /*if (g_input) {
+                    fout << "\t" << record.first << " [label = \""
+                         << (*aliases_map_number_name)[label];
+                } else {
+                    fout << "\t" << record.first << " [label = \""
+                         << label;
+                }*/
+                //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
+                /*for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
+                    fout << "'";
+                }
+                fout << "\"];\n";*/
+            }
+        }
+
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        int lower = 0;
+        for (int i = static_cast<int>(output_name.size() - 1); i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_sis_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_sis_name.begin(), in_sis_name.end(), '-', '_');
+        // cout << "out name: " << in_dot_name << endl;
+
+        output_name += ".g";
+        //cout << "file output PN: " << output_name << endl;
+
+        ofstream fout(output_name);
+        fout << ".model " << in_sis_name << endl;
+        //events/transitions
+        fout << ".internal ";
+
+
+        //transitions/events
+        for (auto record : *pre_regions) {
+            if (record.first < num_events) {
+                fout << "e" << record.first << " ";
+            }
+        }
+
+        fout << "\n.graph\n";
+
+        auto pre_regions_inverted = new map<Region *, set<int> *>();
+
+        for(auto record: *pre_regions){
+            if(pre_regions_inverted->find(record.second) == pre_regions_inverted->end()){
+                (*pre_regions_inverted)[record.second] = new set<int>();
+            }
+            (*pre_regions_inverted)[record.second]->insert(record.first);
+        }
+
+        //archi tra tansazioni e posti (tra eventi e regioni)
+        //regione -> evento
+        for(auto record: *pre_regions_inverted){
+            auto reg = record.first;
+            fout << "r" << regions_mapping->at(reg);
+            for(auto ev: *record.second){
+                if(ev < num_events){
+                     fout << " e" << ev;
+                }
+                else{
+                    int original_label = (*aliases)[ev];
+                    fout << " e" << original_label; //nome dell'etichetta originale
+                    fout << "/" << (*alias_counter)[original_label];
+                }
+            }
+            fout << endl;
+        }
+        //evento -> regione
+        for (auto record : *post_regions) {
+            auto reg = record.second;
+            if(record.first < num_events){
+                fout << "e" << record.first;
+            }
+            else{
+                int original_label = (*aliases)[record.first];
+                fout << "e" << original_label; //nome dell'etichetta originale
+                fout << "/" << (*alias_counter)[original_label];
+            }
+            fout << " r" << regions_mapping->at(reg) << "\n";
+        }
+        //initial marking
+        fout << ".marking {";
+        int count = 0;
+        for (auto reg : *initial_reg) {
+            if(count == 0){
+                fout << "r" << regions_mapping->at(reg);
+            }
+            else{
+                fout << " r" << regions_mapping->at(reg);
+            }
+            count++;
+        }
+        fout << "}\n";
+        fout << ".end ";
+        fout.close();
+        for(auto record: *pre_regions_inverted){
+            delete record.second;
+        }
+        delete pre_regions_inverted;
+        delete regions_set;
+        delete initial_reg;
+        delete regions_mapping;
+        delete alias_counter;
     }
 
     void print_sm_dot_file(map<int, Region  *> *pre_regions,

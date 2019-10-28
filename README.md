@@ -1,4 +1,4 @@
-Software for PN creation based on Regions theory
+Software for PN creation based on Regions theory (TStoPN)
 ========================
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
@@ -11,7 +11,7 @@ Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
 Input extensions: .g
 
-Output extensions: .dot
+Output extensions: .dot .g
 
 Building
 --------
@@ -59,10 +59,14 @@ Debug info mode:
 ```Bash
 ./TS_splitter <file_path> MD
 ```
-
 Write output SMs in .dot extension:
 ```Bash
 ./TS_splitter <file_path> MO
+```
+
+Write output SMs in .g extension:
+```Bash
+./TS_splitter <file_path> MG
 ```
 
 PN visualization
