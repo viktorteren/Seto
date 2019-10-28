@@ -802,8 +802,13 @@ namespace Utilities {
 
         //transitions/events
         for (auto record : *pre_regions) {
-            if (record.first < num_events) {
-                fout << "e" << record.first << " ";
+            if(g_input){
+                fout << (*aliases_map_number_name)[record.first] << " ";
+            }
+            else {
+                if (record.first < num_events) {
+                    fout << "e" << record.first << " ";
+                }
             }
         }
 
@@ -824,13 +829,21 @@ namespace Utilities {
             auto reg = record.first;
             fout << "r" << regions_mapping->at(reg);
             for(auto ev: *record.second){
-                if(ev < num_events){
-                     fout << " e" << ev;
-                }
-                else{
+                if(g_input){
                     int original_label = (*aliases)[ev];
-                    fout << " e" << original_label; //nome dell'etichetta originale
-                    fout << "/" << (*alias_counter)[original_label];
+                    fout << " " << (*aliases_map_number_name)[original_label];
+                    if(ev >= num_events){
+                        fout << "/" << (*alias_counter)[original_label];
+                    }
+                }
+                else {
+                    if (ev < num_events) {
+                        fout << " e" << ev;
+                    } else {
+                        int original_label = (*aliases)[ev];
+                        fout << " e" << original_label; //nome dell'etichetta originale
+                        fout << "/" << (*alias_counter)[original_label];
+                    }
                 }
             }
             fout << endl;
@@ -838,13 +851,21 @@ namespace Utilities {
         //evento -> regione
         for (auto record : *post_regions) {
             auto reg = record.second;
-            if(record.first < num_events){
-                fout << "e" << record.first;
-            }
-            else{
+            if(g_input){
                 int original_label = (*aliases)[record.first];
-                fout << "e" << original_label; //nome dell'etichetta originale
-                fout << "/" << (*alias_counter)[original_label];
+                fout << (*aliases_map_number_name)[original_label];
+                if(record.first >= num_events){
+                    fout << "/" << (*alias_counter)[original_label];
+                }
+            }
+            else {
+                if (record.first < num_events) {
+                    fout << "e" << record.first;
+                } else {
+                    int original_label = (*aliases)[record.first];
+                    fout << "e" << original_label; //nome dell'etichetta originale
+                    fout << "/" << (*alias_counter)[original_label];
+                }
             }
             fout << " r" << regions_mapping->at(reg) << "\n";
         }
