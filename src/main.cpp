@@ -735,6 +735,8 @@ int main(int argc, char **argv) {
 
         auto final_sum = getStatesSum(SMs);
         auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
+        auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
+        auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions);
 
         //if(decomposition_debug)
         if(decomposition_output) {
@@ -821,6 +823,8 @@ int main(int argc, char **argv) {
         cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
         cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
         cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
+        cout << "Maximum size P+T: " << maxPTSum << endl;
+        cout << "Largsest SM alphabet: " << maxAlphabet << endl;
         std::ofstream outfile;
         outfile.open("stats.csv", std::ios_base::app);
         outfile << get_file_name(file) << ","

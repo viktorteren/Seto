@@ -1731,4 +1731,25 @@ namespace Utilities {
         }
         return sum;
     }
+
+    int getMaxPTSum(map<SM*, map<int, Region *>*> *pre_regions){
+        int max = 0;
+        for(auto rec: *pre_regions){
+            int p = getNumStates(rec.first);
+            int t = rec.second->size();
+            if(p+t > max)
+                max = p+t;
+        }
+        return max;
+    }
+
+    int getMaxAlphabet(map<SM*, map<int, Region *>*> *pre_regions){
+        int max = 0;
+        for(auto rec: *pre_regions){
+            int t = rec.second->size();
+            if(t > max)
+                max = t;
+        }
+        return max;
+    }
 }

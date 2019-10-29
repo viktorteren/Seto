@@ -109,4 +109,6 @@ namespace Utilities {
     void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses);
     void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases);
     string get_file_name(string path);
+    int getMaxPTSum(map<SM*, map<int, Region *>*>* pre_regions);
+    int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions);
 };
