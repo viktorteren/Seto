@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
     double t_region_gen = 0.0;
     double t_splitting = 0.0;
     int number_of_events;
-    auto aliases = new map<int, int>();
+    auto aliases = new map<int, int>(); //map <new_label, old_label>
 
     clock_t tStart = clock();
 
@@ -736,7 +736,8 @@ int main(int argc, char **argv) {
         auto final_sum = getStatesSum(SMs);
         auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
         auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
-        auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions);
+        auto maxTransitions = getMaxTransitionsNumber(map_of_SM_pre_regions);
+        auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
 
         //if(decomposition_debug)
         if(decomposition_output) {
@@ -824,7 +825,8 @@ int main(int argc, char **argv) {
         cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
         cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
         cout << "Maximum size P+T: " << maxPTSum << endl;
-        cout << "Largsest SM alphabet: " << maxAlphabet << endl;
+        cout << "Max number of transitions of an SM: " << maxTransitions << endl;
+        cout << "Max alphabet of an SM: " << maxAlphabet << endl;
         std::ofstream outfile;
         outfile.open("stats.csv", std::ios_base::app);
         outfile << get_file_name(file) << ","

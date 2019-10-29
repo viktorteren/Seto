@@ -82,7 +82,7 @@ map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(
 
     // modifica con mappa non vettore perchè per alcuni eventi faccio erase di
     // tutto!!!
-    vector<int> *events_type = new vector<int>(middle_set_of_states->size());
+    auto events_type = new vector<int>(middle_set_of_states->size());
     Region *candidate_region = nullptr;
     pair<int,Region*>* pair_reg= nullptr;
 
@@ -155,13 +155,10 @@ map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(
                             }
                         }
                     }
-
                     //cout << "NUMBER candidate: " << num_bad_event_min << endl;
                 }
-
                 pos++;
             }
-
         }
 
         // aggiungo candidate_region alle regioni del mio evento

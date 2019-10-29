@@ -110,5 +110,6 @@ namespace Utilities {
     void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases);
     string get_file_name(string path);
     int getMaxPTSum(map<SM*, map<int, Region *>*>* pre_regions);
-    int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions);
+    int getMaxTransitionsNumber(map<SM*, map<int, Region *>*>* pre_regions);
+    int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions, map<int, int> *label_aliases);
 };

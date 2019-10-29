@@ -1743,12 +1743,38 @@ namespace Utilities {
         return max;
     }
 
-    int getMaxAlphabet(map<SM*, map<int, Region *>*> *pre_regions){
+    int getMaxTransitionsNumber(map<SM*, map<int, Region *>*> *pre_regions){
         int max = 0;
         for(auto rec: *pre_regions){
             int t = rec.second->size();
             if(t > max)
                 max = t;
+        }
+        return max;
+    }
+
+    int getMaxAlphabet(map<SM*, map<int, Region *>*> *pre_regions, map<int, int> *label_aliases){
+        int max = 0;
+        for(auto rec: *pre_regions){
+            auto SM_map = rec.second;
+            int counter = 0;
+            set<int> used_labels;
+            for(auto record: *SM_map){
+                auto label = record.first;
+                if(label < num_events){
+                    used_labels.insert(label);
+                    counter++;
+                }
+                else{
+                    auto original_label = (*label_aliases)[label];
+                    if(used_labels.find(original_label) == used_labels.end()){
+                        used_labels.insert(original_label);
+                        counter++;
+                    }
+                }
+            }
+            if(counter > max)
+                max = counter;
         }
         return max;
     }
