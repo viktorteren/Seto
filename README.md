@@ -27,7 +27,7 @@ Execution
 
 ### a) TS to PN flow
 
-Quick way (requirese graphviz library)
+Quick way (requirese graphviz library) with .ps file creation
 
 ```Bash
 ./execute.sh
@@ -36,11 +36,16 @@ Quick way (requirese graphviz library)
 Traditional way
 
 ```Bash
-./TS_splitter <file_path> S
+./TS_splitter <file_path>
 ```
-Debug info mode
+Info mode
 ```Bash
 ./TS_splitter <file_path> D
+```
+
+Verbose info mode
+```Bash
+./TS_splitter <file_path> S
 ```
 
 ### b) TS to Synchronized SMs flow
@@ -68,6 +73,7 @@ Write output SMs in .g extension:
 ```Bash
 ./TS_splitter <file_path> MG
 ```
+After each execution the stats.csv file is updated.
 
 PN visualization
 ----------------
