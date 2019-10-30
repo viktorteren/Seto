@@ -155,9 +155,8 @@ map<int, Region *>* Pre_and_post_regions_generator::create_post_regions_for_SM(
                     (*post_regions_SM)[r.first] = reg;
                 }
             }
-
         } else {
-            //cout << "ts_map non contiene " << rec.first << endl;
+            cerr << "ts_map non contiene " << rec.first << endl;
         }
     }
     /*if(print_step_by_step) {
@@ -166,6 +165,23 @@ map<int, Region *>* Pre_and_post_regions_generator::create_post_regions_for_SM(
         cout << "" << endl;
     }*/
     return post_regions_SM;
+}
+
+map<int, Region *> * Pre_and_post_regions_generator::create_pre_regions_for_SM(SM *sm, set<int> *removed_events){
+    map<int, Region *> *pre_regions_SM = new map<int, Region *>;
+    set<Region*>::iterator it;
+    for(auto record: *ts_map){
+        int event = record.first;
+        if(removed_events->find(event) == removed_events->end()) {
+            for (it = sm->begin(); it != sm->end(); ++it) {
+                Region *region = *it;
+                if (is_pre_region(&record.second, region)) {
+                    (*pre_regions_SM)[event] = region;
+                }
+            }
+        }
+    }
+    return pre_regions_SM;
 }
 
 void Pre_and_post_regions_generator::create_pre_regions() {
@@ -213,7 +229,9 @@ map<int, set<Region *> *> *Pre_and_post_regions_generator::get_pre_regions() {
 }
 
 map<int, set<Region *> *> *Pre_and_post_regions_generator::get_post_regions() {
-  return post_regions;
+    if(post_regions == nullptr)
+        create_post_regions(pre_regions);
+    return post_regions;
 }
 
 

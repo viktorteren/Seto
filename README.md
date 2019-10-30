@@ -69,6 +69,11 @@ Write output SMs in .dot extension:
 ./TS_splitter <file_path> MO
 ```
 
+Write output SMs in .dot extension with debug info:
+```Bash
+./TS_splitter <file_path> MDO
+```
+
 Write output SMs in .g extension:
 ```Bash
 ./TS_splitter <file_path> MG

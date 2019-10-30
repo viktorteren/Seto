@@ -35,7 +35,7 @@ namespace Utilities {
         return all_states;
     }
 
-    set<int> *regions_union(set<Region *> *vec) {
+    Region *regions_union(set<Region *> *vec) {
         // cout << "region union" << endl;
         auto all_states = new Region();
         int size;
@@ -214,6 +214,20 @@ namespace Utilities {
             }
         }
         return s;
+    }
+
+    bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second){
+        bool empty = true;
+        for(auto r1: *first){
+            for(auto r2: *second){
+                auto intersection = regions_intersection(r1, r2);
+                if(!intersection->empty()) {
+                    delete intersection;
+                    return false;
+                }
+                delete intersection;
+            }
+        }
     }
 
     vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map) {
@@ -827,7 +841,6 @@ namespace Utilities {
         fout << "\n.graph\n";
 
         auto pre_regions_inverted = new map<Region *, set<int> *>();
-
         for(auto record: *pre_regions){
             if(pre_regions_inverted->find(record.second) == pre_regions_inverted->end()){
                 (*pre_regions_inverted)[record.second] = new set<int>();
@@ -999,9 +1012,7 @@ namespace Utilities {
                          << label;
                 }
                 //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
-                for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
-                    fout << "'";
-                }
+                fout << "/" << (*alias_counter)[record.second];
                 fout << "\"];\n";
             }
         }

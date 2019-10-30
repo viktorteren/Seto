@@ -17,6 +17,7 @@ public:
   void create_post_regions(map<int, set<Region *> *> *merged_pre_regions);
   map<int, Region *> *create_post_regions_for_SM(map<int, set<Region *> *> *pre_regions_SM);
   map<int, Region *> *create_post_regions_for_SM(map<int, Region *> *pre_regions_SM);
+  map<int, Region *> *create_pre_regions_for_SM(SM *sm, set<int> *removed_events);
 
 private:
   vector<Region> *regions;

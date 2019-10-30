@@ -57,6 +57,7 @@ namespace Utilities {
     set<int> *regions_intersection(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
     set<int> *region_difference(set<int> &first, set<int> &second);
+    bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second);
     set<Region *> *region_pointer_difference(set<Region *> *first,
                                          set<Region *> *second);
     vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map);
