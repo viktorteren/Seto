@@ -174,6 +174,16 @@ namespace Utilities {
         return intersection;
     }
 
+    bool at_least_one_state_from_first_in_second(Region *first, Region *second){
+        for (auto state : *first) {
+            if (second->find(state) !=
+                second->end()) { // trovo lo stato (appartiene a entrambe)
+                return true;
+            }
+        }
+        return false;
+    }
+
     void print(Region &region) {
         int pos = 0;
         auto size = static_cast<int>(region.size());

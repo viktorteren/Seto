@@ -290,33 +290,6 @@ int main(int argc, char **argv) {
             }
         }
 
-        /* EC CHECK
-         * set<int> used_regions;
-        auto used_regions_map = new map<int,set< Region *>*>();
-
-        //update the used regions
-        for(auto SM: *SMs) {
-            for (auto region: *SM) {
-                used_regions.insert((*aliases_region_pointer_inverted)[region]);
-            }
-        }
-
-        //update of used regions map
-        for(auto reg: used_regions){
-            for(auto rec: *pre_regions){
-                if(rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()){
-                    if(used_regions_map->find(rec.first) == used_regions_map->end())
-                        (*used_regions_map)[rec.first] = new set<Region *>();
-                    (*used_regions_map)[rec.first]->insert((*aliases_region_pointer)[reg]);
-                }
-            }
-        }
-
-        excitation_closure = is_excitation_closed(used_regions_map, new_ER);
-
-        if(!excitation_closure)
-            exit(20);*/
-
         auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
         auto states_sum = getStatesSum(SMs);
@@ -388,14 +361,6 @@ int main(int argc, char **argv) {
             }
             delete tmp_SMs;
         }
-
-        /*if(decomposition_debug) {
-            cout << "SM candidate for removal: " << endl;
-            for(auto reg: SMs_to_remove){
-                cout << "SM:" <<endl;
-                println(*reg);
-            }
-        }*/
 
         int num_SMs = SMs->size();
         int num_candidates = SMs_to_remove.size();
@@ -687,7 +652,6 @@ int main(int argc, char **argv) {
             }
         }
 
-        //todo: al posto di rimuovere gli eventi e basta fare il merge tra regioni e in base l merge collegare gli eventi rimanent
         map<SM*, set<int>*> *events_to_remove_per_SM = new map<SM*, set<int>*>();
 
         for(auto encoded_event: to_remove){
@@ -705,16 +669,9 @@ int main(int argc, char **argv) {
             (*events_to_remove_per_SM)[current_SM]->insert(decoded_event);
         }
 
-        if(decomposition_debug) {
-            cout << "SMs before merge" << endl;
-            for (auto SM: *SMs) {
-                cout << "SM:" << endl;
-                println(*SM);
-            }
-        }
-
         // NEW MERGE
         for(auto rec: *events_to_remove_per_SM){
+            cout << "removing events SM" << endl;
             SM* current_SM = rec.first;
             set<int> *removed_events = rec.second;
             auto regions_to_merge = new vector<set<Region *>*>();
@@ -726,14 +683,14 @@ int main(int argc, char **argv) {
             }
 
             //union between sets
-            for(int i=0; i< regions_to_merge->size(); i++){
-                for(int k=i+1; k < regions_to_merge->size(); k++){
+            cout << "union between sets" << endl;
+            for(unsigned long i=0; i< regions_to_merge->size(); i++){
+                for(unsigned long k=i+1; k < regions_to_merge->size(); k++){
                     //check if intersection between region sets is empty or not
                     bool merge = false;
                     if(!(*regions_to_merge)[i]->empty()) {
                         merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
                         if (merge) {
-                            set<Region *> *s = (*regions_to_merge)[k];
                             for (Region *reg: *(*regions_to_merge)[i]) {
                                 (*regions_to_merge)[k]->insert(reg);
                             }
@@ -749,16 +706,17 @@ int main(int argc, char **argv) {
             }
 
             //rimuovo le regioni che hanno fatto parte di merge
+            cout << "removing regions" << endl;
             for(Region *reg: *current_SM){
                 for(Region *mergedReg: merged_regions){
-                    Region *intersection = regions_intersection(reg, mergedReg);
-                    if(!intersection->empty()){
+
+                    if(at_least_one_state_from_first_in_second(reg, mergedReg)){
                         current_SM->erase(reg);
                     }
-                    delete intersection;
                 }
             }
             //aggiungo regioni mergate
+            cout << "adding merged regions" << endl;
             for(Region *mergedReg: merged_regions){
                 if(!mergedReg->empty()) {
                     current_SM->insert(mergedReg);
@@ -780,16 +738,10 @@ int main(int argc, char **argv) {
             if(removed_events_SM != nullptr ){
                 delete (*map_of_SM_pre_regions)[sm];
                 delete (*map_of_SM_post_regions)[sm];
+                cout << "updating pre-regions map SM" << endl;
                 (*map_of_SM_pre_regions)[sm] = pprg->create_pre_regions_for_SM(sm, removed_events_SM);
+                cout << "updating post-regions map SM" << endl;
                 (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
-            }
-        }
-
-        if(decomposition_debug) {
-            cout << "SMs after merge" << endl;
-            for (auto SM: *SMs) {
-                cout << "SM:" << endl;
-                println(*SM);
             }
         }
 
@@ -834,18 +786,18 @@ int main(int argc, char **argv) {
             }
         }*/
 
-        if (decomposition_debug) {
-            cout << "initial state: " << initial_state << endl;
-            cout << "Complete pre-regions map:" <<endl;
-            print(*pre_regions);
-            cout << "Complete post-regions map:" << endl;
-            print(*pprg->get_post_regions());
+        /*if (decomposition_debug) {
+            //cout << "initial state: " << initial_state << endl;
+            //cout << "Complete pre-regions map:" <<endl;
+            //print(*pre_regions);
+            //cout << "Complete post-regions map:" << endl;
+            //print(*pprg->get_post_regions());
             cout << "Final SMs" << endl;
             for(auto SM: *SMs) {
                 cout << "SM:" << endl;
                 println(*SM);
             }
-        }
+        }*/
 
         //===========FREE===========
         for(auto rec: *events_to_remove_per_SM){
@@ -910,7 +862,10 @@ int main(int argc, char **argv) {
         << states_sum << "," << states_after_sms_removal << ","
         << final_sum << "," << transitions_sum << ","
         << transitions_after_sms_removal << ","
-        << final_transitions_sum << "," << endl;
+        << final_transitions_sum << ","
+        << maxPTSum << ","
+        << maxAlphabet << ","
+        << maxTransitions << endl;
 
     } else {
         tStart_partial = clock();
@@ -983,7 +938,6 @@ int main(int argc, char **argv) {
         //cout<<"pre regions merged map"<<endl;
         //print(*merged_map);
 
-        //todo: aggiungere gli alias invertiti nell'output con l'estensione .g
         if(!decomposition_output)
             print_pn_dot_file(merged_map, post_regions, aliases, file);
 

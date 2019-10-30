@@ -55,6 +55,7 @@ namespace Utilities {
     set<int> *regions_union(set<Region *> *vec);
     set<int> *regions_union(Region *first, Region *second);
     set<int> *regions_intersection(Region *first, Region *second);
+    bool at_least_one_state_from_first_in_second(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
     set<int> *region_difference(set<int> &first, set<int> &second);
     bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second);
