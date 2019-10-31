@@ -80,6 +80,14 @@ Write output SMs in .g extension:
 ```
 After each execution the stats.csv file is updated.
 
+### c) Additional tools
+
+Creation of .dot file for TS
+
+```Bash
+./TS_splitter <file_path> TS
+```
+
 PN visualization
 ----------------
 

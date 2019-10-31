@@ -33,13 +33,15 @@ void TS_parser::parse(string file) {
     ifstream fin(file);
     if (!fin) {
         cout << "File not found." << endl;
-        exit(0);
     }
 
     // il file è nel nostro formato ts
     if ((file[file.size() - 2]) == 't' && (file[file.size() - 1] == 's')) {
         parse_TS(fin);
-        print_ts_dot_file(file, nullptr);
+        if(ts_output){
+            print_ts_dot_file(file, nullptr);
+            exit(0);
+        }
 
         if (print_step_by_step) {
             cout << "Number of transitions: " << num_transactions << endl;
@@ -51,7 +53,9 @@ void TS_parser::parse(string file) {
         //file nel fromato SIS .g
     else if (file[file.size() - 1] == 'g') {
         parse_SIS(fin);
-        print_ts_dot_file(file, nullptr);
+        if(ts_output) {
+            print_ts_dot_file(file, nullptr);
+        }
     } else {
         cout << "Not supported extension" << endl;
         exit(0);
