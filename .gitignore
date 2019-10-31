@@ -6,3 +6,5 @@ cmake-build-debug
 *.dot
 /auto_benchmark_dir/
 /stats.csv
+/Graph.dimacs
+/petrify.log
