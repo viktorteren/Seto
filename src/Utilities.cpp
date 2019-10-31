@@ -810,33 +810,57 @@ namespace Utilities {
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
+
+        set<string> used_labels;
+        for(auto rec: *pre_regions){
+            int ev = rec.first;
+            if(ev >= num_events){
+                ev = (*aliases)[ev];
+            }
+            string eventString = (*aliases_map_number_name)[ev];
+            eventString.erase(std::remove(eventString.begin(), eventString.end(), '-'), eventString.end());
+            eventString.erase(std::remove(eventString.begin(), eventString.end(), '+'), eventString.end());
+            used_labels.insert(eventString);
+        }
         fout << ".model " << in_sis_name;
         //events/transitions
         if(g_input){
             if(!inputs.empty()){
                 fout << "\n.inputs ";
-                for(const auto& str: inputs){
-                    fout << str << " ";
+                for(const auto& ev: used_labels){
+                    if(inputs.find(ev) != inputs.end()){
+                        fout << ev << " ";
+                    }
+                    used_labels.erase(ev);
                 }
             }
             if(!outputs.empty()){
                 if(!inputs.empty())
                     fout << endl;
                 fout << "\n.outputs ";
-                for(const auto& str: outputs){
-                    fout << str << " ";
+                for(const auto& ev: used_labels){
+                    if(outputs.find(ev) != outputs.end()){
+                        fout << ev << " ";
+                    }
+                    used_labels.erase(ev);
                 }
             }
             if(!internals.empty()){
                 fout << "\n.internal ";
-                for(const auto& str: internals){
-                    fout << str << " ";
+                for(const auto& ev: used_labels){
+                    if(internals.find(ev) != internals.end()){
+                        fout << ev << " ";
+                    }
+                    used_labels.erase(ev);
                 }
             }
             if(!dummies.empty()){
                 fout << "\n.dummy ";
-                for(const auto& str: dummies){
-                    fout << str << " ";
+                for(const auto& ev: used_labels){
+                    if(dummies.find(ev) != dummies.end()){
+                        fout << ev << " ";
+                    }
+                    used_labels.erase(ev);
                 }
             }
         }
