@@ -671,7 +671,7 @@ int main(int argc, char **argv) {
 
         // NEW MERGE
         for(auto rec: *events_to_remove_per_SM){
-            cout << "removing events SM" << endl;
+            //cout << "removing events SM" << endl;
             SM* current_SM = rec.first;
             set<int> *removed_events = rec.second;
             auto regions_to_merge = new vector<set<Region *>*>();
@@ -683,7 +683,7 @@ int main(int argc, char **argv) {
             }
 
             //union between sets
-            cout << "union between sets" << endl;
+            //cout << "union between sets" << endl;
             for(unsigned long i=0; i< regions_to_merge->size(); i++){
                 for(unsigned long k=i+1; k < regions_to_merge->size(); k++){
                     //check if intersection between region sets is empty or not
@@ -706,7 +706,7 @@ int main(int argc, char **argv) {
             }
 
             //rimuovo le regioni che hanno fatto parte di merge
-            cout << "removing regions" << endl;
+            //cout << "removing regions" << endl;
             for(Region *reg: *current_SM){
                 for(Region *mergedReg: merged_regions){
 
@@ -716,7 +716,7 @@ int main(int argc, char **argv) {
                 }
             }
             //aggiungo regioni mergate
-            cout << "adding merged regions" << endl;
+            //cout << "adding merged regions" << endl;
             for(Region *mergedReg: merged_regions){
                 if(!mergedReg->empty()) {
                     current_SM->insert(mergedReg);
@@ -738,9 +738,9 @@ int main(int argc, char **argv) {
             if(removed_events_SM != nullptr ){
                 delete (*map_of_SM_pre_regions)[sm];
                 delete (*map_of_SM_post_regions)[sm];
-                cout << "updating pre-regions map SM" << endl;
+                //cout << "updating pre-regions map SM" << endl;
                 (*map_of_SM_pre_regions)[sm] = pprg->create_pre_regions_for_SM(sm, removed_events_SM);
-                cout << "updating post-regions map SM" << endl;
+                //cout << "updating post-regions map SM" << endl;
                 (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
             }
         }
@@ -850,7 +850,7 @@ int main(int argc, char **argv) {
         cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
         cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
         cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
-        cout << "Maximum size P+T: " << maxPTSum << endl;
+        cout << "Max size P+T: " << maxPTSum << endl;
         cout << "Max number of transitions of an SM: " << maxTransitions << endl;
         cout << "Max alphabet of an SM: " << maxAlphabet << endl;
         std::ofstream outfile;
