@@ -33,6 +33,7 @@ void TS_parser::parse(string file) {
     ifstream fin(file);
     if (!fin) {
         cout << "File not found." << endl;
+        exit(1);
     }
 
     // il file è nel nostro formato ts
