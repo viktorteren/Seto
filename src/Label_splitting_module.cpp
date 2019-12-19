@@ -74,7 +74,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
 
 map<int, pair<int,Region*>* > * Label_splitting_module::candidate_search(
         map<int, vector<int> *> *number_of_bad_events,
-        set<int> *events_not_satisfy_EC) {
+        set<int> *events_not_satisfy_EC){
 
     // per ogni evento
     // per ogni stato intermedio se è compreso nel set delle intersezioni

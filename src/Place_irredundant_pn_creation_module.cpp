@@ -516,7 +516,7 @@ unsigned long Place_irredundant_pn_creation_module::region_cost(Region *reg) {
     return cost;*/
 
     // funzione di costo per minimizzare solo il numero di posti
-    return reg->size();
+    return 1;
 }
 
 void Place_irredundant_pn_creation_module::calculate_irredundant_regions_map() {
