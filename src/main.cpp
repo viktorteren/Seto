@@ -809,6 +809,14 @@ int main(int argc, char **argv) {
                 }
             }*/
 
+            if (decomposition_debug) {
+                cout << "Final SMs" << endl;
+                for (auto SM: *SMs) {
+                    cout << "SM:" << endl;
+                    println(*SM);
+                }
+            }
+
             //===========FREE===========
             for (auto rec: *events_to_remove_per_SM) {
                 delete rec.second;
