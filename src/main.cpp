@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     if (argc == 2) {
         file = args[1];
         cout << file << endl;
-    } else if (argc == 3) {
+    } else if (argc >= 3) {
         file = args[1];
         cout << file << endl;
         if (args[2] == "TS") {
@@ -51,6 +51,11 @@ int main(int argc, char **argv) {
             else decomposition_output = false;
             if(args[2] == "ML")
                 log_file = true;
+            if(argc == 4){
+                if(args[3] == "-ALL"){
+                    python_all = true;
+                }
+            }
         } else {
             print_step_by_step = false;
             print_step_by_step_debug = false;
@@ -271,10 +276,20 @@ int main(int argc, char **argv) {
             cout << "==================[START PYTHON]============= " << endl;
 
             string python_code;
-            std::ifstream t("../src/MIS-Solver.py");
-            std::stringstream buffer;
-            buffer << t.rdbuf();
-            python_code = buffer.str();
+            //compute all possible minimal independent sets
+            if(python_all){
+                std::ifstream t("../src/AllMISSolver.py");
+                std::stringstream buffer;
+                buffer << t.rdbuf();
+                python_code = buffer.str();
+            }
+            //faster aproximated solution
+            else {
+                std::ifstream t("../src/MIS-Solver.py");
+                std::stringstream buffer;
+                buffer << t.rdbuf();
+                python_code = buffer.str();
+            }
 
             Py_Initialize();
 

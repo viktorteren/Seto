@@ -11,6 +11,7 @@ bool decomposition;
 bool decomposition_debug;
 bool decomposition_output;
 bool decomposition_output_sis;
+bool python_all;
 bool ts_output;
 bool log_file;
 map<int, Region*>* aliases_region_pointer;

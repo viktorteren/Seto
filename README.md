@@ -80,6 +80,11 @@ Write output SMs in .g extension:
 ```
 After each execution the stats.csv file is updated.
 
+Execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC):
+ ```Bash
+ ./TS_splitter <file_path> <M|ML|MD|MO|MDO|MG> -ALL
+ ```
+
 ### c) Additional tools
 
 Creation of .dot file for TS
