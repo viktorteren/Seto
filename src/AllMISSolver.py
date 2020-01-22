@@ -48,7 +48,7 @@ def recursive_call(graph, vertex):
             SM = nx.maximal_independent_set(Gr, Gr)
             #print("Found valid SM")
             #print(list(SM))
-            if not any([ SM in final_SETs])
+            if not any([ SM in final_SETs]):
                 final_SETs.append(SM)
         except nx.NetworkXUnfeasible:
             #print("Not valid SM")
