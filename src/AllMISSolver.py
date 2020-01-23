@@ -24,42 +24,48 @@ for x in f:
 f.close()
 
 final_SETs = []
+recursively_called = []
+to_call = []
 
-def recursive_call(graph, vertex):
-    #print("called with vertex")
-    #print(vertex)
-    if graph.number_of_nodes() > 1:
-        Gr = nx.Graph()
-        Gr.add_nodes_from(graph)
-        #print("edges:")
-        #print(list(graph.edges))
-        for edge in graph.edges:
-            if edge[0] != vertex and edge[1] != vertex:
-                Gr.add_edge(int(edge[0]), int(edge[1]))
-        #print("Edges of Gr")
-        #print(list(Gr.edges))
-        #print("Graph size:")
-        #print(Gr.number_of_nodes())
-        #print(list(Gr.nodes))
-        Gr.remove_node(vertex)
-        #print("After the removal")
-        #print(list(Gr.nodes))
-        try:
-            SM = nx.maximal_independent_set(Gr, Gr)
-            #print("Found valid SM")
-            #print(list(SM))
-            if not any([ SM in final_SETs]):
-                final_SETs.append(SM)
-        except nx.NetworkXUnfeasible:
-            #print("Not valid SM")
-            for vertex in Gr:
-                recursive_call(Gr, vertex)
+def call():
+    Gr = to_call.pop(0)
+    recursively_called.append(Gr)
+    #print("Called")
+    #print(list(Gr))
+    try:
+        SM = nx.maximal_independent_set(Gr, Gr)
+        #print("Found valid SM")
+        #print(list(SM))
+        exit = False
+        for elem in final_SETs:
+            if list(set(SM).intersection(elem)) == SM:
+                exit = True
+                break
+        if not exit:
+            final_SETs.append(SM)
+            #print("Added")
+            #print(SM)
+    except Exception as e:
+        #print("Not valid SM")
+        #print(e)
+        for vertex in Gr:
+            G = nx.Graph()
+            G.add_nodes_from(Gr)
+            for edge in Gr.edges:
+                if edge[0] != vertex and edge[1] != vertex:
+                    G.add_edge(int(edge[0]), int(edge[1]))
+            G.remove_node(vertex)
+            exit = False
+            for elem in recursively_called:
+                if list(G) == list(elem):
+                    exit = True
+                    break
+            if not exit:
+                to_call.append(G)
 
-def first_call(graph):
-    for vertex in graph:
-        recursive_call(graph, vertex)
-
-first_call(G)
+to_call.append(G)
+while len(to_call) > 0:
+    call()
 
 #WRITE A FILE WITH THE NUMBER OF FSMS AND THEIR NODES
 f = open("final_FSMs.txt", "w")
