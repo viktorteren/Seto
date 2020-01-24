@@ -4,16 +4,16 @@ Software for PN creation based on Regions theory (TStoPN)
 Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
 ### Required software:
--g++
+- g++
 ```Bash
 sudo apt install g++
 ```
--cmake
+- cmake
 ```Bash
 sudo apt install cmake
 ```
 
--networkx
+- networkx
 ```Bash
 pip install networkx
 ```
