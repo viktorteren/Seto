@@ -3,6 +3,21 @@ Software for PN creation based on Regions theory (TStoPN)
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
+### Required software:
+- g++
+```Bash
+sudo apt install g++
+```
+- cmake
+```Bash
+sudo apt install cmake
+```
+
+- networkx
+```Bash
+pip install networkx
+```
+
 ### Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
