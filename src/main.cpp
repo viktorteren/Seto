@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     if (argc == 2) {
         file = args[1];
         cout << file << endl;
-    } else if (argc >= 3) {
+    } else if (argc == 3 || argc == 4) {
         file = args[1];
         cout << file << endl;
         if (args[2] == "TS") {

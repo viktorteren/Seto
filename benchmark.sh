@@ -4,7 +4,7 @@ for file in $bench_dir
 do
     if [ ${file: -2} == ".g" ]
     then
-        ./cmake-build-debug/TS_splitter "$file" MG
+        ./cmake-build-debug/TS_splitter "$file" M
     fi
 done
 
