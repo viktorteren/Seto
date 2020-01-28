@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-bench_dir=./auto_benchmark_dir/*
+bench_dir=./benchmark_all_flag/*
 echo 'Start of benchmark-all' >> ./cmake-build-debug/stats.csv
 for file in $bench_dir
 do
