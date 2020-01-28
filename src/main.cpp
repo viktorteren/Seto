@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
     TS_parser::parse(file);
 
     if(!ts_output) {
-
         if (print_step_by_step_debug) {
             cout << "TS" << endl;
             for (const auto &tr: *ts_map) {

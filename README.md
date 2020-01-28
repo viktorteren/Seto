@@ -3,6 +3,8 @@ Software for PN creation based on Regions theory (TStoPN)
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
+Tested only on Ubuntu 18.04 LTS
+
 ### Required software:
 - g++
 ```Bash
@@ -12,6 +14,8 @@ sudo apt install g++
 ```Bash
 sudo apt install cmake
 ```
+
+- python 2.7 
 
 - networkx
 ```Bash
@@ -79,6 +83,20 @@ G: write output SMs in .g extension
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
 Independently by the used flags, after each execution the stats.csv file is updated.
+
+#### Benchmarks on a set of files:
+
+Execution of the decomposition on each file in ./auto_benchmark_dir/:
+
+```Bash
+./benchmark.sh
+```
+
+Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL flag:
+
+```Bash
+./benchmark-exact-alg.sh
+```
 
 ### c) Additional tools
 

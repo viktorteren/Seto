@@ -328,7 +328,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
                 (*event_alias)[total_events] = event;
             }
             if(print_step_by_step){
-            cout << "evento " << event << " diviso negli eventi " << total_events << " e " << event << endl;
+            cout << "event " << event << " split into " << total_events << " and " << event << endl;
             cout<<""<< endl;}
 
             auto to_erase = new set<Edge *>();
