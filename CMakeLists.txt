@@ -3,7 +3,7 @@
 # dllimport/dllexport, so the library build is forced to be static.
 #########################
 cmake_minimum_required(VERSION 3.5)
-project(MiniSat VERSION 2.2 LANGUAGES CXX)
+project(TS_splitter LANGUAGES CXX)
 
 include(GNUInstallDirs)
 

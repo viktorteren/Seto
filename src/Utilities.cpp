@@ -14,6 +14,7 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool log_file;
+bool only_info;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
@@ -229,7 +230,6 @@ namespace Utilities {
     }
 
     bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second){
-        bool empty = true;
         for(auto r1: *first){
             for(auto r2: *second){
                 auto intersection = regions_intersection(r1, r2);
@@ -240,6 +240,7 @@ namespace Utilities {
                 delete intersection;
             }
         }
+        return true;
     }
 
     vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map) {

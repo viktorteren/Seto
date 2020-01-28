@@ -30,11 +30,12 @@ Output extensions: .dot .g
 
 Building
 --------
-
+Enter to the project folder and execute the following instructions:
 ```bash
-make
+mkdir cmake-build-debug
 cd cmake-build-debug
-make
+cmake ..
+make TS_splitter
 ```
 
 Execution
@@ -48,56 +49,34 @@ Quick way (requirese graphviz library) with .ps file creation
 ./execute.sh
 ```
 
-Traditional way
+Simple way
 
 ```Bash
-./TS_splitter <file_path>
+./TS_splitter <file_path> <optional_flags>
 ```
-Info mode
-```Bash
-./TS_splitter <file_path> D
-```
+Additional flags:
 
-Verbose info mode
-```Bash
-./TS_splitter <file_path> S
-```
+D: debug mode
+
+S: verbose info mode
 
 ### b) TS to Synchronized SMs flow
 
 ```Bash
-./TS_splitter <file_path> M
+./TS_splitter <file_path> M <optional_flags>
 ```
 
-With the creation of a log file:
+Additional flags:
 
-```Bash
-./TS_splitter <file_path> ML
-```
-Debug info mode:
+L: creation of a log file
 
-```Bash
-./TS_splitter <file_path> MD
-```
-Write output SMs in .dot extension:
-```Bash
-./TS_splitter <file_path> MO
-```
+D: debug info mode
 
-Write output SMs in .dot extension with debug info:
-```Bash
-./TS_splitter <file_path> MDO
-```
+O: write output SMs in .dot extension
 
-Write output SMs in .g extension:
-```Bash
-./TS_splitter <file_path> MG
-```
+G: write output SMs in .g extension
 
-Execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC):
- ```Bash
- ./TS_splitter <file_path> <M|ML|MD|MO|MDO|MG> -ALL
- ```
+-ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
 Independently by the used flags, after each execution the stats.csv file is updated.
 

@@ -14,11 +14,6 @@ set(CMAKE_CXX_FLAGS "-O3 -std=c++11")
 # set (CMAKE_BUILD_TYPE "Debug")
  set (CMAKE_BUILD_TYPE "Release")
 
-ADD_CUSTOM_TARGET(cpfiles ALL
-   COMMAND mkdir -p lib/encoder &&  cp *.h lib/ && cp encoder/*.h lib/encoder/ && cp libpblib.* lib/
-)
-
-
 file(GLOB pblib_src_files
     "*.cpp" "encoder/*.cpp"
 )

@@ -18,54 +18,55 @@ using namespace Minisat;
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
     string file;
-    if (argc == 2) {
+    if (argc >= 2) {
         file = args[1];
         cout << file << endl;
-    } else if (argc == 3 || argc == 4) {
-        file = args[1];
-        cout << file << endl;
-        if (args[2] == "TS") {
-            ts_output = true;
-        } else if (args[2] == "S") {
-            print_step_by_step = true;
-            print_step_by_step_debug = false;
-            decomposition = false;
-            decomposition_debug = false;
-            decomposition_output = false;
-        } else if (args[2] == "D") {
-            print_step_by_step = true;
-            print_step_by_step_debug = true;
-            decomposition = false;
-            decomposition_debug = false;
-            decomposition_output = false;
-        } else if (args[2] == "M" || args[2] == "ML" || args[2] == "MD" || args[2] == "MO" || args[2] == "MG" || args[2] == "MDO") {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = true;
-            decomposition_debug = args[2] == "MD" || args[2] == "MDO";
-            if(args[2] == "MO" || args[2] == "MG" || args[2] == "MDO") {
-                decomposition_output = true;
-                if(args[2] == "MG")
-                    decomposition_output_sis = true;
+        print_step_by_step = false;
+        print_step_by_step_debug = false;
+        decomposition = false;
+        decomposition_debug = false;
+        decomposition_output = false;
+        for(int i=2; i < argc; i++) {
+            if (args[i] == "TS") {
+                ts_output = true;
             }
-            else decomposition_output = false;
-            if(args[2] == "ML")
-                log_file = true;
-            if(argc == 4){
-                if(args[3] == "-ALL"){
-                    python_all = true;
+            if(args[i] == "M"){
+                decomposition = true;
+            }
+            if (args[i] == "S") {
+                if (decomposition) {
+                    cerr << "A flag for decomposition was previously chosen" << endl;
+                    exit(1);
                 }
+                print_step_by_step = true;
             }
-        } else {
-            print_step_by_step = false;
-            print_step_by_step_debug = false;
-            decomposition = false;
-            decomposition_debug = false;
-            decomposition_output = false;
+            if (args[i] == "D") {
+                print_step_by_step = true;
+                print_step_by_step_debug = true;
+                decomposition_debug = true;
+            }
+            if (args[i] == "L"){
+                log_file = true;
+            }
+            if(args[i] == "O"){
+                decomposition_output = true;
+            }
+            if(args[i] == "G") {
+                decomposition_output = true;
+                decomposition_output_sis = true;
+            }
+            if(args[i] == "-ALL"){
+                python_all = true;
+            }
+            if(args[i] == "--INFO"){
+                only_info = true;
+                print_step_by_step = true;
+            }
         }
-    } else {
-        cout << "Wrong number of input arguments" << endl;
-        exit(0);
+    }
+    else{
+        cerr << "Wrong number of arguments." << endl;
+        exit(1);
     }
 
     TS_parser::parse(file);
@@ -238,6 +239,8 @@ int main(int argc, char **argv) {
         }
         delete ls;
 
+
+
         /*if(!decomposition)
             print_ts_dot_file(file, aliases);*/
 
@@ -250,6 +253,10 @@ int main(int argc, char **argv) {
                 }
             }
             cout << "" << endl;
+        }
+
+        if(only_info){
+            exit(0);
         }
 
         double t_irred;
