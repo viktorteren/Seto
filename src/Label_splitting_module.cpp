@@ -336,7 +336,6 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
             auto transitions = trans_violations->at(event)->at(best_region_id);
 
             for (auto tr: *transitions) {
-
                 auto pair = new Edge();
                 pair->first = tr->first;
                 pair->second = tr->second;

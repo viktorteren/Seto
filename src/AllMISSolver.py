@@ -2,7 +2,6 @@
 # file 'LICENSE.txt', which is part of this source code package.
 
 import networkx as nx
-import copy
 #READ THE DATA RELATED TO THE GRAPH -> REGIONS AND OVERLAPS BETWEEN REGIONS AND CREATE THE GRAPH WITH THE LIBRARY
 f = open("Graph.dimacs", "r")
 line = f.readline().split()
@@ -10,7 +9,6 @@ num_vertices = line[1]
 num_edges = line[2]
 
 G = nx.Graph()
-Reduced_G = nx.Graph()
 #set values from 1 to number of regions
 G.add_nodes_from(range(1, int(num_vertices)+1))
 #Reduced_G.add_nodes_from(range(1, int(num_vertices)+1))
@@ -24,12 +22,17 @@ for x in f:
 f.close()
 
 final_SETs = []
-recursively_called = []
+recursively_called = set()
 to_call = []
+#number_of_calls = 0
 
 def call():
     Gr = to_call.pop(0)
-    recursively_called.append(Gr)
+    if frozenset(Gr.nodes) in recursively_called:
+        return
+    recursively_called.add(frozenset(Gr.nodes))
+    #global number_of_calls
+    #number_of_calls+=1
     #print("Called")
     #print(list(Gr))
     try:
@@ -48,24 +51,31 @@ def call():
     except Exception as e:
         #print("Not valid SM")
         #print(e)
+        #print("recursively called content:")
+        #print(recursively_called)
         for vertex in Gr:
             G = nx.Graph()
             G.add_nodes_from(Gr)
-            for edge in Gr.edges:
-                if edge[0] != vertex and edge[1] != vertex:
-                    G.add_edge(int(edge[0]), int(edge[1]))
-            G.remove_node(vertex)
-            exit = False
-            for elem in recursively_called:
-                if list(G) == list(elem):
-                    exit = True
-                    break
-            if not exit:
+            G.add_edges_from(Gr.edges)
+            G.remove_node(vertex) #automatically removes adjacent edges
+            if frozenset(G.nodes) not in recursively_called:
                 to_call.append(G)
+            else:
+                print("Found")
+            #exit = False
+            #for elem in recursively_called:
+            #    if frozenset(G.nodes) == elem:
+            #        exit = True
+            #        break
+            #if not exit:
+            #    to_call.append(G)
 
 to_call.append(G)
 while len(to_call) > 0:
     call()
+
+#print("Number of calls")
+#print(number_of_calls)
 
 #WRITE A FILE WITH THE NUMBER OF FSMS AND THEIR NODES
 f = open("final_FSMs.txt", "w")
