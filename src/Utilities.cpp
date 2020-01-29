@@ -169,8 +169,7 @@ namespace Utilities {
     set<int> *regions_intersection(Region *first, Region *second) {
         auto intersection = new set<int>();
         for (auto state : *first) {
-            if (second->find(state) !=
-                second->end()) { // trovo lo stato (appartiene a entrambe)
+            if (second->find(state) != second->end()) { // trovo lo stato (appartiene a entrambe)
                 intersection->insert(state);
             }
         }

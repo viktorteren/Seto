@@ -5,12 +5,15 @@ import networkx as nx
 #READ THE DATA RELATED TO THE GRAPH -> REGIONS AND OVERLAPS BETWEEN REGIONS AND CREATE THE GRAPH WITH THE LIBRARY
 f = open("Graph.dimacs", "r")
 line = f.readline().split()
-num_vertices = line[1]
+num_vertices = int(line[1])
 num_edges = line[2]
+vertices = set()
+for i in range(1, num_vertices):
+    vertices.add(i)
 
 G = nx.Graph()
 #set values from 1 to number of regions
-G.add_nodes_from(range(1, int(num_vertices)+1))
+G.add_nodes_from(range(1, num_vertices+1))
 #Reduced_G.add_nodes_from(range(1, int(num_vertices)+1))
 
 #create edges

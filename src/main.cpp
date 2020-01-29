@@ -307,6 +307,48 @@ int main(int argc, char **argv) {
             auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
             read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
 
+            if(python_all) {
+                cout << "==============REMOVAL OF SETs WHICH ARE NOT SMs====" << endl;
+                vector<set<Region *> *> SMs_to_remove;
+                set<int> states_of_TS;
+                for (const auto &tr: *ts_map) {
+                    for (auto r: tr.second) {
+                        states_of_TS.insert(r->first);
+                        states_of_TS.insert(r->second);
+                    }
+                }
+                for (auto SM: *SMs) {
+                    /*if (decomposition_debug) {
+                        cout << "check if can rermove the SM: " << endl;
+                        println(*SM);
+                    }*/
+
+                    set<int> new_used_states_tmp;
+
+                    for (auto region: *SM) {
+                        for(auto s: *region){
+                            new_used_states_tmp.insert(s);
+                        }
+                    }
+
+                    if (new_used_states_tmp.size() < states_of_TS.size()) {
+                        SMs_to_remove.push_back(SM);
+                        if (decomposition_debug) {
+                            cout << "not an SM:" << endl;
+                            println(*SM);
+                        }
+                    }
+                }
+
+                while(!SMs_to_remove.empty()){
+                    if(decomposition_debug)
+                        cout << "removing a NOT SM set" << endl;
+                    auto SM = SMs_to_remove.begin();
+                    SMs->erase(SMs->find(*SM));
+                    SMs_to_remove.erase(SMs_to_remove.begin());
+                }
+            }
+
             if (decomposition_debug) {
                 cout << "Initial SMs" << endl;
                 for (auto SM: *SMs) {
@@ -360,8 +402,7 @@ int main(int argc, char **argv) {
                         new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
                     }
                 }
-                auto new_used_regions_map_tmp = new map < int, set<Region *>
-                * > ();
+                auto new_used_regions_map_tmp = new map < int, set<Region *>* > ();
                 for (auto rec: *pre_regions) {
                     (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
                 }
@@ -468,6 +509,14 @@ int main(int argc, char **argv) {
                 delete map.second;
             }
             delete temp_map_of_SM_pre_regions;
+
+            if(decomposition_debug) {
+                cout << "Remaining SMs:" << endl;
+                for (auto sm: *SMs) {
+                    cout << endl;
+                    println(*sm);
+                }
+            }
 
             //if(decomposition_debug)
             cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
