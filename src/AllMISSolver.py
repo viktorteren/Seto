@@ -61,17 +61,7 @@ def call():
             G.add_nodes_from(Gr)
             G.add_edges_from(Gr.edges)
             G.remove_node(vertex) #automatically removes adjacent edges
-            if frozenset(G.nodes) not in recursively_called:
-                to_call.append(G)
-            else:
-                print("Found")
-            #exit = False
-            #for elem in recursively_called:
-            #    if frozenset(G.nodes) == elem:
-            #        exit = True
-            #        break
-            #if not exit:
-            #    to_call.append(G)
+            to_call.append(G)
 
 to_call.append(G)
 while len(to_call) > 0:
