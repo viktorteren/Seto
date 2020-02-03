@@ -71,6 +71,8 @@ int main(int argc, char **argv) {
 
     TS_parser::parse(file);
 
+    cout << "===========[PARSING DONE]===========" << endl;
+
     if(!ts_output) {
         if (print_step_by_step_debug) {
             cout << "TS" << endl;
@@ -111,7 +113,7 @@ int main(int argc, char **argv) {
             regions = rg->generate();
             vector_regions = copy_map_to_vector(regions);
 
-            if (print_step_by_step) {
+            if (print_step_by_step && !only_info) {
                 cout << "Regions: " << endl;
                 for (auto reg: *vector_regions) {
                     println(reg);
@@ -132,7 +134,7 @@ int main(int argc, char **argv) {
             }
 
 
-            if (print_step_by_step) {
+            if (print_step_by_step && !only_info) {
                 cout << "Minimal regions: " << endl;
                 for (auto r: *vector_regions) {
                     println(r);
@@ -162,7 +164,7 @@ int main(int argc, char **argv) {
             pprg = new Pre_and_post_regions_generator(vector_regions);
             pre_regions = pprg->get_pre_regions();
 
-            if (print_step_by_step) {
+            if (print_step_by_step && !only_info) {
                 cout << "Preregions:" << endl;
                 for (auto rec: *pre_regions) {
                     cout << "event: " << rec.first << endl;
@@ -255,6 +257,8 @@ int main(int argc, char **argv) {
         }
 
         if(only_info){
+            printf("\nTime region gen: %.5fs\n", t_region_gen);
+            printf("Time splitting: %.5fs\n", t_splitting);
             exit(0);
         }
 
@@ -784,25 +788,32 @@ int main(int argc, char **argv) {
                     merged_regions.insert(regions_union(regionSet));
                 }
 
-                //rimuovo le regioni che hanno fatto parte di merge
+                //removing regions used for the merge
                 //cout << "removing regions" << endl;
                 for (Region *reg: *current_SM) {
                     for (Region *mergedReg: merged_regions) {
-
                         if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
                             current_SM->erase(reg);
                         }
                     }
                 }
-                //aggiungo regioni mergate
+
                 //cout << "adding merged regions" << endl;
                 for (Region *mergedReg: merged_regions) {
                     if (!mergedReg->empty()) {
+                        //cout << "adding a merged region to an SM" << endl;
+                        //println(*mergedReg);
                         current_SM->insert(mergedReg);
                     } else {
                         delete mergedReg;
                     }
                 }
+                //todo: vedere nel caso dell'input clock.g se ci sono memory leak
+                /*for(Region * r: merged_regions){
+                    cout << "removing a region" << endl;
+                    println(*r);
+                    delete r;
+                }*/
                 for (auto r: *regions_to_merge) {
                     delete r;
                 }

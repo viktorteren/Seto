@@ -82,6 +82,8 @@ G: write output SMs in .g extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
+--INFO: base info are shown and the execution stops when all regions are created and the TS is excitation closed, otherwise label splitting is performed until reaching an ECTS
+
 Independently by the used flags, after each execution the stats.csv file is updated.
 
 #### Benchmarks on a set of files:
