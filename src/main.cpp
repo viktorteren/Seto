@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
                 python_all = true;
             }
             if(args[i] == "--INFO"){
-                only_info = true;
+                info = true;
                 print_step_by_step = true;
             }
         }
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
             regions = rg->generate();
             vector_regions = copy_map_to_vector(regions);
 
-            if (print_step_by_step && !only_info) {
+            if (print_step_by_step && !info) {
                 cout << "Regions: " << endl;
                 for (auto reg: *vector_regions) {
                     println(reg);
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
             }
 
 
-            if (print_step_by_step && !only_info) {
+            if (print_step_by_step && !info) {
                 cout << "Minimal regions: " << endl;
                 for (auto r: *vector_regions) {
                     println(r);
@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
             pprg = new Pre_and_post_regions_generator(vector_regions);
             pre_regions = pprg->get_pre_regions();
 
-            if (print_step_by_step && !only_info) {
+            if (print_step_by_step && !info) {
                 cout << "Preregions:" << endl;
                 for (auto rec: *pre_regions) {
                     cout << "event: " << rec.first << endl;
@@ -256,10 +256,9 @@ int main(int argc, char **argv) {
             cout << "" << endl;
         }
 
-        if(only_info){
+        if(info){
             printf("\nTime region gen: %.5fs\n", t_region_gen);
             printf("Time splitting: %.5fs\n", t_splitting);
-            exit(0);
         }
 
         double t_irred;

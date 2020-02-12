@@ -14,7 +14,7 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool log_file;
-bool only_info;
+bool info;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
