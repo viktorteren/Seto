@@ -117,6 +117,11 @@ Graphviz library is required
 dot -Tps filename.dot -o outfile.ps
 ```
 
+Known restrictions
+------------------
+
+1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped)
+
 ## License ##
 
 >BSD 3-Clause License
