@@ -955,6 +955,7 @@ int main(int argc, char **argv) {
             outfile.open("stats.csv", std::ios_base::app);
             outfile << fixed
                     <<  get_file_name(file) << ","
+                    << setprecision(4) << t_region_gen << ","
                     << setprecision(4) << t_decomposition << ","
                     << setprecision(4) << setw(4) << t_greedy << ","
                     << setprecision(4) << t_labels_removal << ","

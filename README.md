@@ -45,13 +45,16 @@ make TS_splitter
 Execution
 ---------
 
+<!---
 ### a) TS to PN flow
+
 
 Quick way (requirese graphviz library) with .ps file creation
 
 ```Bash
 ./execute.sh
 ```
+-->
 
 Simple way
 
