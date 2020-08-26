@@ -28,7 +28,7 @@ pip install networkx
 
 ### Supported extensions
 
-Input extensions: .g
+Input extensions: .g .ts
 
 Output extensions: .dot .g
 

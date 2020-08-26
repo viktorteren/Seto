@@ -59,7 +59,7 @@ add_executable(TS_splitter
         include/Pre_and_post_regions_generator.h
         src/Merging_Minimal_Preregions_module.cpp
         include/Merging_Minimal_Preregions_module.h
-        )
+        src/Merge.cpp include/Merge.h)
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
 target_link_libraries(TS_splitter python2.7)

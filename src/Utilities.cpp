@@ -997,7 +997,7 @@ namespace Utilities {
         // cout << "out name: " << in_dot_name << endl;
 
         output_name += ".dot";
-        //cout << "file output PN: " << output_name << endl;
+        //cout << "file output SM: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
