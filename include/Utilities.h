@@ -109,8 +109,10 @@ namespace Utilities {
     string remove_extension(string path);
     bool is_initial_region(Region *);
     int getStatesSum(set<SM*>* SMs);
+    double getStatesAvg(set<SM*>* SMs);
     int getNumStates(SM* sm);
     int getTransitionsSum(map<SM*, map<int, Region *>*>* pre_regions);
+    double getTransitionsAvg(map<SM*, map<int, Region *>*>* pre_regions);
     void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses);
     void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases);
     string get_file_name(string path);

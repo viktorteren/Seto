@@ -328,8 +328,9 @@ void Merge::print_after_merge(set<SM *> *SMs,
     //cout << "pre-regions" << endl;
     //print(*pprg->get_pre_regions());
 
+    counter = 0;
     for (SM *sm: *SMs) {
-        counter = (SMs_map)[sm];
+        //counter = (SMs_map)[sm];
         string SM_name = remove_extension(file);
         SM_name += "_SM_" + to_string(counter) + ".g";
         if (decomposition_output_sis) {
@@ -338,6 +339,7 @@ void Merge::print_after_merge(set<SM *> *SMs,
             print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases,
                               SM_name);
         }
+        counter++;
     }
 }
 

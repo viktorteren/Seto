@@ -1729,6 +1729,16 @@ namespace Utilities {
             sum += getNumStates(SM);
         }
         return sum;
+    }
+
+    double getStatesAvg(set<SM*>* SMs){
+        int sum = 0;
+        int cont = 0;
+        for(auto SM: *SMs){
+            sum += getNumStates(SM);
+            cont++;
+        }
+        return ((double)sum / cont);
 
     }
 
@@ -1777,6 +1787,16 @@ namespace Utilities {
             sum += rec.second->size();
         }
         return sum;
+    }
+
+    double getTransitionsAvg(map<SM*, map<int, Region *>*> *pre_regions){
+        double sum = 0;
+        int cont = 0;
+        for(auto rec: *pre_regions){
+            sum += rec.second->size();
+            cont++;
+        }
+        return  sum/cont;
     }
 
     int getMaxPTSum(map<SM*, map<int, Region *>*> *pre_regions){

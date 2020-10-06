@@ -559,7 +559,9 @@ int main(int argc, char **argv) {
             auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
             auto final_sum = getStatesSum(SMs);
+            auto final_avg = getStatesAvg(SMs);
             auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
+            auto final_transitions_avg = getTransitionsAvg(map_of_SM_pre_regions);
             auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
             auto maxTransitions = getMaxTransitionsNumber(map_of_SM_pre_regions);
             auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
@@ -649,14 +651,16 @@ int main(int argc, char **argv) {
             printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
             cout << "SIZE STATISTICS:" << endl;
             cout << "Number of SMs: " << SMs->size() << endl;
-            cout << "States sum after the decomposition: " << states_sum << endl;
-            cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
-            cout << "states sum after final optimization: " << final_sum << endl;
-            cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
-            cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
+            //cout << "States sum after the decomposition: " << states_sum << endl;
+            //cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
+            cout << "States sum after final optimization: " << final_sum << endl;
+            cout << "Avg. states per SM: " << final_avg << endl;
+            cout << "Avg. alphabet size per SM: " << final_transitions_avg << endl;
+            //cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
+            //cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
             cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
             cout << "Max size P+T: " << maxPTSum << endl;
-            cout << "Max number of transitions of an SM: " << maxTransitions << endl;
+            cout << "Max number of places of an SM: " << (maxPTSum - maxTransitions) << endl;
             cout << "Max alphabet of an SM: " << maxAlphabet << endl;
             std::ofstream outfile;
             outfile.open("stats.csv", std::ios_base::app);
