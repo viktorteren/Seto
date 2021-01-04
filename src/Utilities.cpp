@@ -1749,8 +1749,12 @@ namespace Utilities {
         int statesCurrentSM = 0;
         for(auto SM: *SMs){
             statesCurrentSM = getNumStates(SM);
+            //cout << "states current sm: " << statesCurrentSM << endl;
             sum += (statesCurrentSM - statesAvg)*(statesCurrentSM - statesAvg);
+            cont++;
         }
+        //cout << "sum: " << sum << endl;
+        //cout << "cont: " << cont << endl;
         return (sum / cont);
     }
 
@@ -1818,9 +1822,12 @@ namespace Utilities {
         int current_SM_transitions = 0;
         for(auto rec: *pre_regions){
             current_SM_transitions = rec.second->size();
+            //cout << "current transitions: " << current_SM_transitions << endl;
             sum += (current_SM_transitions - transitionsAvg)*(current_SM_transitions - transitionsAvg);
             cont++;
         }
+        //cout << "sum: " << sum << endl;
+        //cout << "cont: " << cont << endl;
         return  sum/cont;
     }
 
