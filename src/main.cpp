@@ -693,10 +693,10 @@ int main(int argc, char **argv) {
                     << final_transitions_sum << ","
                     << maxPTSum << ","
                     << maxAlphabet << ","
-                    << maxTransitions
-                    << setprecision(4) << final_avg
-                    << setprecision(4) << final_var
-                    << setprecision(4) << final_transitions_avg
+                    << maxTransitions << ","
+                    << setprecision(4) << final_avg << ","
+                    << setprecision(4) << final_var << ","
+                    << setprecision(4) << final_transitions_avg << ","
                     << setprecision(4) << final_transitions_var
                     << endl;
         } else {
