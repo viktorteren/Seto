@@ -45,10 +45,10 @@ make TS_splitter
 Execution
 ---------
 
-<!---
+
 ### a) TS to PN flow
 
-
+<!--
 Quick way (requirese graphviz library) with .ps file creation
 
 ```Bash
@@ -67,6 +67,10 @@ D: debug mode
 
 S: verbose info mode
 
+--INFO: base info are shown related to the time for the generation of the regions, also are shown N. of transitions, states, regions etc.
+
+Independently by the used flags, after each execution the stats.csv file is updated.
+
 ### b) TS to Synchronized SMs flow
 
 ```Bash
@@ -84,10 +88,6 @@ O: write output SMs in .dot extension
 G: write output SMs in .g extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
-
---INFO: base info are shown related to the time for the generation of the regions, also are shown N. of transitions, states, regions etc.
-
-Independently by the used flags, after each execution the stats.csv file is updated.
 
 #### Benchmarks on a set of files:
 
