@@ -5,6 +5,6 @@ for file in $bench_dir
 do
     if [ ${file: -2} == ".g" ]
     then
-        ./cmake-build-debug/TS_splitter "$file" M -ALL
+        ./cmake-build-debug/TS_splitter "$file" M -ALL B
     fi
 done

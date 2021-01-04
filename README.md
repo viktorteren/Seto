@@ -89,11 +89,13 @@ G: write output SMs in .g extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-#### Benchmarks on a set of files:
+<!--
+#### Benchmarks on a set of files (still present some issues, better avoid it):
 
 Execution of the decomposition on each file in ./auto_benchmark_dir/:
 
 ```Bash
+cd cmake-build-debug
 ./benchmark.sh
 ```
 
@@ -102,6 +104,7 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 ```Bash
 ./benchmark-exact-alg.sh
 ```
+-->
 
 ### c) Additional tools
 

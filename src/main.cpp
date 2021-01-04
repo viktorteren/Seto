@@ -27,6 +27,7 @@ int main(int argc, char **argv) {
         decomposition = false;
         decomposition_debug = false;
         decomposition_output = false;
+        benchmark_script = false;
         for(int i=2; i < argc; i++) {
             if (args[i] == "TS") {
                 ts_output = true;
@@ -55,6 +56,9 @@ int main(int argc, char **argv) {
             if(args[i] == "G") {
                 decomposition_output = true;
                 decomposition_output_sis = true;
+            }
+            if(args[i] == "G") {
+                benchmark_script = true;
             }
             if(args[i] == "-ALL"){
                 python_all = true;
@@ -286,20 +290,29 @@ int main(int argc, char **argv) {
             cout << "==================[START PYTHON]============= " << endl;
 
             string python_code;
+            string python_source;
             //compute all possible minimal independent sets
             if(python_all){
-                std::ifstream t("../src/AllMISSolver.py");
-                std::stringstream buffer;
-                buffer << t.rdbuf();
-                python_code = buffer.str();
+                if(benchmark_script) {
+                    python_source = "src/AllMISSolver.py";
+                }
+                else{
+                    python_source = "../src/AllMISSolver.py";
+                }
             }
             //faster aproximated solution
             else {
-                std::ifstream t("../src/MIS-Solver.py");
-                std::stringstream buffer;
-                buffer << t.rdbuf();
-                python_code = buffer.str();
+                if(benchmark_script) {
+                    python_source = "src/MIS-Solver.py";
+                }
+                else {
+                    python_source = "../src/MIS-Solver.py";
+                }
             }
+            std::ifstream t(python_source);
+            std::stringstream buffer;
+            buffer << t.rdbuf();
+            python_code = buffer.str();
 
             Py_Initialize();
 

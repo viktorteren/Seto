@@ -20,6 +20,7 @@ map<Region*, int>* aliases_region_pointer_inverted;
 int max_alias_decomp;
 int num_clauses;
 map<pair<Region*, Region*>, bool> *overlaps_cache;
+bool benchmark_script;
 
 namespace Utilities {
 // Region = set<int> ->ritorna un insieme di stati
