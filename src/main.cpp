@@ -560,8 +560,10 @@ int main(int argc, char **argv) {
 
             auto final_sum = getStatesSum(SMs);
             auto final_avg = getStatesAvg(SMs);
+            auto final_var = getStatesVar(SMs);
             auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
             auto final_transitions_avg = getTransitionsAvg(map_of_SM_pre_regions);
+            auto final_transitions_var = getTransitionsVar(map_of_SM_pre_regions);
             auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
             auto maxTransitions = getMaxTransitionsNumber(map_of_SM_pre_regions);
             auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
@@ -655,7 +657,9 @@ int main(int argc, char **argv) {
             //cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
             cout << "States sum after final optimization: " << final_sum << endl;
             cout << "Avg. states per SM: " << final_avg << endl;
+            cout << "Var. states per SM: " << final_var << endl;
             cout << "Avg. alphabet size per SM: " << final_transitions_avg << endl;
+            cout << "Var. alphabet size per SM: " << final_transitions_var << endl;
             //cout << "Transitions sum after the decomposition: " << transitions_sum << endl;
             //cout << "Transitions sum after the removal of redundant SMs: " << transitions_after_sms_removal << endl;
             cout << "Transitions sum after final optimization: " << final_transitions_sum << endl;
@@ -676,8 +680,12 @@ int main(int argc, char **argv) {
                     << final_transitions_sum << ","
                     << maxPTSum << ","
                     << maxAlphabet << ","
-                    << maxTransitions << endl;
-
+                    << maxTransitions
+                    << setprecision(4) << final_avg
+                    << setprecision(4) << final_var
+                    << setprecision(4) << final_transitions_avg
+                    << setprecision(4) << final_transitions_var
+                    << endl;
         } else {
             tStart_partial = clock();
             // Start of module: search of the irredundant set of regions

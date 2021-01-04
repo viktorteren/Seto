@@ -1739,7 +1739,18 @@ namespace Utilities {
             cont++;
         }
         return ((double)sum / cont);
+    }
 
+    double getStatesVar(set<SM*>* SMs){
+        double statesAvg = getStatesAvg(SMs);
+        double sum = 0;
+        int cont = 0;
+        int statesCurrentSM = 0;
+        for(auto SM: *SMs){
+            statesCurrentSM = getNumStates(SM);
+            sum += (statesCurrentSM - statesAvg)*(statesCurrentSM - statesAvg);
+        }
+        return (sum / cont);
     }
 
     int getNumStates(SM* sm){
@@ -1790,10 +1801,23 @@ namespace Utilities {
     }
 
     double getTransitionsAvg(map<SM*, map<int, Region *>*> *pre_regions){
-        double sum = 0;
+        int sum = 0;
         int cont = 0;
         for(auto rec: *pre_regions){
             sum += rec.second->size();
+            cont++;
+        }
+        return  ((double)sum/cont);
+    }
+
+    double getTransitionsVar(map<SM*, map<int, Region *>*> *pre_regions){
+        double transitionsAvg = getTransitionsAvg(pre_regions);
+        double sum = 0;
+        int cont = 0;
+        int current_SM_transitions = 0;
+        for(auto rec: *pre_regions){
+            current_SM_transitions = rec.second->size();
+            sum += (current_SM_transitions - transitionsAvg)*(current_SM_transitions - transitionsAvg);
             cont++;
         }
         return  sum/cont;
