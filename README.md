@@ -128,11 +128,12 @@ Known restrictions
 
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
 2) There is any check on .ts inputs.
+3) SMS written with .g extension have the places with their own nomenclature therefore the composition of SMs could have redundant places.
 
 Known issues
 ------------------
 
-1) SMs generated from the decomposition have always places with own numbering therefore a composition of these SMs is almost always wrong.
+1) SMs generated from the decomposition have the places with own numbering if the generated SMs are with .g extension therefore a composition of these SMs is almost always wrong.
 
 ## License ##
 

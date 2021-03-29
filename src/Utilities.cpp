@@ -624,6 +624,7 @@ namespace Utilities {
         regions_mapping = get_regions_map(pre_regions);
 
 
+
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
         }
@@ -654,6 +655,8 @@ namespace Utilities {
         for (auto reg : *initial_reg) {
             fout << "\tr" << regions_mapping->at(reg) << ";\n";
         }
+
+
 
         fout << "}\n";
         // regioni non iniziali
@@ -964,7 +967,8 @@ namespace Utilities {
 
     void print_sm_dot_file(map<int, Region  *> *pre_regions,
                            map<int, Region *> *post_regions,
-                           map<int, int> *aliases, string file_name) {
+                           map<int, int> *aliases,
+                           string file_name) {
         auto initial_reg = initial_regions(pre_regions);
         string output_name = std::move(file_name);
         string in_dot_name;
@@ -1010,15 +1014,17 @@ namespace Utilities {
                 "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
                 "black, fillcolor = gray, style = filled];\n";
         for (auto reg : *initial_reg) {
-            fout << "\tr" << regions_mapping->at(reg) << ";\n";
+            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*aliases_region_pointer_inverted)[reg] << "\"];\n";
         }
+
+        //(*aliases_region_pointer_inverted)[reg]
 
         fout << "}\n";
         // regioni non iniziali
         fout << "subgraph place {     \n"
                 "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
         for (auto reg : *not_initial_regions) {
-            fout << "\tr" << regions_mapping->at(reg) << ";\n";
+            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*aliases_region_pointer_inverted)[reg] << "\"];\n";
         }
         fout << "}\n";
         // transazioni (eventi)
