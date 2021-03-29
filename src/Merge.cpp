@@ -230,8 +230,12 @@ Merge::Merge(set<SM *> *SMs,
         auto regions_to_merge = new vector<set<Region *> *>();
         for (auto ev: *removed_events) {
             auto regions_connected_to_ev = new set<Region *>();
-            regions_connected_to_ev->insert((*(*map_of_SM_pre_regions)[current_SM])[ev]);
-            regions_connected_to_ev->insert((*(*map_of_SM_post_regions)[current_SM])[ev]);
+            //a transition can be without input edges: infinite firing
+            if((*(*map_of_SM_pre_regions)[current_SM])[ev] != nullptr)
+                regions_connected_to_ev->insert((*(*map_of_SM_pre_regions)[current_SM])[ev]);
+            //a transition can be without exiting edges: firing it removes all incoming tokens from PN
+            if((*(*map_of_SM_post_regions)[current_SM])[ev] != nullptr)
+                regions_connected_to_ev->insert((*(*map_of_SM_post_regions)[current_SM])[ev]);
             regions_to_merge->push_back(regions_connected_to_ev);
         }
 

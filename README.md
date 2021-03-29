@@ -108,7 +108,7 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 
 ### c) Additional tools
 
-Creation of .dot file for TS
+Creation of .dot file for TS starting from .g or .ts extensions.
 
 ```Bash
 ./TS_splitter <file_path> TS
@@ -117,7 +117,7 @@ Creation of .dot file for TS
 PN visualization
 ----------------
 
-Graphviz library is required
+Graphviz library is required!
 
 ```bash
 dot -Tps filename.dot -o outfile.ps
@@ -126,7 +126,13 @@ dot -Tps filename.dot -o outfile.ps
 Known restrictions
 ------------------
 
-1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped)
+1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
+2) There is any check on .ts inputs.
+
+Known issues
+------------------
+
+1) SMs generated from the decomposition have always places with own numbering therefore a composition of these SMs is almost always wrong.
 
 ## License ##
 

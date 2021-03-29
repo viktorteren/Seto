@@ -691,13 +691,14 @@ int main(int argc, char **argv) {
                     << final_sum << "," << transitions_sum << ","
                     << transitions_after_sms_removal << ","
                     << final_transitions_sum << ","
+                    << SMs->size() << ","
                     << maxPTSum << ","
                     << maxAlphabet << ","
                     << maxTransitions << ","
-                    << setprecision(4) << final_avg << ","
-                    << setprecision(4) << final_var << ","
-                    << setprecision(4) << final_transitions_avg << ","
-                    << setprecision(4) << final_transitions_var
+                    << setprecision(2) << final_avg << ","
+                    << setprecision(2) << final_var << ","
+                    << setprecision(2) << final_transitions_avg << ","
+                    << setprecision(2) << final_transitions_var
                     << endl;
         } else {
             tStart_partial = clock();
