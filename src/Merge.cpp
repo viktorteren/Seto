@@ -205,7 +205,7 @@ Merge::Merge(set<SM *> *SMs,
         }
     }
 
-    auto events_to_remove_per_SM = new map < SM *, set<int> * > ();
+    events_to_remove_per_SM = new map<SM *, set<int> *>();
 
     for (auto encoded_event: to_remove) {
         int SM_counter = encoded_events_map[encoded_event].first;
@@ -239,66 +239,73 @@ Merge::Merge(set<SM *> *SMs,
             regions_to_merge->push_back(regions_connected_to_ev);
         }
 
-        //union between sets
-        //cout << "union between sets" << endl;
-        for (unsigned long i = 0; i < regions_to_merge->size(); i++) {
-            for (unsigned long k = i + 1; k < regions_to_merge->size(); k++) {
-                //check if intersection between region sets is empty or not
-                bool merge = false;
-                if (!(*regions_to_merge)[i]->empty()) {
-                    merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
-                    if (merge) {
-                        for (Region *reg: *(*regions_to_merge)[i]) {
-                            (*regions_to_merge)[k]->insert(reg);
+        if(regions_to_merge->size()>1) {
+            //union between sets
+            //cout << "union between sets" << endl;
+            for (unsigned long i = 0; i < regions_to_merge->size(); i++) {
+                for (unsigned long k = i + 1; k < regions_to_merge->size(); k++) {
+                    //check if intersection between region sets is empty or not
+                    bool merge = false;
+                    if (!(*regions_to_merge)[i]->empty()) {
+                        merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
+                        if (merge) {
+                            for (Region *reg: *(*regions_to_merge)[i]) {
+                                (*regions_to_merge)[k]->insert(reg);
+                            }
+                            (*regions_to_merge)[i]->clear();
                         }
-                        (*regions_to_merge)[i]->clear();
                     }
                 }
             }
-        }
-        //merge effettivo tra regioni
-        set<Region *> merged_regions;
-        for (auto regionSet: *regions_to_merge) {
-            merged_regions.insert(regions_union(regionSet));
-        }
+            //merge effettivo tra regioni
+            set<Region *> merged_regions;
+            for (auto regionSet: *regions_to_merge) {
+                merged_regions.insert(regions_union(regionSet));
+            }
 
-        //removing regions used for the merge
-        //cout << "removing regions" << endl;
-        vector<Region *> to_erase;
-        for (Region *reg: *current_SM) {
-            for (Region *mergedReg: merged_regions) {
-                if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
-                    //cout << "Adding for removal region ";
-                    //println(*reg);
-                    to_erase.push_back(reg);
-                    //current_SM->erase(reg);
+
+            //removing regions used for the merge
+            //cout << "removing regions" << endl;
+            vector<Region *> to_erase;
+            for (Region *reg: *current_SM) {
+                for (Region *mergedReg: merged_regions) {
+                    if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
+                        //cout << "Adding for removal region ";
+                        //println(*reg);
+                        to_erase.push_back(reg);
+                        //current_SM->erase(reg);
+                    }
                 }
             }
-        }
 
-        for(auto reg: to_erase){
-            //cout << "Removing region ";
-            //println(*reg);
-            current_SM->erase(reg);
-        }
-
-
-        //cout << "adding merged regions" << endl;
-        for (Region *mergedReg: merged_regions) {
-            if (!mergedReg->empty()) {
-                //cout << "adding a merged region to an SM" << endl;
-                //println(*mergedReg);
-                current_SM->insert(mergedReg);
-            } else {
-                delete mergedReg;
+            for (auto reg: to_erase) {
+                //cout << "Removing region ";
+                //println(*reg);
+                current_SM->erase(reg);
             }
+
+
+            //cout << "adding merged regions" << endl;
+            for (Region *mergedReg: merged_regions) {
+                if (!mergedReg->empty()) {
+                    //cout << "adding a merged region to an SM" << endl;
+                    //println(*mergedReg);
+                    current_SM->insert(mergedReg);
+                } else {
+                    delete mergedReg;
+                }
+            }
+            //todo: vedere nel caso dell'input clock.g se ci sono memory leak
+            /*for(Region * r: merged_regions){
+                cout << "removing a region" << endl;
+                println(*r);
+                delete r;
+            }*/
         }
-        //todo: vedere nel caso dell'input clock.g se ci sono memory leak
-        /*for(Region * r: merged_regions){
-            cout << "removing a region" << endl;
-            println(*r);
-            delete r;
-        }*/
+        else{
+            cout << "Removed redundant label without merging regions" << endl;
+        }
+
         for (auto r: *regions_to_merge) {
             delete r;
         }
@@ -351,5 +358,5 @@ Merge::~Merge(){
     //for (auto rec: *events_to_remove_per_SM) {
      //   delete rec.second;
     //}
-    //delete events_to_remove_per_SM;
+    delete events_to_remove_per_SM;
 }

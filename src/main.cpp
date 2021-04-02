@@ -452,7 +452,7 @@ int main(int argc, char **argv) {
 
             //use of the heuristics which removes biggest SMs first -> local minimality not guaranteed
 
-            //sorting of the SMS in descending size order
+            //sorting of the SMs in descending size order
             sort(SMs_to_remove.begin(), SMs_to_remove.end(), [](set<Region *> *lhs, set<Region *> *rhs) {
                 return lhs->size() > rhs->size();
             });

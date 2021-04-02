@@ -1017,8 +1017,6 @@ namespace Utilities {
             fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*aliases_region_pointer_inverted)[reg] << "\"];\n";
         }
 
-        //(*aliases_region_pointer_inverted)[reg]
-
         fout << "}\n";
         // regioni non iniziali
         fout << "subgraph place {     \n"
@@ -1317,7 +1315,7 @@ namespace Utilities {
     }
 
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions){
-        vector<Region *>* v = new vector<Region *>(overlapping_regions->begin(), overlapping_regions->end());
+        auto v = new vector<Region *>(overlapping_regions->begin(), overlapping_regions->end());
         auto clauses = new set<vector<int>*>();
         int reg_alias;
         //create a clause for each couple of regions of the overlapping set
