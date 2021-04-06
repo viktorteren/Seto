@@ -48,6 +48,7 @@ extern bool python_all;
 extern bool info;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
+extern map<Region*, int>* sm_region_aliases;
 extern int max_alias_decomp;
 extern int num_clauses;
 extern map<pair<Region*, Region*>, bool> *overlaps_cache;
@@ -87,13 +88,16 @@ namespace Utilities {
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
-                       map<int, int>* aliases, string file_name);
+                       map<int, int>* aliases,
+                       string file_name);
     void print_sm_dot_file(map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,
-                           map<int, int>* aliases, string file_name);
+                           map<int, int>* aliases,
+                           string file_name);
     void print_sm_g_file(map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,
-                           map<int, int>* aliases, string file_name);
+                           map<int, int>* aliases,
+                           string file_name);
     //Minisat::vec<Minisat::Lit>* region_to_clause(map<int, set<Region *> *> *irredundant_regions);
     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);

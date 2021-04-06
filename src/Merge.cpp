@@ -334,24 +334,40 @@ void Merge::print_after_merge(set<SM *> *SMs,
                             map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
                             map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
                             map<int, int> *aliases,
-                            string file) {
+                            const string& file) {
     //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
     //cout << "pre-regions" << endl;
     //print(*pprg->get_pre_regions());
 
-    counter = 0;
+    if(!decomposition_output_sis){
+        //creation of aliases for each region
+        int reg_cont = 1;
+        sm_region_aliases = new map<Region *, int>();
+        for (SM *sm: *SMs) {
+            for(Region *reg: *sm){
+                if(sm_region_aliases->find(reg) == sm_region_aliases->end()) {
+                    (*sm_region_aliases)[reg] = reg_cont;
+                    reg_cont++;
+                }
+            }
+        }
+    }
+
+    int SM_counter = 0;
     for (SM *sm: *SMs) {
         //counter = (SMs_map)[sm];
         string SM_name = remove_extension(file);
-        SM_name += "_SM_" + to_string(counter) + ".g";
+        SM_name += "_SM_" + to_string(SM_counter) + ".g";
         if (decomposition_output_sis) {
             print_sm_g_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
         } else {
             print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases,
                               SM_name);
         }
-        counter++;
+        SM_counter++;
     }
+
+    delete sm_region_aliases;
 }
 
 Merge::~Merge(){

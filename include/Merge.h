@@ -26,11 +26,11 @@ public:
           string file,
           Pre_and_post_regions_generator *pprg);
 
-    void print_after_merge(set<SM *> *SMs,
+    static void print_after_merge(set<SM *> *SMs,
                         map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
                         map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
                         map<int, int> *aliases,
-                        string file);
+                        const string& file);
 
     ~Merge();
 

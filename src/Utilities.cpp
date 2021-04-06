@@ -17,6 +17,7 @@ bool log_file;
 bool info;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
+map<Region*, int>* sm_region_aliases;
 int max_alias_decomp;
 int num_clauses;
 map<pair<Region*, Region*>, bool> *overlaps_cache;
@@ -974,7 +975,6 @@ namespace Utilities {
         string in_dot_name;
         string output;
         // creazione della mappa tra il puntatore alla regione ed un intero univoco
-        // corrispondente
         map<Region *, int> *regions_mapping;
         /*cout << "preregions prima del print" << endl;
         print(*pre_regions);*/
@@ -1014,7 +1014,7 @@ namespace Utilities {
                 "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
                 "black, fillcolor = gray, style = filled];\n";
         for (auto reg : *initial_reg) {
-            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*aliases_region_pointer_inverted)[reg] << "\"];\n";
+            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*sm_region_aliases)[reg] << "\"];\n";
         }
 
         fout << "}\n";
@@ -1022,7 +1022,7 @@ namespace Utilities {
         fout << "subgraph place {     \n"
                 "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
         for (auto reg : *not_initial_regions) {
-            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*aliases_region_pointer_inverted)[reg] << "\"];\n";
+            fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*sm_region_aliases)[reg] << "\"];\n";
         }
         fout << "}\n";
         // transazioni (eventi)
