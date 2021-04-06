@@ -43,6 +43,7 @@ extern bool decomposition_debug;
 extern bool decomposition_output;
 extern bool decomposition_output_sis;
 extern bool ts_output;
+extern bool ects_output;
 extern bool log_file;
 extern bool python_all;
 extern bool info;
@@ -90,6 +91,10 @@ namespace Utilities {
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,
                        string file_name);
+    void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
+                         map<int, set<Region *> *> *post_regions,
+                         map<int, int>* aliases,
+                         string file_name);
     void print_sm_dot_file(map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,
                            map<int, int>* aliases,

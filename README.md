@@ -108,7 +108,13 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 
 ### c) Additional tools
 
-Creation of .dot file for TS starting from .g or .ts extensions.
+Conversion of .g or .ts extension TS in .dot extension file.
+
+```Bash
+./TS_splitter <file_path> TS
+```
+
+Creation of .dot extension ECTS file starting from .g or .ts extension TS.
 
 ```Bash
 ./TS_splitter <file_path> TS

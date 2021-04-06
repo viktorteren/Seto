@@ -13,6 +13,7 @@ bool decomposition_output;
 bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
+bool ects_output;
 bool log_file;
 bool info;
 map<int, Region*>* aliases_region_pointer;
@@ -755,6 +756,14 @@ namespace Utilities {
         delete not_initial_regions;
         delete initial_reg;
         delete regions_mapping;
+    }
+
+    //TODO
+    void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
+                         map<int, set<Region *> *> *post_regions,
+                         map<int, int> *aliases, string file_name){
+        cout << "Code still have to be written" << endl;
+        exit(1);
     }
 
     void print_sm_g_file(map<int, Region  *> *pre_regions,

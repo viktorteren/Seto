@@ -32,6 +32,9 @@ int main(int argc, char **argv) {
             if (args[i] == "TS") {
                 ts_output = true;
             }
+            if(args[i] == "ECTS"){
+                ects_output = true;
+            }
             if(args[i] == "M"){
                 decomposition = true;
             }
@@ -204,6 +207,7 @@ int main(int argc, char **argv) {
                     ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                      nullptr);
                 else
+                    //todo: qui memory leak
                     ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                      regions);
 
@@ -245,10 +249,10 @@ int main(int argc, char **argv) {
         }
         delete ls;
 
-
-
-        /*if(!decomposition)
-            print_ts_dot_file(file, aliases);*/
+        if(ects_output){
+            print_ts_dot_file(file, aliases);
+            exit(0);
+        }
 
         if (print_step_by_step_debug) {
             cout << "ECTS:" << endl;
@@ -700,7 +704,7 @@ int main(int argc, char **argv) {
                     << setprecision(2) << final_transitions_avg << ","
                     << setprecision(2) << final_transitions_var
                     << endl;
-        } else {
+        } else if (!ects_output){
             tStart_partial = clock();
             // Start of module: search of the irredundant set of regions
             auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
