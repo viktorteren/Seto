@@ -152,6 +152,10 @@ void TS_parser::parse_SIS(ifstream &fin) {
                         cout << "exit from inputs to outputs" << endl;
                     exit = true;
                 }
+                if(temp == ".state"){
+                    cout << "outputs row missing" << endl;
+                    abort();
+                }
                 //si tratta di un'etichetta
                 if (!exit) {
                     inputs.insert(temp);
