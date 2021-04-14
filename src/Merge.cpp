@@ -371,8 +371,8 @@ void Merge::print_after_merge(set<SM *> *SMs,
 }
 
 Merge::~Merge(){
-    //for (auto rec: *events_to_remove_per_SM) {
-     //   delete rec.second;
-    //}
+    /*for (auto rec: *events_to_remove_per_SM) {
+        delete rec.second;
+    }*/
     delete events_to_remove_per_SM;
 }

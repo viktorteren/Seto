@@ -16,6 +16,7 @@ bool ts_output;
 bool ects_output;
 bool log_file;
 bool info;
+bool fcptnet;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 map<Region*, int>* sm_region_aliases;
@@ -266,9 +267,11 @@ namespace Utilities {
                 if (!contains(vec, r)) {
                     vec->push_back(r);
                 }
+                else{
+                    delete r;
+                }
             }
         }
-
         return vec;
     }
 
@@ -1889,5 +1892,55 @@ namespace Utilities {
                 max = counter;
         }
         return max;
+    }
+
+    //todo: this code have memory leasks and can be improved
+    bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
+        SM* target_PN = new SM();
+        for (auto reg: *sm1){
+            target_PN->insert(reg);
+        }
+        for (auto reg: *sm2){
+            target_PN->insert(reg);
+        }
+
+        auto PN_post_regions = new map<int, set<Region*> *> ();
+
+        //creation of  the map of post-regions of the new PN in order to check on a subset and not all possible regions
+        for (auto rec: *post_regions) {
+            if(PN_post_regions->find(rec.first) == PN_post_regions->end()){
+                (*PN_post_regions)[rec.first] = new set<Region *>();
+            }
+            for (auto reg: *rec.second) {
+                if (target_PN->find(reg) != target_PN->end()) {
+                    (*PN_post_regions)[rec.first]->insert(reg);
+                }
+            }
+        }
+
+
+        for(auto rec: *post_regions){
+            int event =rec.first;
+            //the event have at least 2 post-regions
+            if(rec.second->size() > 1){
+                //todo: controllo struttura che viola FC-> evento con più post-regioni dove almenouna  ha 2 eventi in entrata
+                for(auto rec2: *post_regions){
+                    //different events
+                    if(rec.first != rec2.first){
+                        for(auto region: *rec.second){
+                            if(rec2.second->find(region) != rec.second->end()){
+                                cout << "not compatible SMs "  << sm1 << " and " << sm2  << endl;
+                                //delete target_PN;
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        cout <<"compatible SMs" << sm1 << " and " << sm2  << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+        delete target_PN;
+        return true;
     }
 }

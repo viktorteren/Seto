@@ -87,6 +87,8 @@ O: write output SMs in .dot extension
 
 G: write output SMs in .g extension
 
+FC: check if it is possible to compose at least one pair of SMs in order to create an FCPTnet
+
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
 <!--
@@ -134,7 +136,6 @@ Known restrictions
 
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
 2) There is any check on .ts inputs.
-3) SMS written with .g extension have the places with their own nomenclature therefore the composition of SMs could have redundant places.
 
 Known issues
 ------------------

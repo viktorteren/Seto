@@ -47,6 +47,7 @@ extern bool ects_output;
 extern bool log_file;
 extern bool python_all;
 extern bool info;
+extern bool fcptnet;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern map<Region*, int>* sm_region_aliases;
@@ -131,4 +132,5 @@ namespace Utilities {
     int getMaxPTSum(map<SM*, map<int, Region *>*>* pre_regions);
     int getMaxTransitionsNumber(map<SM*, map<int, Region *>*>* pre_regions);
     int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions, map<int, int> *label_aliases);
+    bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
 };

@@ -7,8 +7,7 @@
 
 using namespace Utilities;
 
-Pre_and_post_regions_generator::Pre_and_post_regions_generator(
-    vector<Region> *reg) {
+Pre_and_post_regions_generator::Pre_and_post_regions_generator(vector<Region> *reg) {
   regions = reg;
   pre_regions = new map<int, set<Region *> *>();
   // post_regions= new map < int , set<Region*>* > ();

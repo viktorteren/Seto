@@ -103,61 +103,73 @@ void TS_parser::parse_SIS(ifstream &fin) {
     pair<int, int> *pair_ptr;
     int max = 0;
     int max_state = 0;
-    string temp, start, label, finish;
+    string temp, start, label, finish, previous_temp;
     int label_int, start_int, finish_int;
-    bool exit;
+    bool exit_cycle;
+    temp = "";
     while (true) {
+        previous_temp = temp;
         fin >> temp;
+        if(temp.compare(previous_temp) == 0){
+            if(temp == ".end"){
+                cout << "syntax error" <<endl;
+                exit(1);
+            }
+        }
         if (print_step_by_step_debug)
             cout << "temp: " << temp << endl;
         if (temp == "#" || temp == ".model") {
             if (print_step_by_step_debug)
                 cout << "Start of comment" << endl;
-            exit = false;
-            while (!exit) {
+            exit_cycle = false;
+            while (!exit_cycle) {
+                previous_temp = temp;
                 fin >> temp;
+                check_wrong_end(previous_temp,temp);
                 if (temp == ".inputs") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".outputs") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".internal") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".dummy") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".state") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".marking") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".end") {
-                    exit = true;
+                    exit_cycle = true;
                 }
             }
         }
         if (temp == ".inputs") {
             if (print_step_by_step_debug)
                 cout << "inputs" << endl;
-            exit = false;
-            while (!exit) {
+            exit_cycle = false;
+            while (!exit_cycle) {
+                previous_temp = temp;
                 fin >> temp;
+                check_wrong_end(previous_temp,temp);
                 if (print_step_by_step_debug)
                     cout << "temp: " << temp << endl;
                 if (temp == ".outputs") {
                     if (print_step_by_step_debug)
-                        cout << "exit from inputs to outputs" << endl;
-                    exit = true;
+                        cout << "exit_cycle from inputs to outputs" << endl;
+                    exit_cycle = true;
                 }
                 if(temp == ".state"){
                     cout << "outputs row missing" << endl;
                     abort();
                 }
                 //si tratta di un'etichetta
-                if (!exit) {
+                if (!exit_cycle) {
                     inputs.insert(temp);
                     //add_new_label_with_alias(max, temp);
                     //max++;
@@ -167,22 +179,24 @@ void TS_parser::parse_SIS(ifstream &fin) {
         if (temp == ".outputs") {
             if (print_step_by_step_debug)
                 cout << "outputs" << endl;
-            exit = false;
-            while (!exit) {
+            exit_cycle = false;
+            while (!exit_cycle) {
+                previous_temp = temp;
                 fin >> temp;
+                check_wrong_end(previous_temp,temp);
                 if (print_step_by_step_debug)
                     cout << "temp: " << temp << endl;
                 if (temp == ".internal") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".state") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".dummy") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 //si tratta di un'etichetta
-                if (!exit) {
+                if (!exit_cycle) {
                     outputs.insert(temp);
                     // add_new_label_with_alias(max, temp);
                     //max++;
@@ -192,19 +206,21 @@ void TS_parser::parse_SIS(ifstream &fin) {
         if (temp == ".internal") {
             if (print_step_by_step_debug)
                 cout << "internal" << endl;
-            exit = false;
-            while (!exit) {
+            exit_cycle = false;
+            while (!exit_cycle) {
+                previous_temp = temp;
                 fin >> temp;
+                check_wrong_end(previous_temp,temp);
                 if (print_step_by_step_debug)
                     cout << "temp: " << temp << endl;
                 if (temp == ".dummy") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 if (temp == ".state") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 //si tratta di un'etichetta
-                if (!exit) {
+                if (!exit_cycle) {
                     internals.insert(temp);
                     //add_new_label_with_alias(max, temp);
                     //max++;
@@ -214,16 +230,18 @@ void TS_parser::parse_SIS(ifstream &fin) {
         if (temp == ".dummy") {
             if (print_step_by_step_debug)
                 cout << "dummy" << endl;
-            exit = false;
-            while (!exit) {
+            exit_cycle = false;
+            while (!exit_cycle) {
+                previous_temp = temp;
                 fin >> temp;
+                check_wrong_end(previous_temp,temp);
                 if (print_step_by_step_debug)
                     cout << "temp: " << temp << endl;
                 if (temp == ".state") {
-                    exit = true;
+                    exit_cycle = true;
                 }
                 //si tratta di un'etichetta
-                if (!exit) {
+                if (!exit_cycle) {
                     dummies.insert(temp);
                     //add_new_label_with_alias(max, temp);
                     //max++;
@@ -244,7 +262,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                         if (start == ".marking") {
                             temp = start;
                             if (print_step_by_step_debug)
-                                cout << "exit from state graph to marking" << endl;
+                                cout << "exit_cycle from state graph to marking" << endl;
                             break;
                         }
                         fin >> label;
@@ -299,7 +317,9 @@ void TS_parser::parse_SIS(ifstream &fin) {
             }
         }
         if (temp == ".marking") {
+            previous_temp = temp;
             fin >> temp;
+            check_wrong_end(previous_temp,temp);
             if (print_step_by_step_debug)
                 cout << "time after marking: " << temp << endl;
             //stato iniziale dentrro le parentesi graffe: {s0}
@@ -343,5 +363,14 @@ void TS_parser::add_new_state_with_alias(int num, const string& name) {
     if (print_step_by_step_debug) {
         cout << "added couple (alias, state): " << num << " " << name << endl;
     }
+}
+
+ void TS_parser::check_wrong_end(string previous_temp, string temp){
+     if(temp.compare(previous_temp) == 0){
+         if(temp == ".end"){
+             cout << "syntax error" <<endl;
+             exit(1);
+         }
+     }
 }
 
