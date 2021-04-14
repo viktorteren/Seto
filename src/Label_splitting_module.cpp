@@ -299,7 +299,7 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
         regions_vec = Utilities::copy_map_to_vector3(regions_old);
     }
     else{
-     regions_vec = Utilities::copy_map_to_vector2(pre_regions);
+        regions_vec = Utilities::copy_map_to_vector2(pre_regions);
     }
     vector<Region*>::iterator it2;
     //Region *violations_region;
@@ -328,8 +328,9 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
                 (*event_alias)[total_events] = event;
             }
             if(print_step_by_step){
-            cout << "event " << event << " split into " << total_events << " and " << event << endl;
-            cout<<""<< endl;}
+                cout << "event " << event << " split into " << total_events << " and " << event << endl;
+                cout<<""<< endl;
+            }
 
             auto to_erase = new set<Edge *>();
 
