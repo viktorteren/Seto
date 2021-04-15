@@ -18,6 +18,7 @@ public:
   map<int, Region *> *create_post_regions_for_SM(map<int, set<Region *> *> *pre_regions_SM);
   map<int, Region *> *create_post_regions_for_SM(map<int, Region *> *pre_regions_SM);
   map<int, Region *> *create_pre_regions_for_SM(SM *sm, set<int> *removed_events);
+  map<int, set<Region *>* >* create_post_regions_for_FCPN(map<int, set<Region *> *> *pre_regions_FCPN);
 
 private:
   vector<Region> *regions;

@@ -139,6 +139,38 @@ map<int, Region *>* Pre_and_post_regions_generator::create_post_regions_for_SM(
     return post_regions_SM;
 }
 
+map<int, set<Region *>* >* Pre_and_post_regions_generator::create_post_regions_for_FCPN(
+        map<int, set<Region *> *> *pre_regions_FCPN) {
+    // record. first da ts_map è l'evento, record.second è la lista da passare a
+    // is_post_region
+    //cout << "mappa pre-regioni :" << endl;
+    //print(*merged_pre_regions);
+    auto post_regions_FCPN = new map<int, set<Region *>*>();
+    for (auto rec : *pre_regions_FCPN) {
+        for (auto reg : *rec.second) {
+            if (ts_map->find(rec.first) != ts_map->end()) {
+                for (const auto& r : *ts_map) {
+                    if (is_post_region(&(ts_map->at(r.first)), reg)) {
+                        if((*post_regions_FCPN).find(r.first) == (*post_regions_FCPN).end()){
+                            (*post_regions_FCPN)[r.first] = new set<Region *>();
+                        }
+                        (*post_regions_FCPN)[r.first]->insert(reg);
+                    }
+                }
+
+            } else {
+                //cout << "ts_map non contiene " << rec.first << endl;
+            }
+        }
+    }
+    /*if(print_step_by_step) {
+        cout << "Postregions :" << endl;
+        print(*post_regions_SM);
+        cout << "" << endl;
+    }*/
+    return post_regions_FCPN;
+}
+
 map<int, Region *>* Pre_and_post_regions_generator::create_post_regions_for_SM(
         map<int, Region *> *pre_regions_SM) {
     // record. first da ts_map è l'evento, record.second è la lista da passare a

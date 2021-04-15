@@ -593,21 +593,50 @@ int main(int argc, char **argv) {
 
             if(fcptnet){
                 cout << "Looking for an SM composition in order to create FCPTNet" << endl;
+                cout << "Total initial SMs: " << SMs->size() << endl;
                 auto pairs_done = new set<pair<SM*, SM*>>();
                 bool success = false;
-                bool temp;
-                for(auto SM1: *SMs){
-                    for(auto SM2: *SMs){
-                        if(SM1 != SM2){
-                            if(pairs_done->find(make_pair(SM1,SM2)) == pairs_done->end()) {
-                                if(pairs_done->find(make_pair(SM2,SM1)) == pairs_done->end()) {
-                                    temp = Utilities::checkSMUnionForFCPTNet(SM1, SM2, pprg->get_post_regions());
-                                    pairs_done->insert(make_pair(SM1,SM2));
-                                    if(temp)
-                                        success = temp;
+                SM* temp;
+                int couples_counter = 0;
+                auto PNs = new set<SM *>();
+                for(auto sm: *SMs){
+                    PNs->insert(sm);
+                }
+                bool done = false;
+                while(!done) {
+                    if (PNs->size() > 1) {
+                        for (auto SM1: *PNs) {
+                            for (auto SM2: *PNs) {
+                                //cout << "SMs " << SM1 << " and " << SM2 << endl;
+                                if (SM1 != SM2) {
+                                    if (pairs_done->find(make_pair(SM1, SM2)) == pairs_done->end()) {
+                                        if (pairs_done->find(make_pair(SM2, SM1)) == pairs_done->end()) {
+                                            temp = Utilities::checkSMUnionForFCPTNet(SM1, SM2,
+                                                                                     pprg->get_post_regions());
+                                            pairs_done->insert(make_pair(SM1, SM2));
+                                            if (temp != nullptr) {
+                                                success = true;
+                                                couples_counter++;
+                                                PNs->insert(temp);
+                                                PNs->erase(SM1);
+                                                PNs->erase(SM2);
+                                                break;
+                                            }
+                                            else{
+                                                success = false;
+                                            }
+                                        }
+                                    }
                                 }
                             }
+                            if(success) break;
                         }
+                        if(!success){
+                            done = true;
+                        }
+                    } else {
+                        //cout << "only one SM/PN obtained" << endl;
+                        done = true;
                     }
                 }
                 std::ofstream outfile;
@@ -615,9 +644,48 @@ int main(int argc, char **argv) {
                 outfile << fixed
                         << get_file_name(file) << "\t\tFCPTNET TEST: ";
                 if(success)
-                    outfile << "SUCCESS!!!"<< endl;
+                    outfile << "SUCCESS!!! number of initial SMs: " << SMs->size() << " number of total FCPNs: "<< PNs->size() << endl;
                 else
                     outfile << "FAILED"<< endl;
+                cout << "number of total FCPNs: "<< PNs->size() << endl;
+
+                if(decomposition_output){
+                    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
+
+                    //map with key the pointer to SM
+                    auto map_of_PN_pre_regions = new map < SM *, map<int, set<Region *> *>*> ();
+                    auto map_of_PN_post_regions = new map < SM *, map<int, set<Region *> *>*> ();
+
+                    for (auto pn: *PNs) {
+                        (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *> ();
+                        for (auto rec: *pprg->get_pre_regions()) {
+                            for (auto reg: *rec.second) {
+                                if (pn->find(reg) != pn->end()) {
+                                    if((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()){
+                                        (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
+                                    }
+                                    (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
+                                }
+                            }
+                        }
+
+                        (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
+                    }
+                    int pn_counter=0;
+                    for(auto pn: *PNs){
+                        //todo: al posto di pprg ricavare le pre e post regioni per ogni PN altrimenti il rsultato è ridondante
+                        print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), pprg->get_post_regions(), aliases, file,pn_counter);
+                        pn_counter++;
+                    }
+                }
+
+                //FREE
+                for(auto pn: *PNs){
+                    //remove only PNs, not SMs
+                    if(SMs->find(pn) == SMs->end())
+                        delete pn;
+                }
+                delete PNs;
             }
 
             //creation of a single PN from the sum of splitted SMs

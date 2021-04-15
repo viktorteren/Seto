@@ -166,7 +166,8 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 }
                 if(temp == ".state"){
                     cout << "outputs row missing" << endl;
-                    abort();
+                    exit_cycle = true;
+                    //abort();
                 }
                 //si tratta di un'etichetta
                 if (!exit_cycle) {

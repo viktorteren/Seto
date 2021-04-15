@@ -246,6 +246,17 @@ namespace Utilities {
         return true;
     }
 
+    bool have_common_regions(set<Region *> *first, set<Region *> *second){
+        for(auto r1: *first){
+            for(auto r2: *second){
+                if(r1 == r2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     vector<Region> *copy_map_to_vector(map<int, vector<Region> *> *map) {
         auto input = new set<Region>();
         for (auto record : *map) {
@@ -608,10 +619,9 @@ namespace Utilities {
         return output_name;
     }
 
-
-    void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
+    void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, string file_name) {
+                           map<int, int> *aliases, string file_name, int FCPN_number) {
         auto initial_reg = initial_regions(pre_regions);
         string output_name = std::move(file_name);
         string in_dot_name;
@@ -645,12 +655,26 @@ namespace Utilities {
         std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
         // cout << "out name: " << in_dot_name << endl;
 
-        output_name += "_PN.dot";
+        if(FCPN_number >= 0){
+            output_name += "_FCPN_";
+            output_name+=std::to_string(FCPN_number);
+            output_name+=".dot";
+        }
+        else{
+            output_name += "_PN.dot";
+        }
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
-        fout << in_dot_name + "_PN";
+        if(FCPN_number >= 0){
+            fout << in_dot_name + "_FCPN_";
+            fout << std::to_string(FCPN_number);
+        }
+        else{
+            fout << in_dot_name + "_PN";
+        }
+
         fout << "{\n";
         // regioni iniziali
         //cout << "scrittura regioni iniziali" << endl;
@@ -722,7 +746,7 @@ namespace Utilities {
                 if (record.first < num_events) {
                     //if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\tr" << regions_mapping->at(reg) << " -> "
-                             << record.first << ";\n";
+                         << record.first << ";\n";
 
                     //} else {
                     //cout << "regions_mapping non contiene ";
@@ -745,8 +769,8 @@ namespace Utilities {
             for (auto reg : *record.second) {
                 if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\t" << record.first << " -> "
-                             << "r" << regions_mapping->at(reg) << ";\n";
-                //} else {
+                         << "r" << regions_mapping->at(reg) << ";\n";
+                    //} else {
                     // entra qui 2 volte
                     // cout << "regions_mapping non contiene ";
                     // println(*reg);
@@ -759,6 +783,12 @@ namespace Utilities {
         delete not_initial_regions;
         delete initial_reg;
         delete regions_mapping;
+    }
+
+    void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
+                           map<int, set<Region *> *> *post_regions,
+                           map<int, int> *aliases, string file_name) {
+        print_fcpn_dot_file(pre_regions, post_regions, aliases, file_name, -1);
     }
 
     //TODO
@@ -1895,20 +1925,52 @@ namespace Utilities {
     }
 
     //todo: this code have memory leasks and can be improved
-    bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
-        SM* target_PN = new SM();
-        for (auto reg: *sm1){
+    SM* checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
+        SM *target_PN = new SM();
+        for (auto reg: *sm1) {
             target_PN->insert(reg);
         }
-        for (auto reg: *sm2){
+        for (auto reg: *sm2) {
             target_PN->insert(reg);
         }
 
-        auto PN_post_regions = new map<int, set<Region*> *> ();
+        //todo: have to check if the two SMs have common events OR common places: in no events and no places return
+
+        //check if there are common regions
+        bool common_regions = false;
+        for(auto r1: *sm1){
+            for(auto r2: *sm2){
+                if(r1 == r2){
+                    common_regions = true;
+                    break;
+                }
+            }
+            if(common_regions) break;
+        }
+
+
+        //check common labels
+        bool common_events = false;
+        for(auto rec: *post_regions){
+            auto ev = rec.first;
+            if(have_common_regions(rec.second, sm1)){
+                if(have_common_regions(rec.second, sm2)){
+                    common_events = true;
+                    break;
+                }
+            }
+        }
+
+        if(!common_regions && !common_events){
+            cout << "No common events and no common regions" << endl;
+            return nullptr;
+        }
+
+        auto PN_post_regions = new map<int, set<Region *> *>();
 
         //creation of  the map of post-regions of the new PN in order to check on a subset and not all possible regions
         for (auto rec: *post_regions) {
-            if(PN_post_regions->find(rec.first) == PN_post_regions->end()){
+            if (PN_post_regions->find(rec.first) == PN_post_regions->end()) {
                 (*PN_post_regions)[rec.first] = new set<Region *>();
             }
             for (auto reg: *rec.second) {
@@ -1918,20 +1980,19 @@ namespace Utilities {
             }
         }
 
-
-        for(auto rec: *post_regions){
-            int event =rec.first;
+        for (auto rec: *PN_post_regions) {
+            int event = rec.first;
             //the event have at least 2 post-regions
-            if(rec.second->size() > 1){
-                //todo: controllo struttura che viola FC-> evento con più post-regioni dove almenouna  ha 2 eventi in entrata
-                for(auto rec2: *post_regions){
+            if (rec.second->size() > 1) {
+                //todo: a volte si uniscono SM senza etichette comuni, non va bene
+                for (auto rec2: *PN_post_regions) {
                     //different events
-                    if(rec.first != rec2.first){
-                        for(auto region: *rec.second){
-                            if(rec2.second->find(region) != rec.second->end()){
-                                cout << "not compatible SMs "  << sm1 << " and " << sm2  << endl;
-                                //delete target_PN;
-                                return false;
+                    if (rec.first != rec2.first) {
+                        for (auto region: *rec.second) {
+                            if (rec2.second->find(region) != rec2.second->end()) {
+                                //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
+                                //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
+                                return nullptr;
                             }
                         }
                     }
@@ -1939,8 +2000,7 @@ namespace Utilities {
             }
         }
 
-        cout <<"compatible SMs" << sm1 << " and " << sm2  << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-        delete target_PN;
-        return true;
+        cout << "compatible SMs" << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+        return target_PN;
     }
 }
