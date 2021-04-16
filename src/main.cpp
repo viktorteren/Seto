@@ -19,7 +19,7 @@ using namespace Minisat;
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
     string file;
-    if (argc >= 2) {
+    if (argc >= 3) {
         file = args[1];
         cout << file << endl;
         print_step_by_step = false;
@@ -28,7 +28,11 @@ int main(int argc, char **argv) {
         decomposition_debug = false;
         decomposition_output = false;
         benchmark_script = false;
+        fcptnet = false;
+        pn_synthesis = false;
         for(int i=2; i < argc; i++) {
+            if(args[i] == "PN")
+                pn_synthesis = true;
             if (args[i] == "TS")
                 ts_output = true;
             if(args[i]=="FC")
@@ -49,9 +53,9 @@ int main(int argc, char **argv) {
                 print_step_by_step_debug = true;
                 decomposition_debug = true;
             }
-            if (args[i] == "L"){
+            /*if (args[i] == "L"){
                 log_file = true;
-            }
+            }*/
             if(args[i] == "O"){
                 decomposition_output = true;
             }
@@ -67,6 +71,18 @@ int main(int argc, char **argv) {
                 info = true;
                 print_step_by_step = true;
             }
+        }
+        if(fcptnet && decomposition_output_sis){
+            cerr << "SIS output not implemented for FCPNs, remove G flag"<< endl;
+            exit(0);
+        }
+        if(pn_synthesis && decomposition){
+            cerr << "PN synthesis cannot be done together with SM decomposition" << endl;
+            exit(0);
+        }
+        if(pn_synthesis && fcptnet){
+            cerr << "PN synthesis cannot be done together with FCPN decomposition" << endl;
+            exit(0);
         }
     }
     else{
@@ -270,7 +286,7 @@ int main(int argc, char **argv) {
         double t_irred;
         tStart_partial = clock();
 
-        if (decomposition) {
+        if (decomposition || fcptnet) {
             cout << "============================[DECOMPOSITION]===================" << endl;
             auto regions_set = copy_map_to_set(pre_regions);
             int numRegions = regions_set->size();
@@ -587,7 +603,7 @@ int main(int argc, char **argv) {
                         << endl : cout
                         << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
                         << endl;
-                if(!fcptnet)
+                if(decomposition)
                     merge->print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
             }
 
@@ -673,7 +689,6 @@ int main(int argc, char **argv) {
                     }
                     int pn_counter=0;
                     for(auto pn: *PNs){
-                        //todo: al posto di pprg ricavare le pre e post regioni per ogni PN altrimenti il rsultato è ridondante
                         print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), pprg->get_post_regions(), aliases, file,pn_counter);
                         pn_counter++;
                     }
@@ -798,7 +813,8 @@ int main(int argc, char **argv) {
                         << setprecision(2) << final_transitions_var
                         << endl;
             }
-        } else if (!ects_output){
+        }
+        else if (pn_synthesis){
             tStart_partial = clock();
             // Start of module: search of the irredundant set of regions
             auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);

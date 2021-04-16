@@ -14,9 +14,10 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool ects_output;
-bool log_file;
+//bool log_file;
 bool info;
 bool fcptnet;
+bool pn_synthesis;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 map<Region*, int>* sm_region_aliases;
@@ -1984,7 +1985,6 @@ namespace Utilities {
             int event = rec.first;
             //the event have at least 2 post-regions
             if (rec.second->size() > 1) {
-                //todo: a volte si uniscono SM senza etichette comuni, non va bene
                 for (auto rec2: *PN_post_regions) {
                     //different events
                     if (rec.first != rec2.first) {
@@ -1999,8 +1999,8 @@ namespace Utilities {
                 }
             }
         }
-
-        cout << "compatible SMs" << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+        if(decomposition_debug)
+            cout << "compatible SMs " << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
         return target_PN;
     }
 }

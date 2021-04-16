@@ -79,7 +79,7 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 Additional flags:
 
-L: creation of a log file
+<!--L: creation of a log file-->
 
 D: debug info mode
 
@@ -87,9 +87,24 @@ O: write output SMs in .dot extension
 
 G: write output SMs in .g extension
 
-FC: check if it is possible to compose at least one pair of SMs in order to create an FCPTnet
+-ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+
+### c) TS to Synchronized FCPNs flow
+
+```Bash
+./TS_splitter <file_path> FC <optional_flags>
+```
+
+D: debug info mode
+
+O: write output SMs in .dot extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+
+
+### d) Combined flows
+
+The flags M and FC can be used together.
 
 <!--
 #### Benchmarks on a set of files (still present some issues, better avoid it):
@@ -108,7 +123,7 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 ```
 -->
 
-### c) Additional tools
+### e) Additional tools
 
 Conversion of .g or .ts extension TS in .dot extension file.
 
@@ -139,8 +154,6 @@ Known restrictions
 
 Known issues
 ------------------
-
-1) SMs generated from the decomposition have the places with own numbering if the generated SMs are with .g extension therefore a composition of these SMs is almost always wrong.
 
 ## License ##
 
