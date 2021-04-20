@@ -12,6 +12,7 @@
 #include <Python.h>
 #include <iomanip>
 #include "../include/Merge.h"
+#include "../include/FCPN_decomposition.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -430,30 +431,14 @@ int main(int argc, char **argv) {
                     if (set != SM)
                         tmp_SMs->insert(set);
                 }
-                set<int> new_used_regions_tmp;
-                for (auto tmp_SM: *tmp_SMs) {
-                    for (auto region: *tmp_SM) {
-                        new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
-                    }
-                }
-                auto new_used_regions_map_tmp = new map < int, set<Region *>* > ();
-                for (auto rec: *pre_regions) {
-                    (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
-                }
 
-                for (auto reg: new_used_regions_tmp) {
-                    for (auto rec: *pre_regions) {
-                        if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
-                            (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
-                        }
-                    }
-                }
+                auto used_regions_map = get_map_of_used_regions(tmp_SMs, pprg->get_pre_regions());
 
-                excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
-                for (auto rec: *new_used_regions_map_tmp) {
+                excitation_closure = is_excitation_closed(used_regions_map, new_ER);
+                for (auto rec: *used_regions_map) {
                     delete rec.second;
                 }
-                delete new_used_regions_map_tmp;
+                delete used_regions_map;
                 if (excitation_closure) {
                     SMs_to_remove.push_back(SM);
                     /*if (decomposition_debug) {
@@ -576,7 +561,7 @@ int main(int argc, char **argv) {
             tStart_partial = clock();
 
 
-            Merge *merge = new Merge(SMs,
+            auto *merge = new Merge(SMs,
                                     clauses,
                                     number_of_events,
                                     map_of_SM_pre_regions,
@@ -608,7 +593,10 @@ int main(int argc, char **argv) {
             }
 
             if(fcptnet){
-                cout << "Looking for an SM composition in order to create FCPTNet" << endl;
+                auto fcpn_decomposition = new FCPN_decomposition(clauses,
+                                        number_of_events, vector_regions, states_sum,file, pprg, aliases, new_ER);
+
+                /*cout << "Looking for an SM composition in order to create FCPTNet" << endl;
                 cout << "Total initial SMs: " << SMs->size() << endl;
                 auto pairs_done = new set<pair<SM*, SM*>>();
                 bool success = false;
@@ -627,7 +615,7 @@ int main(int argc, char **argv) {
                                 if (SM1 != SM2) {
                                     if (pairs_done->find(make_pair(SM1, SM2)) == pairs_done->end()) {
                                         if (pairs_done->find(make_pair(SM2, SM1)) == pairs_done->end()) {
-                                            temp = Utilities::checkSMUnionForFCPTNet(SM1, SM2,
+                                            temp = Utilities::SMUnionForFCPTNetWithCheck(SM1, SM2,
                                                                                      pprg->get_post_regions());
                                             pairs_done->insert(make_pair(SM1, SM2));
                                             if (temp != nullptr) {
@@ -655,6 +643,8 @@ int main(int argc, char **argv) {
                         done = true;
                     }
                 }
+                delete pairs_done;
+                delete temp;
                 std::ofstream outfile;
                 outfile.open("stats.csv", std::ios_base::app);
                 outfile << fixed
@@ -663,9 +653,9 @@ int main(int argc, char **argv) {
                     outfile << "SUCCESS!!! number of initial SMs: " << SMs->size() << " number of total FCPNs: "<< PNs->size() << endl;
                 else
                     outfile << "FAILED"<< endl;
-                cout << "number of total FCPNs: "<< PNs->size() << endl;
+                cout << "number of total FCPNs: "<< PNs->size() << endl;*/
 
-                if(decomposition_output){
+                /*if(decomposition_output){
                     cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
 
                     //map with key the pointer to SM
@@ -689,18 +679,23 @@ int main(int argc, char **argv) {
                     }
                     int pn_counter=0;
                     for(auto pn: *PNs){
-                        print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), pprg->get_post_regions(), aliases, file,pn_counter);
+                        print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases, file,pn_counter);
                         pn_counter++;
                     }
-                }
+                }*/
 
                 //FREE
+                /*set<SM *> PNs_to_remove;
                 for(auto pn: *PNs){
                     //remove only PNs, not SMs
-                    if(SMs->find(pn) == SMs->end())
-                        delete pn;
+                    if(SMs->find(pn) == SMs->end()){
+                        PNs_to_remove.insert(pn);
+                    }
                 }
-                delete PNs;
+                for(auto pn: PNs_to_remove){
+                    PNs->erase(pn);
+                }
+                delete PNs;*/
             }
 
             //creation of a single PN from the sum of splitted SMs
@@ -724,7 +719,7 @@ int main(int argc, char **argv) {
                 }
             }*/
 
-            if (decomposition_debug) {
+            if (decomposition_debug && !fcptnet) {
                 cout << "Final SMs" << endl;
                 for (auto SM: *SMs) {
                     cout << "SM:" << endl;
@@ -884,7 +879,6 @@ int main(int argc, char **argv) {
             //print(*post_regions);
             //cout<<"pre regions merged map"<<endl;
             //print(*merged_map);
-
 
             print_pn_dot_file(merged_map, post_regions, aliases, file);
 

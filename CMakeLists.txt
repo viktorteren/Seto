@@ -33,7 +33,7 @@ add_library(libminisat STATIC
         minisat/utils/ParseUtils.h
         minisat/utils/System.h
         minisat/simp/SimpSolver.h
-        )
+        include/FCPN_decomposition.h)
 
 target_include_directories(libminisat
         PUBLIC
@@ -59,7 +59,7 @@ add_executable(TS_splitter
         include/Pre_and_post_regions_generator.h
         src/Merging_Minimal_Preregions_module.cpp
         include/Merging_Minimal_Preregions_module.h
-        src/Merge.cpp include/Merge.h)
+        src/Merge.cpp include/Merge.h src/FCPN_decomposition.cpp)
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
 target_link_libraries(TS_splitter python2.7)

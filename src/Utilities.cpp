@@ -265,7 +265,7 @@ namespace Utilities {
                 input->insert(region);
             }
         }
-        vector<Region> *vec = new vector<Region>(input->size());
+        auto vec = new vector<Region>(input->size());
         std::copy(input->begin(), input->end(), vec->begin());
         delete input;
         return vec;
@@ -603,7 +603,10 @@ namespace Utilities {
             for (auto clause: *new_results_to_avoid) {
                 for (auto lit: *clause) {
                     //fout << "-" <<lit << " ";
-                    temp.append("-" + to_string(lit) + " ");
+                    if(lit > 0)
+                        temp.append("-" + to_string(lit) + " ");
+                    else
+                        temp.append(to_string(-lit) + " ");
                 }
                 //fout << "0" << endl;
                 temp.append("0\n");
@@ -1724,7 +1727,7 @@ namespace Utilities {
                 //println(*intersec);
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
-                    /*if(print_step_by_step_debug || decomposition_debug){
+                    if(print_step_by_step_debug || decomposition_debug){
                         cout << "event " << event << " not satisfy ec becouse the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
@@ -1739,7 +1742,7 @@ namespace Utilities {
                         }
                         cout << "er: ";
                         println(*er);
-                    }*/
+                    }
                     for(auto rec: *regions_intersection_map){
                         delete rec.second;
                     }
@@ -1925,8 +1928,52 @@ namespace Utilities {
         return max;
     }
 
-    //todo: this code have memory leasks and can be improved
-    SM* checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
+
+    bool checkSMUnionForFCPTNet(set<SM*> *sm_set, map<int, set<Region*> *> *post_regions){
+        cerr << "function checkSMUnionFCPTNet ith set argument not implemented yet" << endl;
+        exit(1);
+        SM *target_PN = new SM();
+        for(auto sm: *sm_set) {
+            for (auto reg: *sm) {
+                target_PN->insert(reg);
+            }
+        }
+
+        /*todo: if I find a couple without common events or places it could be still connected via other SMs
+         * therefore I cannot check in this way, I have to find a way in order to understand if the result
+         * have disconnected subset (it can be split without any violation)
+         * Probably I have to check if there is an SM which haven't any common event/place with all of the other SMs
+         * but in this case we could skip the case where a couple of SMs is disconnected from the others
+         */
+         /*bool common_regions = true;
+        bool temp;
+        for(auto sm1: *sm_set){
+            for(auto sm2: *sm_set){
+                if(sm1 != sm2){
+                    temp = checkCommonRegionsBetweenSMs(sm1, sm2);
+                    if(!temp){
+                        common_regions = false;
+                        break;
+                    }
+                }
+            }
+            if(!common_regions) break;
+        }*/
+
+    }
+
+    bool checkCommonRegionsBetweenSMs(SM *sm1, SM *sm2){
+        for(auto r1: *sm1){
+            for(auto r2: *sm2){
+                if(r1 == r2){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
         SM *target_PN = new SM();
         for (auto reg: *sm1) {
             target_PN->insert(reg);
@@ -1935,7 +1982,83 @@ namespace Utilities {
             target_PN->insert(reg);
         }
 
-        //todo: have to check if the two SMs have common events OR common places: in no events and no places return
+        //check if there are common regions
+        bool common_regions = checkCommonRegionsBetweenSMs(sm1, sm2);
+
+        //check common labels
+        bool common_events = false;
+        for(auto rec: *post_regions){
+            auto ev = rec.first;
+            if(have_common_regions(rec.second, sm1)){
+                if(have_common_regions(rec.second, sm2)){
+                    common_events = true;
+                    break;
+                }
+            }
+        }
+
+        if(!common_regions && !common_events){
+            cout << "No common events and no common regions" << endl;
+            delete target_PN;
+            return false;
+        }
+
+        auto PN_post_regions = new map<int, set<Region *> *>();
+
+        //creation of  the map of post-regions of the new PN in order to check on a subset and not all possible regions
+        for (auto rec: *post_regions) {
+            if (PN_post_regions->find(rec.first) == PN_post_regions->end()) {
+                (*PN_post_regions)[rec.first] = new set<Region *>();
+            }
+            for (auto reg: *rec.second) {
+                if (target_PN->find(reg) != target_PN->end()) {
+                    (*PN_post_regions)[rec.first]->insert(reg);
+                }
+            }
+        }
+
+        for (auto rec: *PN_post_regions) {
+            int event = rec.first;
+            //the event have at least 2 post-regions
+            if (rec.second->size() > 1) {
+                for (auto rec2: *PN_post_regions) {
+                    //different events
+                    if (rec.first != rec2.first) {
+                        for (auto region: *rec.second) {
+                            if (rec2.second->find(region) != rec2.second->end()) {
+                                //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
+                                //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
+                                for(auto rec: *PN_post_regions){
+                                    delete rec.second;
+                                }
+                                delete PN_post_regions;
+                                delete target_PN;
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(decomposition_debug)
+            cout << "compatible SMs " << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+        for(auto rec: *PN_post_regions){
+            delete rec.second;
+        }
+        delete PN_post_regions;
+        delete target_PN;
+        return true;
+    }
+
+    //todo: this code probably can be improved, maybe using sat in order to check if the union is possible
+    SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
+        SM *target_PN = new SM();
+        for (auto reg: *sm1) {
+            target_PN->insert(reg);
+        }
+        for (auto reg: *sm2) {
+            target_PN->insert(reg);
+        }
 
         //check if there are common regions
         bool common_regions = false;
@@ -1964,6 +2087,7 @@ namespace Utilities {
 
         if(!common_regions && !common_events){
             cout << "No common events and no common regions" << endl;
+            delete target_PN;
             return nullptr;
         }
 
@@ -1992,6 +2116,11 @@ namespace Utilities {
                             if (rec2.second->find(region) != rec2.second->end()) {
                                 //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
                                 //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
+                                for(auto rec: *PN_post_regions){
+                                    delete rec.second;
+                                }
+                                delete PN_post_regions;
+                                delete target_PN;
                                 return nullptr;
                             }
                         }
@@ -2001,6 +2130,39 @@ namespace Utilities {
         }
         if(decomposition_debug)
             cout << "compatible SMs " << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+        for(auto rec: *PN_post_regions){
+            delete rec.second;
+        }
+        delete PN_post_regions;
         return target_PN;
+    }
+
+    void print_clause(vector<int32_t> *clause){
+        for(auto val: *clause){
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+
+    map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs, map<int, set<Region *> *> *pre_regions){
+        set<int> new_used_regions_tmp;
+        for (auto tmp_SM: *SMs_or_PNs) {
+            for (auto region: *tmp_SM) {
+                new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+            }
+        }
+        auto new_used_regions_map_tmp = new map < int, set<Region *>* > ();
+        for (auto rec: *pre_regions) {
+            (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+        }
+
+        for (auto reg: new_used_regions_tmp) {
+            for (auto rec: *pre_regions) {
+                if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
+                    (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                }
+            }
+        }
+        return new_used_regions_map_tmp;
     }
 }

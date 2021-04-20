@@ -14,15 +14,14 @@ Merge::Merge(set<SM *> *SMs,
              int number_of_events,
              map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
              map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
-             string file,
+             const string& file,
              Pre_and_post_regions_generator *pprg){
-
 
     //STEPS OF THE ALGORITHM
     // 1. create the map between SMs and integers from 1 to K
-    // 2. create the map between regions used in the FSMs and integers from 1 to N -> one index for all different instances of the same region
+    // 2. create the map between regions used in the SMs and integers from 1 to N -> one index for all different instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
-    // 4. create the map between event and linked regions for each FSM
+    // 4. create the map between event and linked regions for each SM
     // 5. translate the map into clauses
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
