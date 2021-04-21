@@ -14,10 +14,8 @@ class FCPN_decomposition {
 private:
 
 public:
-    FCPN_decomposition(vector<vector<int32_t> *> *clauses,
-                       int number_of_events,
+    FCPN_decomposition(int number_of_events,
                        vector<Region> *regions,
-                       int number_of_states,
                        string file,
                        Pre_and_post_regions_generator *pprg,
                        map<int, int> *aliases,
