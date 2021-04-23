@@ -566,6 +566,10 @@ namespace Utilities {
         return output_name;
     }
 
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
+        return convert_to_dimacs(file_path,num_var,num_clauses,clauses, nullptr);
+    }
+
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, set<set<int>*>* new_results_to_avoid){
         if(print_step_by_step_debug || decomposition_debug)
             cout << "================[DIMACS FILE CREATION]====================" << endl;
@@ -1727,7 +1731,7 @@ namespace Utilities {
                 //println(*intersec);
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
-                    if(print_step_by_step_debug || decomposition_debug){
+                    if(print_step_by_step_debug){
                         cout << "event " << event << " not satisfy ec becouse the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
@@ -2165,4 +2169,5 @@ namespace Utilities {
         }
         return new_used_regions_map_tmp;
     }
+
 }

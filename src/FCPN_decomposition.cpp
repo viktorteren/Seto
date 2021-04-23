@@ -12,10 +12,34 @@ using namespace Utilities;
 
 FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                         vector<Region> *regions,
-                                        string file,
+                                        const string& file,
                                         Pre_and_post_regions_generator *pprg,
                                         map<int, int> *aliases,
                                         map<int, ER> *ER){
+    /* Possible algorithm for the creation of one FCPN with SAT:
+     * ALGORITHM STEPS:
+     * do
+     *      1) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3)
+     *      2) FCPN constraint -> given the regions of a PN these cannot violate the constraint
+     *      ALGORITHM:
+     *          for aech ev
+     *              for each r=pre(ev) -> place/region
+     *                  if r have more than one exiting event
+     *                      for each couple (r, pre(ev))
+     *                          if r != pre(ev)
+     *                              create clause (!r v !pre(ev))
+     *      3) complete PN structure:
+     *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
+     *      4) maximization function: number of regions used in the result
+     *      5) minimize the total number of regions after having achieved the first result (todo: o forse anche fin da subito,
+     *          ancora meglio trovare il valore sat per masimizzare la copertura e poi con quel valore minimizzare il numero di regioni
+     *          ma se si combinano le 2 cose si trova il risultato migliore prima)
+     *      6) solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
+     *      7) decode result
+     * 8) while !EC: previous results clauses are added as results to avoid in future
+     *todo: 9) forse serve il vincolo sulla componibilità: se un posto ha n transizioni in uscita tutte devono essere presenti nella stessa PN: duplication avoidance
+     */
+
     auto clauses = new vector<vector<int32_t> *>();
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
     auto fcpn_set = new set<set<Region *>*>();
@@ -43,39 +67,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     }
 
     vector<int32_t> *clause;
-    // todo: completare l'algoritmo completo
-    /* Possible algorithm for the creation of one FCPN with SAT:
-     * ALGORITHM STEPS:
-     * 1) almeno una regione che copre lo stato: per ogni stato coperto da r1, r2, r3 creare una clausola (r1 v r2 v r3)
-     * 2) vincolo FCPN -> date le regioni presenti in una PN queste non devono violare il vincolo
-     *  ALGORITMO:
-     *      per ogni ev
-     *          per ogni r=pre(ev) -> posto/regione
-     *              se r ha più di un evento in uscita
-     *                  per ogni coppia (r, pre(ev))
-     *                      se r != pre(ev)
-     *                          crea clausola (!r v !pre(ev))
-     *
-     * 3) struttura PN completa dalla quale togliere:
-     *      se ho una sequenza r1 -> a -> r2 avrò le clausole relative a r1 and r2 => a cioè (!r1 v !r2 v a)
-     * 4) funzione da massimizzare: num regioni utilizzate nel risultato
-     * todo: 5) minimizzare il numero di regioni totali dopo la prima esecuzione o forse anche fin da subito,
-     * ancora meglio trovare il valore sat per masimizzare la copertura e poi con quel valore minimizzare il numero di regioni
-     * ma se si combinano le 2 cose si trova il risultato migliore prima
-     * todo: 6) solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
-     * todo: 7) decoding risultato
-     * todo: 8) vincolo EC
-     *      si potrebbe usare il metodo is excitation closed, se ritorna falso con un risultato del sat solver
-     *      aggiungere la clausola che neghi quel risultato
-     *todo: 9) forse serve il vincolo sulla componibilità: se un posto ha n transizioni in uscita tutte devono essere presenti nella stessa PN: duplication avoidance
-     */
 
-    //TODO: all steps have to be implemented
-    //encoding: [1, n] states range: n states
-    //encoding: [n+1, n+k+1] regions range: k regions
-    //encoding: [n+k+2, n+k+m+2] events range: m events
-
-    //nuova codifica
     //encoding: [1, k] regions range: k regions
     //encoding: [k+1, k+m+1] events range: m events
     int m = number_of_events;
@@ -83,7 +75,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     bool excitation_closure = false;
 
     //STEP 1
-    cout << "STEP 1a" << endl;
+    //cout << "STEP 1a" << endl;
     auto state_regions_map = new map<int, set<Region*>*>();
     for(Region *reg: *regions_vector){
         for(auto st: *reg){
@@ -94,12 +86,12 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
     }
     do{
-        for(auto clause: *clauses){
-            delete clause;
+        for(auto cl: *clauses){
+            delete cl;
         }
         clauses->clear();
 
-        cout << "STEP 1b" << endl;
+        //cout << "STEP 1b" << endl;
         for(auto rec: *state_regions_map){
             auto region_set = rec.second;
             clause = new vector<int32_t>();
@@ -110,8 +102,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             //print_clause(clause);
         }
 
-        //STEP 2 todo: da testare bug probabilmente dovrei avere 5 e 11
-        cout << "STEP 2" << endl;
+        //STEP 2
+        //cout << "STEP 2" << endl;
         /*
          * ALGORITMO:
          *      per ogni ev
@@ -123,7 +115,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
          */
         //for each ev
         for(auto rec: *pre_regions_map){
-            auto ev = rec.first;
+            //auto ev = rec.first;
             auto set_of_regions = rec.second;
             for (auto r: *set_of_regions) {
                 if ((*region_ex_event_map)[r]->size() > 1) {
@@ -141,8 +133,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
 
 
-        //STEP 3 TODO: da testare
-        cout << "STEP 3" << endl;
+        //STEP 3
+        //cout << "STEP 3" << endl;
         auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
                                                         pprg->get_post_regions());
 
@@ -166,7 +158,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         delete regions_connected_to_labels;
 
         //STEP 4
-        cout << "STEP 4" << endl;
+        //cout << "STEP 4" << endl;
         vector<WeightedLit> literals_from_regions = {};
         literals_from_regions.reserve(k); //improves the speed
         for(int i=0;i<k;i++){
@@ -178,15 +170,14 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             }
         }
 
-        //TODO: STEP 5
-        cout << "STEP 5" << endl;
+        //STEP 5
+        //cout << "STEP 5" << endl;
         vector<WeightedLit> sum_of_regions = {};
         sum_of_regions.reserve(k);
         for(int i=0;i<k;i++){
             sum_of_regions.emplace_back(1+i, 1);
         }
 
-        //todo mettere il valore a 0 in seguito ???
         int current_value = 1;
         int min = 0;
         int max = k;
@@ -198,17 +189,17 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
-
         Minisat::Solver solver;
-
 
         bool sat = true;
         string dimacs_file;
         bool exists_solution = false;
+        bool exists_solution2 = false;
 
         auto last_solution = new set<int>();
         //iteration in the search of a correct assignment decreasing the total weight
         do {
+            //formula.resetInternalUnsatState();
             IncPBConstraint constraint(literals_from_regions, GEQ,
                                        current_value); //the sum have to be greater or equal to current_value
             pb2cnf.encodeIncInital(constraint, formula, auxvars);
@@ -242,12 +233,21 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 }
                 if(decomposition_debug)
                     cout << endl;
-                //maxValueToCheck--;
                 min = current_value;
             } else {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
                     cout << "UNSAT with value " << current_value << endl;
+                    if(exists_solution) {
+                        cout << "Model: ";
+                        for (int i = 0; i < solver.nVars(); ++i) {
+                            if (solver.model[i] != l_Undef) {
+                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                        i + 1);
+                            }
+                        }
+                        cout << endl;
+                    }
                 }
                 max = current_value;
             }
@@ -256,84 +256,75 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
 
         int current_value2 = 0;
-        //TODO qui bug: il primo risultato non può essere unsat
         for(auto val: *last_solution){
             if(val > 0){
                 current_value2++;
             }
         }
+        current_value2--;
         int min2 = 0;
         int max2 = current_value2;
 
-        //TODO: this part doesn't works -> forse usare le clausole stanard, probabilmente auxvars in contraddizione tra le 2 parti
-        //TODO: anche senza la parte aggiuntiva non viene il risultato sat, perchè?
+        //STEP 6
         cout << "TRYING TO DECREASE THE NUMBER OF REGIONS" << endl;
 
-        int num_clauses_formula = formula.getClauses().size();
-        formula.clearDatabase();
-        for (auto cl: *clauses) {
-            formula.addClause(*cl);
-        }
+
+
+        int num_clauses_formula;
         //cout << "formula" << endl;
         //formula.printFormula(cout);
 
-        Minisat::Solver solver2;
+        //Minisat::Solver solver2;
+        Minisat::Solver *solver2;
+        //auto solver2 = new Minisat::Solver();
+
+
+         //the sum have to be equal to current_value
+
+        PBConfig config2 = make_shared<PBConfigClass>();
+        VectorClauseDatabase formula2(config2);
+        AuxVarManager auxvars2(k+m+2);
+        PBConstraint constraint3(literals_from_regions, BOTH,
+                                 current_value, current_value);
 
         do{
-            IncPBConstraint constraint(literals_from_regions, BOTH,
-                                        current_value, current_value); //the sum have to equal to current_value
-            pb2cnf.encodeIncInital(constraint, formula, auxvars);
-            num_clauses_formula = formula.getClauses().size();
-            //cout << "formula size: " << formula.getClauses().size() << endl;
-            //cout << "formula 2" << endl;
-            //formula.printFormula(cout);
-            IncPBConstraint constraint2(sum_of_regions, LEQ,
+            solver2 = new Minisat::Solver();
+            auxvars2.resetAuxVarsTo(k+m+2);
+            auto max_aux = auxvars2.getBiggestReturnedAuxVar();
+            formula2.clearDatabase();
+            for (auto cl: *clauses) {
+                formula2.addClause(*cl);
+            }
+            pb2cnf.encode(constraint3, formula2, auxvars2);
+
+            cout << "values: " << current_value << ", " << current_value2 << endl;
+            PBConstraint constraint2(sum_of_regions, LEQ,
                                        current_value2); //the sum have to be lesser or equal to current_value2
-            //AuxVarManager auxvars2(auxvars.getBiggestReturnedAuxVar()+1);
-            pb2cnf.encodeIncInital(constraint2, formula, auxvars);
-            //cout << "formula size: " << formula.getClauses().size() << endl;
-            /*vector<int32_t> lits;
-            for(int i=1;i<=k;i++){
-                lits.push_back(i);
-            }*/
-            /*auto formula_clauses = formula.getClauses();
-            cout << "formula  clauses size: " << formula_clauses.size() << endl;
-            auto a_caso = pb2cnf.encodeAtMostK(lits, 7, formula_clauses, k+m+2);*/
-            num_clauses_formula = formula.getClauses().size();
-            //cout << "formula 3" << endl;
-            //formula.printFormula(cout);
-            //cout << "formula2 size: " << formula.getClauses().size() << endl;
-            //cout << "formula  clauses2 size: " << formula_clauses.size() << endl;
-            /*for(auto cl: formula_clauses){
-                print_clause(&cl);
-            }*/
-            //num_clauses_formula =formula_clauses.size();
-            int max_var = 0;
-            /*for(auto cl: formula_clauses){
-                for(auto var: cl){
-                    if(var > max_var)
-                        max_var = var;
-                }
-            }*/
-            //todo: al posto di null pointer dopo rimettere le clausole già usate preceentemente
-            dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                            formula.getClauses(), results_to_avoid);
-            sat = check_sat_formula_from_dimacs(solver2, dimacs_file);
+            pb2cnf.encode(constraint2, formula2, auxvars2);
+
+            num_clauses_formula = formula2.getClauses().size();
+
+            cout<< "Formula size: " << formula2.getClauses().size() << endl;
+
+            dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/, num_clauses_formula,
+                                            formula2.getClauses(), results_to_avoid);
+            sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
+
             if (sat) {
-                exists_solution = true;
+                exists_solution2 = true;
                 if (decomposition_debug) {
                     cout << "(Decreasing) SAT with values " << current_value << ", " << current_value2 << endl;
                     cout << "Model: ";
                 }
                 last_solution->clear();
-                for (int i = 0; i < solver2.nVars(); ++i) {
-                    if (solver2.model[i] != l_Undef) {
+                for (int i = 0; i < solver2->nVars(); ++i) {
+                    if (solver2->model[i] != l_Undef) {
                         if(decomposition_debug) {
-                            fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                            fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver2->model[i] == l_True) ? "" : "-",
                                     i + 1);
                         }
                         if(i < k) {
-                            if (solver2.model[i] == l_True) {
+                            if (solver2->model[i] == l_True) {
                                 last_solution->insert(i + 1);
                             } else {
                                 last_solution->insert(-i - 1);
@@ -346,27 +337,31 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 max2 = current_value2;
             } else {
                 if (decomposition_debug) {
-                    //cout << "----------" << endl;
                     cout << "(Decreasing) UNSAT with values " << current_value << ", " << current_value2 << endl;
                 }
                 min2 = current_value2;
             }
             current_value2 = (min2 + max2) / 2;
+            delete solver2;
         } while((max2 - min2) > 1);
 
 
-
-        //todo: solver model essendo unsat potrebbe essere una soluzione sbgliata
         if (exists_solution) {
             set<Region *> prova_PN;
-            cout << "output model:" << endl;
+            if(decomposition_debug)
+                cout << "output model:" << endl;
             for(auto val: *last_solution){
                 if(val > 0){
-                    println(*regions_vector->at(val-1));
-                    if(not_used_regions->find(regions_vector->at(val-1)) != not_used_regions->end())
-                        not_used_regions->erase(regions_vector->at(val-1));
+                    if(decomposition_debug) {
+                        cout << val << ": ";
+                        println(*regions_vector->at(val - 1));
+                    }
+                    if(val <= k)
+                        if(not_used_regions->find(regions_vector->at(val-1)) != not_used_regions->end())
+                            not_used_regions->erase(regions_vector->at(val-1));
                 }
             }
+            //STEP 7
             auto temp_PN = new set<Region*>();
             for(auto r_index: *last_solution){
                 if(r_index>0){
@@ -374,7 +369,11 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 }
             }
             fcpn_set->insert(temp_PN);
-            results_to_avoid->insert(last_solution);
+            auto last_solution_copy = new set<int>();
+            for(auto val: *last_solution){
+                last_solution_copy->insert(val);
+            }
+            results_to_avoid->insert(last_solution_copy);
 
             auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
             excitation_closure = is_excitation_closed(used_regions_map, ER);
@@ -391,8 +390,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             cout << "no solution found" << endl;
             exit(0);
         }
-        //TODO: perchè l'eliminazione di last solution crea loop se tale risultato non dovrebbe essere riutilizzato
-        //delete last_solution;
+        delete last_solution;
     } while(!excitation_closure);
 
 
@@ -402,8 +400,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         output_name = output_name.substr(0, output_name.size() - 1);
     }
     output_name = output_name.substr(0, output_name.size() - 1);
-
-    int counter = 0;
 
     cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
 

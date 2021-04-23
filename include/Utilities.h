@@ -7,7 +7,6 @@
 #include "minisat/core/Solver.h"
 #include "minisat/mtl/Vec.h"
 #include "minisat/core/Dimacs.h"
-#include "minisat/core/SolverTypes.h"
 #include "../include/TS_parser.h"
 #include "numeric"
 #include <algorithm>
@@ -116,6 +115,7 @@ namespace Utilities {
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, Region *> *second);
     map<int, set<Region *> *>* merge_2_maps(map<int, Region *> *first, map<int, Region *> *second);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, set<set<int>*>* new_results_to_avoid);
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);
