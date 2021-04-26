@@ -11,7 +11,7 @@ using namespace Utilities;
 
 
 FCPN_decomposition::FCPN_decomposition(int number_of_events,
-                                        vector<Region> *regions,
+                                        set<Region *> *regions,
                                         const string& file,
                                         Pre_and_post_regions_generator *pprg,
                                         map<int, int> *aliases,
@@ -30,14 +30,15 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      *                              create clause (!r v !pre(ev))
      *      3) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
-     *      4) maximization function: number of regions used in the result
+     *      4) maximization function: number of new regions used in the result -> max covering
      *      5) minimize the total number of regions after having achieved the first result (todo: o forse anche fin da subito,
      *          ancora meglio trovare il valore sat per masimizzare la copertura e poi con quel valore minimizzare il numero di regioni
      *          ma se si combinano le 2 cose si trova il risultato migliore prima)
      *      6) solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
      * 8) while !EC: previous results clauses are added as results to avoid in future
-     *todo: 9) forse serve il vincolo sulla componibilità: se un posto ha n transizioni in uscita tutte devono essere presenti nella stessa PN: duplication avoidance
+     *todo: 9) forse serve il vincolo sulla componibilità: se un posto ha n transizioni in uscita tutte devono essere
+     * presenti nella stessa PN: duplication avoidance (Jordi dice che serve)
      */
 
     auto clauses = new vector<vector<int32_t> *>();
@@ -60,10 +61,12 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     auto results_to_avoid = new set<set<int>*>();
     auto reg_map = new map<Region*, int>();
     auto regions_vector = new vector<Region*>();
-    for(int k=0;k<regions->size();k++){
-        (*reg_map)[&(regions->at(k))] = k;
-        regions_vector->push_back(&(regions->at(k)));
-        not_used_regions->insert(&(regions->at(k)));
+    int temp = 0;
+    for(auto reg: *regions){
+        (*reg_map)[reg] = temp;
+        regions_vector->push_back(reg);
+        not_used_regions->insert(reg);
+        temp++;
     }
 
     vector<int32_t> *clause;
@@ -422,12 +425,14 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
         (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
     }
-    //TODO: the regions of different fcpns have the wrong region names, have to bound them and solve it
     int pn_counter=0;
+    auto regions_mapping = get_regions_map(pprg->get_pre_regions());
     for(auto pn: *fcpn_set){
-        print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases, file,pn_counter);
+        print_fcpn_dot_file(regions_mapping,map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases, file,pn_counter);
         pn_counter++;
     }
+
+    delete regions_mapping;
 
     if (decomposition_debug) {
         cout << "Final FCPNs" << endl;
@@ -442,14 +447,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     }
     delete state_regions_map;
 
-    /*for(auto cl: *clauses){
-        delete cl;
-    }
-    delete clauses;*/
-
-    /*for(auto reg: *regions_vector){
-        delete reg;
-    }*/
     delete regions_vector;
 
     for(auto rec: *map_of_PN_pre_regions){

@@ -15,7 +15,7 @@ private:
 
 public:
     FCPN_decomposition(int number_of_events,
-                       vector<Region> *regions,
+                       set<Region*> *regions,
                        const string& file,
                        Pre_and_post_regions_generator *pprg,
                        map<int, int> *aliases,

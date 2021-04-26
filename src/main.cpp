@@ -50,8 +50,8 @@ int main(int argc, char **argv) {
                 print_step_by_step = true;
             }
             if (args[i] == "D") {
-                print_step_by_step = true;
-                print_step_by_step_debug = true;
+                //print_step_by_step = true;
+                //print_step_by_step_debug = true;
                 decomposition_debug = true;
             }
             /*if (args[i] == "L"){
@@ -593,8 +593,8 @@ int main(int argc, char **argv) {
             }
 
             if(fcptnet){
-                auto fcpn_decomposition = new FCPN_decomposition(clauses,
-                                        number_of_events, vector_regions, states_sum,file, pprg, aliases, new_ER);
+                auto fcpn_decomposition = new FCPN_decomposition(number_of_events, regions_set, file,
+                                                                 pprg, aliases, new_ER);
 
                 /*cout << "Looking for an SM composition in order to create FCPTNet" << endl;
                 cout << "Total initial SMs: " << SMs->size() << endl;
@@ -696,6 +696,7 @@ int main(int argc, char **argv) {
                     PNs->erase(pn);
                 }
                 delete PNs;*/
+                delete fcpn_decomposition;
             }
 
             //creation of a single PN from the sum of splitted SMs

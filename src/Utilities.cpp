@@ -628,15 +628,15 @@ namespace Utilities {
     }
 
     void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
-                           map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, string file_name, int FCPN_number) {
+                             map<int, set<Region *> *> *post_regions,
+                             map<int, int> *aliases, string file_name, int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
         string output_name = std::move(file_name);
         string in_dot_name;
         string output;
         // creazione della mappa tra il puntatore alla regione ed un intero univoco
         // corrispondente
-        map<Region *, int> *regions_mapping;
+        auto regions_mapping = get_regions_map(pre_regions);
         /*cout << "preregions prima del print" << endl;
         print(*pre_regions);*/
         auto regions_set = copy_map_to_set(pre_regions);
@@ -644,9 +644,6 @@ namespace Utilities {
         println(*regions_set);*/
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
-        regions_mapping = get_regions_map(pre_regions);
-
-
 
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -791,6 +788,176 @@ namespace Utilities {
         delete not_initial_regions;
         delete initial_reg;
         delete regions_mapping;
+    }
+
+    void print_fcpn_dot_file(map<Region *, int> *regions_mapping,
+                             map<int, set<Region *> *> *pre_regions,
+                             map<int, set<Region *> *> *post_regions,
+                             map<int, int> *aliases, string file_name, int FCPN_number){
+        auto initial_reg = initial_regions(pre_regions);
+        string output_name = std::move(file_name);
+        string in_dot_name;
+        string output;
+        bool delete_regions_mapping = false;
+        // creazione della mappa tra il puntatore alla regione ed un intero univoco
+        // corrispondente
+        if(regions_mapping == nullptr){
+            regions_mapping = get_regions_map(pre_regions);
+            delete_regions_mapping = true;
+        }
+
+        /*cout << "preregions prima del print" << endl;
+        print(*pre_regions);*/
+        auto regions_set = copy_map_to_set(pre_regions);
+        /*cout << "regions set " << endl;
+        println(*regions_set);*/
+        auto not_initial_regions =
+                region_pointer_difference(regions_set, initial_reg);
+
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        int lower = 0;
+        for (int i = static_cast<int>(output_name.size() - 1); i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_dot_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
+        // cout << "out name: " << in_dot_name << endl;
+
+        if(FCPN_number >= 0){
+            output_name += "_FCPN_";
+            output_name+=std::to_string(FCPN_number);
+            output_name+=".dot";
+        }
+        else{
+            output_name += "_PN.dot";
+        }
+        //cout << "file output PN: " << output_name << endl;
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        if(FCPN_number >= 0){
+            fout << in_dot_name + "_FCPN_";
+            fout << std::to_string(FCPN_number);
+        }
+        else{
+            fout << in_dot_name + "_PN";
+        }
+
+        fout << "{\n";
+        // regioni iniziali
+        //cout << "scrittura regioni iniziali" << endl;
+        fout << "subgraph initial_place {\n"
+                "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
+                "black, fillcolor = gray, style = filled];\n";
+        for (auto reg : *initial_reg) {
+            fout << "\tr" << regions_mapping->at(reg) << ";\n";
+        }
+
+
+
+        fout << "}\n";
+        // regioni non iniziali
+        fout << "subgraph place {     \n"
+                "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
+        for (auto reg : *not_initial_regions) {
+            fout << "\tr" << regions_mapping->at(reg) << ";\n";
+        }
+        fout << "}\n";
+        // transazioni (eventi)
+        fout << "subgraph transitions {\n"
+                "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
+        auto alias_counter = new map<int, int>();
+        for (auto al:*aliases) {
+            (*alias_counter)[al.second] = 0;
+        }
+        for (auto record : *aliases) {
+            //fout << "\t" << record.first << ";\n";
+            int label;
+            label = record.second;
+            (*alias_counter)[label]++;
+            if(g_input){
+                fout << "\t" << record.first << " [label = \""
+                     << (*aliases_map_number_name)[label];
+            }
+            else{
+                fout << "\t" << record.first << " [label = \""
+                     << label;
+            }
+            //cout<<"debug alias counter di "<< record.second << (*alias_counter)[record.second]<<endl;
+            for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
+                fout << "'";
+            }
+            fout << "\"];\n";
+
+        }
+        delete alias_counter;
+        //transazioni (eventi) iniziali
+        for (auto record : *pre_regions) {
+            if (record.first < num_events) {
+                if(g_input){
+                    fout << "\t" << record.first << " [label = \""
+                         << (*aliases_map_number_name)[record.first];
+                    fout << "\"];\n";
+                }
+                else{
+                    fout << "\t" << record.first << ";\n";
+                }
+
+            }
+        }
+        fout << "}\n";
+
+        //archi tra tansazioni e posti (tra eventi e regioni)
+        //regione -> evento
+        for (auto record : *pre_regions) {
+            for (auto reg : *record.second) {
+                if (record.first < num_events) {
+                    //if (regions_mapping->find(reg) != regions_mapping->end()) {
+                    fout << "\tr" << regions_mapping->at(reg) << " -> "
+                         << record.first << ";\n";
+
+                    //} else {
+                    //cout << "regions_mapping non contiene ";
+                    // println(*reg);
+                    //}
+                } else {
+                    //int label=aliases->at(record.first);
+                    if (regions_mapping->find(reg) != regions_mapping->end()) {
+                        fout << "\tr" << regions_mapping->at(reg) << " -> "
+                             << record.first << ";\n";
+                    } else {
+                        //cout << "regions_mapping non contiene ";
+                        //println(*reg);
+                    }
+                }
+            }
+        }
+        //evento -> regione
+        for (auto record : *post_regions) {
+            for (auto reg : *record.second) {
+                if (regions_mapping->find(reg) != regions_mapping->end()) {
+                    fout << "\t" << record.first << " -> "
+                         << "r" << regions_mapping->at(reg) << ";\n";
+                    //} else {
+                    // entra qui 2 volte
+                    // cout << "regions_mapping non contiene ";
+                    // println(*reg);
+                }
+            }
+        }
+        fout << "}";
+        fout.close();
+        delete regions_set;
+        delete not_initial_regions;
+        delete initial_reg;
+        if(delete_regions_mapping)
+            delete regions_mapping;
     }
 
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
@@ -2170,4 +2337,16 @@ namespace Utilities {
         return new_used_regions_map_tmp;
     }
 
+    void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map){
+        for(auto rec2: *map1){
+            auto ev = rec2.first;
+            auto region_set = rec2.second;
+            if(output_map->find(ev) == output_map->end()){
+                (*output_map)[ev]= new set<Region *>();
+            }
+            for(auto reg: *region_set){
+                (*output_map)[ev]->insert(reg);
+            }
+        }
+    }
 }
