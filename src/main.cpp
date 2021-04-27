@@ -589,7 +589,7 @@ int main(int argc, char **argv) {
                         << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
                         << endl;
                 if(decomposition)
-                    merge->print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+                    Merge::print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
             }
 
             if(fcptnet){
@@ -698,27 +698,6 @@ int main(int argc, char **argv) {
                 delete PNs;*/
                 delete fcpn_decomposition;
             }
-
-            //creation of a single PN from the sum of splitted SMs
-            /*auto SMs_sum = new SM();
-            for (auto sm: *SMs) {
-                for(auto reg: *sm){
-                    SMs_sum->insert(reg);
-                }
-            }*/
-
-            /*if (decomposition_debug) {
-                //cout << "initial state: " << initial_state << endl;
-                //cout << "Complete pre-regions map:" <<endl;
-                //print(*pre_regions);
-                //cout << "Complete post-regions map:" << endl;
-                //print(*pprg->get_post_regions());
-                cout << "Final SMs" << endl;
-                for(auto SM: *SMs) {
-                    cout << "SM:" << endl;
-                    println(*SM);
-                }
-            }*/
 
             if (decomposition_debug && !fcptnet) {
                 cout << "Final SMs" << endl;
