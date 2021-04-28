@@ -14,6 +14,7 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool ects_output;
+bool experimental_k_fcpn_decomposition;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -27,8 +28,28 @@ map<pair<Region*, Region*>, bool> *overlaps_cache;
 bool benchmark_script;
 
 namespace Utilities {
-// Region = set<int> ->ritorna un insieme di stati
-    set<int> *regions_union(vector<Region *> *vec) {
+    set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
+        auto res = new set<Region *>();
+        for(auto reg_set: *region_set){
+            for(auto reg: *reg_set){
+                res->insert(reg);
+            }
+        }
+        return res;
+    }
+
+    set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2){
+        auto res = new set<Region *>();
+        for(auto reg: *region_set1){
+            res->insert(reg);
+        }
+        for(auto reg: *region_set2){
+            res->insert(reg);
+        }
+        return res;
+    }
+
+    Region *regions_union(vector<Region *> *vec) {
         auto all_states = new Region();
         int size;
         Region::iterator it;
@@ -1862,6 +1883,14 @@ namespace Utilities {
             cerr << "NO RESULT" << endl;
             exit(1);
         }
+    }
+
+    bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+        auto er = ER_set->at((event));
+        auto intersection = regions_intersection(pre_regions_set);
+        bool res = are_equal(er, intersection);
+        delete intersection;
+        return res;
     }
 
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set ) {

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <Python.h>
 #include <iomanip>
+#include <include/k_FCPN_decomposition.h>
 #include "../include/Merge.h"
 #include "../include/FCPN_decomposition.h"
 
@@ -38,6 +39,10 @@ int main(int argc, char **argv) {
                 ts_output = true;
             if(args[i]=="FC")
                 fcptnet = true;
+            if(args[i]=="KFC") {
+                fcptnet = true;
+                experimental_k_fcpn_decomposition = true;
+            }
             if(args[i] == "ECTS")
                 ects_output = true;
             if(args[i] == "M")
@@ -288,462 +293,357 @@ int main(int argc, char **argv) {
         tStart_partial = clock();
 
         if (decomposition || fcptnet) {
-            cout << "============================[DECOMPOSITION]===================" << endl;
             auto regions_set = copy_map_to_set(pre_regions);
-            int numRegions = regions_set->size();
-            cout << "Number of regions: " << numRegions << endl;
+            if(!experimental_k_fcpn_decomposition) {
+                cout << "============================[DECOMPOSITION]===================" << endl;
 
-            aliases_region_pointer = new map<int, Region *>();
-            aliases_region_pointer_inverted = new map<Region *, int>();
-            max_alias_decomp = 1;
-            num_clauses = 0;
+                int numRegions = regions_set->size();
+                cout << "Number of regions: " << numRegions << endl;
 
-            if (decomposition_debug)
-                cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]====================="
-                     << endl;
-            overlaps_cache = new map<pair<Region *, Region *>, bool>();
-            vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
-            create_dimacs_graph(numRegions, clauses);
+                aliases_region_pointer = new map<int, Region *>();
+                aliases_region_pointer_inverted = new map<Region *, int>();
+                max_alias_decomp = 1;
+                num_clauses = 0;
 
-            cout << "==================[START PYTHON]============= " << endl;
+                if (decomposition_debug)
+                    cout << "===============================[REDUCTION TO SAT OF THE OVERLAPS]====================="
+                         << endl;
+                overlaps_cache = new map<pair<Region *, Region *>, bool>();
+                vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
+                create_dimacs_graph(numRegions, clauses);
 
-            string python_code;
-            string python_source;
-            //compute all possible minimal independent sets
-            if(python_all){
-                if(benchmark_script) {
-                    python_source = "src/AllMISSolver.py";
-                }
-                else{
-                    python_source = "../src/AllMISSolver.py";
-                }
-            }
-            //faster aproximated solution
-            else {
-                if(benchmark_script) {
-                    python_source = "src/MIS-Solver.py";
-                }
-                else {
-                    python_source = "../src/MIS-Solver.py";
-                }
-            }
-            std::ifstream t(python_source);
-            std::stringstream buffer;
-            buffer << t.rdbuf();
-            python_code = buffer.str();
+                cout << "==================[START PYTHON]============= " << endl;
 
-            Py_Initialize();
-
-            PyRun_SimpleString(python_code.c_str());
-            Py_Finalize();
-
-            cout << "=================[END PYTHON]=================" << endl;
-
-            auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
-            read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
-
-            if(python_all) {
-                cout << "==============REMOVAL OF SETs WHICH ARE NOT SMs====" << endl;
-                vector<set<Region *> *> SMs_to_remove;
-                set<int> states_of_TS;
-                for (const auto &tr: *ts_map) {
-                    for (auto r: tr.second) {
-                        states_of_TS.insert(r->first);
-                        states_of_TS.insert(r->second);
+                string python_code;
+                string python_source;
+                //compute all possible minimal independent sets
+                if (python_all) {
+                    if (benchmark_script) {
+                        python_source = "src/AllMISSolver.py";
+                    } else {
+                        python_source = "../src/AllMISSolver.py";
                     }
                 }
+                    //faster aproximated solution
+                else {
+                    if (benchmark_script) {
+                        python_source = "src/MIS-Solver.py";
+                    } else {
+                        python_source = "../src/MIS-Solver.py";
+                    }
+                }
+                std::ifstream t(python_source);
+                std::stringstream buffer;
+                buffer << t.rdbuf();
+                python_code = buffer.str();
+
+                Py_Initialize();
+
+                PyRun_SimpleString(python_code.c_str());
+                Py_Finalize();
+
+                cout << "=================[END PYTHON]=================" << endl;
+
+                auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
+                read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
+
+                if (python_all) {
+                    cout << "==============REMOVAL OF SETs WHICH ARE NOT SMs====" << endl;
+                    vector<set<Region *> *> SMs_to_remove;
+                    set<int> states_of_TS;
+                    for (const auto &tr: *ts_map) {
+                        for (auto r: tr.second) {
+                            states_of_TS.insert(r->first);
+                            states_of_TS.insert(r->second);
+                        }
+                    }
+                    for (auto SM: *SMs) {
+                        /*if (decomposition_debug) {
+                            cout << "check if can rermove the SM: " << endl;
+                            println(*SM);
+                        }*/
+
+                        set<int> new_used_states_tmp;
+
+                        for (auto region: *SM) {
+                            for (auto s: *region) {
+                                new_used_states_tmp.insert(s);
+                            }
+                        }
+
+                        if (new_used_states_tmp.size() < states_of_TS.size()) {
+                            SMs_to_remove.push_back(SM);
+                            if (decomposition_debug) {
+                                cout << "not an SM:" << endl;
+                                println(*SM);
+                            }
+                        }
+                    }
+
+                    while (!SMs_to_remove.empty()) {
+                        if (decomposition_debug)
+                            cout << "removing a NOT SM set" << endl;
+                        auto SM = SMs_to_remove.begin();
+                        SMs->erase(SMs->find(*SM));
+                        SMs_to_remove.erase(SMs_to_remove.begin());
+                    }
+                }
+
+                if (decomposition_debug) {
+                    cout << "Initial SMs" << endl;
+                    for (auto SM: *SMs) {
+                        cout << "SM:" << endl;
+                        println(*SM);
+                    }
+                }
+
+                auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+                auto states_sum = getStatesSum(SMs);
+                auto temp_map_of_SM_pre_regions = new map<SM *, map<int, Region *> *>();
+                for (auto sm: *SMs) {
+                    (*temp_map_of_SM_pre_regions)[sm] = new map<int, Region *>();
+                    for (auto rec: *pprg->get_pre_regions()) {
+                        for (auto reg: *rec.second) {
+                            if (sm->find(reg) != sm->end()) {
+                                (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
+                            }
+                        }
+                    }
+                }
+                auto transitions_sum = getTransitionsSum(temp_map_of_SM_pre_regions);
+                for (auto map: *temp_map_of_SM_pre_regions) {
+                    delete map.second;
+                }
+                delete temp_map_of_SM_pre_regions;
+
+                //if(decomposition_debug)
+                cout
+                        << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
+                        << endl;
+
+                tStart_partial = clock();
+
+                vector<set<Region *> *> SMs_to_remove;
+
                 for (auto SM: *SMs) {
                     /*if (decomposition_debug) {
                         cout << "check if can rermove the SM: " << endl;
                         println(*SM);
                     }*/
+                    auto tmp_SMs = new set<set<Region *> *>();
+                    //tmp_SM prende tutto tranne SM
+                    for (auto set: *SMs) {
+                        if (set != SM)
+                            tmp_SMs->insert(set);
+                    }
 
-                    set<int> new_used_states_tmp;
+                    auto used_regions_map = get_map_of_used_regions(tmp_SMs, pprg->get_pre_regions());
 
-                    for (auto region: *SM) {
-                        for(auto s: *region){
-                            new_used_states_tmp.insert(s);
+                    excitation_closure = is_excitation_closed(used_regions_map, new_ER);
+                    for (auto rec: *used_regions_map) {
+                        delete rec.second;
+                    }
+                    delete used_regions_map;
+                    if (excitation_closure) {
+                        SMs_to_remove.push_back(SM);
+                        /*if (decomposition_debug) {
+                            cout << "ok without SM:" << endl;
+                            println(*SM);
+                        }*/
+                    }
+                    delete tmp_SMs;
+                }
+
+                int num_SMs = SMs->size();
+                int num_candidates = SMs_to_remove.size();
+
+                //use of the heuristics which removes biggest SMs first -> local minimality not guaranteed
+
+                //sorting of the SMs in descending size order
+                sort(SMs_to_remove.begin(), SMs_to_remove.end(), [](set<Region *> *lhs, set<Region *> *rhs) {
+                    return lhs->size() > rhs->size();
+                });
+                while (!SMs_to_remove.empty()) {
+                    auto tmp_SMs = new set<set<Region *> *>();
+                    auto SM = SMs_to_remove.at(0); //always take the first element: the biggest SM
+                    //tmp_SM prende tutto tranne SM
+                    for (auto set: *SMs) {
+                        if (set != SM)
+                            tmp_SMs->insert(set);
+                    }
+
+                    set<int> new_used_regions_tmp;
+                    for (auto tmp_SM: *tmp_SMs) {
+                        for (auto region: *tmp_SM) {
+                            new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+                        }
+                    }
+                    auto new_used_regions_map_tmp = new map < int, set<Region *>
+                    * > ();
+                    for (auto rec: *pre_regions) {
+                        (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+                    }
+
+                    for (auto reg: new_used_regions_tmp) {
+                        for (auto rec: *pre_regions) {
+                            if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
+                                (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                            }
                         }
                     }
 
-                    if (new_used_states_tmp.size() < states_of_TS.size()) {
-                        SMs_to_remove.push_back(SM);
+                    excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+                    for (auto rec: *new_used_regions_map_tmp) {
+                        delete rec.second;
+                    }
+                    delete new_used_regions_map_tmp;
+                    if (excitation_closure) {
                         if (decomposition_debug) {
-                            cout << "not an SM:" << endl;
+                            cout << "removed SM" << endl;
                             println(*SM);
                         }
+                        //removal of the SM
+                        delete *SMs->find(SM); //removes the regions of the SM
+                        SMs->erase(SM); //removes the pointer for the regions of the SM
                     }
-                }
-
-                while(!SMs_to_remove.empty()){
-                    if(decomposition_debug)
-                        cout << "removing a NOT SM set" << endl;
-                    auto SM = SMs_to_remove.begin();
-                    SMs->erase(SMs->find(*SM));
                     SMs_to_remove.erase(SMs_to_remove.begin());
-                }
-            }
-
-            if (decomposition_debug) {
-                cout << "Initial SMs" << endl;
-                for (auto SM: *SMs) {
-                    cout << "SM:" << endl;
-                    println(*SM);
-                }
-            }
-
-            auto t_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-
-            auto states_sum = getStatesSum(SMs);
-            auto temp_map_of_SM_pre_regions = new map<SM *, map<int, Region *> *>();
-            for (auto sm: *SMs) {
-                (*temp_map_of_SM_pre_regions)[sm] = new map<int, Region *>();
-                for (auto rec: *pprg->get_pre_regions()) {
-                    for (auto reg: *rec.second) {
-                        if (sm->find(reg) != sm->end()) {
-                            (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
-                        }
-                    }
-                }
-            }
-            auto transitions_sum = getTransitionsSum(temp_map_of_SM_pre_regions);
-            for (auto map: *temp_map_of_SM_pre_regions) {
-                delete map.second;
-            }
-            delete temp_map_of_SM_pre_regions;
-
-            //if(decomposition_debug)
-            cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
-                 << endl;
-
-            tStart_partial = clock();
-
-            vector<set<Region *> *> SMs_to_remove;
-
-            for (auto SM: *SMs) {
-                /*if (decomposition_debug) {
-                    cout << "check if can rermove the SM: " << endl;
-                    println(*SM);
-                }*/
-                auto tmp_SMs = new set<set<Region *> *>();
-                //tmp_SM prende tutto tranne SM
-                for (auto set: *SMs) {
-                    if (set != SM)
-                        tmp_SMs->insert(set);
+                    delete tmp_SMs;
                 }
 
-                auto used_regions_map = get_map_of_used_regions(tmp_SMs, pprg->get_pre_regions());
-
-                excitation_closure = is_excitation_closed(used_regions_map, new_ER);
-                for (auto rec: *used_regions_map) {
-                    delete rec.second;
-                }
-                delete used_regions_map;
-                if (excitation_closure) {
-                    SMs_to_remove.push_back(SM);
-                    /*if (decomposition_debug) {
-                        cout << "ok without SM:" << endl;
-                        println(*SM);
-                    }*/
-                }
-                delete tmp_SMs;
-            }
-
-            int num_SMs = SMs->size();
-            int num_candidates = SMs_to_remove.size();
-
-            //use of the heuristics which removes biggest SMs first -> local minimality not guaranteed
-
-            //sorting of the SMs in descending size order
-            sort(SMs_to_remove.begin(), SMs_to_remove.end(), [](set<Region *> *lhs, set<Region *> *rhs) {
-                return lhs->size() > rhs->size();
-            });
-            while (!SMs_to_remove.empty()) {
-                auto tmp_SMs = new set<set<Region *> *>();
-                auto SM = SMs_to_remove.at(0); //always take the first element: the biggest SM
-                //tmp_SM prende tutto tranne SM
-                for (auto set: *SMs) {
-                    if (set != SM)
-                        tmp_SMs->insert(set);
+                if (((unsigned int) num_SMs - num_candidates) == SMs->size()) {
+                    cout << "All candidate SMs has been removed" << endl;
                 }
 
-                set<int> new_used_regions_tmp;
-                for (auto tmp_SM: *tmp_SMs) {
-                    for (auto region: *tmp_SM) {
-                        new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
-                    }
-                }
-                auto new_used_regions_map_tmp = new map < int, set<Region *>
-                * > ();
-                for (auto rec: *pre_regions) {
-                    (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
-                }
+                auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-                for (auto reg: new_used_regions_tmp) {
-                    for (auto rec: *pre_regions) {
-                        if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
-                            (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
-                        }
-                    }
-                }
-
-                excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
-                for (auto rec: *new_used_regions_map_tmp) {
-                    delete rec.second;
-                }
-                delete new_used_regions_map_tmp;
-                if (excitation_closure) {
-                    if (decomposition_debug) {
-                        cout << "removed SM" << endl;
-                        println(*SM);
-                    }
-                    //removal of the SM
-                    delete *SMs->find(SM); //removes the regions of the SM
-                    SMs->erase(SM); //removes the pointer for the regions of the SM
-                }
-                SMs_to_remove.erase(SMs_to_remove.begin());
-                delete tmp_SMs;
-            }
-
-            if (((unsigned int) num_SMs - num_candidates) == SMs->size()) {
-                cout << "All candidate SMs has been removed" << endl;
-            }
-
-            auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-
-            auto states_after_sms_removal = getStatesSum(SMs);
-            temp_map_of_SM_pre_regions = new map < SM *, map < int, Region * > * > ();
-            for (auto sm: *SMs) {
-                (*temp_map_of_SM_pre_regions)[sm] = new map < int, Region * > ();
-                for (auto rec: *pprg->get_pre_regions()) {
-                    for (auto reg: *rec.second) {
-                        if (sm->find(reg) != sm->end()) {
-                            (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
-                        }
-                    }
-                }
-            }
-            auto transitions_after_sms_removal = getTransitionsSum(temp_map_of_SM_pre_regions);
-            for (auto map: *temp_map_of_SM_pre_regions) {
-                delete map.second;
-            }
-            delete temp_map_of_SM_pre_regions;
-
-            if(decomposition_debug) {
-                cout << "Remaining SMs:" << endl;
+                auto states_after_sms_removal = getStatesSum(SMs);
+                temp_map_of_SM_pre_regions = new map < SM *, map < int, Region * > * > ();
                 for (auto sm: *SMs) {
-                    cout << endl;
-                    println(*sm);
-                }
-            }
-
-            //if(decomposition_debug)
-            cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
-
-            //map with key the pointer to SM
-            auto map_of_SM_pre_regions = new map < SM *, map<int, Region *>* > ();
-            auto map_of_SM_post_regions = new map < SM *, map<int, Region *>* > ();
-
-            for (auto sm: *SMs) {
-                (*map_of_SM_pre_regions)[sm] = new map < int, Region * > ();
-                for (auto rec: *pprg->get_pre_regions()) {
-                    for (auto reg: *rec.second) {
-                        if (sm->find(reg) != sm->end()) {
-                            (*(*map_of_SM_pre_regions)[sm])[rec.first] = reg;
-                        }
-                    }
-                }
-                (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
-            }
-
-            //if(decomposition_debug)
-            cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================" << endl;
-            tStart_partial = clock();
-
-
-            auto *merge = new Merge(SMs,
-                                    clauses,
-                                    number_of_events,
-                                    map_of_SM_pre_regions,
-                                    map_of_SM_post_regions,
-                                    file,
-                                    pprg);
-
-            auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-
-            auto final_sum = getStatesSum(SMs);
-            auto final_avg = getStatesAvg(SMs);
-            auto final_var = getStatesVar(SMs);
-            auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
-            auto final_transitions_avg = getTransitionsAvg(map_of_SM_pre_regions);
-            auto final_transitions_var = getTransitionsVar(map_of_SM_pre_regions);
-            auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
-            auto maxTransitions = getMaxTransitionsNumber(map_of_SM_pre_regions);
-            auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
-
-            //if(decomposition_debug)
-            if (decomposition_output) {
-                decomposition_output_sis ? cout
-                        << "=======================[ CREATION OF A .g FILE FOR EACH SM / S-COMPONENT  ]================"
-                        << endl : cout
-                        << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
-                        << endl;
-                if(decomposition)
-                    Merge::print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
-            }
-
-            if(fcptnet){
-                auto fcpn_decomposition = new FCPN_decomposition(number_of_events, regions_set, file,
-                                                                 pprg, aliases, new_ER);
-
-                /*cout << "Looking for an SM composition in order to create FCPTNet" << endl;
-                cout << "Total initial SMs: " << SMs->size() << endl;
-                auto pairs_done = new set<pair<SM*, SM*>>();
-                bool success = false;
-                SM* temp;
-                int couples_counter = 0;
-                auto PNs = new set<SM *>();
-                for(auto sm: *SMs){
-                    PNs->insert(sm);
-                }
-                bool done = false;
-                while(!done) {
-                    if (PNs->size() > 1) {
-                        for (auto SM1: *PNs) {
-                            for (auto SM2: *PNs) {
-                                //cout << "SMs " << SM1 << " and " << SM2 << endl;
-                                if (SM1 != SM2) {
-                                    if (pairs_done->find(make_pair(SM1, SM2)) == pairs_done->end()) {
-                                        if (pairs_done->find(make_pair(SM2, SM1)) == pairs_done->end()) {
-                                            temp = Utilities::SMUnionForFCPTNetWithCheck(SM1, SM2,
-                                                                                     pprg->get_post_regions());
-                                            pairs_done->insert(make_pair(SM1, SM2));
-                                            if (temp != nullptr) {
-                                                success = true;
-                                                couples_counter++;
-                                                PNs->insert(temp);
-                                                PNs->erase(SM1);
-                                                PNs->erase(SM2);
-                                                break;
-                                            }
-                                            else{
-                                                success = false;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            if(success) break;
-                        }
-                        if(!success){
-                            done = true;
-                        }
-                    } else {
-                        //cout << "only one SM/PN obtained" << endl;
-                        done = true;
-                    }
-                }
-                delete pairs_done;
-                delete temp;
-                std::ofstream outfile;
-                outfile.open("stats.csv", std::ios_base::app);
-                outfile << fixed
-                        << get_file_name(file) << "\t\tFCPTNET TEST: ";
-                if(success)
-                    outfile << "SUCCESS!!! number of initial SMs: " << SMs->size() << " number of total FCPNs: "<< PNs->size() << endl;
-                else
-                    outfile << "FAILED"<< endl;
-                cout << "number of total FCPNs: "<< PNs->size() << endl;*/
-
-                /*if(decomposition_output){
-                    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
-
-                    //map with key the pointer to SM
-                    auto map_of_PN_pre_regions = new map < SM *, map<int, set<Region *> *>*> ();
-                    auto map_of_PN_post_regions = new map < SM *, map<int, set<Region *> *>*> ();
-
-                    for (auto pn: *PNs) {
-                        (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *> ();
-                        for (auto rec: *pprg->get_pre_regions()) {
-                            for (auto reg: *rec.second) {
-                                if (pn->find(reg) != pn->end()) {
-                                    if((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()){
-                                        (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
-                                    }
-                                    (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
-                                }
+                    (*temp_map_of_SM_pre_regions)[sm] = new map < int, Region * > ();
+                    for (auto rec: *pprg->get_pre_regions()) {
+                        for (auto reg: *rec.second) {
+                            if (sm->find(reg) != sm->end()) {
+                                (*(*temp_map_of_SM_pre_regions)[sm])[rec.first] = reg;
                             }
                         }
-
-                        (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
-                    }
-                    int pn_counter=0;
-                    for(auto pn: *PNs){
-                        print_fcpn_dot_file(map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases, file,pn_counter);
-                        pn_counter++;
-                    }
-                }*/
-
-                //FREE
-                /*set<SM *> PNs_to_remove;
-                for(auto pn: *PNs){
-                    //remove only PNs, not SMs
-                    if(SMs->find(pn) == SMs->end()){
-                        PNs_to_remove.insert(pn);
                     }
                 }
-                for(auto pn: PNs_to_remove){
-                    PNs->erase(pn);
+                auto transitions_after_sms_removal = getTransitionsSum(temp_map_of_SM_pre_regions);
+                for (auto map: *temp_map_of_SM_pre_regions) {
+                    delete map.second;
                 }
-                delete PNs;*/
-                delete fcpn_decomposition;
-            }
+                delete temp_map_of_SM_pre_regions;
 
-            if (decomposition_debug && !fcptnet) {
-                cout << "Final SMs" << endl;
+                if (decomposition_debug) {
+                    cout << "Remaining SMs:" << endl;
+                    for (auto sm: *SMs) {
+                        cout << endl;
+                        println(*sm);
+                    }
+                }
+
+                //if(decomposition_debug)
+                cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================" << endl;
+
+                //map with key the pointer to SM
+                auto map_of_SM_pre_regions = new map < SM *, map<int, Region *>
+                * > ();
+                auto map_of_SM_post_regions = new map < SM *, map<int, Region *>
+                * > ();
+
+                for (auto sm: *SMs) {
+                    (*map_of_SM_pre_regions)[sm] = new map < int, Region * > ();
+                    for (auto rec: *pprg->get_pre_regions()) {
+                        for (auto reg: *rec.second) {
+                            if (sm->find(reg) != sm->end()) {
+                                (*(*map_of_SM_pre_regions)[sm])[rec.first] = reg;
+                            }
+                        }
+                    }
+                    (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
+                }
+
+                //if(decomposition_debug)
+                cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================"
+                     << endl;
+                tStart_partial = clock();
+
+
+                auto *merge = new Merge(SMs,
+                                        clauses,
+                                        number_of_events,
+                                        map_of_SM_pre_regions,
+                                        map_of_SM_post_regions,
+                                        file,
+                                        pprg);
+
+                auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+                auto final_sum = getStatesSum(SMs);
+                auto final_avg = getStatesAvg(SMs);
+                auto final_var = getStatesVar(SMs);
+                auto final_transitions_sum = getTransitionsSum(map_of_SM_pre_regions);
+                auto final_transitions_avg = getTransitionsAvg(map_of_SM_pre_regions);
+                auto final_transitions_var = getTransitionsVar(map_of_SM_pre_regions);
+                auto maxPTSum = getMaxPTSum(map_of_SM_pre_regions);
+                auto maxTransitions = getMaxTransitionsNumber(map_of_SM_pre_regions);
+                auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
+
+                //if(decomposition_debug)
+                if (decomposition_output) {
+                    decomposition_output_sis ? cout
+                            << "=======================[ CREATION OF A .g FILE FOR EACH SM / S-COMPONENT  ]================"
+                            << endl : cout
+                            << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
+                            << endl;
+                    if (decomposition)
+                        Merge::print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+                }
+
+                if (decomposition_debug && !fcptnet) {
+                    cout << "Final SMs" << endl;
+                    for (auto SM: *SMs) {
+                        cout << "SM:" << endl;
+                        println(*SM);
+                    }
+                }
+
+                int n = merge->dimacs_file.length();
+                const char* dimacs = merge->dimacs_file.c_str();
+
+                //===========FREE===========
+                delete merge;
+                //delete SMs_sum;
                 for (auto SM: *SMs) {
-                    cout << "SM:" << endl;
-                    println(*SM);
+                    delete SM;
                 }
-            }
+                delete SMs;
+                rg->basic_delete();
+                rg->delete_ER_set();
+                for (auto vec: *clauses) {
+                    delete vec;
+                }
 
-            int n = merge->dimacs_file.length();
-            const char* dimacs = merge->dimacs_file.c_str();
+                delete clauses;
+                delete regions_set;
+                for (auto map: *map_of_SM_pre_regions) {
+                    delete map.second;
+                }
+                delete map_of_SM_pre_regions;
+                for (auto map: *map_of_SM_post_regions) {
+                    delete map.second;
+                }
+                delete map_of_SM_post_regions;
 
-            //===========FREE===========
-            delete merge;
-            //delete SMs_sum;
-            for (auto SM: *SMs) {
-                delete SM;
-            }
-            delete SMs;
-            rg->basic_delete();
-            rg->delete_ER_set();
-            for (auto vec: *clauses) {
-                delete vec;
-            }
-            delete clauses;
-            delete regions_set;
-            for (auto map: *map_of_SM_pre_regions) {
-                delete map.second;
-            }
-            delete map_of_SM_pre_regions;
-            for (auto map: *map_of_SM_post_regions) {
-                delete map.second;
-            }
-            delete map_of_SM_post_regions;
+                // declaring character array
+                char dimacs_file_array[n + 1];
 
+                // copying the contents of the
+                // string to char array
+                strcpy(dimacs_file_array, dimacs);
+                remove(dimacs_file_array);
 
-
-            // declaring character array
-            char dimacs_file_array[n + 1];
-
-            // copying the contents of the
-            // string to char array
-            strcpy(dimacs_file_array, dimacs);
-            remove(dimacs_file_array);
-
-            if(!fcptnet) {
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
@@ -788,6 +688,20 @@ int main(int argc, char **argv) {
                         << setprecision(2) << final_transitions_var
                         << endl;
             }
+
+            if(fcptnet){
+                if(experimental_k_fcpn_decomposition){
+                    auto k_fcpn_decomposition = new k_FCPN_decomposition(number_of_events, regions_set, file,
+                                                                         pprg, aliases, new_ER);
+                    delete k_fcpn_decomposition;
+                }
+                else{
+                    auto fcpn_decomposition = new FCPN_decomposition(number_of_events, regions_set, file,
+                                                                     pprg, aliases, new_ER);
+                    delete fcpn_decomposition;
+                }
+            }
+
         }
         else if (pn_synthesis){
             tStart_partial = clock();

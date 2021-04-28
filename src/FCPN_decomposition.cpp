@@ -30,7 +30,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      *                              create clause (!r v !pre(ev))
      *      3) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
-     *      4) constraint in order to have composable PNs (duplication aviodance): if a region is connected to n events
+     *      4) USELESS CONSTRAINT (achieved automatically at the end connecting regions to events): constraint in order to have composable PNs (duplication aviodance): if a region is connected to n events
      *          all these events have to take part of the FCPN where the region is used
      *          (todo: this condition could be useless because I always connect the used regions to all events at the end,
      *          it could be useful only if the additional constraint removes some results which violatets duplication avoidance)
@@ -161,7 +161,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
         delete regions_connected_to_labels;
 
-        //TODO: STEP 4
+        //STEP 4
+        /*
         auto events_connected_to_regions = new map<Region *, set<int>*>();
         for(auto rec: *pprg->get_pre_regions()){
             auto ev = rec.first;
@@ -197,6 +198,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             delete rec.second;
         }
         delete events_connected_to_regions;
+         */
 
         //STEP 5
         //cout << "STEP 5" << endl;

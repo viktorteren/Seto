@@ -47,6 +47,7 @@ extern bool ects_output;
 extern bool python_all;
 extern bool info;
 extern bool fcptnet;
+extern bool experimental_k_fcpn_decomposition;
 extern bool pn_synthesis;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
@@ -57,11 +58,12 @@ extern map<pair<Region*, Region*>, bool> *overlaps_cache;
 extern bool benchmark_script;
 
 namespace Utilities {
-
-    set<int> *regions_union(vector<Region *> *vec);
-    set<int> *regions_union(set<Region *> *vec);
-    set<int> *regions_union(Region *first, Region *second);
-    set<int> *regions_intersection(Region *first, Region *second);
+    set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
+    set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2);
+    Region *regions_union(vector<Region *> *vec);
+    Region *regions_union(set<Region *> *vec);
+    Region *regions_union(Region *first, Region *second);
+    Region *regions_intersection(Region *first, Region *second);
     bool at_least_one_state_from_first_in_second(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
     set<int> *region_difference(set<int> &first, set<int> &second);
@@ -128,6 +130,7 @@ namespace Utilities {
     void add_region_to_SM(set<Region*>* SM, Region* region);
     void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
+    bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);
