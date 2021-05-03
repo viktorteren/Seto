@@ -63,7 +63,7 @@ private:
   bool region_in_queue(Region &new_region, int init_pos);
   void expand(Region *region, int event, bool is_ER, int init_pos,int region_id_position);
   void set_middle_set_of_states(map<int, int> *queue_event_index);
-  void set_number_of_bad_events(int *event_type, int l, int event);
+  void set_number_of_bad_events(const int *event_type, int l, int event);
 
     //vector<Edge *> *search_bad_transactions(int type,Edges_list *list, Region *region);
 };

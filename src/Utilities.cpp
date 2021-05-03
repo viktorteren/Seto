@@ -2337,7 +2337,15 @@ namespace Utilities {
         return target_PN;
     }
 
+    //todo: use template for common code in case of print_clause
     void print_clause(vector<int32_t> *clause){
+        for(auto val: *clause){
+            cout << val << " ";
+        }
+        cout << endl;
+    }
+
+    void print_clause(set<int32_t> *clause){
         for(auto val: *clause){
             cout << val << " ";
         }

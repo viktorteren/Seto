@@ -793,7 +793,7 @@ void Region_generator::set_middle_set_of_states(
     }
 }
 
-void Region_generator::set_number_of_bad_events(int *event_type, int l,
+void Region_generator::set_number_of_bad_events(const int *event_type, int l,
                                                 int event) {
     // conta per ogni set di stati gli eventi bad
     // pair<int,Region*> *bad_events=new pair<int,Region*>;

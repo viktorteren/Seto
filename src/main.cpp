@@ -626,7 +626,7 @@ int main(int argc, char **argv) {
                 }
 
                 delete clauses;
-                delete regions_set;
+
                 for (auto map: *map_of_SM_pre_regions) {
                     delete map.second;
                 }
@@ -694,14 +694,21 @@ int main(int argc, char **argv) {
                     auto k_fcpn_decomposition = new k_FCPN_decomposition(number_of_events, regions_set, file,
                                                                          pprg, aliases, new_ER);
                     delete k_fcpn_decomposition;
+
+                    rg->basic_delete();
+                    rg->delete_ER_set();
                 }
                 else{
+                    cerr << "Iterating FCPN decomposition still have issues, probably it will be abbandoned" << endl;
+                    /*
                     auto fcpn_decomposition = new FCPN_decomposition(number_of_events, regions_set, file,
                                                                      pprg, aliases, new_ER);
-                    delete fcpn_decomposition;
+                    delete fcpn_decomposition;*/
+                    exit(0);
                 }
             }
 
+            delete regions_set;
         }
         else if (pn_synthesis){
             tStart_partial = clock();
@@ -798,7 +805,6 @@ int main(int argc, char **argv) {
 
         delete vector_regions;
 
-        //delete rg dealloca anche regions
         delete rg;
         delete pprg;
 

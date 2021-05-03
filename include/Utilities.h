@@ -152,6 +152,7 @@ namespace Utilities {
     bool have_common_regions(set<Region *> *first, set<Region *> *second);
     bool checkCommonRegionsBetweenSMs(SM *sm1, SM *sm2);
     void print_clause(vector<int32_t> *clause);
+    void print_clause(set<int32_t> *clause);
     map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs, map<int, set<Region *> *> *pre_regions);
     void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map);
 };
