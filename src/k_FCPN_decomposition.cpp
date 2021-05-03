@@ -38,8 +38,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
      * 4) at least one occurrence of each event in all FCPNs
      * 5) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3) for each FCPN
      * 6) solve SAT
-     * todo: 7) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> binary search usage
-     * todo: 8) decode results
+     * 7) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> binary search usage
+     * 8) decode results
      *
      *
      */
@@ -610,8 +610,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 cout << "UNSAT with " << number_of_FCPNs << " FCPNs and " << current_max_regions << " regions" << endl;
             }
         }
-        cout << "min: " << min << endl;
-        cout << "max: " << max << endl;
+        //cout << "min: " << min << endl;
+        //cout << "max: " << max << endl;
         current_max_regions = (min + max) / 2;
         delete solver2;
     } while((max - min) > 1);
@@ -624,7 +624,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         for (int i = 0; i < number_of_regions; ++i) {
             int encoded_value = encoded_region(inverse_reg_map->at(i), k);
             if (last_solution->find(encoded_value) != last_solution->end()) {
-                cout << "encoded value found " << encoded_value << endl;
+                //cout << "encoded value found " << encoded_value << endl;
                 //cout << "to decode: " << encoded_value << endl;
                 auto dec = decoded_region(encoded_value);
                 //println(*dec.second);
