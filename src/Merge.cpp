@@ -294,7 +294,7 @@ Merge::Merge(set<SM *> *SMs,
                     delete mergedReg;
                 }
             }
-            //todo: vedere nel caso dell'input clock.g se ci sono memory leak
+            //todo: nel caso dell'input clock.g e alloc-outbound.g ci sono memory leak
             /*for(Region * r: merged_regions){
                 cout << "removing a region" << endl;
                 println(*r);
@@ -326,7 +326,6 @@ Merge::Merge(set<SM *> *SMs,
     }
 
     //END NEW MERGE
-
 }
 
 void Merge::print_after_merge(set<SM *> *SMs,
@@ -370,8 +369,8 @@ void Merge::print_after_merge(set<SM *> *SMs,
 }
 
 Merge::~Merge(){
-    /*for (auto rec: *events_to_remove_per_SM) {
+    for (auto rec: *events_to_remove_per_SM) {
         delete rec.second;
-    }*/
+    }
     delete events_to_remove_per_SM;
 }

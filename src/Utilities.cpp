@@ -652,6 +652,10 @@ namespace Utilities {
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases, string file_name, int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
+        if(initial_reg->empty()){
+            cerr << "any initial region found" << endl;
+            exit(1);
+        }
         string output_name = std::move(file_name);
         string in_dot_name;
         string output;
@@ -816,6 +820,10 @@ namespace Utilities {
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases, string file_name, int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
+        if(initial_reg->empty()){
+            cerr << "any initial region found" << endl;
+            exit(1);
+        }
         string output_name = std::move(file_name);
         string in_dot_name;
         string output;
@@ -999,6 +1007,10 @@ namespace Utilities {
                            map<int, Region *> *post_regions,
                            map<int, int> *aliases, string file_name) {
         auto initial_reg = initial_regions(pre_regions);
+        if(initial_reg->empty()){
+            cerr << "any initial region found" << endl;
+            exit(1);
+        }
         string output_name = std::move(file_name);
         string in_sis_name;
         string output;
@@ -1209,6 +1221,10 @@ namespace Utilities {
                            map<int, int> *aliases,
                            string file_name) {
         auto initial_reg = initial_regions(pre_regions);
+        if(initial_reg->empty()){
+            cerr << "any initial region found" << endl;
+            exit(1);
+        }
         string output_name = std::move(file_name);
         string in_dot_name;
         string output;
@@ -1271,13 +1287,15 @@ namespace Utilities {
             (*alias_counter)[al.second] = 0;
         }
         for (auto record : *aliases) {
-            //fout << "\t" << record.first << ";\n";
+            //cout << "\t" << record.first << ";\n";
             //control if this label is used in this SM
             bool used = false;
             if (pre_regions->find(record.first) != pre_regions->end()) {
                 used = true;
+                //cout << "used: " << record.first << endl;
             } else if (post_regions->find(record.first) != post_regions->end()) {
                 used = true;
+                //cout << "used: " << record.first << endl;
             }
             if(used){
                 int label;
@@ -1297,8 +1315,10 @@ namespace Utilities {
         }
         delete alias_counter;
         //transazioni (eventi) iniziali
+        auto initial_pre = new set<int>();
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
+                initial_pre->insert(record.first);
                 if(g_input){
                     fout << "\t" << record.first << " [label = \""
                          << (*aliases_map_number_name)[record.first];
@@ -1309,9 +1329,24 @@ namespace Utilities {
                 }
             }
         }
+        for (auto record : *post_regions) {
+            if (record.first < num_events) {
+                //if the event takes part of initial_pre it has been already written on the file
+                if(initial_pre->find(record.first) == initial_pre->end()) {
+                    if (g_input) {
+                        fout << "\t" << record.first << " [label = \""
+                             << (*aliases_map_number_name)[record.first];
+                        fout << "\"];\n";
+                    } else {
+                        fout << "\t" << record.first << ";\n";
+                    }
+                }
+            }
+        }
         fout << "}\n";
+        delete initial_pre;
 
-        //archi tra tansazioni e posti (tra eventi e regioni)
+        //archi tra tansazioni e posti
         //regione -> evento
         for (auto record : *pre_regions) {
             auto reg = record.second;
@@ -1343,8 +1378,8 @@ namespace Utilities {
                      << "r" << regions_mapping->at(reg) << ";\n";
             } else {
                 // entra qui 2 volte
-                // cout << "regions_mapping non contiene ";
-                // println(*reg);
+                 cout << "regions_mapping non contiene ";
+                 println(*reg);
             }
         }
         fout << "}";

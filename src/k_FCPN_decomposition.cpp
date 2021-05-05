@@ -27,18 +27,18 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //EC encoding for simultaneous k-FCPN decomposition check
     /*
      * 1) for each event e calculate er(e) and pre(e)
-     *          calculate all possible minimal sets of regions which satisfy er(e)
-     *          transform these sets from DNF to CNF -> explosion of number of clauses
+     *          calculate all possible minimal sets of regions which satisfy er(e) -> VERY HEAVY!!!!
+     *          1a) transform these sets from DNF to CNF -> explosion of number of clauses
      *          if I have n FCPNs I will have k possible instances of the event
      *                  1b) expand CNF clause for each of n FCPN: if I have (r1 v r2) and 2 FCPNs it will become (r11 v r12 v r21 v r22)
      * 2) FCPN constraint for each FCPN
      * 3) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a),
      *          for each FCPN
-     * 4) at least one occurrence of each event in all FCPNs
+     * 4) at least one occurrence of each event in all FCPNs (not each FCPN!!!)
      * 5) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3) for each FCPN
      * 6) solve SAT
-     * 7) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> binary search usage
+     * 7) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> solve SAT with binary search usage
      * 8) decode results
      *
      *
@@ -50,7 +50,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     auto fcpn_set = new set<set<Region *>*>();
 
     //per trovare tutte le combinazioni utili bisogna creare una coda, all'inizio ne fanno parte tutte le regioni singole,
-    // ogni volta che una regione viene analizzata questa viene rimossa se completamente dalla coda se da sola soddisfa ec ed inoltre
+    // ogni volta che una regione viene analizzata questa viene rimossa completamente dalla coda se da sola soddisfa ec ed inoltre
     // viene aggiunta all'insieme delle soluzioni per tale evento, se da sola non vale, si prendono tutte le combinazioni di tale evento con i successori della coda
     // se queste combinazioni soddisfano vengono salvate mentre se non è cosi si aggiungono a loro volta nella coda
 
@@ -131,7 +131,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     number_of_FCPNs = 1;
     bool solution_found = false;
 
-
+    //STEP 1a)
+    if(decomposition_debug)
+        cout << "STEP 1a" << endl;
     //EC clause sets creation (transformation from DNF to CNF): this initial set will be further modified depending on
     // the number of FCPNs but the generic form is calculated only once
     //this maps binds events to sets of regions which satisfies EC for this specific event
@@ -160,7 +162,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 }
             }
         }
-        //single and clause which have to be only  split
+        //single "and clause" which have to be only split
         else{
             for (auto reg_set: *rec.second) {
                 for(auto reg: *reg_set){
@@ -246,8 +248,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             delete updatable_clauses;
         }
         updatable_clauses = new set<set<int32_t> *>();
-        cout << "STEP 1a" << endl;
-        //STEP 1a: EC clauses creation
+        if(decomposition_debug)
+            cout << "STEP 1b" << endl;
+        //STEP 1b: EC clauses creation
         for(auto rec: *cnf_ec_map){
             //reg_set have only one set of regions inside inside
             for(auto reg_set: *rec.second){
@@ -291,7 +294,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
         //STEP 2
-        cout << "STEP 2" << endl;
+        if(decomposition_debug)
+            cout << "STEP 2" << endl;
         /*
          * ALGORITMO:
          *      per ogni ev
@@ -355,7 +359,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
         //STEP 3
-        cout << "STEP 3" << endl;
+        if(decomposition_debug)
+            cout << "STEP 3" << endl;
         auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
                                                         pprg->get_post_regions());
 
@@ -393,7 +398,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         delete regions_connected_to_labels;
 
         //STEP 4
-        cout << "STEP 4" << endl;
+        if(decomposition_debug)
+            cout << "STEP 4" << endl;
         for(int i=0;i<num_events;i++){
             //clause = new vector<int32_t>();
             lit_set = new set<int32_t>();
@@ -407,7 +413,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
         //STEP 5
-        cout << "STEP 5" << endl;
+        if(decomposition_debug)
+            cout << "STEP 5" << endl;
         for(auto rec: *state_regions_map){
             for(int i=1;i<=number_of_FCPNs;i++) {
                 auto region_set = rec.second;
@@ -423,7 +430,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
 
         //STEP 6
-        cout << "STEP 6" << endl;
+        if(decomposition_debug)
+            cout << "STEP 6" << endl;
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
@@ -527,7 +535,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     number_of_FCPNs--;
 
     //STEP 7
-    cout << "STEP 7" << endl;
+    if(decomposition_debug)
+        cout << "STEP 7" << endl;
     int max = regions_in_solution;
     int min = 1;
     int current_max_regions = max; //max - 1 could produce better results but with also max I am sure that the firs result is SAT
@@ -573,7 +582,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
         int num_clauses_formula = formula2.getClauses().size();
 
-        cout<< "Formula size: " << formula2.getClauses().size() << endl;
+        if(decomposition_debug)
+            cout<< "Formula size: " << formula2.getClauses().size() << endl;
 
         string dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/, num_clauses_formula,
                                         formula2.getClauses());
@@ -617,7 +627,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     } while((max - min) > 1);
 
     //STEP 8
-    cout << "STEP 8" << endl;
+    if(decomposition_debug)
+        cout << "STEP 8" << endl;
     set<Region *> *temp_FCPN;
     for(int k=1;k<=number_of_FCPNs;k++) {
         temp_FCPN = new set<Region *>();
@@ -635,14 +646,15 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     }
     delete last_solution;
 
-    string output_name = file;
-    while (output_name[output_name.size() - 1] != '.') {
+    const string& output_name = file;
+    /*while (output_name[output_name.size() - 1] != '.') {
         output_name = output_name.substr(0, output_name.size() - 1);
     }
     output_name = output_name.substr(0, output_name.size() - 1);
-    output_name += "_TEMP.g";
+    output_name += "_TEMP.g";*/
 
-    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
+    if(decomposition_debug)
+        cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
 
     //map with key the pointer to SM
     auto map_of_PN_pre_regions = new map < SM *, map<int, set<Region *> *>*> ();
@@ -679,6 +691,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             println(*SM);
         }
     }
+
+    cout << "Number of FCPNs: " << fcpn_set->size() << endl;
 
     for(auto rec: *map_of_PN_pre_regions){
         for(auto subset: *rec.second){

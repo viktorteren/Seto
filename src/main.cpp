@@ -296,6 +296,7 @@ int main(int argc, char **argv) {
             auto regions_set = copy_map_to_set(pre_regions);
             if(!experimental_k_fcpn_decomposition) {
                 cout << "============================[DECOMPOSITION]===================" << endl;
+                //TODO: sometimes the decomposition is wrong: there are SMs without initial state
 
                 int numRegions = regions_set->size();
                 cout << "Number of regions: " << numRegions << endl;
@@ -578,6 +579,7 @@ int main(int argc, char **argv) {
                                         file,
                                         pprg);
 
+
                 auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
                 auto final_sum = getStatesSum(SMs);
@@ -597,8 +599,10 @@ int main(int argc, char **argv) {
                             << endl : cout
                             << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
                             << endl;
-                    if (decomposition)
+                    if (decomposition) {
+                        //todo: clock.g ha problemi con l'output -> evento 1 non presente nella mappa
                         Merge::print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+                    }
                 }
 
                 if (decomposition_debug && !fcptnet) {
@@ -691,12 +695,19 @@ int main(int argc, char **argv) {
 
             if(fcptnet){
                 if(experimental_k_fcpn_decomposition){
+                    tStart_partial = clock();
                     auto k_fcpn_decomposition = new k_FCPN_decomposition(number_of_events, regions_set, file,
                                                                          pprg, aliases, new_ER);
+                    double t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
 
                     rg->basic_delete();
                     rg->delete_ER_set();
+
+                    printf("\nTime region gen: %.5fs\n", t_region_gen);
+                    printf("Time splitting: %.5fs\n", t_splitting);
+                    printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
+                    printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
                 }
                 else{
                     cerr << "Iterating FCPN decomposition still have issues, probably it will be abbandoned" << endl;
