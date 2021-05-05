@@ -152,25 +152,14 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             for (auto reg_set: *rec.second) {
                 current_set->insert(reg_set);
             }
-            while (current_set->size() > 1) {
-                //cout << "current set size: " << current_set->size() << endl;
-                auto to_erase = new set<set<Region*>*>();
-                for (auto set1: *current_set) {
-                    for (auto set2: *current_set) {
-                        if (set1 != set2) {
-                            if(to_erase->find(set1) == to_erase->end() && to_erase->find(set2) == to_erase->end()){
-                                auto set3 = regions_set_union(set1, set2);
-                                to_erase->insert(set1);
-                                to_erase->insert(set2);
-                                current_set->insert(set3);
-                            }
-                        }
-                    }
-                }
-                for(auto er_set: *to_erase){
-                    current_set->erase(er_set);
-                }
+            auto new_set = new set<set<Region *> *>();
+            new_set->insert(regions_set_union(current_set));
+            current_set->clear();
+            current_set = new_set;
+            for(auto reg: *new_set){
+                delete reg;
             }
+            delete new_set;
         }
         //single "and clause" which have to be only split
         else{
