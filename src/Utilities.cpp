@@ -49,6 +49,29 @@ namespace Utilities {
         return res;
     }
 
+    bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
+        for(auto reg: *region_set1){
+            if(region_set2->find(reg) != region_set2->end()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2){
+        for(auto reg: *region_set1){
+            if(region_set2->find(reg) != region_set2->end()){
+                return false;
+            }
+        }
+        for(auto reg: *region_set2){
+            if(region_set1->find(reg) != region_set1->end()){
+                return false;
+            }
+        }
+        return true;
+    }
+
     Region *regions_union(vector<Region *> *vec) {
         auto all_states = new Region();
         int size;
@@ -1507,6 +1530,13 @@ namespace Utilities {
 
     void println(set<Region *> &regions) {
         for (auto reg : regions) {
+            println(*reg);
+            //cout << "reg. in.: " << reg << endl;
+        }
+    }
+
+    void println(set<Region *> *regions) {
+        for (auto reg : *regions) {
             println(*reg);
             //cout << "reg. in.: " << reg << endl;
         }

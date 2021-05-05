@@ -54,6 +54,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     // viene aggiunta all'insieme delle soluzioni per tale evento, se da sola non vale, si prendono tutte le combinazioni di tale evento con i successori della coda
     // se queste combinazioni soddisfano vengono salvate mentre se non è cosi si aggiungono a loro volta nella coda
 
+    //STEP 1
+    if(decomposition_debug)
+        cout << "STEP 1" << endl;
     auto pre_regions_map = pprg->get_pre_regions();
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
@@ -150,15 +153,22 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 current_set->insert(reg_set);
             }
             while (current_set->size() > 1) {
+                //cout << "current set size: " << current_set->size() << endl;
+                auto to_erase = new set<set<Region*>*>();
                 for (auto set1: *current_set) {
                     for (auto set2: *current_set) {
                         if (set1 != set2) {
-                            auto set3 = regions_set_union(set1, set2);
-                            current_set->erase(set1);
-                            current_set->erase(set2);
-                            current_set->insert(set3);
+                            if(to_erase->find(set1) == to_erase->end() && to_erase->find(set2) == to_erase->end()){
+                                auto set3 = regions_set_union(set1, set2);
+                                to_erase->insert(set1);
+                                to_erase->insert(set2);
+                                current_set->insert(set3);
+                            }
                         }
                     }
+                }
+                for(auto er_set: *to_erase){
+                    current_set->erase(er_set);
                 }
             }
         }

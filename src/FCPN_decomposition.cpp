@@ -309,8 +309,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         int max2 = current_value2;
 
         //STEP 7
-        cout << "TRYING TO DECREASE THE NUMBER OF REGIONS" << endl;
-
+        if(decomposition_debug)
+            cout << "TRYING TO DECREASE THE NUMBER OF REGIONS" << endl;
 
 
         int num_clauses_formula;
@@ -340,14 +340,16 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             }
             pb2cnf.encode(constraint3, formula2, auxvars2);
 
-            cout << "values: " << current_value << ", " << current_value2 << endl;
+            if(decomposition_debug)
+                cout << "values: " << current_value << ", " << current_value2 << endl;
             PBConstraint constraint2(sum_of_regions, LEQ,
                                        current_value2); //the sum have to be lesser or equal to current_value2
             pb2cnf.encode(constraint2, formula2, auxvars2);
 
             num_clauses_formula = formula2.getClauses().size();
 
-            cout<< "Formula size: " << formula2.getClauses().size() << endl;
+            if(decomposition_debug)
+                cout<< "Formula size: " << formula2.getClauses().size() << endl;
 
             dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/, num_clauses_formula,
                                             formula2.getClauses(), results_to_avoid);
@@ -473,6 +475,13 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     }
 
     delete regions_mapping;
+
+    if(pn_counter == 1){
+        cout << "1 FCPN" << endl;
+    }
+    else {
+        cout << pn_counter << " FCPNs" << endl;
+    }
 
     if (decomposition_debug) {
         cout << "Final FCPNs" << endl;

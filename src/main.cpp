@@ -294,15 +294,14 @@ int main(int argc, char **argv) {
 
         if (decomposition || fcptnet) {
             auto regions_set = copy_map_to_set(pre_regions);
-            if(!experimental_k_fcpn_decomposition) {
+            aliases_region_pointer = new map<int, Region *>();
+            aliases_region_pointer_inverted = new map<Region *, int>();
+            if(!experimental_k_fcpn_decomposition && !fcptnet) {
                 cout << "============================[DECOMPOSITION]===================" << endl;
-                //TODO: sometimes the decomposition is wrong: there are SMs without initial state
 
                 int numRegions = regions_set->size();
                 cout << "Number of regions: " << numRegions << endl;
 
-                aliases_region_pointer = new map<int, Region *>();
-                aliases_region_pointer_inverted = new map<Region *, int>();
                 max_alias_decomp = 1;
                 num_clauses = 0;
 
@@ -694,31 +693,39 @@ int main(int argc, char **argv) {
             }
 
             if(fcptnet){
+                tStart_partial = clock();
+                double t_k_fcpn_decomposition;
                 if(experimental_k_fcpn_decomposition){
-                    tStart_partial = clock();
+
                     auto k_fcpn_decomposition = new k_FCPN_decomposition(number_of_events, regions_set, file,
                                                                          pprg, aliases, new_ER);
-                    double t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
 
                     rg->basic_delete();
                     rg->delete_ER_set();
-
-                    printf("\nTime region gen: %.5fs\n", t_region_gen);
-                    printf("Time splitting: %.5fs\n", t_splitting);
-                    printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-                    printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
                 }
                 else{
-                    cerr << "Iterating FCPN decomposition still have issues, probably it will be abbandoned" << endl;
-                    /*
+                    //cerr << "Iterating FCPN decomposition still have issues, probably it will be abbandoned" << endl;
+
+                    for(auto reg: *regions_set){
+                        if(aliases_region_pointer_inverted->find(reg) == aliases_region_pointer_inverted->end()){
+                            region_mapping(reg);
+                        }
+                    }
                     auto fcpn_decomposition = new FCPN_decomposition(number_of_events, regions_set, file,
                                                                      pprg, aliases, new_ER);
-                    delete fcpn_decomposition;*/
-                    exit(0);
+                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    delete fcpn_decomposition;
                 }
+                printf("\nTime region gen: %.5fs\n", t_region_gen);
+                printf("Time splitting: %.5fs\n", t_splitting);
+                printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
+                if(experimental_k_fcpn_decomposition)
+                    printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
+                else
+                    printf("Time FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
             }
-
             delete regions_set;
         }
         else if (pn_synthesis){
