@@ -46,7 +46,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     auto er_satisfiable_sets = new map<int, set<set<Region *>*>*>();
     vector<set<Region *>*> *vector_of_candidates;
-    auto checked_sets = new set<set<Region*>*>();
+    set<set<Region*>> *checked_sets;
     auto fcpn_set = new set<set<Region *>*>();
 
     //per trovare tutte le combinazioni utili bisogna creare una coda, all'inizio ne fanno parte tutte le regioni singole,
@@ -60,6 +60,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     auto pre_regions_map = pprg->get_pre_regions();
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
+        checked_sets = new set<set<Region*>>();
         //cout << "EVENT " << ev << endl;
         vector_of_candidates = new vector<set<Region *>*>();
         for(auto reg: *rec.second){
@@ -75,40 +76,28 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         while(!exit){
             auto not_ok_sets = new vector<set<Region *>*>();
             for(auto temp_set: *vector_of_candidates){
-                if(checked_sets->find(temp_set)==checked_sets->end()) {
+                if(checked_sets->find(*temp_set)==checked_sets->end()) {
+                    checked_sets->insert(*temp_set);
                     if (check_ER_intersection_with_mem(ev, temp_set, ER)) {
                         if (er_satisfiable_sets->find(ev) == er_satisfiable_sets->end()) {
                             (*er_satisfiable_sets)[ev] = new set<set<Region *> *>();
                         }
                         (*er_satisfiable_sets)[ev]->insert(temp_set);
-                        /*vector_of_candidates->erase(vector_of_candidates->begin());
-                        if(vector_of_candidates->empty())
-                            exit = true;*/
                     } else {
-                        auto temp_set_copy = new set<Region *>();
-                        for (auto reg: *temp_set) {
-                            temp_set_copy->insert(reg);
-                        }
-                        not_ok_sets->push_back(temp_set_copy);
-                        /*vector_of_candidates->pop_back();
-                        int vector_length = vector_of_candidates->size();
-                        for(int i = 1; i< vector_length-1;i++){
-                            vector_of_candidates->push_back(regions_set_union(temp_set, vector_of_candidates->at(i)));
-                        }
-                        vector_of_candidates->erase(vector_of_candidates->begin());*/
+                        not_ok_sets->push_back(temp_set);
                     }
-                    checked_sets->insert(temp_set);
                 }
                 else{
+                    delete temp_set;
                     cout << "set already seen" << endl;
                 }
             }
             vector_of_candidates->clear();
-            for(int i=0; i< not_ok_sets->size();i++){
-                for(int k=i+1; k< not_ok_sets->size();k++){
+            for(int i=0; i< not_ok_sets->size();++i){
+                for(int k=i+1; k< not_ok_sets->size();++k){
                     if(!not_ok_sets->at(i)->empty() && !not_ok_sets->at(k)->empty()) {
                         auto reg_union = regions_set_union(not_ok_sets->at(i), not_ok_sets->at(k));
-                        if(checked_sets->find(reg_union)==checked_sets->end()) {
+                        if(checked_sets->find(*reg_union)==checked_sets->end()) {
                             /*cout << "adding to vector: " << endl;
                             for (auto r: *reg_union) {
                                 println(*r);
@@ -116,6 +105,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                             vector_of_candidates->push_back(reg_union);
                         }
                         else{
+                            delete reg_union;
                             cout << "union set already seen" << endl;
                         }
                     }
@@ -129,6 +119,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             delete not_ok_sets;
         }
         delete vector_of_candidates;
+        delete checked_sets;
     }
     clear_ER_intersection_cache();
 
@@ -257,7 +248,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 //clause = new vector<int32_t>();
                 lit_set = new set<int32_t>();
                 for(auto reg: *reg_set){
-                    for(int i=1;i<=number_of_FCPNs;i++){
+                    for(int i=1;i<=number_of_FCPNs;++i){
                         auto encoded_value = encoded_region(reg,i);
                         /*if(decomposition_debug){
                             cout << "encoding FCPN " << i << " and region ";
@@ -314,7 +305,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 if ((*region_ex_event_map)[r]->size() > 1) {
                     for (auto r2: *set_of_regions) {
                         if (r != r2) {
-                            for(int i=1;i<=number_of_FCPNs;i++){
+                            for(int i=1;i<=number_of_FCPNs;++i){
                                 //clause = new vector<int32_t>();
                                 lit_set = new set<int32_t>();
                                 /*if(decomposition_debug){
@@ -367,7 +358,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         //conversion into clauses
         for (auto rec: *regions_connected_to_labels) {
             auto ev = rec.first;
-            for(int i=1;i<=number_of_FCPNs;i++){
+            for(int i=1;i<=number_of_FCPNs;++i){
                 auto ev_encoding = encoded_event(ev,i);
                 //clause = new vector<int32_t>();
                 //clause->push_back(ev_encoding);
@@ -400,10 +391,10 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         //STEP 4
         if(decomposition_debug)
             cout << "STEP 4" << endl;
-        for(int i=0;i<num_events;i++){
+        for(int i=0;i<num_events;++i){
             //clause = new vector<int32_t>();
             lit_set = new set<int32_t>();
-            for(int k=1;k<=number_of_FCPNs;k++){
+            for(int k=1;k<=number_of_FCPNs;++k){
                 int encoded_ev = encoded_event(i, k);
                 //clause->push_back(encoded_ev);
                 lit_set->insert(encoded_ev);
@@ -416,7 +407,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         if(decomposition_debug)
             cout << "STEP 5" << endl;
         for(auto rec: *state_regions_map){
-            for(int i=1;i<=number_of_FCPNs;i++) {
+            for(int i=1;i<=number_of_FCPNs;++i) {
                 auto region_set = rec.second;
                 clause = new vector<int32_t>();
                 for (auto reg: *region_set) {
@@ -497,8 +488,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }*/
         if(solution_found){
             regions_in_solution = 0;
-            set<Region *> *temp_FCPN;
-            for(int k=1;k<=number_of_FCPNs;k++) {
+            //set<Region *> *temp_FCPN;
+            for(int k=1;k<=number_of_FCPNs;++k) {
                 //temp_FCPN = new set<Region *>();
                 for (int i = 0; i < number_of_regions; ++i) {
                     int encoded_value = encoded_region(inverse_reg_map->at(i), k);
@@ -544,7 +535,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //sum of regions encoding
     vector<WeightedLit> sum_of_regions = {};
     sum_of_regions.reserve(number_of_FCPNs*number_of_regions);
-    for(int k=1;k<=number_of_FCPNs*number_of_regions;k++){
+    for(int k=1;k<=number_of_FCPNs*number_of_regions;++k){
         sum_of_regions.emplace_back(k,1);
     }
 
@@ -560,7 +551,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     do {
         solver2 = new Minisat::Solver();
         auxvars2.resetAuxVarsTo(first_aux_var);
-        auto max_aux = auxvars2.getBiggestReturnedAuxVar();
         formula2.clearDatabase();
         for (auto cl: *clauses) {
             formula2.addClause(*cl);
@@ -585,7 +575,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         if(decomposition_debug)
             cout<< "Formula size: " << formula2.getClauses().size() << endl;
 
-        string dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/, num_clauses_formula,
+        string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
                                         formula2.getClauses());
         bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
 
@@ -630,7 +620,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     if(decomposition_debug)
         cout << "STEP 8" << endl;
     set<Region *> *temp_FCPN;
-    for(int k=1;k<=number_of_FCPNs;k++) {
+    for(int k=1;k<=number_of_FCPNs;++k) {
         temp_FCPN = new set<Region *>();
         for (int i = 0; i < number_of_regions; ++i) {
             int encoded_value = encoded_region(inverse_reg_map->at(i), k);
@@ -720,11 +710,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     }
     delete er_satisfiable_sets;
 
-    for(auto val: *checked_sets){
-        delete val;
-    }
-    delete checked_sets;
-
     for(auto rec: *state_regions_map){
         delete rec.second;
     }
@@ -758,7 +743,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 k_FCPN_decomposition::~k_FCPN_decomposition() {
     delete reg_map;
     delete inverse_reg_map;
-};
+}
 
 //number of regions: k
 //number fo FCPNS: n

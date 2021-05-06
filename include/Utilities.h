@@ -135,6 +135,7 @@ namespace Utilities {
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     void clear_ER_intersection_cache();
+    bool check_ER_intersection_cache(set<Region*> *pre_regions_set);
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);

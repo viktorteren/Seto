@@ -1976,6 +1976,12 @@ namespace Utilities {
         return res;
     }
 
+    bool check_ER_intersection_cache(set<Region*> *pre_regions_set){
+        if(intersection_cache->find(*pre_regions_set) != intersection_cache->end())
+            return true;
+        return false;
+    }
+
     void clear_ER_intersection_cache(){
         for(const auto& rec: *intersection_cache){
             delete rec.second;
