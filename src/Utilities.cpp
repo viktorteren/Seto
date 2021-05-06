@@ -26,6 +26,7 @@ int max_alias_decomp;
 int num_clauses;
 map<pair<Region*, Region*>, bool> *overlaps_cache;
 bool benchmark_script;
+map<set<Region*>, set<int>*> *intersection_cache;
 
 namespace Utilities {
     set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
@@ -1951,11 +1952,35 @@ namespace Utilities {
     }
 
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
-        auto er = ER_set->at((event));
+        auto er = ER_set->at(event);
         auto intersection = regions_intersection(pre_regions_set);
         bool res = are_equal(er, intersection);
         delete intersection;
         return res;
+    }
+
+    bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+        if(intersection_cache == nullptr)
+            intersection_cache = new map<set<Region *>, set<int>*>();
+        auto er = ER_set->at(event);
+        set<int> *intersection;
+        if(intersection_cache->find(*pre_regions_set) != intersection_cache->end()){
+            intersection = intersection_cache->at(*pre_regions_set);
+            //cout << "cache used"  << endl;
+        }
+        else{
+            intersection = regions_intersection(pre_regions_set);
+            (*intersection_cache)[*pre_regions_set] = intersection;
+        }
+        bool res = are_equal(er, intersection);
+        return res;
+    }
+
+    void clear_ER_intersection_cache(){
+        for(const auto& rec: *intersection_cache){
+            delete rec.second;
+        }
+        delete intersection_cache;
     }
 
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set ) {

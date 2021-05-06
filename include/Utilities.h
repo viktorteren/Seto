@@ -56,6 +56,7 @@ extern int max_alias_decomp;
 extern int num_clauses;
 extern map<pair<Region*, Region*>, bool> *overlaps_cache;
 extern bool benchmark_script;
+extern map<set<Region*>, set<int>*> *intersection_cache;
 
 namespace Utilities {
     set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
@@ -132,6 +133,8 @@ namespace Utilities {
     void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
+    bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
+    void clear_ER_intersection_cache();
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);

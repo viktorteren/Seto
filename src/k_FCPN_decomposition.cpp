@@ -76,7 +76,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             auto not_ok_sets = new vector<set<Region *>*>();
             for(auto temp_set: *vector_of_candidates){
                 if(checked_sets->find(temp_set)==checked_sets->end()) {
-                    if (check_ER_intersection(ev, temp_set, ER)) {
+                    if (check_ER_intersection_with_mem(ev, temp_set, ER)) {
                         if (er_satisfiable_sets->find(ev) == er_satisfiable_sets->end()) {
                             (*er_satisfiable_sets)[ev] = new set<set<Region *> *>();
                         }
@@ -130,6 +130,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
         delete vector_of_candidates;
     }
+    clear_ER_intersection_cache();
 
     number_of_FCPNs = 1;
     bool solution_found = false;
