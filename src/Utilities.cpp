@@ -18,6 +18,9 @@ bool experimental_k_fcpn_decomposition;
 //bool log_file;
 bool info;
 bool fcptnet;
+bool fcpn_modified;
+bool blind_fcpn;
+bool fcpn_with_levels;
 bool pn_synthesis;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
@@ -433,6 +436,14 @@ namespace Utilities {
         return false;
     }
 
+    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
+        for (auto elem : *smaller_set) {
+            if(bigger_set->find(elem) == bigger_set->end())
+            return false;
+        }
+        return true;
+    }
+
 
     bool contains(vector<Region *> *vector, Region *region) {
         for (auto elem : *vector) {
@@ -788,7 +799,6 @@ namespace Utilities {
                 else{
                     fout << "\t" << record.first << ";\n";
                 }
-
             }
         }
         fout << "}\n";
@@ -2009,7 +2019,7 @@ namespace Utilities {
             //l'evento non ha preregioni allora non vale la EC
             if(pre_regions->find(event)==pre_regions->end()){
                 if(print_step_by_step_debug || decomposition_debug){
-                    cout << "event " << event << "not satisfy EC becouse it havent preregions" << endl;
+                    cout << "event " << event << "not satisfy EC because it haven't pre-regions" << endl;
                 }
                 for(auto rec: *regions_intersection_map){
                     delete rec.second;
@@ -2023,8 +2033,8 @@ namespace Utilities {
                 //println(*intersec);
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
-                    if(print_step_by_step_debug){
-                        cout << "event " << event << " not satisfy ec becouse the intersection of regions is different from er" << endl;
+                    if(print_step_by_step_debug || decomposition_debug){
+                        cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
                             cout << "empty" << endl;
@@ -2449,10 +2459,10 @@ namespace Utilities {
     }
 
     map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs, map<int, set<Region *> *> *pre_regions){
-        set<int> new_used_regions_tmp;
+        set<Region *> new_used_regions_tmp;
         for (auto tmp_SM: *SMs_or_PNs) {
             for (auto region: *tmp_SM) {
-                new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+                new_used_regions_tmp.insert(region);
             }
         }
         auto new_used_regions_map_tmp = new map < int, set<Region *>* > ();
@@ -2462,8 +2472,8 @@ namespace Utilities {
 
         for (auto reg: new_used_regions_tmp) {
             for (auto rec: *pre_regions) {
-                if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
-                    (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+                if (rec.second->find(reg) != rec.second->end()) {
+                    (*new_used_regions_map_tmp)[rec.first]->insert(reg);
                 }
             }
         }
