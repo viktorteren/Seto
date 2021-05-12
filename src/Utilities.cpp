@@ -1971,6 +1971,24 @@ namespace Utilities {
         }
     }
 
+    bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path){
+        FILE* f;
+        f = fopen(file_path.c_str(), "r");
+        Minisat::parse_DIMACS(f, solver);
+        fclose(f);
+
+        if(decomposition_debug)
+            cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
+
+        if (!solver.simplify()) {
+            return false;
+        }
+
+        auto ret = solver.solve();
+
+        return ret;
+    }
+
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
         auto er = ER_set->at(event);
         auto intersection = regions_intersection(pre_regions_set);

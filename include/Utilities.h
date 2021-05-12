@@ -137,6 +137,7 @@ namespace Utilities {
     void add_region_to_SM(set<Region*>* SM, Region* region);
     void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
+    bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path);
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     void clear_ER_intersection_cache();

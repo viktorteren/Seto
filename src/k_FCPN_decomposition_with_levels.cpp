@@ -120,17 +120,24 @@ k_FCPN_decomposition_with_levels::k_FCPN_decomposition_with_levels(int number_of
         }
         auto current_set = (*cnf_ec_map)[ev];
         if(rec.second->size()> 1) {
-            for (auto reg_set: *rec.second) {
-                current_set->insert(reg_set);
+            _Rb_tree_const_iterator<set<set<int> *> *> it;
+            _Rb_tree_const_iterator<set<set<int> *> *> it2;
+            for(it=rec.second->begin();it != rec.second->end();++it){
+                for(it2=next(it);it2 != rec.second->end();++it2){
+                    auto first_set = *it;
+                    auto second_set = *it2;
+                    for(auto first_region: *first_set){
+                        for(auto second_region: *second_set){
+                            auto region_set = new set<Region*>();
+                            region_set->insert(first_region);
+                            if(second_region != first_region){
+                                region_set->insert(second_region);
+                            }
+                            current_set->insert(region_set);
+                        }
+                    }
+                }
             }
-            auto new_set = new set<set<Region *> *>();
-            new_set->insert(regions_set_union(current_set));
-            current_set->clear();
-            current_set = new_set;
-            for(auto reg: *new_set){
-                delete reg;
-            }
-            delete new_set;
         }
         //single "and clause" which have to be only split
         else{

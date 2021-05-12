@@ -289,8 +289,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         temp++;
     }
 
-    //todo: qui se aggiungo print va in core dump con le regioni dell'evento 2, una regione manca -> punta ad una struttura sbagliata
-    //todo: er_satisfiable_sets si è modificato quando non doveva
     /*cout << "ER SATISFIABLE SETS" <<endl;
     for(auto rec: *er_satisfiable_sets){
         cout << "EVENT: " << rec.first << endl;
@@ -652,7 +650,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     delete regions_in_conflict;
 
     if(!no_fcpn_min) {
-
+        cout << "MINIMIZATION STARTED" << endl;
         //STEP 7
         if (decomposition_debug)
             cout << "STEP 7" << endl;
@@ -704,7 +702,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
             string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                    formula2.getClauses());
-            bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
+            bool sat = check_sat_formula_from_dimacs2(*solver2, dimacs_file);
 
             if (sat) {
                 max = current_max_regions;
@@ -716,6 +714,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 last_solution->clear();
                 for (int i = 0; i < solver2->nVars(); ++i) {
                     if (solver2->model[i] != l_Undef) {
+                        //cout << "debug2: " << decomposition_debug << endl;
                         if (decomposition_debug) {
                             fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver2->model[i] == l_True) ? "" : "-",
                                     i + 1);

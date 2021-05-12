@@ -232,17 +232,24 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
         }
         auto current_set = (*cnf_ec_map)[ev];
         if(rec.second->size()> 1) {
-            for (auto reg_set: *rec.second) {
-                current_set->insert(reg_set);
+            _Rb_tree_const_iterator<set<set<int> *> *> it;
+            _Rb_tree_const_iterator<set<set<int> *> *> it2;
+            for(it=rec.second->begin();it != rec.second->end();++it){
+                for(it2=next(it);it2 != rec.second->end();++it2){
+                    auto first_set = *it;
+                    auto second_set = *it2;
+                    for(auto first_region: *first_set){
+                        for(auto second_region: *second_set){
+                            auto region_set = new set<Region*>();
+                            region_set->insert(first_region);
+                            if(second_region != first_region){
+                                region_set->insert(second_region);
+                            }
+                            current_set->insert(region_set);
+                        }
+                    }
+                }
             }
-            auto new_set = new set<set<Region *> *>();
-            new_set->insert(regions_set_union(current_set));
-            current_set->clear();
-            current_set = new_set;
-            for(auto reg: *new_set){
-                delete reg;
-            }
-            delete new_set;
         }
             //single "and clause" which have to be only split
         else{
@@ -338,6 +345,8 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
     set<set<int32_t> *> *updatable_clauses = nullptr;
 
     int regions_in_solution = 0;
+
+    auto last_solution = new set<int>();
 
     while(!solution_found){
         if(updatable_clauses != nullptr){
@@ -556,20 +565,20 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
                 cout << "SAT with " << number_of_FCPNs << " FCPNs" << endl;
                 cout << "Model: ";
             }
-            //last_solution->clear();
+            last_solution->clear();
             for (int i = 0; i < solver.nVars(); ++i) {
                 if (solver.model[i] != l_Undef) {
                     if (decomposition_debug) {
                         fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
                                 i + 1);
                     }
-                    /*if(i < number_of_regions) {
+                    if(i < number_of_regions*number_of_FCPNs) {
                         if (solver.model[i] == l_True) {
                             last_solution->insert(i + 1);
                         } else {
                             last_solution->insert(-i - 1);
                         }
-                    }*/
+                    }
                 }
             }
             if(decomposition_debug)
@@ -628,96 +637,99 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
 
     delete regions_in_conflict;
 
-    //STEP 7
-    if(decomposition_debug)
-        cout << "STEP 7" << endl;
-    int max = regions_in_solution;
-    int min = 1;
-    int current_max_regions = max; //max - 1 could produce better results but with also max I am sure that the firs result is SAT
+    if(!no_fcpn_min) {
+        //STEP 7
+        if (decomposition_debug)
+            cout << "STEP 7" << endl;
+        int max = regions_in_solution;
+        int min = 1;
+        int current_max_regions = max; //max - 1 could produce better results but with also max I am sure that the firs result is SAT
 
-    //sum of regions encoding
-    vector<WeightedLit> sum_of_regions = {};
-    sum_of_regions.reserve(number_of_FCPNs*number_of_regions);
-    for(int k=1;k<=number_of_FCPNs*number_of_regions;++k){
-        sum_of_regions.emplace_back(k,1);
-    }
-
-    Minisat::Solver *solver2;
-    PBConfig config2 = make_shared<PBConfigClass>();
-    VectorClauseDatabase formula2(config2);
-    PB2CNF pb2cnf(config2);
-    int first_aux_var = number_of_FCPNs*number_of_regions+number_of_FCPNs*number_of_events-2*number_of_FCPNs+3;
-    AuxVarManager auxvars2(first_aux_var);
-
-    auto last_solution = new set<int>();
-
-    do {
-        solver2 = new Minisat::Solver();
-        auxvars2.resetAuxVarsTo(first_aux_var);
-        formula2.clearDatabase();
-        for (auto cl: *clauses) {
-            formula2.addClause(*cl);
+        //sum of regions encoding
+        vector<WeightedLit> sum_of_regions = {};
+        sum_of_regions.reserve(number_of_FCPNs * number_of_regions);
+        for (int k = 1; k <= number_of_FCPNs * number_of_regions; ++k) {
+            sum_of_regions.emplace_back(k, 1);
         }
-        auto new_vector = new set<vector<int32_t>*>();
-        for(auto cl_set: *updatable_clauses){
-            new_vector->insert(new vector<int32_t>(cl_set->begin(), cl_set->end()));
-        }
-        for (auto cl: *new_vector) {
-            formula2.addClause(*cl);
-        }
-        for(auto elem: *new_vector){
-            delete elem;
-        }
-        delete new_vector;
-        PBConstraint constraint2(sum_of_regions, LEQ,
-                                 current_max_regions); //the sum have to be lesser or equal to current_value2
-        pb2cnf.encode(constraint2, formula2, auxvars2);
 
-        int num_clauses_formula = formula2.getClauses().size();
+        Minisat::Solver *solver2;
+        PBConfig config2 = make_shared<PBConfigClass>();
+        VectorClauseDatabase formula2(config2);
+        PB2CNF pb2cnf(config2);
+        int first_aux_var =
+                number_of_FCPNs * number_of_regions + number_of_FCPNs * number_of_events - 2 * number_of_FCPNs + 3;
+        AuxVarManager auxvars2(first_aux_var);
 
-        if(decomposition_debug)
-            cout<< "Formula size: " << formula2.getClauses().size() << endl;
-
-        string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                               formula2.getClauses());
-        bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
-
-        if (sat) {
-            max = current_max_regions;
-            if (decomposition_debug) {
-                cout << "SAT with " << number_of_FCPNs << " FCPNs and " << current_max_regions << " regions" << endl;
-                cout << "Model: ";
+        do {
+            solver2 = new Minisat::Solver();
+            auxvars2.resetAuxVarsTo(first_aux_var);
+            formula2.clearDatabase();
+            for (auto cl: *clauses) {
+                formula2.addClause(*cl);
             }
-            last_solution->clear();
-            for (int i = 0; i < solver2->nVars(); ++i) {
-                if (solver2->model[i] != l_Undef) {
-                    if (decomposition_debug) {
-                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver2->model[i] == l_True) ? "" : "-",
-                                i + 1);
-                    }
-                    if(i < number_of_regions*number_of_FCPNs) {
-                        if (solver2->model[i] == l_True) {
-                            last_solution->insert(i + 1);
-                        } else {
-                            last_solution->insert(-i - 1);
+            auto new_vector = new set<vector<int32_t> *>();
+            for (auto cl_set: *updatable_clauses) {
+                new_vector->insert(new vector<int32_t>(cl_set->begin(), cl_set->end()));
+            }
+            for (auto cl: *new_vector) {
+                formula2.addClause(*cl);
+            }
+            for (auto elem: *new_vector) {
+                delete elem;
+            }
+            delete new_vector;
+            PBConstraint constraint2(sum_of_regions, LEQ,
+                                     current_max_regions); //the sum have to be lesser or equal to current_value2
+            pb2cnf.encode(constraint2, formula2, auxvars2);
+
+            int num_clauses_formula = formula2.getClauses().size();
+
+            if (decomposition_debug)
+                cout << "Formula size: " << formula2.getClauses().size() << endl;
+
+            string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
+                                                   formula2.getClauses());
+            bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
+
+            if (sat) {
+                max = current_max_regions;
+                if (decomposition_debug) {
+                    cout << "SAT with " << number_of_FCPNs << " FCPNs and " << current_max_regions << " regions"
+                         << endl;
+                    cout << "Model: ";
+                }
+                last_solution->clear();
+                for (int i = 0; i < solver2->nVars(); ++i) {
+                    if (solver2->model[i] != l_Undef) {
+                        if (decomposition_debug) {
+                            fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver2->model[i] == l_True) ? "" : "-",
+                                    i + 1);
+                        }
+                        if (i < number_of_regions * number_of_FCPNs) {
+                            if (solver2->model[i] == l_True) {
+                                last_solution->insert(i + 1);
+                            } else {
+                                last_solution->insert(-i - 1);
+                            }
                         }
                     }
                 }
+                if (decomposition_debug)
+                    cout << endl;
+            } else {
+                min = current_max_regions;
+                if (decomposition_debug) {
+                    //cout << "----------" << endl;
+                    cout << "UNSAT with " << number_of_FCPNs << " FCPNs and " << current_max_regions << " regions"
+                         << endl;
+                }
             }
-            if(decomposition_debug)
-                cout << endl;
-        } else {
-            min = current_max_regions;
-            if (decomposition_debug) {
-                //cout << "----------" << endl;
-                cout << "UNSAT with " << number_of_FCPNs << " FCPNs and " << current_max_regions << " regions" << endl;
-            }
-        }
-        //cout << "min: " << min << endl;
-        //cout << "max: " << max << endl;
-        current_max_regions = (min + max) / 2;
-        delete solver2;
-    } while((max - min) > 1);
+            //cout << "min: " << min << endl;
+            //cout << "max: " << max << endl;
+            current_max_regions = (min + max) / 2;
+            delete solver2;
+        } while ((max - min) > 1);
+    }
 
     //STEP 8
     if(decomposition_debug)

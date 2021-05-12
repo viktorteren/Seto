@@ -50,17 +50,19 @@ int main(int argc, char **argv) {
                 fcptnet = true;
                 blind_fcpn = true;
                 cerr << "It's better to avoid this kind of decomposition, test only!!!" << endl;
-                exit(0);
+                exit(1);
             }
             if(args[i]=="KFCL"){
                 fcptnet = true;
                 fcpn_with_levels = true;
+                cerr << "KFCM does not work properly" << endl;
+                exit(1);
             }
             if(args[i]=="KFCM"){
                 fcptnet = true;
                 fcpn_modified = true;
-                cerr << "KFCM does not work properly" << endl;
-                exit(1);
+                /*cerr << "KFCM does not work properly" << endl;
+                exit(1);*/
             }
             if(args[i] == "ECTS")
                 ects_output = true;
