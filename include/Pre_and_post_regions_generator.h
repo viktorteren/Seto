@@ -26,6 +26,6 @@ private:
   map<int, set<Region *> *> *post_regions = nullptr;
 
   void create_pre_regions();
-  bool is_post_region(Edges_list *list, Region *region);
+  static bool is_post_region(Edges_list *list, Region *region);
 
 };

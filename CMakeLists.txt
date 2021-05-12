@@ -33,7 +33,9 @@ add_library(libminisat STATIC
         minisat/utils/ParseUtils.h
         minisat/utils/System.h
         minisat/simp/SimpSolver.h
-        include/FCPN_decomposition.h)
+        include/FCPN_decomposition.h
+        include/k_FCPN_decomposition_with_levels.h
+        include/k_FCPN_decomposition_modified.h)
 
 target_include_directories(libminisat
         PUBLIC
@@ -63,7 +65,11 @@ add_executable(TS_splitter
         include/Merge.h
         src/FCPN_decomposition.cpp
         src/k_FCPN_decomposition.cpp
-        include/k_FCPN_decomposition.h)
+        include/k_FCPN_decomposition.h
+        src/k_FCPN_decomposition_blind.cpp
+        include/k_FCPN_decomposition_blind.h
+        src/k_FCPN_decomposition_with_levels.cpp
+        src/k_FCPN_decomposition_modified.cpp)
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
 target_link_libraries(TS_splitter python2.7)

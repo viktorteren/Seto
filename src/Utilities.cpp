@@ -22,6 +22,7 @@ bool fcpn_modified;
 bool blind_fcpn;
 bool fcpn_with_levels;
 bool pn_synthesis;
+bool no_fcpn_min;
 map<int, Region*>* aliases_region_pointer;
 map<Region*, int>* aliases_region_pointer_inverted;
 map<Region*, int>* sm_region_aliases;
@@ -198,20 +199,29 @@ namespace Utilities {
         //println(*regions);
 
         auto pre_regions_intersection = new set<int>();
-        bool state_in_intersecton;
+        bool state_in_intersection;
 
         if (*regions->begin() == nullptr)
             return pre_regions_intersection;
 
         for (auto state : **regions->begin()) {
-            state_in_intersecton = true;
+            state_in_intersection = true;
+            //todo: questo è un possibile miglioramento, da testare
+            /*_Rb_tree_const_iterator<set<int> *> it;
+            for(it=next(regions->begin());it != regions->end();++it){
+                auto s = *it;
+                if (s->find(state) == s->end()) { // state not found
+                    state_in_intersection = false;
+                    break;
+                }
+            }*/
             for (auto s : *regions) {
-                if (s->find(state) == s->end()) { // non l'ho trovato
-                    state_in_intersecton = false;
+                if (s->find(state) == s->end()) { // state not found
+                    state_in_intersection = false;
                     break;
                 }
             }
-            if (state_in_intersecton) {
+            if (state_in_intersection) {
                 pre_regions_intersection->insert(state);
             }
         }

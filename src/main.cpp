@@ -12,6 +12,9 @@
 #include <Python.h>
 #include <iomanip>
 #include <include/k_FCPN_decomposition.h>
+#include <include/k_FCPN_decomposition_blind.h>
+#include <include/k_FCPN_decomposition_with_levels.h>
+#include <include/k_FCPN_decomposition_modified.h>
 #include "../include/Merge.h"
 #include "../include/FCPN_decomposition.h"
 
@@ -42,6 +45,22 @@ int main(int argc, char **argv) {
             if(args[i]=="KFC") {
                 fcptnet = true;
                 experimental_k_fcpn_decomposition = true;
+            }
+            if(args[i]=="KFCB") {
+                fcptnet = true;
+                blind_fcpn = true;
+                cerr << "It's better to avoid this kind of decomposition, test only!!!" << endl;
+                exit(0);
+            }
+            if(args[i]=="KFCL"){
+                fcptnet = true;
+                fcpn_with_levels = true;
+            }
+            if(args[i]=="KFCM"){
+                fcptnet = true;
+                fcpn_modified = true;
+                cerr << "KFCM does not work properly" << endl;
+                exit(1);
             }
             if(args[i] == "ECTS")
                 ects_output = true;
@@ -76,6 +95,9 @@ int main(int argc, char **argv) {
             if(args[i] == "--INFO"){
                 info = true;
                 print_step_by_step = true;
+            }
+            if(args[i] == "NOMIN"){
+                no_fcpn_min = true;
             }
         }
         if(fcptnet && decomposition_output_sis){
@@ -699,6 +721,33 @@ int main(int argc, char **argv) {
 
                     auto k_fcpn_decomposition = new k_FCPN_decomposition(number_of_events, regions_set, file,
                                                                          pprg, aliases, new_ER);
+                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    delete k_fcpn_decomposition;
+
+                    rg->basic_delete();
+                    rg->delete_ER_set();
+                }
+                else if(blind_fcpn){
+                    auto k_fcpn_decomposition = new k_FCPN_decomposition_blind(number_of_events, regions_set, file,
+                                                                         pprg, aliases, new_ER);
+                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    delete k_fcpn_decomposition;
+
+                    rg->basic_delete();
+                    rg->delete_ER_set();
+                }
+                /*else if(fcpn_with_levels){
+                    auto k_fcpn_decomposition = new k_FCPN_decomposition_with_levels(number_of_events, regions_set, file,
+                                                                               pprg, aliases, new_ER);
+                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    delete k_fcpn_decomposition;
+
+                    rg->basic_delete();
+                    rg->delete_ER_set();
+                }*/
+                else if(fcpn_modified){
+                    auto k_fcpn_decomposition = new k_FCPN_decomposition_modified(number_of_events, regions_set, file,
+                                                                                     pprg, aliases, new_ER);
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
 

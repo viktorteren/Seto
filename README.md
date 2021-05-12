@@ -25,7 +25,7 @@ pip install networkx
 ### Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
-
+- Decomposition of Transition Systems into sets of interacting FCPNs
 ### Supported extensions
 
 Input extensions: .g .ts
@@ -56,12 +56,12 @@ Quick way (requirese graphviz library) with .ps file creation
 ```
 -->
 
-Simple way
+#### Simple way
 
 ```Bash
 ./TS_splitter <file_path> <optional_flags>
 ```
-Additional flags:
+#### Optional flags:
 
 D: debug mode
 
@@ -77,7 +77,7 @@ Independently by the used flags, after each execution the stats.csv file is upda
 ./TS_splitter <file_path> M <optional_flags>
 ```
 
-Additional flags:
+#### Optional flags:
 
 <!--L: creation of a log file-->
 
@@ -89,11 +89,21 @@ G: write output SMs in .g extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-### c) TS to Synchronized FCPNs flow
+### c) TS to interacting FCPNs flows
+
+#### Exact algorithm (recommended):
+
+```Bash
+./TS_splitter <file_path> KFC <optional_flags>
+```
+
+#### Approximated algorithm:
 
 ```Bash
 ./TS_splitter <file_path> FC <optional_flags>
 ```
+
+#### Optional flags:
 
 D: debug info mode
 
@@ -101,6 +111,8 @@ O: write output SMs in .dot extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
+NOMIN: once found a minimum number of FCPNs does not perform any minimization on this set
+<b>(recommended for a faster execution)</b>
 
 ### d) Combined flows
 

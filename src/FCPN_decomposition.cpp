@@ -43,11 +43,11 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      * 9) while !EC: previous results clauses are added as results to avoid in future
      */
 
-    auto clauses = new vector<vector<int32_t> *>();
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
+    auto pre_regions_map = pprg->get_pre_regions();
+    auto clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *>*>();
     auto not_used_regions = new set<Region *>();
-    auto pre_regions_map = pprg->get_pre_regions();
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int>*>();
     for(auto rec: *pprg->get_pre_regions()){
@@ -237,7 +237,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         bool sat = true;
         string dimacs_file;
         bool exists_solution = false;
-        bool exists_solution2 = false;
 
         auto last_solution = new set<int>();
         //iteration in the search of a correct assignment decreasing the total weight
@@ -333,7 +332,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         do{
             solver2 = new Minisat::Solver();
             auxvars2.resetAuxVarsTo(k+m+2);
-            auto max_aux = auxvars2.getBiggestReturnedAuxVar();
             formula2.clearDatabase();
             for (auto cl: *clauses) {
                 formula2.addClause(*cl);
@@ -356,7 +354,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
 
             if (sat) {
-                exists_solution2 = true;
                 if (decomposition_debug) {
                     cout << "(Decreasing) SAT with values " << current_value << ", " << current_value2 << endl;
                     cout << "Model: ";

@@ -48,7 +48,11 @@ extern bool python_all;
 extern bool info;
 extern bool fcptnet;
 extern bool experimental_k_fcpn_decomposition;
+extern bool blind_fcpn;
+extern bool fcpn_modified;
+extern bool fcpn_with_levels;
 extern bool pn_synthesis;
+extern bool no_fcpn_min;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern map<Region*, int>* sm_region_aliases;
@@ -91,6 +95,7 @@ namespace Utilities {
     bool are_equal(const Region& r1, Region r2);
     bool contains(set<Region *> *, Region *);
     bool contains(vector<Region*> *, Region *);
+    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
