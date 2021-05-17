@@ -556,6 +556,8 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
         Minisat::Solver solver;
 
         int num_clauses_formula = formula.getClauses().size();
+        if (decomposition_debug)
+            cout << "Formula size: " << num_clauses_formula << endl;
         string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                formula.getClauses());
         bool sat = check_sat_formula_from_dimacs(solver, dimacs_file);

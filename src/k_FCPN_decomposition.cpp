@@ -149,8 +149,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                                 (*er_satisfiable_sets)[ev]->insert(temp_set);
                             }
                             else{
-                                if(decomposition_debug)
-                                    cout << "not minimal set" << endl;
+                                /*if(decomposition_debug)
+                                    cout << "not minimal set" << endl;*/
                                 delete temp_set;
                             }
                         } else {
@@ -268,9 +268,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     }
 
 
-
-
-
     auto clauses = new vector<vector<int32_t> *>();
     vector<int32_t> *clause;
     set<int32_t> *lit_set;
@@ -359,6 +356,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     int regions_in_solution = 0;
 
     auto last_solution = new set<int>();
+
+    //todo: possibile miglioramento delle prestazioni: salvataggio di updatable clauses e aggiunta incrementale di nuove FCPN con anche il mantenimento di clausole imparate
+    //forse avere clausole imparate da qualcosa di unsat non va bene, sarebbe utile nel caso contrario
 
     while(!solution_found){
         if(updatable_clauses != nullptr){
@@ -568,6 +568,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         Minisat::Solver solver;
 
         int num_clauses_formula = formula.getClauses().size();
+
+        if (decomposition_debug)
+            cout << "Formula size: " << num_clauses_formula << endl;
         string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                         formula.getClauses());
         bool sat = check_sat_formula_from_dimacs(solver, dimacs_file);
@@ -698,11 +701,11 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             int num_clauses_formula = formula2.getClauses().size();
 
             if (decomposition_debug)
-                cout << "Formula size: " << formula2.getClauses().size() << endl;
+                cout << "Formula size: " << num_clauses_formula << endl;
 
             string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                    formula2.getClauses());
-            bool sat = check_sat_formula_from_dimacs2(*solver2, dimacs_file);
+            bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
 
             if (sat) {
                 max = current_max_regions;
@@ -711,6 +714,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                          << endl;
                     cout << "Model: ";
                 }
+                int num_reg = 0;
                 last_solution->clear();
                 for (int i = 0; i < solver2->nVars(); ++i) {
                     if (solver2->model[i] != l_Undef) {
@@ -722,6 +726,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                         if (i < number_of_regions * number_of_FCPNs) {
                             if (solver2->model[i] == l_True) {
                                 last_solution->insert(i + 1);
+                                num_reg++;
                             } else {
                                 last_solution->insert(-i - 1);
                             }
@@ -730,6 +735,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 }
                 if (decomposition_debug)
                     cout << endl;
+                max = num_reg;
             } else {
                 min = current_max_regions;
                 if (decomposition_debug) {
