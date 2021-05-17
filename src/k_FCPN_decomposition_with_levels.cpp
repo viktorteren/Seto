@@ -392,7 +392,7 @@ k_FCPN_decomposition_with_levels::k_FCPN_decomposition_with_levels(int number_of
         if(decomposition_debug)
             cout<< "Formula size: " << formula2.getClauses().size() << endl;
 
-        string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
+        string dimacs_file = convert_to_dimacs_simplified(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                formula2.getClauses());
         bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
 
@@ -757,7 +757,7 @@ void k_FCPN_decomposition_with_levels::compute(const string& file, Pre_and_post_
         Minisat::Solver solver;
 
         int num_clauses_formula = formula.getClauses().size();
-        string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+        string dimacs_file = convert_to_dimacs_simplified(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                formula.getClauses());
         bool sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {

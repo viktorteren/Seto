@@ -60,7 +60,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
     }
 
-    auto results_to_avoid = new set<set<int>*>();
+    auto results_to_avoid = new vector<set<int>>();
     auto reg_map = new map<Region*, int>();
     auto regions_vector = new vector<Region*>();
     int temp = 0;
@@ -411,11 +411,11 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 }
             }
             fcpn_set->insert(temp_PN);
-            auto last_solution_copy = new set<int>();
+            /*auto last_solution_copy = new set<int>();
             for(auto val: *last_solution){
                 last_solution_copy->insert(val);
-            }
-            results_to_avoid->insert(last_solution_copy);
+            }*/
+            results_to_avoid->push_back(*last_solution);
 
             auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
             excitation_closure = is_excitation_closed(used_regions_map, ER);
@@ -519,9 +519,9 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         delete pn;
     }
     delete fcpn_set;
-    for(auto res: *results_to_avoid){
+    /*for(auto res: *results_to_avoid){
         delete res;
-    }
+    }*/
     delete results_to_avoid;
 
     delete reg_map;

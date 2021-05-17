@@ -585,6 +585,7 @@ namespace Utilities {
         fout.close();
     }
 
+
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
@@ -617,7 +618,10 @@ namespace Utilities {
         if(new_results_to_avoid != nullptr) {
             for (auto clause: *new_results_to_avoid) {
                 for (auto lit: *clause) {
-                    temp.append("-" + to_string(lit) + " ");
+                    if(lit > 0)
+                        temp.append("-" + to_string(lit) + " ");
+                    else
+                        temp.append(to_string(-lit) + " ");
                 }
                 temp.append("0\n");
             }
@@ -632,12 +636,8 @@ namespace Utilities {
         return output_name;
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
-        return convert_to_dimacs(file_path,num_var,num_clauses,clauses, nullptr);
-    }
-
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, set<set<int>*>* new_results_to_avoid){
-        if(print_step_by_step_debug || decomposition_debug)
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){
+        if(decomposition_debug)
             cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
         string in_name;
@@ -659,26 +659,21 @@ namespace Utilities {
 
         ofstream fout(output_name);
         string temp;
-        //temp.append("p cnf");
         for(const auto& clause: clauses){
             for(auto lit: clause){
-                //fout << lit << " ";
                 temp.append(to_string(lit)+" ");
             }
-            //fout << "0" << endl;
             temp.append("0\n");
         }
         //add the new clauses found in the previous iterations
         if(new_results_to_avoid != nullptr) {
-            for (auto clause: *new_results_to_avoid) {
-                for (auto lit: *clause) {
-                    //fout << "-" <<lit << " ";
+            for (const auto& clause: *new_results_to_avoid) {
+                for (auto lit: clause) {
                     if(lit > 0)
                         temp.append("-" + to_string(lit) + " ");
                     else
                         temp.append(to_string(-lit) + " ");
                 }
-                //fout << "0" << endl;
                 temp.append("0\n");
             }
         }
@@ -689,9 +684,44 @@ namespace Utilities {
             fout << num_var << " " << num_clauses << endl;
         fout << temp;
         fout.close();
-        //f.close();
         return output_name;
     }
+
+    string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
+        cout << "================[DIMACS FILE CREATION]====================" << endl;
+        string output_name = file_path;
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+
+        output_name = output_name + ".dimacs";
+        //====================== END OF FILE CREATION =====================
+
+        ofstream fout(output_name);
+        string temp;
+        for(auto clause: clauses){
+            for(auto lit: clause){
+                temp.append(to_string(lit)+" ");
+            }
+            temp.append("0\n");
+        }
+        fout << "p cnf ";
+        fout << num_var << " " << num_clauses << endl;
+        fout << temp;
+        fout.close();
+        return output_name;
+    }
+
 
     void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
                              map<int, set<Region *> *> *post_regions,

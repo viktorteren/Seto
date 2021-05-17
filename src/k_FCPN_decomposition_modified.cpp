@@ -558,7 +558,7 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
         int num_clauses_formula = formula.getClauses().size();
         if (decomposition_debug)
             cout << "Formula size: " << num_clauses_formula << endl;
-        string dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+        string dimacs_file = convert_to_dimacs_simplified(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                formula.getClauses());
         bool sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
@@ -689,7 +689,7 @@ k_FCPN_decomposition_modified::k_FCPN_decomposition_modified(int number_of_ev,
             if (decomposition_debug)
                 cout << "Formula size: " << formula2.getClauses().size() << endl;
 
-            string dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
+            string dimacs_file = convert_to_dimacs_simplified(file, auxvars2.getBiggestReturnedAuxVar(), num_clauses_formula,
                                                    formula2.getClauses());
             bool sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
 

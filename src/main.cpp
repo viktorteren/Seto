@@ -49,8 +49,8 @@ int main(int argc, char **argv) {
             if(args[i]=="KFCB") {
                 fcptnet = true;
                 blind_fcpn = true;
-                cerr << "It's better to avoid this kind of decomposition, test only!!!" << endl;
-                exit(1);
+                //cerr << "It's better to avoid this kind of decomposition, test only!!!" << endl;
+                //exit(1);
             }
             if(args[i]=="KFCL"){
                 fcptnet = true;
