@@ -637,18 +637,12 @@ int main(int argc, char **argv) {
                                                                          pprg, aliases, new_ER);
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
-
-                    rg->basic_delete();
-                    rg->delete_ER_set();
                 }
                 else if(blind_fcpn){
                     auto k_fcpn_decomposition = new k_FCPN_decomposition_blind(number_of_events, regions_set, file,
                                                                          pprg, aliases, new_ER);
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
-
-                    rg->basic_delete();
-                    rg->delete_ER_set();
                 }
                 /*else if(fcpn_with_levels){
                     auto k_fcpn_decomposition = new k_FCPN_decomposition_with_levels(number_of_events, regions_set, file,
@@ -664,13 +658,8 @@ int main(int argc, char **argv) {
                                                                                      pprg, aliases, new_ER);
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition;
-
-                    rg->basic_delete();
-                    rg->delete_ER_set();
                 }
                 else{
-                    //cerr << "Iterating FCPN decomposition still have issues, probably it will be abbandoned" << endl;
-
                     for(auto reg: *regions_set){
                         if(aliases_region_pointer_inverted->find(reg) == aliases_region_pointer_inverted->end()){
                             region_mapping(reg);
@@ -681,6 +670,8 @@ int main(int argc, char **argv) {
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete fcpn_decomposition;
                 }
+                rg->basic_delete();
+                rg->delete_ER_set();
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
