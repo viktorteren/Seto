@@ -88,7 +88,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_gene
         delete new_used_regions_map_tmp;
         if (excitation_closure) {
             if (decomposition_debug) {
-                cout << "removed SM" << endl;
+                cout << "removed PN/SM" << endl;
                 println(*SM);
             }
             //removal of the SM
@@ -100,6 +100,6 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_gene
     }
 
     if (((unsigned int) num_SMs - num_candidates) == SMs->size()) {
-        cout << "All candidate SMs has been removed" << endl;
+        cout << "All candidate PNs/SMs has been removed" << endl;
     }
 }

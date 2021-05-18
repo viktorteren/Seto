@@ -7,6 +7,7 @@
 #include "../pblib/pb2cnf.h"
 #include <algorithm>
 #include <iomanip>
+#include "../include/Pre_and_post_regions_generator.h"
 
 class GreedyRemoval {
 private:
