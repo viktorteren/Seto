@@ -240,7 +240,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             if (sat) {
                 exists_solution = true;
                 if (decomposition_debug) {
-                    cout << "SAT with value " << current_value << endl;
+                    cout << "SAT with value " << current_value << ": representing the number of new covered regions" << endl;
                     cout << "Model: ";
                 }
                 last_solution->clear();
@@ -471,7 +471,27 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         pn_counter++;
     }
 
-    delete regions_mapping;
+    if (decomposition_debug) {
+        cout << "Final FCPNs" << endl;
+        for (auto SM: *fcpn_set) {
+            cout << "FCPN:" << endl;
+            println(*SM);
+        }
+    }
+
+    if(decomposition_debug){
+        set<int> used_regions;
+        for(auto pn: *fcpn_set){
+            for(auto reg: *pn){
+                used_regions.insert(regions_mapping->at(reg));
+            }
+        }
+        cout << "Used regions: ";
+        for(auto reg: used_regions){
+            cout << "r" << reg << " ";
+        }
+        cout << endl;
+    }
 
     if(pn_counter == 1){
         cout << "1 FCPN" << endl;
@@ -480,13 +500,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         cout << pn_counter << " FCPNs" << endl;
     }
 
-    if (decomposition_debug) {
-        cout << "Final FCPNs" << endl;
-        for (auto SM: *fcpn_set) {
-            cout << "FCPN:" << endl;
-            println(*SM);
-        }
-    }
+    delete regions_mapping;
 
     for(auto rec: *state_regions_map){
         delete rec.second;

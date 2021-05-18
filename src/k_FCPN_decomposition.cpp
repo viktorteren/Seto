@@ -3,6 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+#include <include/GreedyRemoval.h>
 #include "../include/k_FCPN_decomposition.h"
 
 using namespace PBLib;
@@ -111,6 +112,21 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //STEP 1
     if(decomposition_debug)
         cout << "STEP 1" << endl;
+
+    for(auto r: *regions){
+        bool found =false;
+        for(auto rec: *pre_regions_map){
+            if(rec.second->find(r) != rec.second->end()) {
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            cerr << "region not found" << endl;
+            exit(1);
+        }
+
+    }
 
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
@@ -268,8 +284,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     }
 
 
-    auto clauses = new vector<vector<int32_t> *>();
-    vector<int32_t> *clause;
+    auto clauses = new set<set<int32_t>>();
+    set<int32_t> *clause;
     set<int32_t> *lit_set;
 
     //encoding: [1, k*number_of_FCPNs+1] regions range: k regions
@@ -286,16 +302,17 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         temp++;
     }
 
-    /*cout << "ER SATISFIABLE SETS" <<endl;
+    /*
+    cout << "ER SATISFIABLE SETS" <<endl;
     for(auto rec: *er_satisfiable_sets){
         cout << "EVENT: " << rec.first << endl;
         cout << "size: " << rec.second->size() << endl;
         for (auto reg_set: *rec.second) {
             for (auto reg: *reg_set) {
-                //println(*reg);
-                cout << encoded_region(reg, 1) << " ";
+                cout << "not encoded: ";
+                println(*reg);
+                cout <<"encoded: " << encoded_region(reg, 1) << endl;
             }
-            cout << endl;
         }
     }
 
@@ -351,7 +368,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
     }
 
-    set<set<int32_t> *> *updatable_clauses = nullptr;
+    set<set<int32_t>> *updatable_clauses = nullptr;
 
     int regions_in_solution = 0;
 
@@ -360,14 +377,12 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //todo: possibile miglioramento delle prestazioni: salvataggio di updatable clauses e aggiunta incrementale di nuove FCPN con anche il mantenimento di clausole imparate
     //forse avere clausole imparate da qualcosa di unsat non va bene, sarebbe utile nel caso contrario
 
+
+
     while(!solution_found){
-        if(updatable_clauses != nullptr){
-            for(auto cl: *updatable_clauses){
-                delete cl;
-            }
-            delete updatable_clauses;
-        }
-        updatable_clauses = new set<set<int32_t> *>();
+        delete updatable_clauses;
+        updatable_clauses = new set<set<int32_t>>();
+        //todo: possible bug here: approx algorithm has found a better result
         if(decomposition_debug)
             cout << "STEP 1b" << endl;
         //STEP 1b: EC clauses creation
@@ -394,21 +409,21 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                     }
                 }
                 bool found = false;
-                for(auto clau: *updatable_clauses){
-                    if(*clau == *lit_set){
+                for(const auto& clau: *updatable_clauses){
+                    if(clau == *lit_set){
                         found = true;
                         break;
                     }
                 }
 
                 if(!found) {
-                    updatable_clauses->insert(lit_set);
+                    updatable_clauses->insert(*lit_set);
                     //print_clause(lit_set);
                 }
                 else{
                     //cout << "clausola già presente" << endl;
-                    delete lit_set;
                 }
+                delete lit_set;
                 //delete clause;
             }
         }
@@ -444,20 +459,20 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 lit_set->insert(-encoded_region(r,i));
                 lit_set->insert(-encoded_region(r2,i));
                 bool found = false;
-                for(auto clau: *updatable_clauses){
-                    if(*clau == *lit_set){
+                for(const auto& clau: *updatable_clauses){
+                    if(clau == *lit_set){
                         found = true;
                         break;
                     }
                 }
                 if(!found) {
-                    updatable_clauses->insert(lit_set);
+                    updatable_clauses->insert(*lit_set);
                     //print_clause(lit_set);
                 }
                 else{
                     //cout << "clausola già presente" << endl;
-                    delete lit_set;
                 }
+                delete lit_set;
                 //delete clause;
                 /*if(decomposition_debug){
                     auto decoded_value1 = decoded_region(-encoded_region(r,i));
@@ -499,9 +514,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                     //clause->push_back(-region_encoding);
                     lit_set->insert(-region_encoding);
                 }
-                updatable_clauses->insert(lit_set);
-                //print_clause(lit_set);
-                //delete clause;
+                updatable_clauses->insert(*lit_set);
+                delete lit_set;
             }
         }
         for(auto rec: *regions_connected_to_labels){
@@ -513,15 +527,13 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         if(decomposition_debug)
             cout << "STEP 4" << endl;
         for(int i=0;i<num_events;++i){
-            //clause = new vector<int32_t>();
             lit_set = new set<int32_t>();
             for(int k=1;k<=number_of_FCPNs;++k){
                 int encoded_ev = encoded_event(i, k);
-                //clause->push_back(encoded_ev);
                 lit_set->insert(encoded_ev);
             }
-            updatable_clauses->insert(lit_set);
-            //delete clause;
+            updatable_clauses->insert(*lit_set);
+            delete lit_set;
         }
 
         //STEP 5
@@ -530,11 +542,12 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         for(auto rec: *state_regions_map){
             for(int i=1;i<=number_of_FCPNs;++i) {
                 auto region_set = rec.second;
-                clause = new vector<int32_t>();
+                clause = new set<int32_t>();
                 for (auto reg: *region_set) {
-                    clause->push_back(encoded_region(reg,i));
+                    clause->insert(encoded_region(reg,i));
                 }
-                clauses->push_back(clause);
+                clauses->insert(*clause);
+                delete clause;
             }
             //print_clause(clause);
         }
@@ -551,12 +564,12 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         /*if(decomposition_debug)
             cout << "first aux var: " << first_aux_var << endl;*/
         AuxVarManager auxvars(first_aux_var);
-        for (auto cl: *clauses) {
-            formula.addClause(*cl);
-        }
         auto new_vector = new set<vector<int32_t>*>();
-        for(auto cl_set: *updatable_clauses){
-            new_vector->insert(new vector<int32_t>(cl_set->begin(), cl_set->end()));
+        for(const auto& cl_set: *clauses){
+            new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
+        }
+        for(const auto& cl_set: *updatable_clauses){
+            new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
         }
         for (auto cl: *new_vector) {
             formula.addClause(*cl);
@@ -680,17 +693,17 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             solver2 = new Minisat::Solver();
             auxvars2.resetAuxVarsTo(first_aux_var);
             formula2.clearDatabase();
-            for (auto cl: *clauses) {
-                formula2.addClause(*cl);
+            auto new_vector = new set<vector<int32_t>*>();
+            for(auto cl_set: *clauses){
+                new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
             }
-            auto new_vector = new set<vector<int32_t> *>();
             for (auto cl_set: *updatable_clauses) {
-                new_vector->insert(new vector<int32_t>(cl_set->begin(), cl_set->end()));
+                new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
             }
             for (auto cl: *new_vector) {
                 formula2.addClause(*cl);
             }
-            for (auto elem: *new_vector) {
+            for(auto elem: *new_vector){
                 delete elem;
             }
             delete new_vector;
@@ -778,7 +791,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         cout << "EC OK" << endl;
     }
     else{
-        cerr << "EC not satisfied -> WRONG  DECOMPOSITION" << endl;
+        cerr << "EC not satisfied -> WRONG DECOMPOSITION" << endl;
         exit(1);
     }
     for(auto rec: *used_regions_map){
@@ -823,8 +836,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         pn_counter++;
     }
 
-    delete regions_mapping;
-
     if (decomposition_debug) {
         cout << "Final FCPNs" << endl;
         for (auto SM: *fcpn_set) {
@@ -832,6 +843,22 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             println(*SM);
         }
     }
+
+    if(decomposition_debug){
+        set<int> used_regions;
+        for(auto pn: *fcpn_set){
+            for(auto reg: *pn){
+                used_regions.insert(regions_mapping->at(reg));
+            }
+        }
+        cout << "Used regions: ";
+        for(auto reg: used_regions){
+            cout << "r" << reg << " ";
+        }
+        cout << endl;
+    }
+
+    delete regions_mapping;
 
     cout << "Number of FCPNs: " << fcpn_set->size() << endl;
 
@@ -870,13 +897,13 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     }
     delete region_ex_event_map;
 
-    for(auto cl: *clauses){
+    /*for(auto cl: *clauses){
         delete cl;
-    }
+    }*/
     delete clauses;
-    for(auto cl: *updatable_clauses){
+    /*for(auto cl: *updatable_clauses){
         delete cl;
-    }
+    }*/
     delete updatable_clauses;
 
     for(auto rec: *cnf_ec_map){
