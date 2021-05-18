@@ -15,7 +15,7 @@ public:
   explicit Region_generator(int n);
   ~Region_generator();
   void delete_ER_set();
-  void delere_ER_set_not_in(map<int, ER> *er);
+  void delete_ER_set_not_in(map<int, ER> *er);
   void delete_regions_map();
   void basic_delete();
 

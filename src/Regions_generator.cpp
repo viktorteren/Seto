@@ -27,7 +27,7 @@ void Region_generator::delete_ER_set(){
     delete ER_set;
 }
 
-void Region_generator::delere_ER_set_not_in(map<int, ER> *er){
+void Region_generator::delete_ER_set_not_in(map<int, ER> *er){
     set<ER> vec;
     for(auto rec: *er){
         vec.insert(rec.second);
