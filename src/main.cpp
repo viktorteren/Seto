@@ -39,44 +39,40 @@ int main(int argc, char **argv) {
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
-            if (args[i] == "TS")
+            else if (args[i] == "TS")
                 ts_output = true;
-            if(args[i]=="FC")
+            else if(args[i]=="FC")
                 fcptnet = true;
-            if(args[i]=="KFC") {
+            else if(args[i]=="KFC") {
                 fcptnet = true;
                 experimental_k_fcpn_decomposition = true;
             }
-            if(args[i]=="KFCB") {
+            else if(args[i]=="KFCB") {
                 fcptnet = true;
                 blind_fcpn = true;
-                //cerr << "It's better to avoid this kind of decomposition, test only!!!" << endl;
-                //exit(1);
             }
-            if(args[i]=="KFCL"){
+            else if(args[i]=="KFCL"){
                 fcptnet = true;
                 fcpn_with_levels = true;
                 cerr << "KFCM does not work properly" << endl;
                 exit(1);
             }
-            if(args[i]=="KFCM"){
+            else if(args[i]=="KFCM"){
                 fcptnet = true;
                 fcpn_modified = true;
-                /*cerr << "KFCM does not work properly" << endl;
-                exit(1);*/
             }
-            if(args[i] == "ECTS")
+            else if(args[i] == "ECTS")
                 ects_output = true;
-            if(args[i] == "M")
+            else if(args[i] == "M")
                 decomposition = true;
-            if (args[i] == "S") {
+            else if (args[i] == "S") {
                 if (decomposition) {
                     cerr << "A flag for decomposition was previously chosen" << endl;
                     exit(1);
                 }
                 print_step_by_step = true;
             }
-            if (args[i] == "D") {
+            else if (args[i] == "D") {
                 //print_step_by_step = true;
                 //print_step_by_step_debug = true;
                 decomposition_debug = true;
@@ -84,23 +80,27 @@ int main(int argc, char **argv) {
             /*if (args[i] == "L"){
                 log_file = true;
             }*/
-            if(args[i] == "O"){
+            else if(args[i] == "O"){
                 decomposition_output = true;
             }
-            if(args[i] == "G") {
+            else if(args[i] == "G") {
                 decomposition_output = true;
                 decomposition_output_sis = true;
                 benchmark_script = true;
             }
-            if(args[i] == "-ALL"){
+            else if(args[i] == "-ALL"){
                 python_all = true;
             }
-            if(args[i] == "--INFO"){
+            else if(args[i] == "--INFO"){
                 info = true;
                 print_step_by_step = true;
             }
-            if(args[i] == "NOMIN"){
+            else if(args[i] == "NOMIN"){
                 no_fcpn_min = true;
+            }
+            else{
+                cerr << "INVALID FLAG " << args[i] << endl;
+                exit(1);
             }
         }
         if(fcptnet && decomposition_output_sis){
@@ -282,12 +282,12 @@ int main(int argc, char **argv) {
 
         if (print_step_by_step) {
             int cont = 0;
-            double somma = 0;
+            double sum = 0;
             for (const auto &reg: *vector_regions) {
                 cont++;
-                somma += reg.size();
+                sum += reg.size();
             }
-            cout << "average: " << (somma / cont) << endl;
+            cout << "average: " << (sum / cont) << endl;
             cout << "number of regions: " << vector_regions->size() << endl;
             cout << "number of splits: " << num_split << endl;
         }
@@ -301,12 +301,12 @@ int main(int argc, char **argv) {
         if (print_step_by_step_debug) {
             cout << "ECTS:" << endl;
             for (const auto &tr: *ts_map) {
-                cout << "evento " << tr.first << endl;
+                cout << "event " << tr.first << endl;
                 for (auto r: tr.second) {
                     cout << r->first << "->" << r->second << endl;
                 }
             }
-            cout << "" << endl;
+            cout << endl;
         }
 
         if(info){
