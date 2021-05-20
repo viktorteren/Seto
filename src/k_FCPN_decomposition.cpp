@@ -252,6 +252,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         (*cnf_ec_map)[ev]=new set<set<Region*>*>();
         auto current_set = (*cnf_ec_map)[ev];
         if(rec.second->size() > 1) {
+            //todo: bug here: CNF TO DNF transformation is wrong
             _Rb_tree_const_iterator<set<set<int> *> *> it;
             _Rb_tree_const_iterator<set<set<int> *> *> it2;
             for(it=rec.second->begin();it != rec.second->end();++it){
@@ -302,31 +303,36 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         temp++;
     }
 
-    /*
-    cout << "ER SATISFIABLE SETS" <<endl;
-    for(auto rec: *er_satisfiable_sets){
-        cout << "EVENT: " << rec.first << endl;
-        cout << "size: " << rec.second->size() << endl;
-        for (auto reg_set: *rec.second) {
-            for (auto reg: *reg_set) {
-                cout << "not encoded: ";
-                println(*reg);
-                cout <<"encoded: " << encoded_region(reg, 1) << endl;
+
+    if(decomposition_debug) {
+        cout << "ER SATISFIABLE SETS" << endl;
+        for (auto rec: *er_satisfiable_sets) {
+            cout << "EVENT: " << rec.first << endl;
+            //cout << "size: " << rec.second->size() << endl;
+            for (auto reg_set: *rec.second) {
+                for (auto reg: *reg_set) {
+                    //cout << "not encoded: ";
+                    //println(*reg);
+                    //cout <<"encoded: " << encoded_region(reg, 1) << endl;
+                    cout << encoded_region(reg, 1) << " ";
+                }
+                cout << endl;
+            }
+        }
+
+        cout << "CNF EC MAP" << endl;
+        for (auto rec: *cnf_ec_map) {
+            cout << "EVENT: " << rec.first << endl;
+            for (auto reg_set: *rec.second) {
+                for (auto reg: *reg_set) {
+                    cout << encoded_region(reg, 1) << " ";
+                }
+                cout << endl;
+                //println(*reg_set);
             }
         }
     }
 
-    cout << "CNF EC MAP" << endl;
-    for(auto rec: *cnf_ec_map){
-        cout << "EVENT: " << rec.first << endl;
-        for (auto reg_set: *rec.second) {
-            for (auto reg: *reg_set) {
-                cout << encoded_region(reg, 1) << " ";
-            }
-            cout << endl;
-            //println(*reg_set);
-        }
-    }*/
 
     //preparation for STEP 2 -> inverse map respect to pre_regions map i.e. map of outgoing events from a region
     auto region_ex_event_map = new map<Region *, set<int>*>();
