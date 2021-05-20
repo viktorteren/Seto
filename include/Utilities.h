@@ -118,13 +118,13 @@ namespace Utilities {
     void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
                             map<int, set<Region *> *> *post_regions,
                             map<int, int> *aliases,
-                            string file_name,
+                            const string& file_name,
                             int FCPN_number);
     void print_fcpn_dot_file(map<Region *, int> *regions_mapping,
                              map<int, set<Region *> *> *pre_regions,
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases,
-                             string file_name,
+                             const string&  file_name,
                              int FCPN_number);
     //Minisat::vec<Minisat::Lit>* region_to_clause(map<int, set<Region *> *> *irredundant_regions);
     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map); //s vill recieve new clauses and uncovered_states the states to cover
