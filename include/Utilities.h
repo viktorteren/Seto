@@ -96,6 +96,8 @@ namespace Utilities {
     bool contains(set<Region *> *, Region *);
     bool contains(vector<Region*> *, Region *);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
+    bool contains(set<int> bigger_set, set<int> smaller_set);
+    bool contains(set<int> *bigger_set, set<int> *smaller_set);
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,

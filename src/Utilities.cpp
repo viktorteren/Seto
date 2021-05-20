@@ -454,6 +454,22 @@ namespace Utilities {
         return true;
     }
 
+    bool contains(set<int> bigger_set, set<int> smaller_set){
+        for (auto elem : smaller_set) {
+            if(bigger_set.find(elem) == bigger_set.end())
+                return false;
+        }
+        return true;
+    }
+
+    bool contains(set<int> *bigger_set, set<int> *smaller_set){
+        for (auto elem : *smaller_set) {
+            if(bigger_set->find(elem) == bigger_set->end())
+                return false;
+        }
+        return true;
+    }
+
 
     bool contains(vector<Region *> *vector, Region *region) {
         for (auto elem : *vector) {
@@ -917,6 +933,17 @@ namespace Utilities {
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
 
+        cout << "initial regions:" << endl;
+        for(auto reg: *initial_reg){
+            cout << "r" << regions_mapping->at(reg) << " : ";
+            println(*reg);
+        }
+        cout << "not initial regions:" << endl;
+        for(auto reg: *not_initial_regions){
+            cout << "r" << regions_mapping->at(reg) << " : ";
+            println(*reg);
+        }
+
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
         }
@@ -997,6 +1024,9 @@ namespace Utilities {
                     fout << "'";
                 }
                 fout << "\"];\n";
+            }
+            else{
+                (*alias_counter)[record.second]++;
             }
         }
         delete alias_counter;
