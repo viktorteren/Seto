@@ -171,4 +171,6 @@ namespace Utilities {
     void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map);
     bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2);
     bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2);
+    map<int, set<set<Region *>*>*> * dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set);
+    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it);
 };

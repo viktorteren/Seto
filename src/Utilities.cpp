@@ -2419,4 +2419,44 @@ namespace Utilities {
             }
         }
     }
+
+    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set){
+        auto cnf_set = new map<int, set<set<Region *>*>*>();
+        for(auto rec: *er_satisfiable_set){
+            //(*cnf_set)[rec.first] = new set<set<Region *>*>();
+            set<set<Region *>*>::iterator it;
+            it = rec.second->begin();
+            (*cnf_set)[rec.first] = dnf_to_cnf_core(rec.second, it);
+        }
+        return cnf_set;
+    }
+
+    //todo da verificare sembra uguale alla versione critta senza ricorsione
+    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
+        auto new_clauses = new set<set<Region *>*>();
+        auto current_clause = *it;
+        if(next(it) == cl_set->end()){
+            for (auto val: *current_clause) {
+                auto tmp_cl = new set<Region *>();
+                tmp_cl->insert(val);
+                new_clauses->insert(tmp_cl);
+            }
+            return new_clauses;
+        }
+        auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
+
+        for (auto val: *current_clause) {
+            for (auto cl: *next_clauses) {
+                auto tmp_cl = new set<Region *>();
+                tmp_cl->insert(val);
+                for (auto reg: *cl) {
+                    tmp_cl->insert(reg);
+                }
+                new_clauses->insert(tmp_cl);
+            }
+        }
+
+        return new_clauses;
+    }
+
 }

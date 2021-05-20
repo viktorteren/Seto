@@ -246,6 +246,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //this maps binds events to sets of regions which satisfies EC for this specific event
     auto cnf_ec_map = new map<int, set<set<Region *>*>*>();
 
+    auto prova_cnf = dnf_to_cnf(er_satisfiable_sets);
+
     for(auto rec: *er_satisfiable_sets){
         auto ev = rec.first;
         //cout << "ev: " << ev << endl;
@@ -331,6 +333,19 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 //println(*reg_set);
             }
         }
+
+        cout << "PROVA CNF EC MAP" << endl;
+        for (auto rec: *prova_cnf) {
+            cout << "EVENT: " << rec.first << endl;
+            for (auto reg_set: *rec.second) {
+                for (auto reg: *reg_set) {
+                    cout << encoded_region(reg, 1) << " ";
+                }
+                cout << endl;
+                //println(*reg_set);
+            }
+        }
+
     }
 
 
