@@ -2431,7 +2431,7 @@ namespace Utilities {
         return cnf_set;
     }
 
-    //todo da verificare sembra uguale alla versione critta senza ricorsione
+    //todo da verificare sembra uguale alla versione senza ricorsione
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
         auto new_clauses = new set<set<Region *>*>();
         auto current_clause = *it;
@@ -2441,6 +2441,10 @@ namespace Utilities {
                 tmp_cl->insert(val);
                 new_clauses->insert(tmp_cl);
             }
+            for(auto cl: *new_clauses){
+                println(cl);
+            }
+            cout << endl;
             return new_clauses;
         }
         auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
