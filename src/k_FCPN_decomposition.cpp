@@ -244,49 +244,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     //EC clause sets creation (transformation from DNF to CNF): this initial set will be further modified depending on
     // the number of FCPNs but the generic form is calculated only once
     //this maps binds events to sets of regions which satisfies EC for this specific event
-    auto cnf_ec_map = new map<int, set<set<Region *>*>*>();
 
     cout << "debug dnf to cnf" << endl;
-    auto prova_cnf = dnf_to_cnf(er_satisfiable_sets);
-
-    for(auto rec: *er_satisfiable_sets){
-        auto ev = rec.first;
-        //cout << "ev: " << ev << endl;
-        (*cnf_ec_map)[ev]=new set<set<Region*>*>();
-        auto current_set = (*cnf_ec_map)[ev];
-        if(rec.second->size() > 1) {
-            //todo: bug here: CNF TO DNF transformation is wrong
-            _Rb_tree_const_iterator<set<set<int> *> *> it;
-            _Rb_tree_const_iterator<set<set<int> *> *> it2;
-            for(it=rec.second->begin();it != rec.second->end();++it){
-                for(it2=next(it);it2 != rec.second->end();++it2){
-                    auto first_set = *it;
-                    auto second_set = *it2;
-                    for(auto first_region: *first_set){
-                        for(auto second_region: *second_set){
-                            auto region_set = new set<Region*>();
-                            region_set->insert(first_region);
-                            if(second_region != first_region){
-                                region_set->insert(second_region);
-                            }
-                            current_set->insert(region_set);
-                        }
-                    }
-                }
-            }
-        }
-        //single "and clause" which have to be only split
-        else{
-            for (auto reg_set: *rec.second) {
-                for(auto reg: *reg_set){
-                    auto new_set = new set<Region*>();
-                    new_set->insert(reg);
-                    current_set->insert(new_set);
-                }
-            }
-        }
-    }
-
+    auto cnf_ec_map = dnf_to_cnf(er_satisfiable_sets);
 
     auto clauses = new set<set<int32_t>>();
     set<int32_t> *clause;
@@ -323,6 +283,67 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             }
         }
 
+        //removal of bigger sets
+        for (auto rec: *cnf_ec_map) {
+            //cout << "EV: " << rec.first << endl;
+            auto to_remove = new set<set<Region *>*>();
+            for (auto reg_set: *rec.second) {
+                for (auto reg_set2: *rec.second) {
+                    if(reg_set != reg_set2){
+                        if(reg_set2->size() > reg_set->size()) {
+                            if (contains(reg_set2, reg_set)) {
+                                to_remove->insert(reg_set2);
+                                /*cout << "adding to remove: " << reg_set2 << endl;
+                                for (auto reg: *reg_set2) {
+                                    println(*reg);
+                                }
+                                cout << "because of: " << reg_set << endl;
+                                for (auto reg: *reg_set) {
+                                    println(*reg);
+                                }*/
+                            }
+                        }
+                    }
+                }
+            }
+            for(auto reg_set: *to_remove){
+                rec.second->erase(reg_set);
+            }
+            delete to_remove;
+        }
+
+
+        //removal of equal sets
+        auto to_remove = new map<int, set<set<Region *>*>*>();
+        for(auto rec: *cnf_ec_map){
+            set<set<Region *>*>::iterator it;
+            set<set<Region *>*>::iterator it2;
+            for(it=rec.second->begin();it != rec.second->end();++it){
+                for(it2=next(it);it2 != rec.second->end();++it2){
+                    if(*it != *it2){
+                        if((*it)->size() == (*it2)->size()){
+                            if(contains(*it,*it2)){
+                                if(to_remove->find(rec.first) == to_remove->end()){
+                                    (*to_remove)[rec.first] = new set<set<Region *>*>();
+                                }
+                                (*to_remove)[rec.first]->insert(*it);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for(auto rec: *to_remove){
+            for(auto reg_set: *rec.second){
+                /*cout << "removing:" << endl;
+                for(auto reg: *reg_set){
+                     println(*reg);
+                }*/
+                (*cnf_ec_map)[rec.first]->erase(reg_set);
+            }
+        }
+
+
         cout << "CNF EC MAP" << endl;
         for (auto rec: *cnf_ec_map) {
             cout << "EVENT: " << rec.first << endl;
@@ -334,19 +355,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 //println(*reg_set);
             }
         }
-
-        cout << "PROVA CNF EC MAP" << endl;
-        for (auto rec: *prova_cnf) {
-            cout << "EVENT: " << rec.first << endl;
-            for (auto reg_set: *rec.second) {
-                for (auto reg: *reg_set) {
-                    cout << encoded_region(reg, 1) << " ";
-                }
-                cout << endl;
-                //println(*reg_set);
-            }
-        }
-
     }
 
 
@@ -716,10 +724,10 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             auxvars2.resetAuxVarsTo(first_aux_var);
             formula2.clearDatabase();
             auto new_vector = new set<vector<int32_t>*>();
-            for(auto cl_set: *clauses){
+            for(const auto& cl_set: *clauses){
                 new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
             }
-            for (auto cl_set: *updatable_clauses) {
+            for (const auto& cl_set: *updatable_clauses) {
                 new_vector->insert(new vector<int32_t>(cl_set.begin(), cl_set.end()));
             }
             for (auto cl: *new_vector) {

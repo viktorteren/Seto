@@ -2423,6 +2423,7 @@ namespace Utilities {
     map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set){
         auto cnf_set = new map<int, set<set<Region *>*>*>();
         for(auto rec: *er_satisfiable_set){
+            cout  << "EV: " << rec.first << endl;
             //(*cnf_set)[rec.first] = new set<set<Region *>*>();
             set<set<Region *>*>::iterator it;
             it = rec.second->begin();
@@ -2431,7 +2432,9 @@ namespace Utilities {
         return cnf_set;
     }
 
-    //todo da verificare sembra uguale alla versione senza ricorsione
+
+    //todo: aggiungere memoizzazione
+    //todo memory leak check
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
         auto new_clauses = new set<set<Region *>*>();
         auto current_clause = *it;
@@ -2441,10 +2444,11 @@ namespace Utilities {
                 tmp_cl->insert(val);
                 new_clauses->insert(tmp_cl);
             }
+            /*
             for(auto cl: *new_clauses){
                 println(cl);
             }
-            cout << endl;
+            cout << endl;*/
             return new_clauses;
         }
         auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
