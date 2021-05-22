@@ -754,7 +754,7 @@ namespace Utilities {
             cerr << "any initial region found" << endl;
             exit(1);
         }
-        string output_name = std::move(file_name);
+        string output_name = file_name;
         string in_dot_name;
         string output;
         bool delete_regions_mapping = false;
@@ -773,6 +773,7 @@ namespace Utilities {
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
 
+        /*
         cout << "initial regions:" << endl;
         for(auto reg: *initial_reg){
             cout << "r" << regions_mapping->at(reg) << " : ";
@@ -782,7 +783,7 @@ namespace Utilities {
         for(auto reg: *not_initial_regions){
             cout << "r" << regions_mapping->at(reg) << " : ";
             println(*reg);
-        }
+        }*/
 
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -2423,7 +2424,7 @@ namespace Utilities {
     map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set){
         auto cnf_set = new map<int, set<set<Region *>*>*>();
         for(auto rec: *er_satisfiable_set){
-            cout  << "EV: " << rec.first << endl;
+            //cout  << "EV: " << rec.first << endl;
             //(*cnf_set)[rec.first] = new set<set<Region *>*>();
             set<set<Region *>*>::iterator it;
             it = rec.second->begin();
@@ -2433,7 +2434,6 @@ namespace Utilities {
     }
 
 
-    //todo: aggiungere memoizzazione
     //todo memory leak check
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
         auto new_clauses = new set<set<Region *>*>();
@@ -2453,6 +2453,7 @@ namespace Utilities {
         }
         auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
 
+        //todo: delete next clauses and keep only the current because it contains the next ones
         for (auto val: *current_clause) {
             for (auto cl: *next_clauses) {
                 auto tmp_cl = new set<Region *>();
@@ -2463,7 +2464,10 @@ namespace Utilities {
                 new_clauses->insert(tmp_cl);
             }
         }
-
+        for(auto cl: *next_clauses){
+            delete cl;
+        }
+        delete next_clauses;
         return new_clauses;
     }
 

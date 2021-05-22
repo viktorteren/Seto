@@ -245,7 +245,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     // the number of FCPNs but the generic form is calculated only once
     //this maps binds events to sets of regions which satisfies EC for this specific event
 
-    cout << "debug dnf to cnf" << endl;
+    //cout << "debug dnf to cnf" << endl;
     auto cnf_ec_map = dnf_to_cnf(er_satisfiable_sets);
 
     auto clauses = new set<set<int32_t>>();
@@ -344,6 +344,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
 
+        /*
         cout << "CNF EC MAP" << endl;
         for (auto rec: *cnf_ec_map) {
             cout << "EVENT: " << rec.first << endl;
@@ -354,9 +355,13 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 cout << endl;
                 //println(*reg_set);
             }
-        }
+        }*/
     }
 
+    for(auto rec: *er_satisfiable_sets){
+        delete rec.second;
+    }
+    delete er_satisfiable_sets;
 
     //preparation for STEP 2 -> inverse map respect to pre_regions map i.e. map of outgoing events from a region
     auto region_ex_event_map = new map<Region *, set<int>*>();
@@ -911,11 +916,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         delete pn;
     }
     delete fcpn_set;
-
-    for(auto rec: *er_satisfiable_sets){
-        delete rec.second;
-    }
-    delete er_satisfiable_sets;
 
     for(auto rec: *state_regions_map){
         delete rec.second;
