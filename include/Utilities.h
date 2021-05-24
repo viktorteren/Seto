@@ -47,7 +47,7 @@ extern bool ects_output;
 extern bool python_all;
 extern bool info;
 extern bool fcptnet;
-extern bool experimental_k_fcpn_decomposition;
+extern bool k_fcpn_decomposition;
 extern bool blind_fcpn;
 extern bool fcpn_modified;
 extern bool fcpn_with_levels;

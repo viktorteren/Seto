@@ -14,7 +14,7 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool ects_output;
-bool experimental_k_fcpn_decomposition;
+bool k_fcpn_decomposition;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -2371,13 +2371,13 @@ namespace Utilities {
         return target_PN;
     }
 
-    //todo: use template for common code in case of print_clause
     void print_clause(vector<int32_t> *clause){
         for(auto val: *clause){
             cout << val << " ";
         }
         cout << endl;
     }
+
 
     void print_clause(set<int32_t> *clause){
         for(auto val: *clause){
@@ -2433,8 +2433,6 @@ namespace Utilities {
         return cnf_set;
     }
 
-
-    //todo memory leak check
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
         auto new_clauses = new set<set<Region *>*>();
         auto current_clause = *it;
@@ -2453,7 +2451,6 @@ namespace Utilities {
         }
         auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
 
-        //todo: delete next clauses and keep only the current because it contains the next ones
         for (auto val: *current_clause) {
             for (auto cl: *next_clauses) {
                 auto tmp_cl = new set<Region *>();

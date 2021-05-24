@@ -479,6 +479,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
     }
 
+    /*
     if(decomposition_debug){
         set<int> used_regions;
         for(auto pn: *fcpn_set){
@@ -491,7 +492,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             cout << "r" << reg << " ";
         }
         cout << endl;
-    }
+    }*/
 
     if(pn_counter == 1){
         cout << "1 FCPN" << endl;

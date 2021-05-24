@@ -91,13 +91,13 @@ G: write output SMs in .g extension
 
 ### c) TS to interacting FCPNs flows
 
-#### Exact algorithm (recommended):
+#### Exact algorithm:
 
 ```Bash
 ./TS_splitter <file_path> KFC <optional_flags>
 ```
 
-#### Approximated algorithm:
+#### Approximated algorithm (recommended):
 
 ```Bash
 ./TS_splitter <file_path> FC <optional_flags>
@@ -111,12 +111,12 @@ O: write output SMs in .dot extension
 
 -ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-NOMIN: once found a minimum number of FCPNs does not perform any minimization on this set
+NOMIN: once found a minimum number of FCPNs does not perform any minimization on the set of regions
 <b>(recommended for a faster execution)</b>
 
 ### d) Combined flows
 
-The flags M and FC can be used together.
+The flags M and FC/KFC can be used together.
 
 <!--
 #### Benchmarks on a set of files (still present some issues, better avoid it):

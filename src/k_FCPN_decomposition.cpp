@@ -135,6 +135,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             checked_sets = new set<set<Region *>>();
             //cout << "EVENT " << ev << endl;
             vector_of_candidates = new vector<set<Region *> *>();
+            //cout  << "new rec" << endl;
             for (auto reg: *rec.second) {
                 auto temp_set = new set<Region *>();
                 temp_set->insert(reg);
@@ -178,6 +179,13 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                     }
                 }
                 vector_of_candidates->clear();
+                /*
+                for(int i=0;i<not_ok_sets->size();++i){
+                    if(not_ok_sets->at(i)->empty()){
+                        cout << "empty set at: " << i << endl;
+                        not_ok_sets->erase(not_ok_sets->begin()+i);
+                    }
+                }*/
                 for (int i = 0; i < not_ok_sets->size(); ++i) {
                     for (int k = i + 1; k < not_ok_sets->size(); ++k) {
                         if (!not_ok_sets->at(i)->empty() && !not_ok_sets->at(k)->empty()) {
@@ -453,7 +461,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
                 if(!found) {
                     updatable_clauses->insert(*lit_set);
-                    //print_clause(lit_set);
+                    print_clause(lit_set);
                 }
                 else{
                     //cout << "clausola già presente" << endl;
@@ -689,7 +697,12 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             //auto pre_regions_map = pprg->get_pre_regions();
             //create map (region, exiting events)
         }
-        cout << "tried " << number_of_FCPNs <<  " FCPNs" << endl;
+        if(number_of_FCPNs == 1){
+            cout << "searched a solution with 1 FCPN" << endl;
+        }
+        else{
+            cout << "searched a solution with " << number_of_FCPNs <<  " FCPNs" << endl;
+        }
         number_of_FCPNs++;
         /*for(auto cl: *updatable_clauses){
             delete cl;
@@ -879,6 +892,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
     }
 
+    /*
     if(decomposition_debug){
         set<int> used_regions;
         for(auto pn: *fcpn_set){
@@ -891,7 +905,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             cout << "r" << reg << " ";
         }
         cout << endl;
-    }
+    }*/
 
     delete regions_mapping;
 
