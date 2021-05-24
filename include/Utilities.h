@@ -65,6 +65,7 @@ extern map<set<Region*>, set<int>*> *intersection_cache;
 namespace Utilities {
     set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
     set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2);
+    set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2);
     Region *regions_union(vector<Region *> *vec);
     Region *regions_union(set<Region *> *vec);
     Region *regions_union(Region *first, Region *second);

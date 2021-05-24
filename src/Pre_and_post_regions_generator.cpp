@@ -67,42 +67,49 @@ bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
 
 bool Pre_and_post_regions_generator::is_post_region(Edges_list *list,
                                                     Region *region) {
-  /*cout<<"regione (is_post_region)"<<endl;
-  println(*region);*/
-  for (auto t : *list) {
-    if (region->find(t->first) ==
-        region->end()) { // il primo stato non appartiene alla regione
-      if (region->find(t->second) != region->end())
-        return true;
+    //this part should speed up the computations (something like a cache)
+    if(post_regions != nullptr) {
+        for (auto rec: *post_regions) {
+            if(rec.second->find(region) != rec.second->end()) {
+                cout  << "cache used!!!"  << endl;
+                return true;
+            }
+        }
+        return false;
     }
-  }
-  return false;
+    /*cout<<"regione (is_post_region)"<<endl;
+    println(*region);*/
+    for (auto t : *list) {
+        if (region->find(t->first) == region->end()) { // il primo stato non appartiene alla regione
+            if (region->find(t->second) != region->end())
+                return true;
+        }
+    }
+    return false;
 }
 
-void Pre_and_post_regions_generator::create_post_regions(
-    map<int, set<Region *> *> *merged_pre_regions) {
-  // record. first da ts_map è l'evento, record.second è la lista da passare a
-  // is_post_region
-  //cout << "mappa pre-regioni :" << endl;
-  //print(*merged_pre_regions);
-  post_regions = new map<int, set<Region *> *>();
-  for (auto rec : *merged_pre_regions) {
-    for (auto reg : *rec.second) {
-      if (ts_map->find(rec.first) != ts_map->end()) {
-        for (const auto& r : *ts_map) {
-          if (is_post_region(&(ts_map->at(r.first)), reg)) {
-            if (post_regions->find(r.first) == post_regions->end()) {
-              (*post_regions)[r.first] = new set<Region *>();
+void Pre_and_post_regions_generator::create_post_regions(map<int, set<Region *> *> *merged_pre_regions) {
+    // record. first da ts_map è l'evento, record.second è la lista da passare a
+    // is_post_region
+    //cout << "mappa pre-regioni :" << endl;
+    //print(*merged_pre_regions);
+    post_regions = new map<int, set<Region *> *>();
+    for (auto rec : *merged_pre_regions) {
+        for (auto reg : *rec.second) {
+            if (ts_map->find(rec.first) != ts_map->end()) {
+                for (const auto& r : *ts_map) {
+                    if (is_post_region(&(ts_map->at(r.first)), reg)) {
+                        if (post_regions->find(r.first) == post_regions->end()) {
+                            (*post_regions)[r.first] = new set<Region *>();
+                        }
+                        (*post_regions)[r.first]->insert(reg);
+                    }
+                }
+            } else {
+                //cout << "ts_map non contiene " << rec.first << endl;
             }
-            (*post_regions)[r.first]->insert(reg);
-          }
         }
-
-      } else {
-        //cout << "ts_map non contiene " << rec.first << endl;
-      }
     }
-  }
     if(print_step_by_step) {
         cout << "Postregions :" << endl;
         print(*post_regions);
@@ -199,7 +206,7 @@ map<int, Region *>* Pre_and_post_regions_generator::create_post_regions_for_SM(
 }
 
 map<int, Region *> * Pre_and_post_regions_generator::create_pre_regions_for_SM(SM *sm, set<int> *removed_events){
-    map<int, Region *> *pre_regions_SM = new map<int, Region *>;
+    auto pre_regions_SM = new map<int, Region *>;
     set<Region*>::iterator it;
     for(auto record: *ts_map){
         int event = record.first;

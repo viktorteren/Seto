@@ -54,6 +54,17 @@ namespace Utilities {
         return res;
     }
 
+    set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2){
+        auto res = new set<Region *>();
+        for(auto reg: region_set1){
+            res->insert(reg);
+        }
+        for(auto reg: region_set2){
+            res->insert(reg);
+        }
+        return res;
+    }
+
     bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
         for(auto reg: *region_set1){
             if(region_set2->find(reg) != region_set2->end()){

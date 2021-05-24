@@ -248,7 +248,6 @@ int main(int argc, char **argv) {
                     ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                      nullptr);
                 else
-                    //todo: qui memory leak
                     ls->split_ts_map(candidate_regions, aliases, rg->get_violations_event(), rg->get_violations_trans(),
                                      regions);
 
@@ -530,7 +529,6 @@ int main(int argc, char **argv) {
                             << "=======================[ CREATION OF A .dot FILE FOR EACH SM / S-COMPONENT  ]================"
                             << endl;
                     if (decomposition) {
-                        //todo: clock.g ha problemi con l'output -> evento 1 non presente nella mappa
                         Merge::print_after_merge(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
                     }
                 }
