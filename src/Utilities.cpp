@@ -65,6 +65,17 @@ namespace Utilities {
         return res;
     }
 
+    set<Region *> regions_set_union_stack(const set<Region*>& region_set1,const set<Region*>& region_set2){
+        set<Region *> res;
+        for(auto reg: region_set1){
+            res.insert(reg);
+        }
+        for(auto reg: region_set2){
+            res.insert(reg);
+        }
+        return res;
+    }
+
     bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
         for(auto reg: *region_set1){
             if(region_set2->find(reg) != region_set2->end()){
@@ -227,6 +238,40 @@ namespace Utilities {
                 }
             }*/
             for (auto s : *regions) {
+                if (s->find(state) == s->end()) { // state not found
+                    state_in_intersection = false;
+                    break;
+                }
+            }
+            if (state_in_intersection) {
+                pre_regions_intersection->insert(state);
+            }
+        }
+
+        return pre_regions_intersection;
+    }
+
+    set<int> *regions_intersection(set<Region *> regions) {
+        //println(*regions);
+
+        auto pre_regions_intersection = new set<int>();
+        bool state_in_intersection;
+
+        if (*regions.begin() == nullptr)
+            return pre_regions_intersection;
+
+        for (auto state : **regions.begin()) {
+            state_in_intersection = true;
+            //todo: questo è un possibile miglioramento, da testare
+            /*_Rb_tree_const_iterator<set<int> *> it;
+            for(it=next(regions->begin());it != regions->end();++it){
+                auto s = *it;
+                if (s->find(state) == s->end()) { // state not found
+                    state_in_intersection = false;
+                    break;
+                }
+            }*/
+            for (auto s : regions) {
                 if (s->find(state) == s->end()) { // state not found
                     state_in_intersection = false;
                     break;
@@ -437,6 +482,10 @@ namespace Utilities {
         return are_equal(*region1, *region2);
     }
 
+    bool are_equal(Region *region1, Region region2) {
+        return are_equal(*region1, region2);
+    }
+
     bool are_equal(const Region& region1, Region region2) {
         if (region1.size() != region2.size())
             return false;
@@ -457,10 +506,36 @@ namespace Utilities {
         return false;
     }
 
+    bool contains(set<Region *> set, Region region) {
+        for (auto elem : set) {
+            if (are_equal(elem, region)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool contains_region(set<Region *> set, Region *region) {
+        for (auto elem : set) {
+            if (are_equal(elem, region)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
         for (auto elem : *smaller_set) {
             if(bigger_set->find(elem) == bigger_set->end())
             return false;
+        }
+        return true;
+    }
+
+    bool contains(set<Region *> bigger_set, set<Region *> smaller_set) {
+        for (auto elem : smaller_set) {
+            if(bigger_set.find(elem) == bigger_set.end())
+                return false;
         }
         return true;
     }
@@ -1925,6 +2000,23 @@ namespace Utilities {
         return res;
     }
 
+    bool check_ER_intersection_with_mem(int event, const set<Region*>& pre_regions_set, map<int, ER> *ER_set){
+        if(intersection_cache == nullptr)
+            intersection_cache = new map<set<Region *>, set<int>*>();
+        auto er = ER_set->at(event);
+        set<int> *intersection;
+        if(intersection_cache->find(pre_regions_set) != intersection_cache->end()){
+            intersection = intersection_cache->at(pre_regions_set);
+            //cout << "cache used"  << endl;
+        }
+        else{
+            intersection = regions_intersection(pre_regions_set);
+            (*intersection_cache)[pre_regions_set] = intersection;
+        }
+        bool res = are_equal(er, intersection);
+        return res;
+    }
+
     bool check_ER_intersection_cache(set<Region*> *pre_regions_set){
         if(intersection_cache->find(*pre_regions_set) != intersection_cache->end())
             return true;
@@ -2444,6 +2536,18 @@ namespace Utilities {
         return cnf_set;
     }
 
+    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set){
+        auto cnf_set = new map<int, set<set<Region *>*>*>();
+        for(auto rec: *er_satisfiable_set){
+            //cout  << "EV: " << rec.first << endl;
+            //(*cnf_set)[rec.first] = new set<set<Region *>*>();
+            set<set<Region *>>::iterator it;
+            it = rec.second->begin();
+            (*cnf_set)[rec.first] = dnf_to_cnf_core(rec.second, it);
+        }
+        return cnf_set;
+    }
+
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
         auto new_clauses = new set<set<Region *>*>();
         auto current_clause = *it;
@@ -2463,6 +2567,41 @@ namespace Utilities {
         auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
 
         for (auto val: *current_clause) {
+            for (auto cl: *next_clauses) {
+                auto tmp_cl = new set<Region *>();
+                tmp_cl->insert(val);
+                for (auto reg: *cl) {
+                    tmp_cl->insert(reg);
+                }
+                new_clauses->insert(tmp_cl);
+            }
+        }
+        for(auto cl: *next_clauses){
+            delete cl;
+        }
+        delete next_clauses;
+        return new_clauses;
+    }
+
+    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it){
+        auto new_clauses = new set<set<Region *>*>();
+        auto current_clause = *it;
+        if(next(it) == cl_set->end()){
+            for (auto val: current_clause) {
+                auto tmp_cl = new set<Region *>();
+                tmp_cl->insert(val);
+                new_clauses->insert(tmp_cl);
+            }
+            /*
+            for(auto cl: *new_clauses){
+                println(cl);
+            }
+            cout << endl;*/
+            return new_clauses;
+        }
+        auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
+
+        for (auto val: current_clause) {
             for (auto cl: *next_clauses) {
                 auto tmp_cl = new set<Region *>();
                 tmp_cl->insert(val);

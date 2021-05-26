@@ -72,6 +72,7 @@ namespace Utilities {
     Region *regions_intersection(Region *first, Region *second);
     bool at_least_one_state_from_first_in_second(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
+    set<int> *regions_intersection(set<Region *> regions);
     set<int> *region_difference(set<int> &first, set<int> &second);
     bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second);
     set<Region *> *region_pointer_difference(set<Region *> *first,
@@ -93,9 +94,12 @@ namespace Utilities {
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);
     bool are_equal(Region *r1, Region *r2);
+    bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
+    bool contains(set<Region *> set, Region region);
     bool contains(set<Region *> *, Region *);
     bool contains(vector<Region*> *, Region *);
+    bool contains(set<Region *> bigger_set, set<Region *> smaller_set);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     bool contains(set<int> bigger_set, set<int> smaller_set);
     bool contains(set<int> *bigger_set, set<int> *smaller_set);
@@ -144,6 +148,7 @@ namespace Utilities {
     bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path);
     bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
     bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
+    bool check_ER_intersection_with_mem(int event, const set<Region*>& pre_regions_set, map<int, ER> *ER_set);
     void clear_ER_intersection_cache();
     bool check_ER_intersection_cache(set<Region*> *pre_regions_set);
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
@@ -173,5 +178,8 @@ namespace Utilities {
     bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2);
     bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2);
     map<int, set<set<Region *>*>*> * dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set);
+    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set);
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it);
+    set<Region *> regions_set_union_stack(const set<Region*>& region_set1,const set<Region*>& region_set2);
+    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it);
 };

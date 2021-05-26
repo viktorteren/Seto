@@ -43,54 +43,12 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
      * 8) decode results
      */
 
-    auto er_satisfiable_sets = new map<int, set<set<Region *>*>*>();
-    vector<set<Region *>*> *vector_of_candidates;
+    auto er_satisfiable_sets = new map<int, set<set<Region *>>*>();
+    vector<set<Region *>> *vector_of_candidates;
     set<set<Region*>> *checked_sets;
     auto fcpn_set = new set<set<Region *>*>();
 
     auto pre_regions_map = pprg->get_pre_regions();
-    /*auto pre_regions_map_original = pprg->get_pre_regions();
-
-    auto regions_to_remove = new set<Region *>();
-    _Rb_tree_const_iterator<set<int> *> it;
-    _Rb_tree_const_iterator<set<int> *> it2;
-    for(auto rec: *pre_regions_map_original) {
-        auto ev = rec.first;
-        for(it=rec.second->begin(); it != rec.second->end();++it){
-            for(it2=next(it); it2 != rec.second->end();++it2){
-                set<int> *first = *it;
-                set<int> *second = *it2;
-                if(first->size() > second->size()){
-                    Region *inter = regions_intersection(first, second);
-                    if(are_equal(inter, second)){
-                        cout << "found removable region" << endl;
-                        regions_to_remove->insert(first);
-                    }
-                    delete inter;
-                }
-                else if(first->size() < second->size()){
-                    Region *inter = regions_intersection(first, second);
-                    if(are_equal(inter, first)){
-                        cout << "found removable region" << endl;
-                        regions_to_remove->insert(second);
-                    }
-                    delete inter;
-                }
-            }
-        }
-    }
-    auto pre_regions_map = new map<int, vector<Region *>*>();
-    for(auto rec: *pre_regions_map_original){
-        (*pre_regions_map)[rec.first] = new vector<Region *>();
-        for(auto reg: *rec.second){
-            if(regions_to_remove->find(reg) == regions_to_remove->end()){
-                (*pre_regions_map)[rec.first]->push_back(reg);
-            }
-        }
-    }
-
-    delete regions_to_remove;*/
-
 
     //per trovare tutte le combinazioni utili bisogna creare una coda, all'inizio ne fanno parte tutte le regioni singole,
     // ogni volta che una regione viene analizzata questa viene rimossa completamente dalla coda se da sola soddisfa ec ed inoltre
@@ -130,33 +88,35 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
+        cout  << "checking ERs for ev: " << ev << endl;
         //another event with the same ER has not been checked
         if(checked_ers->find(*(*ER_map)[ev]) == checked_ers->end()) {
             checked_sets = new set<set<Region *>>();
             //cout << "EVENT " << ev << endl;
-            vector_of_candidates = new vector<set<Region *> *>();
+            vector_of_candidates = new vector<set<Region *>>();
             //cout  << "new rec" << endl;
             for (auto reg: *rec.second) {
                 auto temp_set = new set<Region *>();
                 temp_set->insert(reg);
-                vector_of_candidates->push_back(temp_set);
+                vector_of_candidates->push_back(*temp_set);
                 /*cout << "adding to vector initial: " << endl;
                 for(auto r: *temp_set){
                     println(*r);
                 }*/
+                delete temp_set;
             }
             bool exit = false;
             while (!exit) {
                 auto not_ok_sets = new vector<set<Region *>>();
-                for (auto temp_set: *vector_of_candidates) {
-                    if (checked_sets->find(*temp_set) == checked_sets->end()) {
-                        checked_sets->insert(*temp_set);
+                for (const auto& temp_set: *vector_of_candidates) {
+                    if (checked_sets->find(temp_set) == checked_sets->end()) {
+                        checked_sets->insert(temp_set);
                         if (check_ER_intersection_with_mem(ev, temp_set, ER_map)) {
                             if (er_satisfiable_sets->find(ev) == er_satisfiable_sets->end()) {
-                                (*er_satisfiable_sets)[ev] = new set<set<Region *> *>();
+                                (*er_satisfiable_sets)[ev] = new set<set<Region *> >();
                             }
                             bool cont = false;
-                            for(auto reg_set: *(*er_satisfiable_sets)[ev]){
+                            for(const auto& reg_set: *(*er_satisfiable_sets)[ev]){
                                 if(contains(reg_set, temp_set)){
                                     cont = true;
                                     break;
@@ -168,36 +128,36 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                             else{
                                 /*if(decomposition_debug)
                                     cout << "not minimal set" << endl;*/
-                                delete temp_set;
+                                //delete temp_set;
                             }
                         } else {
-                            not_ok_sets->push_back(*temp_set);
+                            not_ok_sets->push_back(temp_set);
                         }
                     } else {
-                        delete temp_set;
+                        //delete temp_set;
                         //cout << "set already seen" << endl;
                     }
                 }
-                vector_of_candidates->clear();
                 /*
-                for(int i=0;i<not_ok_sets->size();++i){
-                    if(not_ok_sets->at(i)->empty()){
-                        cout << "empty set at: " << i << endl;
-                        not_ok_sets->erase(not_ok_sets->begin()+i);
+                for(auto val: *vector_of_candidates){
+                    cout << "removing from vector initial: " << endl;
+                    for(auto r: val){
+                        println(*r);
                     }
+                    cout  << endl;
                 }*/
+                vector_of_candidates->clear();
                 for (int i = 0; i < not_ok_sets->size(); ++i) {
                     for (int k = i + 1; k < not_ok_sets->size(); ++k) {
                         if (!not_ok_sets->at(i).empty() && !not_ok_sets->at(k).empty()) {
-                            auto reg_union = regions_set_union(not_ok_sets->at(i), not_ok_sets->at(k));
-                            if (checked_sets->find(*reg_union) == checked_sets->end()) {
-                                /*cout << "adding to vector: " << endl;
-                                for (auto r: *reg_union) {
-                                    println(*r);
-                                }*/
+
+                            auto reg_union = regions_set_union_stack(not_ok_sets->at(i), not_ok_sets->at(k));
+                            //cout << "created: ";
+                            //println(reg_union);
+                            if (checked_sets->find(reg_union) == checked_sets->end()) {
                                 if (er_satisfiable_sets->find(ev) != er_satisfiable_sets->end()) {
                                     bool useless_union = false;
-                                    for (auto s: *(*er_satisfiable_sets)[ev]) {
+                                    for (const auto& s: *(*er_satisfiable_sets)[ev]) {
                                         if (contains(reg_union, s)) {
                                             //cout << "useless union" << endl;
                                             /*for (auto reg: *reg_union) {
@@ -207,16 +167,28 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                                             break;
                                         }
                                     }
-                                    if (!useless_union)
+                                    if (!useless_union) {
+                                        /*cout << "adding to vector: " << endl;
+                                        for (auto r: reg_union) {
+                                            println(*r);
+                                        }*/
                                         vector_of_candidates->push_back(reg_union);
-                                    else
-                                        delete reg_union;
+                                    }
+                                    else {
+                                        //delete reg_union;
+                                    }
                                 }
                                 else{
+                                    /*cout << "adding to vector: " << endl;
+                                    for (auto r: reg_union) {
+                                        println(*r);
+                                    }*/
                                     vector_of_candidates->push_back(reg_union);
                                 }
                             } else {
-                                delete reg_union;
+                                //cout << "deleted: ";
+                                //println(reg_union);
+                                //delete reg_union;
                                 //cout << "union set already seen" << endl;
                             }
                         }
@@ -281,8 +253,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         for (auto rec: *er_satisfiable_sets) {
             cout << "EVENT: " << rec.first << endl;
             //cout << "size: " << rec.second->size() << endl;
-            for (auto reg_set: *rec.second) {
-                for (auto reg: *reg_set) {
+            for (const auto& reg_set: *rec.second) {
+                for (auto reg: reg_set) {
                     //cout << "not encoded: ";
                     //println(*reg);
                     //cout <<"encoded: " << encoded_region(reg, 1) << endl;
