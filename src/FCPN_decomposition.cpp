@@ -17,13 +17,20 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                         Pre_and_post_regions_generator *pprg,
                                         map<int, int> *aliases,
                                         map<int, ER> *ER){
+    //TODO: vme_write have a case with an FCPN split in 2: need an additional constraint which imposes that
+    // all of the elements are connected, there is already a constraint with couples of regions but not the couples of events
+    // i cannot create a constraint for events but I can perform a check on the found result: with a bfs/dfs starting from
+    // all initial markings, if at least one place is not reachable add a clause in order to avoid the last result
+    // the clause have to contain also regions which does not take part of the FCPN, in this way it is possible to have as next result
+    // an FCPN with all previous regions and maybe another one which connects the unreachable place
+
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
      *      1) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3)
      *      2) FCPN constraint -> given the regions of a PN these cannot violate the constraint
      *      ALGORITHM:
-     *          for aech ev
+     *          for each ev
      *              for each r=pre(ev) -> place/region
      *                  if r have more than one exiting event
      *                      for each couple (r, pre(ev))
