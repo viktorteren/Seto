@@ -67,16 +67,6 @@ bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
 
 bool Pre_and_post_regions_generator::is_post_region(Edges_list *list,
                                                     Region *region) {
-    //this part should speed up the computations (something like a cache)
-    if(post_regions != nullptr) {
-        for (auto rec: *post_regions) {
-            if(rec.second->find(region) != rec.second->end()) {
-                cout  << "cache used!!!"  << endl;
-                return true;
-            }
-        }
-        return false;
-    }
     /*cout<<"regione (is_post_region)"<<endl;
     println(*region);*/
     for (auto t : *list) {

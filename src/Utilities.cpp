@@ -825,11 +825,13 @@ namespace Utilities {
     }
 
 
+    //todo: ho ancora problemi con gli output, da fare dei test
     void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases, const string& file_name, int FCPN_number){
         print_fcpn_dot_file(nullptr,pre_regions,post_regions,aliases,file_name,FCPN_number);
     }
+
 
     void print_fcpn_dot_file(map<Region *, int> *regions_mapping,
                              map<int, set<Region *> *> *pre_regions,
@@ -926,6 +928,10 @@ namespace Utilities {
             fout << "\tr" << regions_mapping->at(reg) << ";\n";
         }
         fout << "}\n";
+
+        //todo: problemi con print -> certi eventi non sono presenti e quindi non vengono visualizzati nel modo corretto
+        // testare gli imput vme
+
         // transazioni (eventi)
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
