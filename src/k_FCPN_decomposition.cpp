@@ -355,6 +355,18 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             (*region_ex_event_map)[reg]->insert(ev);
         }
     }
+    //preparation for step 4b new
+    auto region_ent_event_map = new map<Region *, set<int>*>();
+    auto post_regions_map = pprg->get_post_regions();
+    for(auto rec: *post_regions_map){
+        auto ev = rec.first;
+        for(auto reg: *rec.second){
+            if(region_ent_event_map->find(reg) == region_ent_event_map->end()){
+                (*region_ent_event_map)[reg] = new set<int>();
+            }
+            (*region_ent_event_map)[reg]->insert(ev);
+        }
+    }
 
     auto regions_in_conflict = new set<pair<Region *, Region *>>();
     for(auto rec: *pre_regions_map) {
@@ -497,6 +509,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
         //STEP 3
+        /*
         if(decomposition_debug)
             cout << "STEP 3" << endl;
         auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
@@ -511,17 +524,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 //clause->push_back(ev_encoding);
                 lit_set = new set<int32_t>();
                 lit_set->insert(ev_encoding);
-                /*if(decomposition_debug){
-                    cout << "adding event " << ev << " of FCPN " << i << " encoded as " << ev_encoding << endl;
-                    auto ev_decoding = decoded_event(ev_encoding);
-                    cout << "decoded event " << ev_decoding.second << " of FCPN " << ev_decoding.first << endl;
-                }*/
                 for (auto reg: *rec.second) {
                     int region_encoding = encoded_region(reg, i);
-                    /*if(decomposition_debug){
-                        cout << "encoding FCPN " << i << " and region ";
-                        println(*reg);
-                    }*/
                     //clause->push_back(-region_encoding);
                     lit_set->insert(-region_encoding);
                 }
@@ -533,6 +537,67 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             delete rec.second;
         }
         delete regions_connected_to_labels;
+         */
+
+        //STEP 4 new
+        for(auto rec:*region_ex_event_map){
+            auto reg = rec.first;
+            for(auto ev: *rec.second){
+                for(int i=1;i<=number_of_FCPNs;++i) {
+                    int region_encoding = 1 + reg_map->at(reg);
+                    auto ev_encoding = encoded_event(ev, i);
+                    lit_set = new set<int32_t>();
+                    lit_set->insert(-region_encoding);
+                    lit_set->insert(ev_encoding);
+                    updatable_clauses->insert(*lit_set);
+                    delete lit_set;
+                }
+            }
+        }
+        for(auto rec:*region_ent_event_map){
+            auto reg = rec.first;
+            int region_encoding = 1+reg_map->at(reg);
+            for(auto ev: *rec.second){
+                for(int i=1;i<=number_of_FCPNs;++i) {
+                    auto ev_encoding = encoded_event(ev, i);
+                    lit_set = new set<int32_t>();
+                    lit_set->insert(-region_encoding);
+                    lit_set->insert(ev_encoding);
+                    updatable_clauses->insert(*lit_set);
+                    delete lit_set;
+                }
+            }
+        }
+
+        //STEP 4b new
+        for(auto rec: *pre_regions_map){
+            for(int i=1;i<=number_of_FCPNs;++i) {
+                auto ev = rec.first;
+                auto ev_encoding = encoded_event(ev, i);
+                lit_set = new set<int32_t>();
+                lit_set->insert(-ev_encoding);
+                for (auto reg: *rec.second) {
+                    int region_encoding = encoded_region(reg,i);
+                    lit_set->insert(region_encoding);
+                }
+                updatable_clauses->insert(*lit_set);
+                delete lit_set;
+            }
+        }
+        for(auto rec: *post_regions_map){
+            for(int i=1;i<=number_of_FCPNs;++i) {
+                auto ev = rec.first;
+                auto ev_encoding = encoded_event(ev, i);
+                lit_set = new set<int32_t>();
+                lit_set->insert(-ev_encoding);
+                for (auto reg: *rec.second) {
+                    int region_encoding = encoded_region(reg,i);
+                    lit_set->insert(region_encoding);
+                }
+                updatable_clauses->insert(*lit_set);
+                delete lit_set;
+            }
+        }
 
         //STEP 4
         if(decomposition_debug)

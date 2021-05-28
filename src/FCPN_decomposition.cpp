@@ -36,8 +36,12 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      *                      for each couple (r, pre(ev))
      *                          if r != pre(ev)
      *                              create clause (!r v !pre(ev))
-     *      3) complete PN structure:
+     *      3)  (TEMPORALLY REMOVED -> these clauses are a part of clauses of 4 and 4b) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
+     *      4) for the next constraint I have to add also constraint related to all connected events of a region
+     *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
+     *      4b) (OPTIONAL) really hard new constraint if e has as pre-regions r1 and r2  and as post--regions r3 and r4
+     *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
      *      5) maximization function: number of new regions used in the result -> max covering
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
@@ -47,11 +51,13 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
     auto pre_regions_map = pprg->get_pre_regions();
+    auto post_regions_map = pprg->get_post_regions();
     auto clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *>*>();
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int>*>();
+    auto region_ent_event_map = new map<Region *, set<int>*>();
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
         for(auto reg: *rec.second){
@@ -59,6 +65,15 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 (*region_ex_event_map)[reg] = new set<int>();
             }
             (*region_ex_event_map)[reg]->insert(ev);
+        }
+    }
+    for(auto rec: *post_regions_map){
+        auto ev = rec.first;
+        for(auto reg: *rec.second){
+            if(region_ent_event_map->find(reg) == region_ent_event_map->end()){
+                (*region_ent_event_map)[reg] = new set<int>();
+            }
+            (*region_ent_event_map)[reg]->insert(ev);
         }
     }
 
@@ -142,7 +157,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
         //STEP 3
         //cout << "STEP 3" << endl;
-        auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
+        /*auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
                                                         pprg->get_post_regions());
 
         //conversion into clauses
@@ -161,7 +176,55 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         for(auto rec: *regions_connected_to_labels){
             delete rec.second;
         }
-        delete regions_connected_to_labels;
+        delete regions_connected_to_labels;*/
+
+        //STEP 4
+        for(auto rec:*region_ex_event_map){
+            auto reg = rec.first;
+            for(auto ev: *rec.second){
+                int region_encoding = 1+reg_map->at(reg);
+                auto ev_encoding = k+2+ev;
+                clause = new vector<int32_t>();
+                clause->push_back(-region_encoding);
+                clause->push_back(ev_encoding);
+                clauses->push_back(clause);
+            }
+        }
+        for(auto rec:*region_ent_event_map){
+            auto reg = rec.first;
+            int region_encoding = 1+reg_map->at(reg);
+            for(auto ev: *rec.second){
+                auto ev_encoding = k+2+ev;
+                clause = new vector<int32_t>();
+                clause->push_back(-region_encoding);
+                clause->push_back(ev_encoding);
+                clauses->push_back(clause);
+            }
+        }
+
+        //STEP 4b
+        for(auto rec: *pre_regions_map){
+            auto ev = rec.first;
+            auto ev_encoding = k+2+ev;
+            clause = new vector<int32_t>();
+            clause->push_back(-ev_encoding);
+            for(auto reg: *rec.second){
+                int region_encoding = 1+reg_map->at(reg);
+                clause->push_back(region_encoding);
+            }
+            clauses->push_back(clause);
+        }
+        for(auto rec: *post_regions_map){
+            auto ev = rec.first;
+            auto ev_encoding = k+2+ev;
+            clause = new vector<int32_t>();
+            clause->push_back(-ev_encoding);
+            for(auto reg: *rec.second){
+                int region_encoding = 1+reg_map->at(reg);
+                clause->push_back(region_encoding);
+            }
+            clauses->push_back(clause);
+        }
 
         //STEP 5
         //cout << "STEP 5" << endl;
@@ -277,10 +340,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             //cout << "formula" << endl;
             //formula.printFormula(cout);
 
-            //Minisat::Solver solver2;
             Minisat::Solver *solver2;
-            //auto solver2 = new Minisat::Solver();
-
 
             //the sum have to be equal to current_value
 
@@ -349,7 +409,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 delete solver2;
             } while ((max2 - min2) > 1);
         }
-
 
         if (exists_solution) {
             set<Region *> prova_PN;
@@ -428,7 +487,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 }
             }
         }
-
         (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
     }
     int pn_counter=0;
