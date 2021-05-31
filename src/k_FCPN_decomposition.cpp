@@ -17,6 +17,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                                        Pre_and_post_regions_generator *pprg,
                                        map<int, int> *aliases,
                                        map<int, ER> *ER_map){
+    //todo aggiungere il vincolo aggiuntivo: almeno un collegamento per ogni evento
     cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
     number_of_regions = regions->size();
     number_of_events = number_of_ev;
@@ -33,14 +34,18 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
      *          if I have n FCPNs I will have k possible instances of the event
      *                  1b) expand CNF clause for each of n FCPN: if I have (r1 v r2) and 2 FCPNs it will become (r11 v r12 v r21 v r22)
      * 2) FCPN constraint for each FCPN
-     * 3) complete PN structure:
+     * 3) (COMMENTED) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a),
      *          for each FCPN
-     * 4) at least one occurrence of each event in all FCPNs (not each FCPN!!!)
-     * 5) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3) for each FCPN
-     * 6) solve SAT increasing FCPN number until SAT
-     * 7) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> solve SAT with binary search usage
-     * 8) decode results
+     * 4) for the next constraint I have to add also constraint related to all connected events of a region
+     *          if r is connected to e and e' then r -> (e and e')   becomes !r v (e and e') and then (!r v e) and (!r v e')
+     * 5) (OPTIONAL) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
+     *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
+     * 5b) (COMMENTED satisfied by 1) at least one instance of each event in at least one region
+     * 6) (COMMENTED satisfied by 1) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3) for each FCPN
+     * 7) solve SAT increasing FCPN number until SAT
+     * 8) (OPTIONAL) minimize the resultant FCPNs: min(number of regions) knowing the number of FCPNs -> solve SAT with binary search usage
+     * 9) decode results
      */
 
     auto er_satisfiable_sets = new map<int, set<set<Region *>>*>();
@@ -253,7 +258,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         for (auto rec: *er_satisfiable_sets) {
             cout << "EVENT: " << rec.first << endl;
             //cout << "size: " << rec.second->size() << endl;
-            for (const auto& reg_set: *rec.second) {
+            for (const auto &reg_set: *rec.second) {
                 for (auto reg: reg_set) {
                     //cout << "not encoded: ";
                     //println(*reg);
@@ -263,81 +268,80 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 cout << endl;
             }
         }
-
-        //removal of bigger sets
-        for (auto rec: *cnf_ec_map) {
-            //cout << "EV: " << rec.first << endl;
-            auto to_remove = new set<set<Region *>*>();
-            for (auto reg_set: *rec.second) {
-                for (auto reg_set2: *rec.second) {
-                    if(reg_set != reg_set2){
-                        if(reg_set2->size() > reg_set->size()) {
-                            if (contains(reg_set2, reg_set)) {
-                                to_remove->insert(reg_set2);
-                                /*cout << "adding to remove: " << reg_set2 << endl;
-                                for (auto reg: *reg_set2) {
-                                    println(*reg);
-                                }
-                                cout << "because of: " << reg_set << endl;
-                                for (auto reg: *reg_set) {
-                                    println(*reg);
-                                }*/
-                            }
-                        }
-                    }
-                }
-            }
-            for(auto reg_set: *to_remove){
-                rec.second->erase(reg_set);
-            }
-            delete to_remove;
-        }
-
-
-        //removal of equal sets
-        auto to_remove = new map<int, set<set<Region *>*>*>();
-        for(auto rec: *cnf_ec_map){
-            set<set<Region *>*>::iterator it;
-            set<set<Region *>*>::iterator it2;
-            for(it=rec.second->begin();it != rec.second->end();++it){
-                for(it2=next(it);it2 != rec.second->end();++it2){
-                    if(*it != *it2){
-                        if((*it)->size() == (*it2)->size()){
-                            if(contains(*it,*it2)){
-                                if(to_remove->find(rec.first) == to_remove->end()){
-                                    (*to_remove)[rec.first] = new set<set<Region *>*>();
-                                }
-                                (*to_remove)[rec.first]->insert(*it);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        for(auto rec: *to_remove){
-            for(auto reg_set: *rec.second){
-                /*cout << "removing:" << endl;
-                for(auto reg: *reg_set){
-                     println(*reg);
-                }*/
-                (*cnf_ec_map)[rec.first]->erase(reg_set);
-            }
-        }
-
-
-        /*
-        cout << "CNF EC MAP" << endl;
-        for (auto rec: *cnf_ec_map) {
-            cout << "EVENT: " << rec.first << endl;
-            for (auto reg_set: *rec.second) {
-                for (auto reg: *reg_set) {
-                    cout << encoded_region(reg, 1) << " ";
-                }
-                cout << endl;
-                //println(*reg_set);
-            }
-        }*/
     }
+
+    //removal of bigger sets
+    for (auto rec: *cnf_ec_map) {
+        //cout << "EV: " << rec.first << endl;
+        auto to_remove = new set<set<Region *>*>();
+        for (auto reg_set: *rec.second) {
+            for (auto reg_set2: *rec.second) {
+                if(reg_set != reg_set2){
+                    if(reg_set2->size() > reg_set->size()) {
+                        if (contains(reg_set2, reg_set)) {
+                            to_remove->insert(reg_set2);
+                            /*cout << "adding to remove: " << reg_set2 << endl;
+                            for (auto reg: *reg_set2) {
+                                println(*reg);
+                            }
+                            cout << "because of: " << reg_set << endl;
+                            for (auto reg: *reg_set) {
+                                println(*reg);
+                            }*/
+                        }
+                    }
+                }
+            }
+        }
+        for(auto reg_set: *to_remove){
+            rec.second->erase(reg_set);
+        }
+        delete to_remove;
+    }
+
+
+    //removal of equal sets
+    auto to_remove = new map<int, set<set<Region *>*>*>();
+    for(auto rec: *cnf_ec_map){
+        set<set<Region *>*>::iterator it;
+        set<set<Region *>*>::iterator it2;
+        for(it=rec.second->begin();it != rec.second->end();++it){
+            for(it2=next(it);it2 != rec.second->end();++it2){
+                if(*it != *it2){
+                    if((*it)->size() == (*it2)->size()){
+                        if(contains(*it,*it2)){
+                            if(to_remove->find(rec.first) == to_remove->end()){
+                                (*to_remove)[rec.first] = new set<set<Region *>*>();
+                            }
+                            (*to_remove)[rec.first]->insert(*it);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for(auto rec: *to_remove){
+        for(auto reg_set: *rec.second){
+            /*cout << "removing:" << endl;
+            for(auto reg: *reg_set){
+                 println(*reg);
+            }*/
+            (*cnf_ec_map)[rec.first]->erase(reg_set);
+        }
+    }
+
+    /*
+    cout << "CNF EC MAP" << endl;
+    for (auto rec: *cnf_ec_map) {
+        cout << "EVENT: " << rec.first << endl;
+        for (auto reg_set: *rec.second) {
+            for (auto reg: *reg_set) {
+                cout << encoded_region(reg, 1) << " ";
+            }
+            cout << endl;
+            //println(*reg_set);
+        }
+    }*/
 
     for(auto rec: *er_satisfiable_sets){
         delete rec.second;
@@ -355,7 +359,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             (*region_ex_event_map)[reg]->insert(ev);
         }
     }
-    //preparation for step 4b new
+    //preparation for STEP 5
     auto region_ent_event_map = new map<Region *, set<int>*>();
     auto post_regions_map = pprg->get_post_regions();
     for(auto rec: *post_regions_map){
@@ -385,7 +389,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     //cout << "regions in conflict size: " << regions_in_conflict->size() << endl;
 
-    //preparation for STEP 5
+    //preparation for STEP 6
     auto state_regions_map = new map<int, set<Region*>*>();
     for(Region *reg: *regions) {
         for (auto st: *reg) {
@@ -493,7 +497,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                     //print_clause(lit_set);
                 }
                 else{
-                    //cout << "clausola già presente" << endl;
+                    //cout << "clause already found" << endl;
                 }
                 delete lit_set;
                 //delete clause;
@@ -536,15 +540,15 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         for(auto rec: *regions_connected_to_labels){
             delete rec.second;
         }
-        delete regions_connected_to_labels;
-         */
+        delete regions_connected_to_labels;*/
 
-        //STEP 4 new
+        //STEP 4
+        /*
         for(auto rec:*region_ex_event_map){
             auto reg = rec.first;
-            for(auto ev: *rec.second){
-                for(int i=1;i<=number_of_FCPNs;++i) {
-                    int region_encoding = 1 + reg_map->at(reg);
+            for(int i=1;i<=number_of_FCPNs;++i) {
+                int region_encoding = encoded_region(reg, i);
+                for(auto ev: *rec.second){
                     auto ev_encoding = encoded_event(ev, i);
                     lit_set = new set<int32_t>();
                     lit_set->insert(-region_encoding);
@@ -556,9 +560,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
         for(auto rec:*region_ent_event_map){
             auto reg = rec.first;
-            int region_encoding = 1+reg_map->at(reg);
-            for(auto ev: *rec.second){
-                for(int i=1;i<=number_of_FCPNs;++i) {
+            for(int i=1;i<=number_of_FCPNs;++i) {
+                int region_encoding = encoded_region(reg, i);
+                for(auto ev: *rec.second){
                     auto ev_encoding = encoded_event(ev, i);
                     lit_set = new set<int32_t>();
                     lit_set->insert(-region_encoding);
@@ -569,7 +573,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             }
         }
 
-        //STEP 4b new
+        //STEP 5
         for(auto rec: *pre_regions_map){
             for(int i=1;i<=number_of_FCPNs;++i) {
                 auto ev = rec.first;
@@ -597,11 +601,11 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 updatable_clauses->insert(*lit_set);
                 delete lit_set;
             }
-        }
+        }*/
 
-        //STEP 4
-        if(decomposition_debug)
-            cout << "STEP 4" << endl;
+        //STEP 5b
+        /*if(decomposition_debug)
+            cout << "STEP 5" << endl;
         for(int i=0;i<num_events;++i){
             lit_set = new set<int32_t>();
             for(int k=1;k<=number_of_FCPNs;++k){
@@ -612,9 +616,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             delete lit_set;
         }
 
-        //STEP 5
+        //STEP 6
         if(decomposition_debug)
-            cout << "STEP 5" << endl;
+            cout << "STEP 6" << endl;
         for(auto rec: *state_regions_map){
             for(int i=1;i<=number_of_FCPNs;++i) {
                 auto region_set = rec.second;
@@ -626,13 +630,11 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                 delete clause;
             }
             //print_clause(clause);
-        }
+        }*/
 
-
-
-        //STEP 6
+        //STEP 7
         if(decomposition_debug)
-            cout << "STEP 6" << endl;
+            cout << "STEP 7" << endl;
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
@@ -748,9 +750,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     if(!no_fcpn_min) {
         cout << "MINIMIZATION STARTED" << endl;
-        //STEP 7
+        //STEP 9
         if (decomposition_debug)
-            cout << "STEP 7" << endl;
+            cout << "STEP 9" << endl;
         int max = regions_in_solution - 1;
         int min = 1;
         int current_max_regions = max; //max - 1 could produce better results but with also max I am sure that the firs result is SAT
@@ -845,9 +847,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         } while ((max - min) > 1);
     }
 
-    //STEP 8
+    //STEP 10
     if(decomposition_debug)
-        cout << "STEP 8" << endl;
+        cout << "STEP 10" << endl;
     set<Region *> *temp_FCPN;
     for(int k=1;k<=number_of_FCPNs;++k) {
         temp_FCPN = new set<Region *>();

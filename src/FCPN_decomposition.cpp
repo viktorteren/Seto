@@ -17,13 +17,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                         Pre_and_post_regions_generator *pprg,
                                         map<int, int> *aliases,
                                         map<int, ER> *ER){
-    //TODO: vme_write have a case with an FCPN split in 2: need an additional constraint which imposes that
-    // all of the elements are connected, there is already a constraint with couples of regions but not the couples of events
-    // i cannot create a constraint for events but I can perform a check on the found result: with a bfs/dfs starting from
-    // all initial markings, if at least one place is not reachable add a clause in order to avoid the last result
-    // the clause have to contain also regions which does not take part of the FCPN, in this way it is possible to have as next result
-    // an FCPN with all previous regions and maybe another one which connects the unreachable place
-
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -36,7 +29,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      *                      for each couple (r, pre(ev))
      *                          if r != pre(ev)
      *                              create clause (!r v !pre(ev))
-     *      3)  (TEMPORALLY REMOVED -> these clauses are a part of clauses of 4 and 4b) complete PN structure:
+     *      3)  complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
      *      4) for the next constraint I have to add also constraint related to all connected events of a region
      *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
@@ -46,12 +39,14 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
      * 8) while !EC: previous results clauses are added as results to avoid in future
-     * 9) greey FCPN removal
+     * 9) greedy FCPN removal
      */
 
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
+    auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
+                                                    pprg->get_post_regions());
     auto clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *>*>();
     auto not_used_regions = new set<Region *>();
@@ -157,9 +152,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
         //STEP 3
         //cout << "STEP 3" << endl;
-        /*auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
-                                                        pprg->get_post_regions());
 
+        /*
         //conversion into clauses
         for (auto rec: *regions_connected_to_labels) {
             auto ev = rec.first;
@@ -173,10 +167,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             clauses->push_back(clause);
             //print_clause(clause);
         }
-        for(auto rec: *regions_connected_to_labels){
-            delete rec.second;
-        }
-        delete regions_connected_to_labels;*/
+        */
 
         //STEP 4
         for(auto rec:*region_ex_event_map){
@@ -432,7 +423,21 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                     temp_PN->insert((*regions_vector)[r_index-1]);
                 }
             }
-            fcpn_set->insert(temp_PN);
+            //todo: don't forget the memory leaks -> have to check with valgrind
+            auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
+            if(new_temp_set->size() > 1){
+                for(auto tmp_set: *new_temp_set){
+                    fcpn_set->insert(tmp_set);
+                }
+                delete temp_PN;
+            }
+            else{
+                for(auto tmp_set: *new_temp_set){
+                    delete tmp_set;
+                }
+                delete new_temp_set;
+                fcpn_set->insert(temp_PN);
+            }
             /*auto last_solution_copy = new set<int>();
             for(auto val: *last_solution){
                 last_solution_copy->insert(val);
@@ -554,6 +559,16 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         delete rec.second;
     }
     delete region_ex_event_map;
+
+    for(auto rec: *region_ent_event_map){
+        delete rec.second;
+    }
+    delete region_ent_event_map;
+
+    for(auto rec: *regions_connected_to_labels){
+        delete rec.second;
+    }
+    delete regions_connected_to_labels;
 
     for(auto pn: *fcpn_set){
         delete pn;

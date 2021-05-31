@@ -835,10 +835,11 @@ namespace Utilities {
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases, const string& file_name, int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
+        /*
         if(initial_reg->empty()){
             cerr << "any initial region found" << endl;
             exit(1);
-        }
+        }*/
         string output_name = file_name;
         string in_dot_name;
         string output;
@@ -2629,6 +2630,56 @@ namespace Utilities {
         }
         delete next_clauses;
         return new_clauses;
+    }
+
+    vector<set<Region *> *> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections){
+        auto vector_of_sets = new vector<set<Region *> *>();
+        for(auto reg: *pn){
+            auto new_set = new set<Region *>();
+            new_set->insert(reg);
+            vector_of_sets->push_back(new_set);
+        }
+        bool end = false;
+        int last_size;
+        while(!end) {
+            last_size = vector_of_sets->size();
+            //cout << "vector_of_sets_size: " << vector_of_sets->size() << endl;
+            if (vector_of_sets->size() > 1) {
+                for(int i= vector_of_sets->size()-1; i > 0; --i){
+                    for(int k=i-1; k>=0; --k) {
+                        if (are_connected((*vector_of_sets)[i], (*vector_of_sets)[k], connections)) {
+                            for (auto reg: *(*vector_of_sets)[i]) {
+                                (*vector_of_sets)[k]->insert(reg);
+                            }
+                            vector_of_sets->erase(vector_of_sets->begin() + i);
+                            //i is decreased because the size of vector was decreased by 1,
+                            //in case ok k == 0 there is no need to decrease i because for structure does it automatically
+                            if(k > 0)
+                                i--;
+                        }
+                    }
+                }
+            }
+            if(vector_of_sets->size() == last_size) {
+                end = true;
+            }
+            //cout << "vector_of_sets_size after: " << vector_of_sets->size() << endl;
+        }
+        return vector_of_sets;
+    }
+
+    bool are_connected(set<Region *> *first, set<Region *> *second, map<int, set<Region *> *> *connections){
+        for(auto r1: *first){
+            for(auto r2: *second){
+                for(auto rec: *connections){
+                    //tro regions are connected to the same event therefore these regions are connected
+                    if(rec.second->find(r1) != rec.second->end() && rec.second->find(r2) != rec.second->end())
+                        return true;
+                }
+            }
+        }
+        //cout << "found two not connected sets" << endl;
+        return false;
     }
 
 }
