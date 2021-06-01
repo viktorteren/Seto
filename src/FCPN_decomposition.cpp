@@ -438,10 +438,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                 delete new_temp_set;
                 fcpn_set->insert(temp_PN);
             }
-            /*auto last_solution_copy = new set<int>();
-            for(auto val: *last_solution){
-                last_solution_copy->insert(val);
-            }*/
             results_to_avoid->push_back(*last_solution);
 
             auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());

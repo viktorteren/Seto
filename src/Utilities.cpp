@@ -1209,7 +1209,7 @@ namespace Utilities {
             }
             fout << endl;
         }
-        //evento -> regione
+        //event -> region
         for (auto record : *post_regions) {
             auto reg = record.second;
             if(g_input){
@@ -1270,13 +1270,8 @@ namespace Utilities {
         string output_name = std::move(file_name);
         string in_dot_name;
         string output;
-        // creazione della mappa tra il puntatore alla regione ed un intero univoco
         map<Region *, int> *regions_mapping;
-        /*cout << "preregions prima del print" << endl;
-        print(*pre_regions);*/
         auto regions_set = copy_map_to_set(pre_regions);
-        /*cout << "regions set " << endl;
-        println(*regions_set);*/
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(pre_regions);
@@ -1304,8 +1299,7 @@ namespace Utilities {
         fout << "digraph ";
         fout << in_dot_name;
         fout << "{\n";
-        // regioni iniziali
-        //cout << "scrittura regioni iniziali" << endl;
+        // initial regions
         fout << "subgraph initial_place {\n"
                 "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
                 "black, fillcolor = gray, style = filled];\n";
@@ -1314,14 +1308,14 @@ namespace Utilities {
         }
 
         fout << "}\n";
-        // regioni non iniziali
+        // not initial regions
         fout << "subgraph place {     \n"
                 "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
         for (auto reg : *not_initial_regions) {
             fout << "\tr" << regions_mapping->at(reg) << " [label = \"r" << (*sm_region_aliases)[reg] << "\"];\n";
         }
         fout << "}\n";
-        // transazioni (eventi)
+        // transitions (events)
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
         auto alias_counter = new map<int, int>();
@@ -1356,7 +1350,7 @@ namespace Utilities {
             }
         }
         delete alias_counter;
-        //transazioni (eventi) iniziali
+        //initial transitions (events)
         auto initial_pre = new set<int>();
         for (auto record : *pre_regions) {
             if (record.first < num_events) {
@@ -1388,39 +1382,31 @@ namespace Utilities {
         fout << "}\n";
         delete initial_pre;
 
-        //archi tra tansazioni e posti
-        //regione -> evento
+        //arcs between transitions and places
+        //region -> event
         for (auto record : *pre_regions) {
             auto reg = record.second;
             if (record.first < num_events) {
-                //if (regions_mapping->find(reg) != regions_mapping->end()) {
                 fout << "\tr" << regions_mapping->at(reg) << " -> "
                      << record.first << ";\n";
-
-                //} else {
-                //cout << "regions_mapping non contiene ";
-                // println(*reg);
-                //}
             } else {
-                //int label=aliases->at(record.first);
                 if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\tr" << regions_mapping->at(reg) << " -> "
                          << record.first << ";\n";
                 } else {
-                    //cout << "regions_mapping non contiene ";
+                    //cout << "regions_mapping does not contains ";
                     //println(*reg);
                 }
             }
         }
-        //evento -> regione
+        //event -> region
         for (auto record : *post_regions) {
             auto reg = record.second;
             if (regions_mapping->find(reg) != regions_mapping->end()) {
                 fout << "\t" << record.first << " -> "
                      << "r" << regions_mapping->at(reg) << ";\n";
             } else {
-                // entra qui 2 volte
-                 cout << "regions_mapping non contiene ";
+                 cout << "regions_mapping does not contains ";
                  println(*reg);
             }
         }
@@ -1443,12 +1429,6 @@ namespace Utilities {
                 }
             }
         }
-        // x debug
-        /*cout << "reg mapping:" << endl;
-        for (auto record : *regions_map) {
-            cout << record.second << ": ";
-            println(*record.first);
-        }*/
         return regions_map;
     }
 
@@ -1462,12 +1442,6 @@ namespace Utilities {
                 counter++;
             }
         }
-        // x debug
-        /*cout << "reg mapping:" << endl;
-        for (auto record : *regions_map) {
-            cout << record.second << ": ";
-            println(*record.first);
-        }*/
         return regions_map;
     }
 
@@ -1496,24 +1470,12 @@ namespace Utilities {
 
     set<Region *> *region_pointer_difference(set<Region *> *first,
                                              set<Region *> *second) {
-        /*cout << "primo insieme: " << endl;
-        for(auto reg: *first){
-                println(*reg);
-        }
-            cout << "secondo insieme: " << endl;
-            for(auto reg: *second){
-                    println(*reg);
-            }*/
         auto difference = new set<Region *>();
         for (auto reg : *first) {
             if (second->find(reg) == second->end()) {
                 difference->insert(reg);
             }
         }
-        /*cout << "risultato: " << endl;
-        for(auto reg: *difference){
-                println(*reg);
-        }*/
         return difference;
     }
 
@@ -1524,16 +1486,13 @@ namespace Utilities {
     }
 
     __attribute__((unused)) Region *get_ptr_into(set<Region *> *set, Region *region) {
-
         std::set<Region *>::iterator it;
         for (it = set->begin(); it != set->end(); ++it) {
             auto elem = *it;
-            // for(auto elem:*set){
             if (are_equal(elem, region)) {
                 return *it;
             }
         }
-
         return nullptr;
     }
 
@@ -1568,40 +1527,25 @@ namespace Utilities {
         }
     }
 
-    void print_SM(set<Region *>* SM){
+    __attribute__((unused)) void print_SM(set<Region *>* SM){
         println(*SM);
         cout << endl;
     }
 
     set<Region *> *region_pointer_union(set<Region *> *first,
                                         set<Region *> *second) {
-        /*cout << "primo insieme: " << endl;
-        println(*first);
-
-        cout << "secondo insieme: " << endl;
-        println(*second);*/
-
         auto un = new set<Region *>(*first);
         for (auto reg : *second) {
             un->insert(reg);
         }
-        /*cout << "risultato: " << endl;
-        println(*un);*/
-
         return un;
     }
 
     __attribute__((unused)) void restore_default_labels(map<int, set<Region *> *> *net,
                                 map<int, int> &aliases) {
-        /*cout << "mappa alias: " << endl;
-        for(auto rec: aliases){
-            cout << rec.first << " : " << rec.second << endl;
-        }
-        cout << "vecchia mappa:" << endl;
-        print(*net);*/
         int counter = 0;
         for (auto rec : *net) {
-            // l'etichetta rec.first è stata splittata
+            // thhe label rec.first was splitted
             if (aliases.find(rec.first) != aliases.end()) {
                 net->at(rec.first) =
                         region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
@@ -1613,8 +1557,6 @@ namespace Utilities {
         for (auto rec : aliases) {
             net->erase(rec.second);
         }
-        /*cout << "nuova mappa:" << endl;
-        print(*net);*/
     }
 
     void region_mapping(Region* region){
@@ -1684,16 +1626,11 @@ namespace Utilities {
         //creation of set of clauses for each set of overlapping regions on a state
         for (auto const& record : *map_of_overlapped_regions)
         {
-            //clauses->push_back(covering_state_clause(record.second));
             auto overlapping_regions_clauses = overlapping_regions_clause(record.second);
             for(auto clause: * overlapping_regions_clauses){
                 clauses->push_back(clause);
             }
-            num_clauses+=overlapping_regions_clauses->size(); //+1 with covering state_clause
-            //solver.addClause(overlapping_regions_clause(record.second));
-            /*for(auto rec: *overlapping_regions_clauses){
-                delete rec;
-            }*/
+            num_clauses+=overlapping_regions_clauses->size();
             delete overlapping_regions_clauses;
         }
         delete regions_set;
@@ -1710,26 +1647,11 @@ namespace Utilities {
         map<int, set<Region *> *> *total_pre_regions_map = nullptr;
         total_pre_regions_map = new map<int, set<Region *> *>();
 
-        /*cout << "first" << endl;
-        for (auto el : *first) {
-            cout << "ev " << el.first << endl;
-            for (auto reg : *el.second)
-                println(*reg);
-        }*/
-
-        //second può essere nullptr
-        /*cout << "  SECOND" << endl;
-        for (auto el:*second) {
-            cout << "ev " << el.first << endl;
-            for (auto reg:*el.second)
-                println(*reg);
-        }*/
-
         if (second != nullptr) {
             for (int event = 0; event < num_events_after_splitting; event++) {
                 // cout << "evento:" << event << endl;
 
-                // trovo entrambi gli eventi
+                // found both events
                 if (first->find(event) != first->end() &&
                     second->find(event) != second->end()) {
 
@@ -1739,39 +1661,24 @@ namespace Utilities {
                     set_union(first->at(event)->begin(), first->at(event)->end(),
                               second->at(event)->begin(), second->at(event)->end(),
                               merged_vector->begin());
-
-                    /*cout << "merged vector: ";
-                    for (auto el : *merged_vector)
-                      println(*el);*/
-
                     (*total_pre_regions_map)[event] =
                             new set<Region *>(merged_vector->begin(), merged_vector->end());
                     delete merged_vector;
-                    /*cout<<"entrambe"<<endl;
-                    for(auto el: *total_pre_regions_map->at(event))
-                        println(*el);*/
                 }
-                    // l'evento è solo in first(essential)
+                    // the event is only in first(essential)
                 else if (first->find(event) != first->end()) {
                     auto merged_vector = new vector<Region *>(first->at(event)->size());
-
                     (*total_pre_regions_map)[event] = new set<Region *>(
                             first->at(event)->begin(), first->at(event)->end());
                     delete merged_vector;
-                    /*cout<<"first"<<endl;
-                    for(auto el: *total_pre_regions_map->at(event))
-                            println(*el);*/
                 }
-                    // l'evento è solo in second(irredundant)
+                    // thhe event is only in second(irredundant)
                 else if (second->find(event) != second->end()) {
                     auto merged_vector = new vector<Region *>(second->at(event)->size());
 
                     (*total_pre_regions_map)[event] = new set<Region *>(
                             second->at(event)->begin(), second->at(event)->end());
                     delete merged_vector;
-                    /* cout<<"secodn"<<endl;
-                     for(auto el: *total_pre_regions_map->at(event))
-                         println(*el);*/
                 }
             }
         } else {
@@ -1781,52 +1688,31 @@ namespace Utilities {
                         new set<Region *>(first->at(event)->begin(), first->at(event)->end());
             }
         }
-
-        /*cout << "debug merging 2 mappe" << endl;
-        for (auto el : *total_pre_regions_map) {
-            cout << "ev: " << el.first << endl;
-            for (auto r : *el.second) {
-                print(*r);
-                cout << " ind.: " << r << endl;
-            }
-        }*/
         return total_pre_regions_map;
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, Region *> *second) {
-        //  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
+        //  cout << "MERGING ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
 
         map<int, set<Region *> *> *total_pre_regions_map = nullptr;
         total_pre_regions_map = new map<int, set<Region *> *>();
 
         if (second != nullptr) {
             for (int event = 0; event < num_events_after_splitting; event++) {
-                // cout << "evento:" << event << endl;
-
-                // trovo entrambi gli eventi
+                // found both events
                 if (first->find(event) != first->end() &&
                     second->find(event) != second->end()) {
 
                     auto merged_vector = new vector<Region *>(first->at(event)->size() + 1);
 
-                    /*set_union(first->at(event)->begin(), first->at(event)->end(),
-                              second->at(event)->begin(), second->at(event)->end(),
-                              merged_vector->begin());*/
                     for(auto elem: *first->at(event)){
                         merged_vector->push_back(elem);
                     }
                     merged_vector->push_back(second->at(event));
 
-                    /*cout << "merged vector: ";
-                    for (auto el : *merged_vector)
-                      println(*el);*/
-
                     (*total_pre_regions_map)[event] =
                             new set<Region *>(merged_vector->begin(), merged_vector->end());
                     delete merged_vector;
-                    /*cout<<"entrambe"<<endl;
-                    for(auto el: *total_pre_regions_map->at(event))
-                        println(*el);*/
                 }
                     // l'evento è solo in first(essential)
                 else if (first->find(event) != first->end()) {
@@ -1846,7 +1732,7 @@ namespace Utilities {
                     (*total_pre_regions_map)[event] = new set<Region *>();
                     (*total_pre_regions_map)[event]->insert(second->at(event));
                     delete merged_vector;
-                    /* cout<<"secodn"<<endl;
+                    /* cout<<"second"<<endl;
                      for(auto el: *total_pre_regions_map->at(event))
                          println(*el);*/
                 }
@@ -1863,7 +1749,7 @@ namespace Utilities {
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, Region *> *first, map<int, Region *> *second) {
-        //  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
+        //  cout << "MERGING ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
 
         map<int, set<Region *> *> *total_pre_regions_map = nullptr;
         total_pre_regions_map = new map<int, set<Region *> *>();
