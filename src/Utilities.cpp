@@ -499,8 +499,13 @@ namespace Utilities {
         return true;
     }
 
-    bool contains(set<Region *> *set, Region *region) {
-        for (auto elem : *set) {
+    template<typename T>
+    bool contains(T container, Region *region) {
+        if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
+            cerr << "wrong parameter type" << endl;
+            exit(1);
+        }
+        for (auto elem : *container) {
             if (are_equal(elem, region)) {
                 return true;
             }
@@ -556,16 +561,6 @@ namespace Utilities {
                 return false;
         }
         return true;
-    }
-
-
-    bool contains(vector<Region *> *vector, Region *region) {
-        for (auto elem : *vector) {
-            if (are_equal(elem, region)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     string get_file_name(string path){

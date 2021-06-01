@@ -96,8 +96,8 @@ namespace Utilities {
     bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
-    bool contains(set<Region *> *, Region *);
-    bool contains(vector<Region*> *, Region *);
+    template <typename T>
+    bool contains(T, Region *);
     bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set);
