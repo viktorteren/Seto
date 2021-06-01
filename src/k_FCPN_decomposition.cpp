@@ -235,7 +235,6 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     auto cnf_ec_map = dnf_to_cnf(er_satisfiable_sets);
 
     auto clauses = new set<set<int32_t>>();
-    set<int32_t> *clause;
     set<int32_t> *lit_set;
 
     //encoding: [1, k*number_of_FCPNs+1] regions range: k regions
@@ -1035,12 +1034,12 @@ pair<int, Region *> k_FCPN_decomposition::decoded_region(int encoded_value) cons
 //FCPN_number: [1, n]
 //encoding for event i in FCPN j: n*k-k+2+i*j
 //events range: [n*k-n+2, n*(k-1)+2+(m-1)*n = n*k-n+2+n*m-n = n*k+n*m-2*n+2]
-int k_FCPN_decomposition::encoded_event(int event, int current_FCPN_number) const {
+__attribute__((unused)) int k_FCPN_decomposition::encoded_event(int event, int current_FCPN_number) const {
     return number_of_FCPNs*number_of_regions-number_of_FCPNs+2+event*current_FCPN_number;
 }
 
 //returns the number of FCPN and the event number
-pair<int, int> k_FCPN_decomposition::decoded_event(int encoded_value) const{
+__attribute__((unused)) pair<int, int> k_FCPN_decomposition::decoded_event(int encoded_value) const{
     if(encoded_value < 0)
         encoded_value*=-1;
     encoded_value -= number_of_FCPNs*number_of_regions-number_of_FCPNs+2;

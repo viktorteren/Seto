@@ -5,6 +5,8 @@
 
 #include "../include/Utilities.h"
 
+#include <utility>
+
 bool print_step_by_step;
 bool print_step_by_step_debug;
 bool decomposition;
@@ -18,9 +20,9 @@ bool k_fcpn_decomposition;
 //bool log_file;
 bool info;
 bool fcptnet;
-bool fcpn_modified;
-bool blind_fcpn;
-bool fcpn_with_levels;
+__attribute__((unused)) bool fcpn_modified;
+__attribute__((unused)) bool blind_fcpn;
+__attribute__((unused)) bool fcpn_with_levels;
 bool pn_synthesis;
 bool no_fcpn_min;
 map<int, Region*>* aliases_region_pointer;
@@ -33,7 +35,7 @@ bool benchmark_script;
 map<set<Region*>, set<int>*> *intersection_cache;
 
 namespace Utilities {
-    set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
+    __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
         auto res = new set<Region *>();
         for(auto reg_set: *region_set){
             for(auto reg: *reg_set){
@@ -43,7 +45,7 @@ namespace Utilities {
         return res;
     }
 
-    set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2){
+    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2){
         auto res = new set<Region *>();
         for(auto reg: *region_set1){
             res->insert(reg);
@@ -54,7 +56,7 @@ namespace Utilities {
         return res;
     }
 
-    set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2){
+    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2){
         auto res = new set<Region *>();
         for(auto reg: region_set1){
             res->insert(reg);
@@ -76,7 +78,7 @@ namespace Utilities {
         return res;
     }
 
-    bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
+    __attribute__((unused)) bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
         for(auto reg: *region_set1){
             if(region_set2->find(reg) != region_set2->end()){
                 return false;
@@ -85,7 +87,7 @@ namespace Utilities {
         return true;
     }
 
-    bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2){
+    __attribute__((unused)) bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2){
         for(auto reg: *region_set1){
             if(region_set2->find(reg) != region_set2->end()){
                 return false;
@@ -151,7 +153,7 @@ namespace Utilities {
         return all_states;
     }
 
-    map<int, set<int> *> *do_regions_intersection(map<int, set<Region *> *> *regions) {
+    __attribute__((unused)) map<int, set<int> *> *do_regions_intersection(map<int, set<Region *> *> *regions) {
 
         auto pre_regions_intersection = new map<int, set<int> *>;
 
@@ -251,7 +253,7 @@ namespace Utilities {
         return pre_regions_intersection;
     }
 
-    set<int> *regions_intersection(set<Region *> regions) {
+    set<int> *regions_intersection(const set<Region *>& regions) {
         //println(*regions);
 
         auto pre_regions_intersection = new set<int>();
@@ -437,7 +439,7 @@ namespace Utilities {
         return input;
     }
 
-    bool is_bigger_than(Region *region, set<int> *region2) {
+    __attribute__((unused)) bool is_bigger_than(Region *region, set<int> *region2) {
         if (region->size() > region2->size()) {
             for (auto elem : *region2) {
                 // nella regione non trovo un elem
@@ -483,7 +485,7 @@ namespace Utilities {
     }
 
     bool are_equal(Region *region1, Region region2) {
-        return are_equal(*region1, region2);
+        return are_equal(*region1, std::move(region2));
     }
 
     bool are_equal(const Region& region1, Region region2) {
@@ -506,7 +508,7 @@ namespace Utilities {
         return false;
     }
 
-    bool contains(set<Region *> set, Region region) {
+    __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region) {
         for (auto elem : set) {
             if (are_equal(elem, region)) {
                 return true;
@@ -515,7 +517,7 @@ namespace Utilities {
         return false;
     }
 
-    bool contains_region(set<Region *> set, Region *region) {
+    __attribute__((unused)) bool contains_region(const set<Region *>& set, Region *region) {
         for (auto elem : set) {
             if (are_equal(elem, region)) {
                 return true;
@@ -532,7 +534,7 @@ namespace Utilities {
         return true;
     }
 
-    bool contains(set<Region *> bigger_set, set<Region *> smaller_set) {
+    bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set) {
         for (auto elem : smaller_set) {
             if(bigger_set.find(elem) == bigger_set.end())
                 return false;
@@ -540,7 +542,7 @@ namespace Utilities {
         return true;
     }
 
-    bool contains(set<int> bigger_set, set<int> smaller_set){
+    __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set){
         for (auto elem : smaller_set) {
             if(bigger_set.find(elem) == bigger_set.end())
                 return false;
@@ -548,7 +550,7 @@ namespace Utilities {
         return true;
     }
 
-    bool contains(set<int> *bigger_set, set<int> *smaller_set){
+    __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set){
         for (auto elem : *smaller_set) {
             if(bigger_set->find(elem) == bigger_set->end())
                 return false;
@@ -688,7 +690,7 @@ namespace Utilities {
     }
 
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
+    __attribute__((unused)) string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
         string in_name;
@@ -1037,14 +1039,14 @@ namespace Utilities {
 
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, string file_name) {
+                           map<int, int> *aliases, const string& file_name) {
         print_fcpn_dot_file(pre_regions, post_regions, aliases, file_name, -1);
     }
 
     //TODO
-    void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
+    __attribute__((unused)) void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
                          map<int, set<Region *> *> *post_regions,
-                         map<int, int> *aliases, string file_name){
+                         map<int, int> *aliases, const string& file_name){
         cout << "Code still have to be written" << endl;
         exit(1);
     }
@@ -1060,10 +1062,9 @@ namespace Utilities {
         string output_name = std::move(file_name);
         string in_sis_name;
         string output;
-        // creazione della mappa tra il puntatore alla regione ed un intero univoco
-        // corrispondente
+        // creazione della mappa tra il puntatore alla regione ed un intero univoco corrispondente
         map<Region *, int> *regions_mapping;
-        /*cout << "preregions prima del print" << endl;
+        /*cout << "pre-regions prima del print" << endl;
         print(*pre_regions);*/
         auto regions_set = copy_map_to_set(pre_regions);
         /*cout << "regions set " << endl;
@@ -1521,13 +1522,13 @@ namespace Utilities {
         return difference;
     }
 
-    char translate_label(int label) {
+    __attribute__((unused)) char translate_label(int label) {
         char base = 'a';
         base += label;
         return base;
     }
 
-    Region *get_ptr_into(set<Region *> *set, Region *region) {
+    __attribute__((unused)) Region *get_ptr_into(set<Region *> *set, Region *region) {
 
         std::set<Region *>::iterator it;
         for (it = set->begin(); it != set->end(); ++it) {
@@ -1541,7 +1542,7 @@ namespace Utilities {
         return nullptr;
     }
 
-    bool contains_state(Region *reg, int state) {
+    __attribute__((unused)) bool contains_state(Region *reg, int state) {
         for (auto el : *reg) {
             if (el == state)
                 return true;
@@ -1595,7 +1596,7 @@ namespace Utilities {
         return un;
     }
 
-    void restore_default_labels(map<int, set<Region *> *> *net,
+    __attribute__((unused)) void restore_default_labels(map<int, set<Region *> *> *net,
                                 map<int, int> &aliases) {
         /*cout << "mappa alias: " << endl;
         for(auto rec: aliases){
@@ -1620,17 +1621,6 @@ namespace Utilities {
         /*cout << "nuova mappa:" << endl;
         print(*net);*/
     }
-
-    //for each region is created a clause with only thi region identifier
-    //set on true value and also
-    /*vec<int>* region_to_clause(Region* region) {
-        auto clause = new vec<int>;
-        region_mapping(region);
-        max_alias_decomp++;
-        int reg = max_alias_decomp -1;
-        clause->push(  reg );
-        return clause;
-    }*/
 
     void region_mapping(Region* region){
         (*aliases_region_pointer)[max_alias_decomp] = region;
@@ -1668,7 +1658,7 @@ namespace Utilities {
         return clauses;
     }
 
-    vector<int>* covering_state_clause(set<Region *> *overlapping_regions){
+    __attribute__((unused)) vector<int>* covering_state_clause(set<Region *> *overlapping_regions){
         auto clause = new vector<int>();
         int reg_alias;
         for(auto reg: *overlapping_regions){
@@ -1720,7 +1710,7 @@ namespace Utilities {
     }
 
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second) {
-        //  cout << "MERGIN ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
+        //  cout << "MERGING ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
 
         map<int, set<Region *> *> *total_pre_regions_map = nullptr;
         total_pre_regions_map = new map<int, set<Region *> *>();
@@ -1940,7 +1930,7 @@ namespace Utilities {
     }
 
 
-    void add_region_to_SM(set<Region*>* SM, Region* region){
+    __attribute__((unused)) void add_region_to_SM(set<Region*>* SM, Region* region){
         SM->insert(region);
     }
 
@@ -1971,7 +1961,7 @@ namespace Utilities {
         }
     }
 
-    bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path){
+    __attribute__((unused)) bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path){
         FILE* f;
         f = fopen(file_path.c_str(), "r");
         Minisat::parse_DIMACS(f, solver);
@@ -1989,7 +1979,7 @@ namespace Utilities {
         return ret;
     }
 
-    bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
         auto er = ER_set->at(event);
         auto intersection = regions_intersection(pre_regions_set);
         bool res = are_equal(er, intersection);
@@ -1997,7 +1987,7 @@ namespace Utilities {
         return res;
     }
 
-    bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+    __attribute__((unused)) bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
         if(intersection_cache == nullptr)
             intersection_cache = new map<set<Region *>, set<int>*>();
         auto er = ER_set->at(event);
@@ -2280,7 +2270,7 @@ namespace Utilities {
     }
 
 
-    bool checkSMUnionForFCPTNet(set<SM*> *sm_set, map<int, set<Region*> *> *post_regions){
+    __attribute__((unused)) bool checkSMUnionForFCPTNet(set<SM*> *sm_set, map<int, set<Region*> *> *post_regions){
         cerr << "function checkSMUnionFCPTNet ith set argument not implemented yet" << endl;
         exit(1);
         SM *target_PN = new SM();
@@ -2324,7 +2314,7 @@ namespace Utilities {
         return false;
     }
 
-    bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
+    __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
         SM *target_PN = new SM();
         for (auto reg: *sm1) {
             target_PN->insert(reg);
@@ -2402,7 +2392,7 @@ namespace Utilities {
     }
 
     //todo: this code probably can be improved, maybe using sat in order to check if the union is possible
-    SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
+    __attribute__((unused)) SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
         SM *target_PN = new SM();
         for (auto reg: *sm1) {
             target_PN->insert(reg);
@@ -2467,8 +2457,8 @@ namespace Utilities {
                             if (rec2.second->find(region) != rec2.second->end()) {
                                 //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
                                 //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
-                                for(auto rec: *PN_post_regions){
-                                    delete rec.second;
+                                for(auto rec3: *PN_post_regions){
+                                    delete rec3.second;
                                 }
                                 delete PN_post_regions;
                                 delete target_PN;
@@ -2525,7 +2515,7 @@ namespace Utilities {
         return new_used_regions_map_tmp;
     }
 
-    void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map){
+    __attribute__((unused)) void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map){
         for(auto rec2: *map1){
             auto ev = rec2.first;
             auto region_set = rec2.second;
@@ -2538,18 +2528,6 @@ namespace Utilities {
         }
     }
 
-    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>*>*>* er_satisfiable_set){
-        auto cnf_set = new map<int, set<set<Region *>*>*>();
-        for(auto rec: *er_satisfiable_set){
-            //cout  << "EV: " << rec.first << endl;
-            //(*cnf_set)[rec.first] = new set<set<Region *>*>();
-            set<set<Region *>*>::iterator it;
-            it = rec.second->begin();
-            (*cnf_set)[rec.first] = dnf_to_cnf_core(rec.second, it);
-        }
-        return cnf_set;
-    }
-
     map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set){
         auto cnf_set = new map<int, set<set<Region *>*>*>();
         for(auto rec: *er_satisfiable_set){
@@ -2560,41 +2538,6 @@ namespace Utilities {
             (*cnf_set)[rec.first] = dnf_to_cnf_core(rec.second, it);
         }
         return cnf_set;
-    }
-
-    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>*>*cl_set, set<set<Region *>*>::iterator it){
-        auto new_clauses = new set<set<Region *>*>();
-        auto current_clause = *it;
-        if(next(it) == cl_set->end()){
-            for (auto val: *current_clause) {
-                auto tmp_cl = new set<Region *>();
-                tmp_cl->insert(val);
-                new_clauses->insert(tmp_cl);
-            }
-            /*
-            for(auto cl: *new_clauses){
-                println(cl);
-            }
-            cout << endl;*/
-            return new_clauses;
-        }
-        auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
-
-        for (auto val: *current_clause) {
-            for (auto cl: *next_clauses) {
-                auto tmp_cl = new set<Region *>();
-                tmp_cl->insert(val);
-                for (auto reg: *cl) {
-                    tmp_cl->insert(reg);
-                }
-                new_clauses->insert(tmp_cl);
-            }
-        }
-        for(auto cl: *next_clauses){
-            delete cl;
-        }
-        delete next_clauses;
-        return new_clauses;
     }
 
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it){

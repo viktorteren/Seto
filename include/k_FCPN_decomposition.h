@@ -14,8 +14,8 @@ class k_FCPN_decomposition {
 private:
     int encoded_region(Region *reg, int current_FCPN_number) const;
     pair<int, Region *> decoded_region(int encoded_value) const;
-    int encoded_event(int event, int current_FCPN_number) const;
-    pair<int, int> decoded_event(int encoded_value) const;
+    __attribute__((unused)) int encoded_event(int event, int current_FCPN_number) const;
+    __attribute__((unused)) pair<int, int> decoded_event(int encoded_value) const;
     map<Region*, int> *reg_map;
     map<int, Region*> *inverse_reg_map;
     int number_of_regions;
