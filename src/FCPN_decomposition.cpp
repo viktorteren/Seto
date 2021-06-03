@@ -20,7 +20,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
-     *      1) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3)
+     *      1 REMOVED: ) at least one region which covers each state: for each covered state by r1, r2, r3 create a clause (r1 v r2 v r3)
      *      2) FCPN constraint -> given the regions of a PN these cannot violate the constraint
      *      ALGORITHM:
      *          for each ev
@@ -91,33 +91,11 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     int k = regions->size();
     bool excitation_closure;
 
-    //STEP 1
-    //cout << "STEP 1a" << endl;
-    auto state_regions_map = new map<int, set<Region*>*>();
-    for(Region *reg: *regions_vector){
-        for(auto st: *reg){
-            if(state_regions_map->find(st) == state_regions_map->end()){
-                (*state_regions_map)[st] = new set<Region*>();
-            }
-            state_regions_map->at(st)->insert(reg);
-        }
-    }
     do{
         for(auto cl: *clauses){
             delete cl;
         }
         clauses->clear();
-
-        //cout << "STEP 1b" << endl;
-        for(auto rec: *state_regions_map){
-            auto region_set = rec.second;
-            clause = new vector<int32_t>();
-            for(auto reg: *region_set){
-                clause->push_back(reg_map->at(reg)+1);
-            }
-            clauses->push_back(clause);
-            //print_clause(clause);
-        }
 
         //STEP 2
         //cout << "STEP 2" << endl;
@@ -528,11 +506,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     }
 
     delete regions_mapping;
-
-    for(auto rec: *state_regions_map){
-        delete rec.second;
-    }
-    delete state_regions_map;
 
     delete regions_vector;
 
