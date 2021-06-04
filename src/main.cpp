@@ -322,6 +322,11 @@ int main(int argc, char **argv) {
 
                 int numRegions = regions_set->size();
                 cout << "Number of regions: " << numRegions << endl;
+                if(decomposition_debug){
+                    for(auto reg: *regions_set){
+                        println(*reg);
+                    }
+                }
 
                 max_alias_decomp = 1;
                 num_clauses = 0;

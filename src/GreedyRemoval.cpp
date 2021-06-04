@@ -48,14 +48,14 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_gene
 
     //use of the heuristics which removes biggest SMs first -> local minimality not guaranteed
 
-    //sorting of the SMs in descending size order
+    //sorting of the SMs in increasing size order
     sort(SMs_to_remove.begin(), SMs_to_remove.end(), [](set<Region *> *lhs, set<Region *> *rhs) {
-        return lhs->size() > rhs->size();
+        return lhs->size() < rhs->size();
     });
     while (!SMs_to_remove.empty()) {
         auto tmp_SMs = new set<set<Region *> *>();
         auto SM = SMs_to_remove.at(0); //always take the first element: the biggest SM
-        //tmp_SM prende tutto tranne SM
+        //tmp_SM takes all except SM
         for (auto set: *SMs) {
             if (set != SM)
                 tmp_SMs->insert(set);

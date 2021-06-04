@@ -24,6 +24,9 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     if(decomposition_debug){
         cout << "number of events: " << number_of_events << endl;
         cout << "number of regions: " << number_of_regions << endl;
+        for(auto reg: *regions){
+            println(*reg);
+        }
     }
 
     //EC encoding for simultaneous k-FCPN decomposition check

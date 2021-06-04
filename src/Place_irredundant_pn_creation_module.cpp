@@ -11,7 +11,6 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
         map<int, set<Region *> *> *pre_reg, map<int, ER> *er_map) {
 
     pre_regions = pre_reg;
-    // post_regions = post_reg;
 
     cost_map = new map<Region *, int>();
     not_essential_regions_map = new map<int, set<Region *> *>();
@@ -117,8 +116,8 @@ set<int> *Place_irredundant_pn_creation_module::calculate_events_without_essenti
     return events;
 }
 
-bool Place_irredundant_pn_creation_module::irredundant_set_of_regions(set<Region *> *irredundant_regions) {
-    auto candidate_set_of_regions = new set<Region *>(*irredundant_regions);
+bool Place_irredundant_pn_creation_module::irredundant_set_of_regions(set<Region *> *irredundant_regions_set) {
+    auto candidate_set_of_regions = new set<Region *>(*irredundant_regions_set);
     //unione tra le regioni essenziali e quelle irridondanti
     candidate_set_of_regions->insert(essential_regions->begin(), essential_regions->end());
 
@@ -160,10 +159,11 @@ bool Place_irredundant_pn_creation_module::irredundant_set_for_event(int event, 
     return true;
 }
 
-bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Region *> &irredundant_regions) {
+bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Region *> &irredundant_regions_set) {
     //per ogni evento che non ha regioni essenziali
 
-    auto candidate_set_of_regions = new set<Region *>(irredundant_regions);
+    auto candidate_set_of_regions = new set<Region *>(irredundant_regions_set);
+
     //unione tra le regioni essenziali e quelle irridondanti
     candidate_set_of_regions->insert(essential_regions->begin(), essential_regions->end());
 
@@ -209,8 +209,7 @@ bool Place_irredundant_pn_creation_module::ec_satisfied(int event, set<Region *>
 }
 
 
-map<int, set<Region *> *> *
-Place_irredundant_pn_creation_module::get_irredundant_regions() {
+map<int, set<Region *> *> *Place_irredundant_pn_creation_module::get_irredundant_regions() {
     if (!irredundant_regions->empty()) {
         calculate_irredundant_regions_map();
         return irredundant_regions_map;
@@ -219,8 +218,7 @@ Place_irredundant_pn_creation_module::get_irredundant_regions() {
     }
 }
 
-map<int, set<Region *> *> *
-Place_irredundant_pn_creation_module::get_essential_regions() {
+map<int, set<Region *> *> * Place_irredundant_pn_creation_module::get_essential_regions() {
     return ers->get_essential_regions_map();
 }
 
