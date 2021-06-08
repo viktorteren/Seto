@@ -406,24 +406,25 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             //todo: don't forget the memory leaks -> have to check with valgrind
             auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
             if(new_temp_set->size() > 1){
-                int min_size = (*new_temp_set)[0]->size();
+                int min_size = (*new_temp_set)[0].size();
                 int pos = 0;
                 for(int i= 1; i<new_temp_set->size();i++){
-                    if((*new_temp_set)[i]->size() < min_size){
-                        min_size = (*new_temp_set)[i]->size();
+                    if((*new_temp_set)[i].size() < min_size){
+                        min_size = (*new_temp_set)[i].size();
                         pos = i;
                     }
                 }
                 clause = new vector<int32_t>();
-                for(auto reg: *(*new_temp_set)[pos]){
+                for(auto reg: (*new_temp_set)[pos]){
                     cout << "added a new constraint" << endl;
                     clause->push_back(-1+reg_map->at(reg));
                 }
                 splitting_constraint_clauses->push_back(clause);
+                /*
                 for(auto tmp_set: *new_temp_set){
                     //fcpn_set->insert(tmp_set);
                     delete tmp_set;
-                }
+                }*/
                 delete temp_PN;
                 splitting_constraints_added = true;
             }
@@ -439,9 +440,10 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                 not_used_regions->erase(regions_vector->at(val-1));
                     }
                 }
+                /*
                 for(auto tmp_set: *new_temp_set){
                     delete tmp_set;
-                }
+                }*/
                 delete new_temp_set;
                 fcpn_set->insert(temp_PN);
                 cout << "adding new fcpn to solutions" << endl;

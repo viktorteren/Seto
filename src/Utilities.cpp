@@ -2456,12 +2456,13 @@ namespace Utilities {
         return new_clauses;
     }
 
-    vector<set<Region *> *> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections){
-        auto vector_of_sets = new vector<set<Region *> *>();
+    vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections){
+        auto vector_of_sets = new vector<set<Region *>>();
         for(auto reg: *pn){
             auto new_set = new set<Region *>();
             new_set->insert(reg);
-            vector_of_sets->push_back(new_set);
+            vector_of_sets->push_back(*new_set);
+            delete new_set;
         }
         bool end = false;
         int last_size;
@@ -2472,8 +2473,8 @@ namespace Utilities {
                 for(int i= vector_of_sets->size()-1; i > 0; --i){
                     for(int k=i-1; k>=0; --k) {
                         if (are_connected((*vector_of_sets)[i], (*vector_of_sets)[k], connections)) {
-                            for (auto reg: *(*vector_of_sets)[i]) {
-                                (*vector_of_sets)[k]->insert(reg);
+                            for (auto reg: (*vector_of_sets)[i]) {
+                                (*vector_of_sets)[k].insert(reg);
                             }
                             vector_of_sets->erase(vector_of_sets->begin() + i);
                             //i is decreased because the size of vector was decreased by 1,
@@ -2492,9 +2493,9 @@ namespace Utilities {
         return vector_of_sets;
     }
 
-    bool are_connected(set<Region *> *first, set<Region *> *second, map<int, set<Region *> *> *connections){
-        for(auto r1: *first){
-            for(auto r2: *second){
+    bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections){
+        for(auto r1: first){
+            for(auto r2: second){
                 for(auto rec: *connections){
                     //tro regions are connected to the same event therefore these regions are connected
                     if(rec.second->find(r1) != rec.second->end() && rec.second->find(r2) != rec.second->end())

@@ -179,6 +179,6 @@ namespace Utilities {
     map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set);
     set<Region *> regions_set_union_stack(const set<Region*>& region_set1,const set<Region*>& region_set2);
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it);
-    vector<set<Region *> *> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
-    bool are_connected(set<Region *> *first, set<Region *> *second, map<int, set<Region *> *> *connections);
+    vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
+    bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections);
 };
