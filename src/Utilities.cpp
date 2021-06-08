@@ -1950,20 +1950,20 @@ namespace Utilities {
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
                     if(print_step_by_step_debug || decomposition_debug){
-                        cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
+                        /*cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
                             cout << "empty" << endl;
                         }
                         else{
                             println(*intersec);
-                        }
-                        cout << "the pre-regions of event are: " << endl;
+                        }*/
+                        /*cout << "the pre-regions of event are: " << endl;
                         for(auto val: *pre_regions->at(event)){
                             println(*val);
                         }
                         cout << "er: ";
-                        println(*er);
+                        println(*er);*/
                     }
                     for(auto rec: *regions_intersection_map){
                         delete rec.second;

@@ -48,6 +48,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
                                                     pprg->get_post_regions());
     auto clauses = new vector<vector<int32_t> *>();
+    auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *>*>();
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
@@ -90,12 +91,20 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     int m = number_of_events;
     int k = regions->size();
     bool excitation_closure;
+    bool splitting_constraints_added = false;
 
     do{
         for(auto cl: *clauses){
             delete cl;
         }
         clauses->clear();
+
+        if(!splitting_constraints_added){
+            if(!splitting_constraint_clauses->empty()) {
+                splitting_constraint_clauses->clear();
+                cout << "removing splitting constraints" << endl;
+            }
+        }
 
         //STEP 2
         //cout << "STEP 2" << endl;
@@ -217,6 +226,9 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         PB2CNF pb2cnf(config);
         AuxVarManager auxvars(k+m+2);
         for (auto cl: *clauses) {
+            formula.addClause(*cl);
+        }
+        for (auto cl: *splitting_constraint_clauses) {
             formula.addClause(*cl);
         }
         Minisat::Solver solver;
@@ -381,19 +393,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
         if (exists_solution) {
             set<Region *> prova_PN;
-            if(decomposition_debug)
-                cout << "output model:" << endl;
-            for(auto val: *last_solution){
-                if(val > 0){
-                    if(decomposition_debug) {
-                        cout << val << ": ";
-                        println(*regions_vector->at(val - 1));
-                    }
-                    if(val <= k)
-                        if(not_used_regions->find(regions_vector->at(val-1)) != not_used_regions->end())
-                            not_used_regions->erase(regions_vector->at(val-1));
-                }
-            }
+            /*if(decomposition_debug)
+                cout << "output model:" << endl;*/
             //STEP 7
             auto temp_PN = new set<Region*>();
             for(auto r_index: *last_solution){
@@ -401,31 +402,62 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                     temp_PN->insert((*regions_vector)[r_index-1]);
                 }
             }
+            splitting_constraints_added = false;
             //todo: don't forget the memory leaks -> have to check with valgrind
             auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
             if(new_temp_set->size() > 1){
+                int min_size = (*new_temp_set)[0]->size();
+                int pos = 0;
+                for(int i= 1; i<new_temp_set->size();i++){
+                    if((*new_temp_set)[i]->size() < min_size){
+                        min_size = (*new_temp_set)[i]->size();
+                        pos = i;
+                    }
+                }
+                clause = new vector<int32_t>();
+                for(auto reg: *(*new_temp_set)[pos]){
+                    cout << "added a new constraint" << endl;
+                    clause->push_back(-1+reg_map->at(reg));
+                }
+                splitting_constraint_clauses->push_back(clause);
                 for(auto tmp_set: *new_temp_set){
-                    fcpn_set->insert(tmp_set);
+                    //fcpn_set->insert(tmp_set);
+                    delete tmp_set;
                 }
                 delete temp_PN;
+                splitting_constraints_added = true;
             }
             else{
+                for(auto val: *last_solution){
+                    if(val > 0){
+                        /*if(decomposition_debug) {
+                            cout << val << ": ";
+                            println(*regions_vector->at(val - 1));
+                        }*/
+                        if(val <= k)
+                            if(not_used_regions->find(regions_vector->at(val-1)) != not_used_regions->end())
+                                not_used_regions->erase(regions_vector->at(val-1));
+                    }
+                }
                 for(auto tmp_set: *new_temp_set){
                     delete tmp_set;
                 }
                 delete new_temp_set;
                 fcpn_set->insert(temp_PN);
+                cout << "adding new fcpn to solutions" << endl;
             }
             results_to_avoid->push_back(*last_solution);
 
-            auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
-            excitation_closure = is_excitation_closed(used_regions_map, ER);
-            for (auto rec: *used_regions_map) {
-                delete rec.second;
-            }
-            delete used_regions_map;
-            if (excitation_closure) {
-                cout << "ec ok" << endl;
+            if(!splitting_constraints_added) {
+                auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
+                excitation_closure = is_excitation_closed(used_regions_map, ER);
+                for (auto rec: *used_regions_map) {
+                    delete rec.second;
+                }
+                delete used_regions_map;
+                if (excitation_closure) {
+                    cout << "ec ok" << endl;
+                }
             }
             formula.clearDatabase();
         }
@@ -435,6 +467,8 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         }
         delete last_solution;
     } while(!excitation_closure);
+
+    delete splitting_constraint_clauses;
 
     cout << "PNs before greedy: " <<fcpn_set->size() << endl;
 
