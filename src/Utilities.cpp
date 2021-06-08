@@ -2458,6 +2458,7 @@ namespace Utilities {
 
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections){
         auto vector_of_sets = new vector<set<Region *>>();
+        cout << "size: " << pn->size() << endl;
         for(auto reg: *pn){
             auto new_set = new set<Region *>();
             new_set->insert(reg);

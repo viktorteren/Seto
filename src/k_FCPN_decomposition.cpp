@@ -57,6 +57,10 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     auto fcpn_set = new set<set<Region *>*>();
 
     auto pre_regions_map = pprg->get_pre_regions();
+    bool splitting_constraints_added = false;
+    auto splitting_constraint_clauses = new vector<vector<Region *> *>();
+    auto regions_connected_to_labels = merge_2_maps(pprg->get_pre_regions(),
+                                                    pprg->get_post_regions());
 
     //per trovare tutte le combinazioni utili bisogna creare una coda, all'inizio ne fanno parte tutte le regioni singole,
     // ogni volta che una regione viene analizzata questa viene rimossa completamente dalla coda se da sola soddisfa ec ed inoltre
@@ -410,6 +414,10 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     //todo: possibile miglioramento delle prestazioni: salvataggio di updatable clauses e aggiunta incrementale di nuove FCPN con anche il mantenimento di clausole imparate
     while(!solution_found){
+        if(!splitting_constraints_added){
+            splitting_constraint_clauses->clear();
+        }
+        splitting_constraints_added = false;
         delete updatable_clauses;
         updatable_clauses = new set<set<int32_t>>();
         if(decomposition_debug)
@@ -606,8 +614,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }*/
 
         //STEP 5b
-        /*if(decomposition_debug)
-            cout << "STEP 5" << endl;
+        if(decomposition_debug)
+            cout << "STEP 5b" << endl;
         for(int i=0;i<num_events;++i){
             lit_set = new set<int32_t>();
             for(int k=1;k<=number_of_FCPNs;++k){
@@ -619,17 +627,18 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }
 
         //STEP 6
+        /*
         if(decomposition_debug)
             cout << "STEP 6" << endl;
         for(auto rec: *state_regions_map){
             for(int i=1;i<=number_of_FCPNs;++i) {
                 auto region_set = rec.second;
-                clause = new set<int32_t>();
+                auto cl = new set<int32_t>();
                 for (auto reg: *region_set) {
-                    clause->insert(encoded_region(reg,i));
+                    cl->insert(encoded_region(reg,i));
                 }
-                clauses->insert(*clause);
-                delete clause;
+                clauses->insert(*cl);
+                delete cl;
             }
             //print_clause(clause);
         }*/
@@ -658,6 +667,15 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             delete elem;
         }
         delete new_vector;
+        for(int i=1;i <=number_of_FCPNs;++i){
+            for(auto reg_clause: *splitting_constraint_clauses){
+                auto clause = new vector<int32_t>();
+                for(auto reg: *reg_clause){
+                    clause->push_back(encoded_region(reg, i));
+                }
+                formula.addClause(*clause);
+            }
+        }
         Minisat::Solver solver;
 
         int num_clauses_formula = formula.getClauses().size();
@@ -705,30 +723,60 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         }*/
         if(solution_found){
             regions_in_solution = 0;
-            //set<Region *> *temp_FCPN;
+            set<Region *> *temp_FCPN;
+            auto temp_fcpn_set = new set<set<Region *>*>();
             for(int k=1;k<=number_of_FCPNs;++k) {
-                //temp_FCPN = new set<Region *>();
+                temp_FCPN = new set<Region *>();
                 for (int i = 0; i < number_of_regions; ++i) {
                     int encoded_value = encoded_region(inverse_reg_map->at(i), k);
-                    if (solver.model[encoded_value-1] != l_Undef) {
-                        if (solver.model[encoded_value-1] == l_True) {
-                            //cout << "to decode: " << encoded_value << endl;
-                            //auto dec = decoded_region(encoded_value);
-                            //println(*dec.second);
-                            //temp_FCPN->insert(dec.second);
-                            regions_in_solution++;
-                            /*if(decomposition_debug) {
-                                cout << "k = " << k << endl;
-                                cout << "decoded PN: " << dec.first << endl;
-                            }*/
-                            /*if(k != dec.first){
-                                cerr << "wrong FCPN decoding" << endl;
-                                exit(1);
-                            }*/
-                        }
+                    if (last_solution->find(encoded_value) != last_solution->end()) {
+                        //cout << "encoded value found " << encoded_value << endl;
+                        //cout << "to decode: " << encoded_value << endl;
+                        auto dec = decoded_region(encoded_value);
+                        //println(*dec.second);
+                        temp_FCPN->insert(dec.second);
+                        regions_in_solution+=temp_FCPN->size();
                     }
                 }
-                //fcpn_set->insert(temp_FCPN);
+                temp_fcpn_set->insert(temp_FCPN);
+            }
+            for(auto FCPN: *temp_fcpn_set){
+                auto new_temp_set = split_not_connected_regions(FCPN, regions_connected_to_labels);
+                if(new_temp_set->size() > 1){
+                    int min_size = (*new_temp_set)[0].size();
+                    int pos = 0;
+                    for(int i= 1; i<new_temp_set->size();i++){
+                        if((*new_temp_set)[i].size() < min_size){
+                            min_size = (*new_temp_set)[i].size();
+                            pos = i;
+                        }
+                    }
+                    auto lit_vec = new vector<Region *>();
+                    for(auto reg: (*new_temp_set)[pos]){
+                        cout << "added a new constraint" << endl;
+                        lit_vec->push_back(reg);
+                    }
+                    splitting_constraint_clauses->push_back(lit_vec);
+                    /*
+                    for(auto tmp_set: *new_temp_set){
+                        //fcpn_set->insert(tmp_set);
+                        delete tmp_set;
+                    }*/
+                    splitting_constraints_added = true;
+                    solution_found = false;
+                    break;
+                }
+                else{
+                    /*
+                    for(auto tmp_set: *new_temp_set){
+                        delete tmp_set;
+                    }*/
+                    delete new_temp_set;
+                    cout << "adding new fcpn to solutions" << endl;
+                }
+            }
+            for(auto FCPN: *temp_fcpn_set){
+                delete FCPN;
             }
 
             //auto pre_regions_map = pprg->get_pre_regions();
@@ -740,7 +788,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         else{
             cout << "searched a solution with " << number_of_FCPNs <<  " FCPNs" << endl;
         }
-        number_of_FCPNs++;
+        if(!splitting_constraints_added)
+            number_of_FCPNs++;
         /*for(auto cl: *updatable_clauses){
             delete cl;
         }
