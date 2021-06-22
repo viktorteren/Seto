@@ -478,6 +478,24 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     //STEP 9
     GreedyRemoval::minimize(fcpn_set,pprg,ER,pre_regions_map);
 
+    //STEP 10
+    auto non_minimal_regions = new set<Region *>();
+    for(auto rec1: *pre_regions_map){
+        for(auto rec2: *post_regions_map){
+            //same event
+            if(rec1.first == rec2.first){
+                for(auto reg1: *rec1.second){
+                    for(auto reg2: *rec2.second){
+                        if(reg1 != reg2){
+                            non_minimal_regions->insert(regions_union(reg1, reg2));
+                            //todo: add new region to pre and post regions maps (if needed)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     string output_name = file;
     while (output_name[output_name.size() - 1] != '.') {
