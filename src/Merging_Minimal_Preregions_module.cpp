@@ -178,7 +178,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             //println(*reg2);
 
                             if(print_step_by_step || decomposition_debug){
-                                cout << "Preregions after the fusion: "<< endl;
+                                cout << "Pre-regions after the fusion: "<< endl;
                                 for (auto el : *tmp_map) {
                                     cout << "event: " << el.first << endl;
                                     for (auto r : *el.second) {
