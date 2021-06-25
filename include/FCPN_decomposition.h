@@ -12,6 +12,7 @@
 
 class FCPN_decomposition {
 private:
+    void computation_with_missing_FCPN();
 
 public:
     FCPN_decomposition(int number_of_events,
