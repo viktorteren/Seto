@@ -480,10 +480,13 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
 
+    cout << "FCPN set size: " << fcpn_set->size() << endl;
+
     do {
         cout << "start calculating with new non minimal regions" << endl;
         auto new_fcpn_set = computation_with_missing_FCPN(pre_regions_map, post_regions_map, regions, pprg, fcpn_set, number_of_events,
                                       file);
+        cout << "FCPN set size after usage of non minimal regions: " << new_fcpn_set->size() << endl;
     }while(new_non_minimal_regions_used);
 
     //STEP 9
@@ -827,18 +830,24 @@ set<set<Region *>*> *FCPN_decomposition::computation_with_missing_FCPN(map<int, 
             //STEP 5
             //cout << "STEP 5" << endl;
             vector<WeightedLit> literals_from_regions = {};
-            literals_from_regions.reserve(minimal_regions->size()); //improves the speed
-            for (int i = 0; i < minimal_regions->size(); i++) {
+            literals_from_regions.reserve(k); //improves the speed
+            for (int i = 0; i < k; i++) {
                 if (not_used_minimal_regions->find((*regions_vector)[i]) != not_used_minimal_regions->end()) {
                     literals_from_regions.emplace_back(1 + i, 1);
+                    //cout << "adding weight 1" << endl;
                 } else {
-                    literals_from_regions.emplace_back(1 + i, 0);
+                    if(non_minimal_regions->find((*regions_vector)[i]) != non_minimal_regions->end()){
+                        literals_from_regions.emplace_back(1 + i, 1);
+                    }
+                    else {
+                        literals_from_regions.emplace_back(1 + i, 0);
+                    }
                 }
             }
 
             int current_value = 1;
             int min = 0;
-            int max = minimal_regions->size();
+            int max = k;
 
             PBConfig config = make_shared<PBConfigClass>();
             VectorClauseDatabase formula(config);
@@ -980,6 +989,10 @@ set<set<Region *>*> *FCPN_decomposition::computation_with_missing_FCPN(map<int, 
                 }
             }
         }
+    }
+
+    if(new_non_minimal_regions_used){
+        cout << "non minimal regions were used" << endl;
     }
 
     return def_fcpn_set;
