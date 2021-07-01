@@ -122,7 +122,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
                             }
                             bool cont = false;
                             for(const auto& reg_set: *(*er_satisfiable_sets)[ev]){
-                                if(contains(reg_set, temp_set)){
+                                if(contains(temp_set, reg_set)){
                                     cont = true;
                                     break;
                                 }
