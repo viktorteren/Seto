@@ -93,7 +93,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
 
     for(auto rec: *pre_regions_map){
         auto ev = rec.first;
-        cout  << "checking ERs for ev: " << ev << endl;
+        //cout  << "checking ERs for ev: " << ev << endl;
         //another event with the same ER has not been checked
         if(checked_ers->find(*(*ER_map)[ev]) == checked_ers->end()) {
             checked_sets = new set<set<Region *>>();
