@@ -329,6 +329,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
             (*cnf_ec_map)[rec.first]->erase(reg_set);
         }
     }
+    delete to_remove;
 
     /*
     cout << "CNF EC MAP" << endl;
@@ -975,6 +976,10 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         delete rec.second;
     }
     delete region_ex_event_map;
+    for(auto rec: *region_ent_event_map){
+        delete rec.second;
+    }
+    delete region_ent_event_map;
 
     /*for(auto cl: *clauses){
         delete cl;
