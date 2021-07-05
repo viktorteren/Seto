@@ -144,13 +144,12 @@ Merge::Merge(set<SM *> *SMs,
 
     bool sat = true;
     vec < lbool > true_model;
-    string dimacs_file;
 
     //iteration in the search of a correct assignment decreasing the total weight
     do {
-        IncPBConstraint constraint(literals_from_events, LEQ,
+        PBConstraint constraint(literals_from_events, LEQ,
                                    current_value); //the sum have to be lesser or equal to current_value
-        pb2cnf.encodeIncInital(constraint, formula, auxvars);
+        pb2cnf.encode(constraint, formula, auxvars);
         int num_clauses_formula = formula.getClauses().size();
         dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                         formula.getClauses(), nullptr);
@@ -238,75 +237,75 @@ Merge::Merge(set<SM *> *SMs,
             regions_to_merge->push_back(regions_connected_to_ev);
         }
 
-        if(regions_to_merge->size()>1) {
-            //union between sets
-            //cout << "union between sets" << endl;
-            for (unsigned long i = 0; i < regions_to_merge->size(); i++) {
-                for (unsigned long k = i + 1; k < regions_to_merge->size(); k++) {
-                    //check if intersection between region sets is empty or not
-                    bool merge = false;
-                    if (!(*regions_to_merge)[i]->empty()) {
-                        merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
-                        if (merge) {
-                            for (Region *reg: *(*regions_to_merge)[i]) {
-                                (*regions_to_merge)[k]->insert(reg);
+        for(auto reg_set: *regions_to_merge) {
+            if (reg_set->size() > 1) {
+                //union between sets
+                //cout << "union between sets" << endl;
+                for (unsigned long i = 0; i < regions_to_merge->size(); i++) {
+                    for (unsigned long k = i + 1; k < regions_to_merge->size(); k++) {
+                        //check if intersection between region sets is empty or not
+                        bool merge = false;
+                        if (!(*regions_to_merge)[i]->empty()) {
+                            merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
+                            if (merge) {
+                                for (Region *reg: *(*regions_to_merge)[i])
+                                    (*regions_to_merge)[k]->insert(reg);
+                                (*regions_to_merge)[i]->clear();
                             }
-                            (*regions_to_merge)[i]->clear();
                         }
                     }
                 }
-            }
-            //merge effettivo tra regioni
-            set<Region *> merged_regions;
-            for (auto regionSet: *regions_to_merge) {
-                merged_regions.insert(regions_union(regionSet));
-            }
+                //merge effettivo tra regioni
+                set<Region *> merged_regions;
+                for (auto regionSet: *regions_to_merge) {
+                    merged_regions.insert(regions_union(regionSet));
+                }
 
 
-            //removing regions used for the merge
-            //cout << "removing regions" << endl;
-            vector<Region *> to_erase;
-            for (Region *reg: *current_SM) {
-                for (Region *mergedReg: merged_regions) {
-                    if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
-                        //cout << "Adding for removal region ";
-                        //println(*reg);
-                        to_erase.push_back(reg);
-                        //current_SM->erase(reg);
+                //removing regions used for the merge
+                //cout << "removing regions" << endl;
+                vector<Region *> to_erase;
+                for (Region *reg: *current_SM) {
+                    for (Region *mergedReg: merged_regions) {
+                        if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
+                            //cout << "Adding for removal region ";
+                            //println(*reg);
+                            to_erase.push_back(reg);
+                            //current_SM->erase(reg);
+                        }
                     }
                 }
-            }
 
-            for (auto reg: to_erase) {
-                //cout << "Removing region ";
-                //println(*reg);
-                current_SM->erase(reg);
-            }
-
-
-            //cout << "adding merged regions" << endl;
-            for (Region *mergedReg: merged_regions) {
-                if (!mergedReg->empty()) {
-                    //cout << "adding a merged region to an SM" << endl;
-                    //println(*mergedReg);
-                    current_SM->insert(mergedReg);
-                } else {
-                    delete mergedReg;
+                for (auto reg: to_erase) {
+                    //cout << "Removing region ";
+                    //println(*reg);
+                    current_SM->erase(reg);
                 }
+
+
+                //cout << "adding merged regions" << endl;
+                for (Region *mergedReg: merged_regions) {
+                    if (!mergedReg->empty()) {
+                        //cout << "adding a merged region to an SM" << endl;
+                        //println(*mergedReg);
+                        current_SM->insert(mergedReg);
+                    } else {
+                        delete mergedReg;
+                    }
+                }
+                //todo: nel caso dell'input clock.g e alloc-outbound.g ci sono memory leak
+                /*for(Region * r: merged_regions){
+                    cout << "removing a region" << endl;
+                    println(*r);
+                    delete r;
+                }*/
+            } else {
+                cout << "Removed redundant label without merging regions" << endl;
             }
-            //todo: nel caso dell'input clock.g e alloc-outbound.g ci sono memory leak
-            /*for(Region * r: merged_regions){
-                cout << "removing a region" << endl;
-                println(*r);
-                delete r;
-            }*/
-        }
-        else{
-            cout << "Removed redundant label without merging regions" << endl;
         }
 
-        for (auto r: *regions_to_merge) {
-            delete r;
+        for (auto reg_set: *regions_to_merge) {
+            delete reg_set;
         }
         delete regions_to_merge;
     }
