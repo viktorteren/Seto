@@ -16,7 +16,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                         const string& file,
                                         Pre_and_post_regions_generator *pprg,
                                         map<int, int> *aliases,
-                                        map<int, ER> *ER) {
+                                        map<int, ER> *ER, int level) {
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -45,13 +45,14 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
-    auto non_minimal_regions = new set<Region *>();
+    auto non_minimal_regions = new set<Region>();
     auto minimal_regions = new set<Region *>();
     for(auto reg: *regions){
         minimal_regions->insert(reg);
     }
     //bool added_new;
-    //do {
+    for(int i=0;i<level;++i) {
+        //do {
         //added_new = false;
         for (auto rec1: *pre_regions_map) {
             for (auto rec2: *post_regions_map) {
@@ -60,17 +61,17 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                     for (auto reg1: *rec1.second) {
                         for (auto reg2: *rec2.second) {
                             if (reg1 != reg2) {
-                                auto reg_union = regions_union(reg1,reg2);
+                                auto reg_union = regions_union(reg1, reg2);
                                 /*bool found = false;
                                 for(auto reg: *non_minimal_regions){
                                     if(*reg == *reg_union){
                                         found = true;
                                     }
                                 }*/
-                                if(reg_union->size() < num_states) {
+                                if (reg_union->size() < num_states) {
                                     //if(!found) {
-                                        non_minimal_regions->insert(reg_union);
-                                        //added_new = true;
+                                    non_minimal_regions->insert(*reg_union);
+                                    //added_new = true;
                                     //}
                                 }
                             }
@@ -80,20 +81,21 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
             }
         }
         for (auto reg: *non_minimal_regions) {
-            regions->insert(reg);
+            regions->insert(&reg);
         }
 
         for (auto rec: *pre_regions_map) {
             auto event = rec.first;
             for (auto reg: *non_minimal_regions) {
-                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg)) {
-                    rec.second->insert(reg);
+                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), &reg)) {
+                    rec.second->insert(&reg);
                 }
             }
         }
         pprg->create_post_regions(pre_regions_map);
         post_regions_map = pprg->get_post_regions();
-    //}while(added_new);
+        //}while(added_new);
+    }
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();

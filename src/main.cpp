@@ -642,7 +642,7 @@ int main(int argc, char **argv) {
                         }
                     }
                     auto fcpn_decomposition_module = new FCPN_decomposition(number_of_events, regions_set, file,
-                                                                     pprg, aliases, new_ER);
+                                                                     pprg, aliases, new_ER, 0);
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete fcpn_decomposition_module;
                 }

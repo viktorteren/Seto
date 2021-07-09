@@ -27,6 +27,7 @@ public:
                        const string& file,
                        Pre_and_post_regions_generator *pprg,
                        map<int, int> *aliases,
-                       map<int, ER> *ER);
+                       map<int, ER> *ER,
+                       int level);
     ~FCPN_decomposition();
 };
