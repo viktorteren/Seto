@@ -135,10 +135,9 @@ namespace Utilities {
 
     set<int> *regions_union(Region *first, Region *second) {
         auto all_states = new Region();
-        int size;
         Region::iterator it;
         it = first->begin();
-        size = static_cast<int>(first->size());
+        int size = static_cast<int>(first->size());
         for (int i = 0; i < size; ++i) {
             all_states->insert(*it);
             ++it;

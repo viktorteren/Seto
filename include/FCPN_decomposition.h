@@ -12,22 +12,14 @@
 
 class FCPN_decomposition {
 private:
-    set<set<Region *>*> *computation_with_missing_FCPN(map<int, set<Region *>*>*pre_regions_map,
-                                       map<int, set<Region *> *>*post_regions_map,
-                                       set<Region *> *regions,
-                                       Pre_and_post_regions_generator *pprg,
-                                       set<set<Region *>*> *fcpn_set,
-                                       int number_of_events,
-                                       const string& file);
-    bool new_non_minimal_regions_used = false;
+    map<int, set<Region> *> *non_minimal_regions_per_level;
 
 public:
-    FCPN_decomposition(int number_of_events,
-                       set<Region*> *regions,
-                       const string& file,
-                       Pre_and_post_regions_generator *pprg,
-                       map<int, int> *aliases,
-                       map<int, ER> *ER,
-                       int level);
+    FCPN_decomposition();
     ~FCPN_decomposition();
+    set<set<Region *> *> *search(int number_of_events,
+                                 set<Region *> *regions,
+                                 const string& file,
+                                 Pre_and_post_regions_generator *pprg,
+                                 map<int, ER> *ER, int level);
 };

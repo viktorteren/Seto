@@ -11,12 +11,15 @@ using namespace Minisat;
 using namespace Utilities;
 
 
-FCPN_decomposition::FCPN_decomposition(int number_of_events,
-                                        set<Region *> *regions,
-                                        const string& file,
-                                        Pre_and_post_regions_generator *pprg,
-                                        map<int, int> *aliases,
-                                        map<int, ER> *ER, int level) {
+FCPN_decomposition::FCPN_decomposition() {
+    non_minimal_regions_per_level = new map<int, set<Region>*>();
+}
+
+set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
+                                                 set<Region *> *regions,
+                                                 const string& file,
+                                                 Pre_and_post_regions_generator *pprg,
+                                                 map<int, ER> *ER, int level){
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -50,8 +53,18 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     for(auto reg: *regions){
         minimal_regions->insert(reg);
     }
+    int base_level = 0;
+    if(!non_minimal_regions_per_level->empty()){
+        for(auto rec: *non_minimal_regions_per_level){
+            if(rec.first > base_level)
+                base_level = rec.first;
+        }
+        for(const auto& reg: *non_minimal_regions_per_level->at(base_level)){
+            non_minimal_regions->insert(reg);
+        }
+    }
     //bool added_new;
-    for(int i=0;i<level;++i) {
+    for(int i=base_level;i<level;++i) {
         //do {
         //added_new = false;
         for (auto rec1: *pre_regions_map) {
@@ -74,6 +87,7 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
                                     //added_new = true;
                                     //}
                                 }
+                                delete reg_union;
                             }
                         }
                     }
@@ -95,6 +109,10 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         pprg->create_post_regions(pre_regions_map);
         post_regions_map = pprg->get_post_regions();
         //}while(added_new);
+    }
+    (*non_minimal_regions_per_level)[level] =  new set<Region>();
+    for(const auto& reg: *non_minimal_regions){
+        (*non_minimal_regions_per_level)[level]->insert(reg);
     }
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
@@ -508,100 +526,12 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
 
-    /*
-    do {
-        cout << "start calculating with new non minimal regions" << endl;
-        auto new_fcpn_set = computation_with_missing_FCPN(pre_regions_map, post_regions_map, regions, pprg, fcpn_set, number_of_events,
-                                      file);
-        cout << "FCPN set size after usage of non minimal regions: " << new_fcpn_set->size() << endl;
-    }while(new_non_minimal_regions_used);*/
-
     //STEP 9
     GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
 
-    //STEP 10
-
-
-    string output_name = file;
-    while (output_name[output_name.size() - 1] != '.') {
-        output_name = output_name.substr(0, output_name.size() - 1);
-    }
-
-    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
-
-    //map with key the pointer to SM
-    auto map_of_PN_pre_regions = new map<SM *, map<int, set<Region *> *> *>();
-    auto map_of_PN_post_regions = new map<SM *, map<int, set<Region *> *> *>();
-
-    for (auto pn: *fcpn_set) {
-        (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *>();
-        for (auto rec: *pprg->get_pre_regions()) {
-            for (auto reg: *rec.second) {
-                if (pn->find(reg) != pn->end()) {
-                    if ((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()) {
-                        (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
-                    }
-                    (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
-                }
-            }
-        }
-        (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
-    }
-    int pn_counter = 0;
-    auto regions_mapping = get_regions_map(pprg->get_pre_regions());
-    for (auto pn: *fcpn_set) {
-        print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
-                            file, pn_counter);
-        pn_counter++;
-    }
-
-    if (decomposition_debug) {
-        cout << "Final FCPNs" << endl;
-        for (auto SM: *fcpn_set) {
-            cout << "FCPN:" << endl;
-            println(*SM);
-        }
-    }
-
-    /*
-    if(decomposition_debug){
-        set<int> used_regions;
-        for(auto pn: *fcpn_set){
-            for(auto reg: *pn){
-                used_regions.insert(regions_mapping->at(reg));
-            }
-        }
-        cout << "Used regions: ";
-        for(auto reg: used_regions){
-            cout << "r" << reg << " ";
-        }
-        cout << endl;
-    }*/
-
-    if (pn_counter == 1) {
-        cout << "1 FCPN" << endl;
-    } else {
-        cout << pn_counter << " FCPNs" << endl;
-    }
-
-    delete regions_mapping;
-
     delete regions_vector;
 
-    for (auto rec: *map_of_PN_pre_regions) {
-        for (auto subset: *rec.second) {
-            delete subset.second;
-        }
-        delete rec.second;
-    }
-    delete map_of_PN_pre_regions;
-    for (auto rec: *map_of_PN_post_regions) {
-        for (auto subset: *rec.second) {
-            delete subset.second;
-        }
-        delete rec.second;
-    }
-    delete map_of_PN_post_regions;
+
 
     for (auto rec: *region_ex_event_map) {
         delete rec.second;
@@ -618,13 +548,6 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
     }
     delete regions_connected_to_labels;
 
-    for (auto pn: *fcpn_set) {
-        delete pn;
-    }
-    delete fcpn_set;
-    /*for(auto res: *results_to_avoid){
-        delete res;
-    }*/
     delete results_to_avoid;
 
     delete reg_map;
@@ -633,406 +556,16 @@ FCPN_decomposition::FCPN_decomposition(int number_of_events,
         delete cl;
     }
     delete clauses;
+
+    delete minimal_regions;
+    delete non_minimal_regions;
+
+    return fcpn_set;
 }
 
-set<set<Region *>*> *FCPN_decomposition::computation_with_missing_FCPN(map<int, set<Region *>*>*pre_regions_map,
-                                   map<int, set<Region *> *>*post_regions_map,
-                                   set<Region *> *regions,
-                                   Pre_and_post_regions_generator *pprg,
-                                   set<set<Region *>*> *fcpn_set,
-                                   int number_of_events,
-                                   const string& file){
-
-    //TODO: implementare il metodo 2 sotto un nuovo branch a partire da questo codice:
-    // si usano regioni minime per la copertura e si cercano FCPN di dimensioni minori rispetto a quella eliminata (aggiungere questo controllo)
-    // se dopo la rimozione di un'FCPN tutte le regioni minimali sono coperte allora l'FCPN può essere ridotta definitivamente
-    // forse qui sbaglio, bisogna prima fa andare l'algoritmo greedy
-    // forse in questo caso non ha senso cercare il punto fisso con le medesime regioni, quest'ultimo potrebbe essere raggiunto con un'iterazione
-    // successiva dove ci sono le unioni nuove delle regioni
-    // questa funzione dovrebbe avere la distinzione tra le vere regioni minimali e le regioni che non sono minimali e non sono
-    // nemmeno l'unione di regioni nel ciclo corrente
-    /*
-     * ALGORITHM
-     * compute non minimal regions
-     * update sat clauses
-     * create clauses for maximization function not the coverage of non minimal regions
-     * remove one FCPN
-     * if EC not satisfied
-     *      clause for the coverage of the missing minimal regions
-     * if the removal of an FCPN does not mean that the coverage is not complete then also non minimal regions have to be used
-     */
-    new_non_minimal_regions_used = false;
-    auto clauses = new vector<vector<int32_t> *>();
-    auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
-    auto non_minimal_regions = new set<Region *>();
-    auto minimal_regions = new set<Region *>();
-    for(auto reg: *regions){
-        minimal_regions->insert(reg);
+FCPN_decomposition::~FCPN_decomposition(){
+    for(auto rec: *non_minimal_regions_per_level){
+        delete rec.second;
     }
-    bool added_new;
-    do {
-        added_new = false;
-        for (auto rec1: *pre_regions_map) {
-            for (auto rec2: *post_regions_map) {
-                //same event
-                if (rec1.first == rec2.first) {
-                    for (auto reg1: *rec1.second) {
-                        for (auto reg2: *rec2.second) {
-                            if (reg1 != reg2) {
-                                auto reg_union = regions_union(reg1,reg2);
-                                if(reg_union->size() < num_states) {
-                                    non_minimal_regions->insert(reg_union);
-                                    added_new = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        for (auto reg: *non_minimal_regions) {
-            regions->insert(reg);
-        }
-
-        for (auto rec: *pre_regions_map) {
-            auto event = rec.first;
-            for (auto reg: *non_minimal_regions) {
-                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg)) {
-                    rec.second->insert(reg);
-                }
-            }
-        }
-        pprg->create_post_regions(pre_regions_map);
-        post_regions_map = pprg->get_post_regions();
-    }while(added_new);
-    auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
-                                                    post_regions_map);
-    int m = number_of_events;
-    int k = regions->size();
-
-    auto region_ex_event_map = new map<Region *, set<int> *>();
-    auto region_ent_event_map = new map<Region *, set<int> *>();
-    for (auto rec: *pre_regions_map) {
-        auto ev = rec.first;
-        for (auto reg: *rec.second) {
-            if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
-                (*region_ex_event_map)[reg] = new set<int>();
-            }
-            (*region_ex_event_map)[reg]->insert(ev);
-        }
-    }
-    for (auto rec: *post_regions_map) {
-        auto ev = rec.first;
-        for (auto reg: *rec.second) {
-            if (region_ent_event_map->find(reg) == region_ent_event_map->end()) {
-                (*region_ent_event_map)[reg] = new set<int>();
-            }
-            (*region_ent_event_map)[reg]->insert(ev);
-        }
-    }
-
-    vector<int32_t> *clause;
-
-    auto reg_map = new map<Region *, int>();
-    auto regions_vector = new vector<Region *>();
-    int temp = 0;
-    for (auto reg: *regions) {
-        (*reg_map)[reg] = temp;
-        regions_vector->push_back(reg);
-        temp++;
-    }
-
-    auto def_fcpn_set = new set<set<Region *>*>();
-    for(auto fcpn: *fcpn_set){
-        def_fcpn_set->insert(fcpn);
-    }
-    bool splitting_constraints_added = false;
-
-    for(auto pn: *fcpn_set){
-        clauses->clear();
-        if (!splitting_constraints_added) {
-            if (!splitting_constraint_clauses->empty()) {
-                splitting_constraint_clauses->clear();
-                cout << "removing splitting constraints" << endl;
-            }
-        }
-        auto results_to_avoid = new vector<set<int>>();
-        auto tmp_set = new set<set<Region *>*>();
-        for(auto tmp_pn: *def_fcpn_set){
-            if(tmp_pn != pn){
-                tmp_set->insert(tmp_pn);
-            }
-        }
-        auto not_used_minimal_regions = new set<Region *>();
-        for(auto reg: *minimal_regions){
-            bool found = false;
-            for(auto p: *tmp_set){
-                if(p->find(reg) != p->end()){
-                    found = true;
-                    break;
-                }
-            }
-            if(!found)
-                not_used_minimal_regions->insert(reg);
-        }
-
-        if(not_used_minimal_regions->empty()){
-            cout << "the removed FCPN is useless" << endl;
-            def_fcpn_set->clear();
-            for(auto pn1: *tmp_set){
-                def_fcpn_set->insert(pn1);
-            }
-        }
-        else {
-            cout << "not used minimal regions size: " << not_used_minimal_regions->size() << endl;
-            for (auto cl: *clauses) {
-                delete cl;
-            }
-            clauses->clear();
-
-            //STEP 2
-            //cout << "STEP 2" << endl;
-            /*
-             * ALGORITMO:
-             *      per ogni ev
-             *          per ogni r=pre(ev) -> posto/regione
-             *              se r ha più di un evento in uscita
-             *                  per ogni coppia (r, pre(ev))
-             *                      se r != pre(ev)
-             *                          crea clausola (!r v !pre(ev))
-             */
-            //for each ev
-            for (auto rec: *pre_regions_map) {
-                //auto ev = rec.first;
-                auto set_of_regions = rec.second;
-                for (auto r: *set_of_regions) {
-                    if ((*region_ex_event_map)[r]->size() > 1) {
-                        for (auto r2: *set_of_regions) {
-                            if (r != r2) {
-                                clause = new vector<int32_t>();
-                                clause->push_back(-(*reg_map)[r] - 1);
-                                clause->push_back(-(*reg_map)[r2] - 1);
-                                clauses->push_back(clause);
-                                //print_clause(clause);
-                            }
-                        }
-                    }
-                }
-            }
-
-            //STEP 4
-            for (auto rec:*region_ex_event_map) {
-                auto reg = rec.first;
-                for (auto ev: *rec.second) {
-                    int region_encoding = 1 + reg_map->at(reg);
-                    auto ev_encoding = k + 2 + ev;
-                    clause = new vector<int32_t>();
-                    clause->push_back(-region_encoding);
-                    clause->push_back(ev_encoding);
-                    clauses->push_back(clause);
-                }
-            }
-            for (auto rec:*region_ent_event_map) {
-                auto reg = rec.first;
-                int region_encoding = 1 + reg_map->at(reg);
-                for (auto ev: *rec.second) {
-                    auto ev_encoding = k + 2 + ev;
-                    clause = new vector<int32_t>();
-                    clause->push_back(-region_encoding);
-                    clause->push_back(ev_encoding);
-                    clauses->push_back(clause);
-                }
-            }
-
-            //STEP 4b
-            for (auto rec: *pre_regions_map) {
-                auto ev = rec.first;
-                auto ev_encoding = k + 2 + ev;
-                clause = new vector<int32_t>();
-                clause->push_back(-ev_encoding);
-                for (auto reg: *rec.second) {
-                    int region_encoding = 1 + reg_map->at(reg);
-                    clause->push_back(region_encoding);
-                }
-                clauses->push_back(clause);
-            }
-            for (auto rec: *post_regions_map) {
-                auto ev = rec.first;
-                auto ev_encoding = k + 2 + ev;
-                clause = new vector<int32_t>();
-                clause->push_back(-ev_encoding);
-                for (auto reg: *rec.second) {
-                    int region_encoding = 1 + reg_map->at(reg);
-                    clause->push_back(region_encoding);
-                }
-                clauses->push_back(clause);
-            }
-
-            //STEP 5
-            //cout << "STEP 5" << endl;
-            vector<WeightedLit> literals_from_regions = {};
-            literals_from_regions.reserve(k); //improves the speed
-            for (int i = 0; i < k; i++) {
-                if (not_used_minimal_regions->find((*regions_vector)[i]) != not_used_minimal_regions->end()) {
-                    literals_from_regions.emplace_back(1 + i, 1);
-                    //cout << "adding weight 1" << endl;
-                } else {
-                    literals_from_regions.emplace_back(1 + i, 0);
-                }
-            }
-
-            int current_value = 1;
-            int min = 0;
-            int max = k;
-
-            PBConfig config = make_shared<PBConfigClass>();
-            VectorClauseDatabase formula(config);
-            PB2CNF pb2cnf(config);
-            AuxVarManager auxvars(k + m + 2);
-            for (auto cl: *clauses) {
-                formula.addClause(*cl);
-            }
-            /*
-            for (auto cl: *splitting_constraint_clauses) {
-                formula.addClause(*cl);
-            }*/
-            Minisat::Solver solver;
-
-            bool sat;
-            string dimacs_file;
-            bool exists_solution = false;
-
-            auto last_solution = new set<int>();
-            //iteration in the search of a correct assignment decreasing the total weight
-            do {
-                IncPBConstraint constraint(literals_from_regions, GEQ,
-                                           current_value); //the sum have to be greater or equal to current_value
-                pb2cnf.encodeIncInital(constraint, formula, auxvars);
-                int num_clauses_formula = formula.getClauses().size();
-                //cout << "formula 1" << endl;
-                //formula.printFormula(cout);
-                dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                                formula.getClauses(), results_to_avoid);
-                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
-                if (sat) {
-                    exists_solution = true;
-                    if (decomposition_debug) {
-                        cout << "SAT with value " << current_value << ": representing the number of new covered regions"
-                             << endl;
-                        cout << "Model: ";
-                    }
-                    last_solution->clear();
-                    for (int i = 0; i < solver.nVars(); ++i) {
-                        if (solver.model[i] != l_Undef) {
-                            if (decomposition_debug) {
-                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
-                                        i + 1);
-                            }
-                            if (i < k) {
-                                if (solver.model[i] == l_True) {
-                                    last_solution->insert(i + 1);
-                                } else {
-                                    last_solution->insert(-i - 1);
-                                }
-                            }
-                        }
-                    }
-                    if (decomposition_debug)
-                        cout << endl;
-                    min = current_value;
-                } else {
-                    if (decomposition_debug) {
-                        //cout << "----------" << endl;
-                        cout << "UNSAT with value " << current_value << endl;
-                        if (exists_solution) {
-                            cout << "Model: ";
-                            for (int i = 0; i < solver.nVars(); ++i) {
-                                if (solver.model[i] != l_Undef) {
-                                    fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ",
-                                            (solver.model[i] == l_True) ? "" : "-",
-                                            i + 1);
-                                }
-                            }
-                            cout << endl;
-                        }
-                    }
-                    max = current_value;
-                }
-                current_value = (min + max) / 2;
-            } while ((max - min) > 1);
-
-            if (exists_solution) {
-                set<Region *> prova_PN;
-                /*if(decomposition_debug)
-                    cout << "output model:" << endl;*/
-                //STEP 7
-                auto temp_PN = new set<Region *>();
-                for (auto r_index: *last_solution) {
-                    if (r_index > 0) {
-                        temp_PN->insert((*regions_vector)[r_index - 1]);
-                    }
-                }
-                splitting_constraints_added = false;
-                //todo: don't forget the memory leaks -> have to check with valgrind
-                auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
-                if (new_temp_set->size() > 1) {
-                    int min_size = (*new_temp_set)[0].size();
-                    int pos = 0;
-                    for (int i = 1; i < new_temp_set->size(); i++) {
-                        if ((*new_temp_set)[i].size() < min_size) {
-                            min_size = (*new_temp_set)[i].size();
-                            pos = i;
-                        }
-                    }
-                    clause = new vector<int32_t>();
-                    for (auto reg: (*new_temp_set)[pos]) {
-                        cout << "added a new constraint" << endl;
-                        clause->push_back(-1 + reg_map->at(reg));
-                    }
-                    splitting_constraint_clauses->push_back(clause);
-                    /*
-                    for(auto tmp_set: *new_temp_set){
-                        //fcpn_set->insert(tmp_set);
-                        delete tmp_set;
-                    }*/
-                    delete temp_PN;
-                    splitting_constraints_added = true;
-                } else {
-
-                    /*
-                    for(auto tmp_set: *new_temp_set){
-                        delete tmp_set;
-                    }*/
-                    delete new_temp_set;
-                    fcpn_set->insert(temp_PN);
-                    cout << "adding new fcpn to solutions" << endl;
-                }
-                results_to_avoid->push_back(*last_solution);
-
-                formula.clearDatabase();
-            } else {
-                cout << "no solution found" << endl;
-                exit(0);
-            }
-        }
-    }
-    for(auto reg: *non_minimal_regions){
-        if(!new_non_minimal_regions_used) {
-            for (auto pn: *def_fcpn_set) {
-                if (pn->find(reg) != pn->end()) {
-                    new_non_minimal_regions_used = true;
-                    break;
-                }
-            }
-        }
-    }
-
-    if(new_non_minimal_regions_used){
-        cout << "non minimal regions were used" << endl;
-    }
-
-    return def_fcpn_set;
-
-}
-
-FCPN_decomposition::~FCPN_decomposition()= default;
+    delete non_minimal_regions_per_level;
+};
