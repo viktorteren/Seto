@@ -648,6 +648,8 @@ int main(int argc, char **argv) {
                     do {
                         (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, regions_set, file,
                                                                                    pprg, new_ER, level);
+                        if(results_map->at(level)->size() == 1)
+                            exit = true;
                         if(level > 0){
                             if(results_map->at(level)->size() == results_map->at(level-1)->size())
                                 exit = true;
@@ -731,6 +733,9 @@ int main(int argc, char **argv) {
                     }
                     delete map_of_PN_post_regions;
                     delete regions_mapping;
+
+                    cout << "RESULT LEVEL: " << index_min << endl;
+                    cout << "MAX LEVEL: " << level -1 << endl;
 
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete fcpn_decomposition_module;
