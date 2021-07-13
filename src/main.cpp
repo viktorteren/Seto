@@ -655,7 +655,7 @@ int main(int argc, char **argv) {
                                 exit = true;
                         }
                         level++;
-                    }while(level <= 4 && !exit);
+                    } while(level <= 1 && !exit);
                     int min = results_map->at(0)->size();
                     int index_min = 0;
                     for(int i = 1; i<level;++i){

@@ -53,6 +53,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
     auto non_minimal_regions = new set<Region *>();
+    auto new_non_minimal_regions = new set<Region *>();
     auto minimal_regions = new set<Region *>();
     for(auto reg: regions){
         minimal_regions->insert(reg);
@@ -66,6 +67,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         }
         for(auto reg: *non_minimal_regions_per_level->at(base_level)){
             non_minimal_regions->insert(reg);
+            regions_copy->insert(reg);
         }
     }
     //bool added_new;
@@ -82,14 +84,24 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                                 auto reg_union = regions_union(reg1, reg2);
                                 if (reg_union->size() < num_states) {
                                     bool found = false;
-                                    for(auto reg: *non_minimal_regions){
+                                    for(auto reg: *new_non_minimal_regions){
                                         if(*reg == *reg_union){
                                             found = true;
+                                            //cout << "found" << endl;
                                             break;
                                         }
                                     }
                                     if(!found) {
-                                        non_minimal_regions->insert(reg_union);
+                                        for (auto reg: *non_minimal_regions) {
+                                            if (*reg == *reg_union) {
+                                                found = true;
+                                                //cout << "found" << endl;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if(!found) {
+                                        new_non_minimal_regions->insert(reg_union);
                                     }
                                     else{
                                         delete reg_union;
@@ -107,7 +119,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
         for (auto rec: *pre_regions_map) {
             auto event = rec.first;
-            for (auto reg: *non_minimal_regions) {
+            for (auto reg: *new_non_minimal_regions) {
                 if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg)) {
                     rec.second->insert(reg);
                 }
@@ -121,11 +133,13 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     for(const auto& reg: *non_minimal_regions){
         (*non_minimal_regions_per_level)[level]->insert(reg);
     }
-    for(auto reg: *non_minimal_regions){
+    for(const auto& reg: *new_non_minimal_regions){
+        (*non_minimal_regions_per_level)[level]->insert(reg);
+    }
+    for(auto reg: *new_non_minimal_regions){
         regions_copy->insert(reg);
     }
-    /*
-    for(auto rec: *pre_regions_map){
+    /*for(auto rec: *pre_regions_map){
         cout << "ev: " << rec.first << " size: " << rec.second->size() << endl;
     }*/
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
@@ -531,10 +545,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
 
-    cout << "FCPN set size: " << fcpn_set->size() << endl;
-
     //STEP 9
     GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+
+    cout << "FCPN set size: " << fcpn_set->size() << endl;
 
     delete regions_vector;
 
