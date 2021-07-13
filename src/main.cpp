@@ -648,7 +648,7 @@ int main(int argc, char **argv) {
                     do {
                         (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
                                                                                    pprg, new_ER, level);
-                        if(results_map->at(level)->size() == 1)
+                        if(results_map->at(level)->size() <= 2)
                             exit = true;
                         if(level > 0){
                             if(results_map->at(level)->size() == results_map->at(level-1)->size())
