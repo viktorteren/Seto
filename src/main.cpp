@@ -646,7 +646,7 @@ int main(int argc, char **argv) {
                     bool exit = false;
                     auto results_map = new map<int, set<set<Region *>*>*>(); // (level, set of FCPNs)
                     do {
-                        (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, regions_set, file,
+                        (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
                                                                                    pprg, new_ER, level);
                         if(results_map->at(level)->size() == 1)
                             exit = true;

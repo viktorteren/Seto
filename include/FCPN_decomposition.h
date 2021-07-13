@@ -18,7 +18,7 @@ public:
     FCPN_decomposition();
     ~FCPN_decomposition();
     set<set<Region *> *> *search(int number_of_events,
-                                 set<Region *> *regions,
+                                 const set<Region *>& regions,
                                  const string& file,
                                  Pre_and_post_regions_generator *pprg,
                                  map<int, ER> *ER, int level);

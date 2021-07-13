@@ -16,7 +16,7 @@ FCPN_decomposition::FCPN_decomposition() {
 }
 
 set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
-                                                 set<Region *> *regions,
+                                                 const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
                                                  map<int, ER> *ER, int level){
@@ -46,14 +46,19 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
      */
 
     cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
+    auto regions_copy = new set<Region *>();
+    for(auto reg: regions){
+        regions_copy->insert(reg);
+    }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
     auto non_minimal_regions = new set<Region>();
     auto minimal_regions = new set<Region *>();
-    for(auto reg: *regions){
+    for(auto reg: regions){
         minimal_regions->insert(reg);
     }
     int base_level = 0;
+
     if(!non_minimal_regions_per_level->empty()){
         for(auto rec: *non_minimal_regions_per_level){
             if(rec.first > base_level)
@@ -94,9 +99,6 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                 }
             }
         }
-        for (auto reg: *non_minimal_regions) {
-            regions->insert(&reg);
-        }
 
         for (auto rec: *pre_regions_map) {
             auto event = rec.first;
@@ -110,9 +112,12 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         post_regions_map = pprg->get_post_regions();
         //}while(added_new);
     }
-    (*non_minimal_regions_per_level)[level] =  new set<Region>();
+    /*(*non_minimal_regions_per_level)[level] =  new set<Region>();
     for(const auto& reg: *non_minimal_regions){
         (*non_minimal_regions_per_level)[level]->insert(reg);
+    }*/
+    for(auto reg: *non_minimal_regions){
+        regions_copy->insert(&reg);
     }
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
@@ -146,7 +151,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     auto reg_map = new map<Region *, int>();
     auto regions_vector = new vector<Region *>();
     int temp = 0;
-    for (auto reg: *regions) {
+    for (auto reg: *regions_copy) {
         (*reg_map)[reg] = temp;
         regions_vector->push_back(reg);
         temp++;
@@ -161,7 +166,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     //encoding: [1, k] regions range: k regions
     //encoding: [k+1, k+m+1] events range: m events
     int m = number_of_events;
-    int k = regions->size();
+    int k = regions_copy->size();
     bool excitation_closure;
     bool splitting_constraints_added = false;
 
@@ -480,21 +485,20 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                 delete temp_PN;
                 splitting_constraints_added = true;
             } else {
+
                 for (auto val: *last_solution) {
                     if (val > 0) {
                         /*if(decomposition_debug) {
                             cout << val << ": ";
                             println(*regions_vector->at(val - 1));
                         }*/
-                        if (val <= k)
-                            if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
-                                not_used_regions->erase(regions_vector->at(val - 1));
+                        if (val <= k) {
+                            if(temp_PN->find(regions_vector->at(val - 1)) != temp_PN->end())
+                                if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
+                                    not_used_regions->erase(regions_vector->at(val - 1));
+                        }
                     }
                 }
-                /*
-                for(auto tmp_set: *new_temp_set){
-                    delete tmp_set;
-                }*/
                 delete new_temp_set;
                 fcpn_set->insert(temp_PN);
                 cout << "adding new fcpn to solutions" << endl;
@@ -559,6 +563,8 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     delete minimal_regions;
     delete non_minimal_regions;
+
+    delete regions_copy;
 
     return fcpn_set;
 }
