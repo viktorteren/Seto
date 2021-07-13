@@ -12,7 +12,7 @@
 
 class FCPN_decomposition {
 private:
-    map<int, set<Region> *> *non_minimal_regions_per_level;
+    map<int, set<Region*> *> *non_minimal_regions_per_level;
 
 public:
     FCPN_decomposition();

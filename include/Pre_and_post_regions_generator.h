@@ -14,6 +14,7 @@ public:
   map<int, set<Region *> *> *get_pre_regions();
   map<int, set<Region *> *> *get_post_regions();
   static bool is_pre_region(Edges_list *list, Region *region);
+  static bool is_pre_region(const Edges_list& list, Region region);
   void create_post_regions(map<int, set<Region *> *> *merged_pre_regions);
   map<int, Region *> *create_post_regions_for_SM(map<int, set<Region *> *> *pre_regions_SM);
   map<int, Region *> *create_post_regions_for_SM(map<int, Region *> *pre_regions_SM);

@@ -65,6 +65,20 @@ bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
   return false;
 }
 
+bool Pre_and_post_regions_generator::is_pre_region(const Edges_list& list,
+                                                   Region region) {
+    //cout << "regione (is_pre_region)" << endl;
+    //println(*region);
+    for (auto t : list) {
+        if (region.find(t->first) !=
+            region.end()) { // il primo stato appartiene alla regione
+            if (region.find(t->second) == region.end())
+                return true;
+        }
+    }
+    return false;
+}
+
 bool Pre_and_post_regions_generator::is_post_region(Edges_list *list,
                                                     Region *region) {
     for (auto t : *list) {

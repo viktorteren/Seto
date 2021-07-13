@@ -12,7 +12,7 @@ using namespace Utilities;
 
 
 FCPN_decomposition::FCPN_decomposition() {
-    non_minimal_regions_per_level = new map<int, set<Region>*>();
+    non_minimal_regions_per_level = new map<int, set<Region*>*>();
 }
 
 set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
@@ -52,7 +52,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
-    auto non_minimal_regions = new set<Region>();
+    auto non_minimal_regions = new set<Region *>();
     auto minimal_regions = new set<Region *>();
     for(auto reg: regions){
         minimal_regions->insert(reg);
@@ -64,7 +64,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             if(rec.first > base_level)
                 base_level = rec.first;
         }
-        for(const auto& reg: *non_minimal_regions_per_level->at(base_level)){
+        for(auto reg: *non_minimal_regions_per_level->at(base_level)){
             non_minimal_regions->insert(reg);
         }
     }
@@ -80,19 +80,24 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                         for (auto reg2: *rec2.second) {
                             if (reg1 != reg2) {
                                 auto reg_union = regions_union(reg1, reg2);
-                                /*bool found = false;
-                                for(auto reg: *non_minimal_regions){
-                                    if(*reg == *reg_union){
-                                        found = true;
-                                    }
-                                }*/
                                 if (reg_union->size() < num_states) {
-                                    //if(!found) {
-                                    non_minimal_regions->insert(*reg_union);
-                                    //added_new = true;
-                                    //}
+                                    bool found = false;
+                                    for(auto reg: *non_minimal_regions){
+                                        if(*reg == *reg_union){
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if(!found) {
+                                        non_minimal_regions->insert(reg_union);
+                                    }
+                                    else{
+                                        delete reg_union;
+                                    }
                                 }
-                                delete reg_union;
+                                else{
+                                    delete reg_union;
+                                }
                             }
                         }
                     }
@@ -103,8 +108,8 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         for (auto rec: *pre_regions_map) {
             auto event = rec.first;
             for (auto reg: *non_minimal_regions) {
-                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), &reg)) {
-                    rec.second->insert(&reg);
+                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg)) {
+                    rec.second->insert(reg);
                 }
             }
         }
@@ -112,13 +117,17 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         post_regions_map = pprg->get_post_regions();
         //}while(added_new);
     }
-    /*(*non_minimal_regions_per_level)[level] =  new set<Region>();
+    (*non_minimal_regions_per_level)[level] =  new set<Region*>();
     for(const auto& reg: *non_minimal_regions){
         (*non_minimal_regions_per_level)[level]->insert(reg);
-    }*/
-    for(auto reg: *non_minimal_regions){
-        regions_copy->insert(&reg);
     }
+    for(auto reg: *non_minimal_regions){
+        regions_copy->insert(reg);
+    }
+    /*
+    for(auto rec: *pre_regions_map){
+        cout << "ev: " << rec.first << " size: " << rec.second->size() << endl;
+    }*/
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
@@ -449,9 +458,6 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         }
 
         if (exists_solution) {
-            set<Region *> prova_PN;
-            /*if(decomposition_debug)
-                cout << "output model:" << endl;*/
             //STEP 7
             auto temp_PN = new set<Region *>();
             for (auto r_index: *last_solution) {
@@ -477,15 +483,9 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                     clause->push_back(-1 + reg_map->at(reg));
                 }
                 splitting_constraint_clauses->push_back(clause);
-                /*
-                for(auto tmp_set: *new_temp_set){
-                    //fcpn_set->insert(tmp_set);
-                    delete tmp_set;
-                }*/
                 delete temp_PN;
                 splitting_constraints_added = true;
             } else {
-
                 for (auto val: *last_solution) {
                     if (val > 0) {
                         /*if(decomposition_debug) {
@@ -499,10 +499,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                         }
                     }
                 }
-                delete new_temp_set;
                 fcpn_set->insert(temp_PN);
                 cout << "adding new fcpn to solutions" << endl;
             }
+            delete new_temp_set;
             results_to_avoid->push_back(*last_solution);
 
             if (!splitting_constraints_added) {
@@ -524,6 +524,9 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         delete last_solution;
     } while (!excitation_closure);
 
+    for(auto cl: *splitting_constraint_clauses){
+        delete cl;
+    }
     delete splitting_constraint_clauses;
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
