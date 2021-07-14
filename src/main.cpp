@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
             pre_regions = pprg->get_pre_regions();
 
             if (print_step_by_step && !info) {
-                cout << "Preregions:" << endl;
+                cout << "Pre-regions:" << endl;
                 for (auto rec: *pre_regions) {
                     cout << "event: " << rec.first << endl;
                     for (auto reg: *rec.second) {

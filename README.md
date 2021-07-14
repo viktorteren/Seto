@@ -103,8 +103,6 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>O</b>: write output FCPNs in .dot extension
 
-<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
-
 #### Approximated algorithm (recommended):
 
 ```Bash
@@ -118,8 +116,6 @@ Independently by the used flags, after each execution the stats.csv file is upda
 <b>D</b>: debug info mode
 
 <b>O</b>: write output FCPNs in .dot extension
-
-<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
 <b>MIN</b>: once found a minimum number of FCPNs perform a minimization on the set of regions
 <b>(not recommended)</b>
