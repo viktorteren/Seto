@@ -53,22 +53,33 @@ Pre_and_post_regions_generator::~Pre_and_post_regions_generator() {
 
 bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
                                                    Region *region) {
-  //cout << "regione (is_pre_region)" << endl;
-  //println(*region);
-  for (auto t : *list) {
-    if (region->find(t->first) !=
-        region->end()) { // il primo stato appartiene alla regione
-      if (region->find(t->second) == region->end())
-        return true;
+    //cout << "regione (is_pre_region)" << endl;
+    //println(*region);
+    for (auto t : *list) {
+        if (region->find(t->first) != region->end()) { // il primo stato appartiene alla regione
+            if (region->find(t->second) == region->end())
+                return true;
+        }
     }
-  }
-  return false;
+    return false;
+}
+
+bool Pre_and_post_regions_generator::is_pre_region(const Edges_list& list,
+                                                   Region region) {
+    //cout << "regione (is_pre_region)" << endl;
+    //println(*region);
+    for (auto t : list) {
+        if (region.find(t->first) !=
+            region.end()) { // il primo stato appartiene alla regione
+            if (region.find(t->second) == region.end())
+                return true;
+        }
+    }
+    return false;
 }
 
 bool Pre_and_post_regions_generator::is_post_region(Edges_list *list,
                                                     Region *region) {
-    /*cout<<"regione (is_post_region)"<<endl;
-    println(*region);*/
     for (auto t : *list) {
         if (region->find(t->first) == region->end()) { // il primo stato non appartiene alla regione
             if (region->find(t->second) != region->end())
@@ -83,6 +94,12 @@ void Pre_and_post_regions_generator::create_post_regions(map<int, set<Region *> 
     // is_post_region
     //cout << "mappa pre-regioni :" << endl;
     //print(*merged_pre_regions);
+    if(post_regions != nullptr){
+        for(auto rec: *post_regions){
+            delete rec.second;
+        }
+        delete post_regions;
+    }
     post_regions = new map<int, set<Region *> *>();
     for (auto rec : *merged_pre_regions) {
         for (auto reg : *rec.second) {

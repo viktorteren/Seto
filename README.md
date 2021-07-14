@@ -59,7 +59,7 @@ Quick way (requirese graphviz library) with .ps file creation
 #### Simple way
 
 ```Bash
-./TS_splitter <file_path> <optional_flags>
+./TS_splitter <file_path> PN <optional_flags>
 ```
 #### Optional flags:
 

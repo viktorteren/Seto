@@ -641,8 +641,102 @@ int main(int argc, char **argv) {
                             region_mapping(reg);
                         }
                     }
-                    auto fcpn_decomposition_module = new FCPN_decomposition(number_of_events, regions_set, file,
-                                                                     pprg, aliases, new_ER);
+                    auto fcpn_decomposition_module = new FCPN_decomposition();
+                    int level = 0;
+                    bool exit = false;
+                    auto results_map = new map<int, set<set<Region *>*>*>(); // (level, set of FCPNs)
+                    do {
+                        (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
+                                                                                   pprg, new_ER, level);
+                        if(results_map->at(level)->size() <= 2)
+                            exit = true;
+                        if(level > 0){
+                            if(results_map->at(level)->size() == results_map->at(level-1)->size())
+                                exit = true;
+                        }
+                        level++;
+                    } while(level <= 1 && !exit);
+                    int min = results_map->at(0)->size();
+                    int index_min = 0;
+                    for(int i = 1; i<level;++i){
+                        if(results_map->at(i)->size() < min) {
+                            min = results_map->at(i)->size();
+                            index_min = i;
+                        }
+                    }
+
+                    auto final_fcpn_set = results_map->at(index_min);
+
+                    string output_name = file;
+                    while (output_name[output_name.size() - 1] != '.') {
+                        output_name = output_name.substr(0, output_name.size() - 1);
+                    }
+
+                    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
+
+                    //map with key the pointer to SM
+                    auto map_of_PN_pre_regions = new map<SM *, map<int, set<Region *> *> *>();
+                    auto map_of_PN_post_regions = new map<SM *, map<int, set<Region *> *> *>();
+
+                    for (auto pn: *final_fcpn_set) {
+                        (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *>();
+                        for (auto rec: *pprg->get_pre_regions()) {
+                            for (auto reg: *rec.second) {
+                                if (pn->find(reg) != pn->end()) {
+                                    if ((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()) {
+                                        (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
+                                    }
+                                    (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
+                                }
+                            }
+                        }
+                        (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
+                    }
+                    int pn_counter = 0;
+                    auto regions_mapping = get_regions_map(pprg->get_pre_regions());
+                    for (auto pn: *final_fcpn_set) {
+                        print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
+                                            file, pn_counter);
+                        pn_counter++;
+                    }
+
+                    if (decomposition_debug) {
+                        cout << "Final FCPNs" << endl;
+                        for (auto SM: *final_fcpn_set) {
+                            cout << "FCPN:" << endl;
+                            println(*SM);
+                        }
+                    }
+
+                    if (pn_counter == 1) {
+                        cout << "1 FCPN" << endl;
+                    } else {
+                        cout << pn_counter << " FCPNs" << endl;
+                    }
+
+                    for(auto rec: *results_map){
+                        delete rec.second;
+                    }
+                    delete results_map;
+                    for (auto rec: *map_of_PN_pre_regions) {
+                        for (auto subset: *rec.second) {
+                            delete subset.second;
+                        }
+                        delete rec.second;
+                    }
+                    delete map_of_PN_pre_regions;
+                    for (auto rec: *map_of_PN_post_regions) {
+                        for (auto subset: *rec.second) {
+                            delete subset.second;
+                        }
+                        delete rec.second;
+                    }
+                    delete map_of_PN_post_regions;
+                    delete regions_mapping;
+
+                    cout << "RESULT LEVEL: " << index_min << endl;
+                    cout << "MAX LEVEL: " << level -1 << endl;
+
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete fcpn_decomposition_module;
                 }
