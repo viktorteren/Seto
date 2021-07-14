@@ -31,6 +31,8 @@ int main(int argc, char **argv) {
         decomposition_debug = false;
         decomposition_output = false;
         benchmark_script = false;
+        no_fcpn_min = true;
+        only_minimal_regions = false;
         fcptnet = false;
         pn_synthesis = false;
         for(int i=2; i < argc; i++) {
@@ -92,8 +94,11 @@ int main(int argc, char **argv) {
                 info = true;
                 print_step_by_step = true;
             }
-            else if(args[i] == "NOMIN"){
-                no_fcpn_min = true;
+            else if(args[i] == "MIN"){
+                no_fcpn_min = false;
+            }
+            else if(args[i] == "ONLYMIN"){
+                only_minimal_regions = true;
             }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
@@ -648,6 +653,8 @@ int main(int argc, char **argv) {
                     do {
                         (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
                                                                                    pprg, new_ER, level);
+                        if(only_minimal_regions)
+                            exit = true;
                         if(results_map->at(level)->size() <= 2)
                             exit = true;
                         if(level > 0){

@@ -63,11 +63,11 @@ Quick way (requirese graphviz library) with .ps file creation
 ```
 #### Optional flags:
 
-D: debug mode
+<b>D</b>: debug mode
 
-S: verbose info mode
+<b>S</b>: verbose info mode
 
---INFO: base info are shown related to the time for the generation of the regions, also are shown N. of transitions, states, regions etc.
+<b>--INFO</b>: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
 Independently by the used flags, after each execution the stats.csv file is updated.
 
@@ -81,13 +81,13 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <!--L: creation of a log file-->
 
-D: debug info mode
+<b>D</b>: debug info mode
 
-O: write output SMs in .dot extension
+<b>O</b>: write output SMs in .dot extension
 
-G: write output SMs in .g extension
+<b>G</b>: write output SMs in .g extension
 
--ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
 ### c) TS to interacting FCPNs flows
 
@@ -97,6 +97,14 @@ G: write output SMs in .g extension
 ./TS_splitter <file_path> KFC <optional_flags>
 ```
 
+#### Optional flags:
+
+<b>D</b>: debug info mode
+
+<b>O</b>: write output FCPNs in .dot extension
+
+<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+
 #### Approximated algorithm (recommended):
 
 ```Bash
@@ -105,14 +113,16 @@ G: write output SMs in .g extension
 
 #### Optional flags:
 
-D: debug info mode
+<b>ONLYMIN</b>: use only minimal regons during the search of new FCPNs
 
-O: write output SMs in .dot extension
+<b>D</b>: debug info mode
 
--ALL: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+<b>O</b>: write output FCPNs in .dot extension
 
-NOMIN: once found a minimum number of FCPNs does not perform any minimization on the set of regions
-<b>(recommended for a faster execution)</b>
+<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+
+<b>MIN</b>: once found a minimum number of FCPNs perform a minimization on the set of regions
+<b>(not recommended)</b>
 
 ### d) Combined flows
 
@@ -152,7 +162,7 @@ Creation of .dot extension ECTS file starting from .g or .ts extension TS.
 PN visualization
 ----------------
 
-Graphviz library is required!
+<b>Graphviz library is required!</b>
 
 ```bash
 dot -Tps filename.dot -o outfile.ps
@@ -164,15 +174,18 @@ Known restrictions
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
 2) There is any check on .ts inputs.
 
+<!--
 Known issues
 ------------------
+-->
 
 ## License ##
 
 >BSD 3-Clause License
 >
->TStoPN flow -- Copyright (c) 2018, Viktor Teren, Valentina Napoletani
-TS decomposition flow -- Copyright (c) 2019, Viktor Teren
+>TStoPN flow -- Copyright (c) 2018, Viktor Teren, Valentina Napoletani All rights reserved.
+>
+>TS decomposition flow -- Copyright (c) 2019, Viktor Teren
 All rights reserved.
 >
 >Redistribution and use in source and binary forms, with or without

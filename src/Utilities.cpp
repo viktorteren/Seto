@@ -17,6 +17,7 @@ bool python_all;
 bool ts_output;
 bool ects_output;
 bool k_fcpn_decomposition;
+bool only_minimal_regions;
 //bool log_file;
 bool info;
 bool fcptnet;
