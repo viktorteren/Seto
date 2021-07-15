@@ -116,7 +116,7 @@ set<int> *Place_irredundant_pn_creation_module::calculate_events_without_essenti
     return events;
 }
 
-bool Place_irredundant_pn_creation_module::irredundant_set_of_regions(set<Region *> *irredundant_regions_set) {
+__attribute__((unused)) bool Place_irredundant_pn_creation_module::irredundant_set_of_regions(set<Region *> *irredundant_regions_set) {
     auto candidate_set_of_regions = new set<Region *>(*irredundant_regions_set);
     //unione tra le regioni essenziali e quelle irridondanti
     candidate_set_of_regions->insert(essential_regions->begin(), essential_regions->end());

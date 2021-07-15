@@ -6,8 +6,6 @@
 #include <include/Pre_and_post_regions_generator.h>
 #include "../include/GreedyRemoval.h"
 
-using namespace PBLib;
-using namespace Minisat;
 using namespace Utilities;
 
 void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_generator *pprg, map<int, ER> *new_ER, map<int, set<Region *> *> *pre_regions){

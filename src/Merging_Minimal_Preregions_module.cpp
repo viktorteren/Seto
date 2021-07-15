@@ -14,7 +14,7 @@ Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
     merged_pre_regions_map = merging_preregions(ER);
 }
 
-Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
+__attribute__((unused)) Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
                                                                     map<int, set<Region *> *> *preregions,
                                                                     map<int, ER> *ER,
                                                                     bool gen) {
@@ -128,7 +128,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                 if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
                                     tmp_set->insert(reg_union);
                                     auto intersection = regions_intersection(tmp_set);
-                                    auto er = ER_map->at(event);
+                                    auto new_er = ER_map->at(event);
 
                                     /* cout << "intersection:" << endl;
                                      println(*intersection);*/
@@ -137,7 +137,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                     //println(*er);
 
                                     // controlla ec ER(ev)==intersec(prereg(ev))
-                                    ec_and_pre_region = are_equal(intersection, er);
+                                    ec_and_pre_region = are_equal(intersection, new_er);
                                     //cout << "ec and pre region = " << ec_and_pre_region << endl;
 
                                     delete intersection;

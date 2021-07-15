@@ -504,4 +504,4 @@ FCPN_decomposition::~FCPN_decomposition(){
         delete rec.second;
     }
     delete non_minimal_regions_per_level;
-};
+}

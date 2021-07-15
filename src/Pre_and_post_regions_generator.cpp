@@ -64,7 +64,7 @@ bool Pre_and_post_regions_generator::is_pre_region(Edges_list *list,
     return false;
 }
 
-bool Pre_and_post_regions_generator::is_pre_region(const Edges_list& list,
+__attribute__((unused)) bool Pre_and_post_regions_generator::is_pre_region(const Edges_list& list,
                                                    Region region) {
     //cout << "regione (is_pre_region)" << endl;
     //println(*region);

@@ -5,8 +5,6 @@
 
 #include "Utilities.h"
 #include "../pblib/pb2cnf.h"
-#include <algorithm>
-#include <iomanip>
 #include "../include/Pre_and_post_regions_generator.h"
 
 
@@ -17,7 +15,7 @@ private:
 public:
     FCPN_decomposition();
     ~FCPN_decomposition();
-    set<set<Region *> *> *search(int number_of_events,
+    static set<set<Region *> *> *search(int number_of_events,
                                  const set<Region *>& regions,
                                  const string& file,
                                  Pre_and_post_regions_generator *pprg,
