@@ -12,9 +12,6 @@
 class Merge {
 
 private:
-    map < SM * , int > SMs_map;
-    map < int, SM * > SMs_map_inverted;
-    int counter = 0;
     map < SM * , set<int> * > *events_to_remove_per_SM;
 
 public:
