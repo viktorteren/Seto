@@ -19,7 +19,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
-                                                 map<int, ER> *ER, int level){
+                                                 map<int, ER> *ER){
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -52,96 +52,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
-    auto non_minimal_regions = new set<Region *>();
-    auto new_non_minimal_regions = new set<Region *>();
     auto minimal_regions = new set<Region *>();
     for(auto reg: regions){
         minimal_regions->insert(reg);
     }
-    int base_level = 0;
-
-    if(!non_minimal_regions_per_level->empty()){
-        for(auto rec: *non_minimal_regions_per_level){
-            if(rec.first > base_level)
-                base_level = rec.first;
-        }
-        for(auto reg: *non_minimal_regions_per_level->at(base_level)){
-            non_minimal_regions->insert(reg);
-            regions_copy->insert(reg);
-        }
-    }
-    //bool added_new;
-    for(int i=base_level;i<level;++i) {
-        //do {
-        //added_new = false;
-        for (auto rec1: *pre_regions_map) {
-            for (auto rec2: *post_regions_map) {
-                //same event
-                if (rec1.first == rec2.first) {
-                    for (auto reg1: *rec1.second) {
-                        for (auto reg2: *rec2.second) {
-                            if (reg1 != reg2) {
-                                auto reg_union = regions_union(reg1, reg2);
-                                if (reg_union->size() < num_states) {
-                                    bool found = false;
-                                    for(auto reg: *new_non_minimal_regions){
-                                        if(*reg == *reg_union){
-                                            found = true;
-                                            //cout << "found" << endl;
-                                            break;
-                                        }
-                                    }
-                                    if(!found) {
-                                        for (auto reg: *non_minimal_regions) {
-                                            if (*reg == *reg_union) {
-                                                found = true;
-                                                //cout << "found" << endl;
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    if(!found) {
-                                        new_non_minimal_regions->insert(reg_union);
-                                    }
-                                    else{
-                                        delete reg_union;
-                                    }
-                                }
-                                else{
-                                    delete reg_union;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (auto rec: *pre_regions_map) {
-            auto event = rec.first;
-            for (auto reg: *new_non_minimal_regions) {
-                if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg)) {
-                    rec.second->insert(reg);
-                }
-            }
-        }
-        pprg->create_post_regions(pre_regions_map);
-        post_regions_map = pprg->get_post_regions();
-        //}while(added_new);
-    }
-    (*non_minimal_regions_per_level)[level] =  new set<Region*>();
-    for(const auto& reg: *non_minimal_regions){
-        (*non_minimal_regions_per_level)[level]->insert(reg);
-    }
-    for(const auto& reg: *new_non_minimal_regions){
-        (*non_minimal_regions_per_level)[level]->insert(reg);
-    }
-    for(auto reg: *new_non_minimal_regions){
-        regions_copy->insert(reg);
-    }
-    /*for(auto rec: *pre_regions_map){
-        cout << "ev: " << rec.first << " size: " << rec.second->size() << endl;
-    }*/
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
@@ -579,7 +493,6 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     delete clauses;
 
     delete minimal_regions;
-    delete non_minimal_regions;
 
     delete regions_copy;
 

@@ -647,32 +647,8 @@ int main(int argc, char **argv) {
                         }
                     }
                     auto fcpn_decomposition_module = new FCPN_decomposition();
-                    int level = 0;
-                    bool exit = false;
-                    auto results_map = new map<int, set<set<Region *>*>*>(); // (level, set of FCPNs)
-                    do {
-                        (*results_map)[level] = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
-                                                                                   pprg, new_ER, level);
-                        if(only_minimal_regions)
-                            exit = true;
-                        if(results_map->at(level)->size() <= 2)
-                            exit = true;
-                        if(level > 0){
-                            if(results_map->at(level)->size() == results_map->at(level-1)->size())
-                                exit = true;
-                        }
-                        level++;
-                    } while(level <= 1 && !exit);
-                    int min = results_map->at(0)->size();
-                    int index_min = 0;
-                    for(int i = 1; i<level;++i){
-                        if(results_map->at(i)->size() < min) {
-                            min = results_map->at(i)->size();
-                            index_min = i;
-                        }
-                    }
-
-                    auto final_fcpn_set = results_map->at(index_min);
+                    auto final_fcpn_set = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
+                                                                                   pprg, new_ER);
 
                     string output_name = file;
                     while (output_name[output_name.size() - 1] != '.') {
@@ -721,10 +697,7 @@ int main(int argc, char **argv) {
                         cout << pn_counter << " FCPNs" << endl;
                     }
 
-                    for(auto rec: *results_map){
-                        delete rec.second;
-                    }
-                    delete results_map;
+                    delete final_fcpn_set;
                     for (auto rec: *map_of_PN_pre_regions) {
                         for (auto subset: *rec.second) {
                             delete subset.second;
@@ -740,9 +713,6 @@ int main(int argc, char **argv) {
                     }
                     delete map_of_PN_post_regions;
                     delete regions_mapping;
-
-                    cout << "RESULT LEVEL: " << index_min << endl;
-                    cout << "MAX LEVEL: " << level -1 << endl;
 
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete fcpn_decomposition_module;

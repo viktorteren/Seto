@@ -21,5 +21,5 @@ public:
                                  const set<Region *>& regions,
                                  const string& file,
                                  Pre_and_post_regions_generator *pprg,
-                                 map<int, ER> *ER, int level);
+                                 map<int, ER> *ER);
 };
