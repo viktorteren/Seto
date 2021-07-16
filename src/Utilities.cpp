@@ -735,6 +735,10 @@ namespace Utilities {
         return output_name;
     }
 
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
+        return convert_to_dimacs(file_path, num_var, num_clauses, clauses, nullptr);
+    }
+
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){
         if(decomposition_debug)
             cout << "================[DIMACS FILE CREATION]====================" << endl;
@@ -889,7 +893,7 @@ namespace Utilities {
             output_name+=".dot";
         }
         else{
-            output_name += "_PN.dot";
+            output_name += "_FCPN.dot";
         }
         //cout << "file output PN: " << output_name << endl;
 
@@ -1271,7 +1275,7 @@ namespace Utilities {
         string in_dot_name;
         string output;
         map<Region *, int> *regions_mapping;
-        auto regions_set = copy_map_to_set(pre_regions);
+        set<Region *> *regions_set = copy_map_to_set(pre_regions);
         auto not_initial_regions =
                 region_pointer_difference(regions_set, initial_reg);
         regions_mapping = get_regions_map(pre_regions);

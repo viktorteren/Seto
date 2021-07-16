@@ -320,7 +320,7 @@ Merge::Merge(set<SM *> *SMs,
             //cout << "updating pre-regions map SM" << endl;
             (*map_of_SM_pre_regions)[sm] = Pre_and_post_regions_generator::create_pre_regions_for_SM(sm, removed_events_SM);
             //cout << "updating post-regions map SM" << endl;
-            (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
+            (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
         }
     }
 

@@ -15,6 +15,7 @@
 #include "../include/Merge.h"
 #include "../include/FCPN_decomposition.h"
 #include "../include/GreedyRemoval.h"
+#include "../include/FCPN_Merge.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -646,50 +647,19 @@ int main(int argc, char **argv) {
                             region_mapping(reg);
                         }
                     }
-                    auto fcpn_decomposition_module = new FCPN_decomposition();
-                    auto final_fcpn_set = fcpn_decomposition_module->search(number_of_events, *regions_set, file,
-                                                                                   pprg, new_ER);
 
-                    string output_name = file;
-                    while (output_name[output_name.size() - 1] != '.') {
-                        output_name = output_name.substr(0, output_name.size() - 1);
-                    }
-
-                    cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
-
-                    //map with key the pointer to SM
-                    auto map_of_PN_pre_regions = new map<SM *, map<int, set<Region *> *> *>();
-                    auto map_of_PN_post_regions = new map<SM *, map<int, set<Region *> *> *>();
-
-                    for (auto pn: *final_fcpn_set) {
-                        (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *>();
-                        for (auto rec: *pprg->get_pre_regions()) {
-                            for (auto reg: *rec.second) {
-                                if (pn->find(reg) != pn->end()) {
-                                    if ((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()) {
-                                        (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
-                                    }
-                                    (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
-                                }
-                            }
-                        }
-                        (*map_of_PN_post_regions)[pn] = pprg->create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
-                    }
-                    int pn_counter = 0;
-                    auto regions_mapping = get_regions_map(pprg->get_pre_regions());
-                    for (auto pn: *final_fcpn_set) {
-                        print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
-                                            file, pn_counter);
-                        pn_counter++;
-                    }
+                    auto final_fcpn_set = FCPN_decomposition::search(number_of_events, *regions_set, file,
+                                                                                   pprg, new_ER, aliases);
 
                     if (decomposition_debug) {
                         cout << "Final FCPNs" << endl;
-                        for (auto SM: *final_fcpn_set) {
+                        for (auto FCPN: *final_fcpn_set) {
                             cout << "FCPN:" << endl;
-                            println(*SM);
+                            println(*FCPN);
                         }
                     }
+
+                    int pn_counter = final_fcpn_set->size();
 
                     if (pn_counter == 1) {
                         cout << "1 FCPN" << endl;
@@ -698,6 +668,7 @@ int main(int argc, char **argv) {
                     }
 
                     delete final_fcpn_set;
+                    /*
                     for (auto rec: *map_of_PN_pre_regions) {
                         for (auto subset: *rec.second) {
                             delete subset.second;
@@ -712,10 +683,9 @@ int main(int argc, char **argv) {
                         delete rec.second;
                     }
                     delete map_of_PN_post_regions;
-                    delete regions_mapping;
+                    delete regions_mapping;*/
 
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-                    delete fcpn_decomposition_module;
                 }
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);

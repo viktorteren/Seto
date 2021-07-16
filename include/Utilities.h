@@ -138,6 +138,7 @@ namespace Utilities {
 
     __attribute__((unused)) string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid);
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
     string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);

@@ -10,16 +10,20 @@
 class FCPN_Merge {
 
 private:
-    map < SM * , set<int> * > *events_to_remove_per_FCPN;
 
 public:
     FCPN_Merge(set<SM *> *FCPNs,
           int number_of_events,
           map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
           map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_post_regions,
-          const string& file);
+          const string& file,
+          map<int, int> *aliases);
 
-
+    static void print_after_merge(set<set<Region *> *> *FCPNs,
+                                  map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
+                                  map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_post_regions,
+                                  map<int, int> *aliases,
+                                  const string& file);
     ~FCPN_Merge();
 
     string dimacs_file;

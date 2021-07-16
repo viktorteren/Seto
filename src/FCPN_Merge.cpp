@@ -13,7 +13,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              int number_of_events,
              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_post_regions,
-             const string& file){
+             const string& file,
+             map<int, int> *aliases){
     cout << "MERGE MODULE" << endl;
     //TODO
 
@@ -23,17 +24,17 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
     // have to be true
-    // 4. create the map between event and linked regions for each SM
+    // 4. create the map between event and linked regions for each FCPN
     // 5. translate the map into clauses
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
     // 8. decode the result leaving only the states corresponding to regions of the model
     // ENCODINGS:
-    // N regions, K FSMs, M labels
-    // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
+    // N regions, K FCPNs, M labels
+    // ENCODING FOR LABEL i OF FCPN j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
     // it's an invalid variable value
-    // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
+    // ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
     auto clauses = new vector<vector<int32_t>*>();
 
     //STEP 1:
@@ -80,7 +81,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         clauses->push_back(clause);
     }
 
-    //set<int> encoded_events_set; //will be used in the 6th step
     map<int, pair<int, int>> encoded_events_map; //map <encoded value, pair<sm, decoded_value>
     set<int> encoded_regions_set; //will be used in the 6th step
 
@@ -120,7 +120,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     }
 
     //STEP 6:
-
     vector<WeightedLit> literals_from_events = {};
 
     literals_from_events.reserve(encoded_events_map.size()); //improves the speed
@@ -133,29 +132,36 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     }
 
     //STEP 7:
-    //int maxValueToCheck = encoded_events_map.size();
     int current_value = encoded_events_map.size();
     int min = 0;
     int max = encoded_events_map.size();
 
     PBConfig config = make_shared<PBConfigClass>();
     VectorClauseDatabase formula(config);
-    //VectorClauseDatabase last_sat_formula(config);
     PB2CNF pb2cnf(config);
     AuxVarManager auxvars(K * (N + M) + 1);
     for (auto cl: *clauses) {
         formula.addClause(*cl);
     }
 
-    /*if(decomposition_debug) {
-        cout << "clauses before merge:" << endl;
-        formula.printFormula(cout);
-    }*/
-
     Minisat::Solver solver;
 
     bool sat = true;
     vec < lbool > true_model;
+
+    /*
+    int number_of_missing_event_instances = 0;
+    int number_of_missing_region_instances = 0;
+    for(auto FCPN: *FCPNs){
+        int max_reg = map_of_FCPN_pre_regions->at(FCPN)->size();
+        int tmp = map_of_FCPN_post_regions->at(FCPN)->size();
+        if(tmp > max_reg)
+            max_reg = tmp;
+        if(max_reg < number_of_events){
+            number_of_missing_event_instances += number_of_events - max_reg;
+        }
+        number_of_missing_region_instances += N - FCPN->size();
+    }*/
 
     //iteration in the search of a correct assignment decreasing the total weight
     do {
@@ -163,8 +169,12 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                 current_value); //the sum have to be lesser or equal to current_value
         pb2cnf.encode(constraint, formula, auxvars);
         int num_clauses_formula = formula.getClauses().size();
-        dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                        formula.getClauses(), nullptr);
+        dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() //-
+                                        //number_of_missing_event_instances -
+                                        //number_of_missing_region_instances
+                                        ,
+                                        num_clauses_formula,
+                                        formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
             if (decomposition_debug) {
@@ -215,7 +225,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
     }
 
-    events_to_remove_per_FCPN = new map<SM *, set<int> *>();
+    auto events_to_remove_per_FCPN = new map<SM *, set<int> *>();
 
     for (auto encoded_event: to_remove) {
         int FCPN_counter = encoded_events_map[encoded_event].first;
@@ -342,12 +352,28 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
     }
 
-    //END NEW MERGE
-}
-
-FCPN_Merge::~FCPN_Merge(){
     for (auto rec: *events_to_remove_per_FCPN) {
         delete rec.second;
     }
     delete events_to_remove_per_FCPN;
+
+    //END MERGE
+    if(decomposition_output){
+        print_after_merge(FCPNs, map_of_FCPN_pre_regions, map_of_FCPN_post_regions,aliases,file);
+    }
 }
+
+void FCPN_Merge::print_after_merge(set<set<Region *> *> *FCPNs,
+                              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
+                              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_post_regions,
+                              map<int, int> *aliases,
+                              const string& file){
+
+    int FCPN_counter = 0;
+    for (auto FCPN: *FCPNs) {
+        print_fcpn_dot_file((*map_of_FCPN_pre_regions)[FCPN], (*map_of_FCPN_post_regions)[FCPN], aliases, file, FCPN_counter);
+        FCPN_counter++;
+    }
+}
+
+FCPN_Merge::~FCPN_Merge()= default;

@@ -11,16 +11,11 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
-
-FCPN_decomposition::FCPN_decomposition() {
-    non_minimal_regions_per_level = new map<int, set<Region*>*>();
-}
-
 set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
-                                                 map<int, ER> *ER){
+                                                 map<int, ER> *ER, map<int, int> *aliases){
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -484,7 +479,9 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     }
 
     //todo da testare il merge
-    auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file);
+    auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file, aliases);
+
+    delete merge;
 
     delete regions_vector;
 
@@ -517,11 +514,4 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     delete regions_copy;
 
     return fcpn_set;
-}
-
-FCPN_decomposition::~FCPN_decomposition(){
-    for(auto rec: *non_minimal_regions_per_level){
-        delete rec.second;
-    }
-    delete non_minimal_regions_per_level;
 }
