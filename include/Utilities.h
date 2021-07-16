@@ -47,7 +47,7 @@ extern bool ects_output;
 extern bool python_all;
 extern bool info;
 extern bool fcptnet;
-extern bool only_minimal_regions;
+extern bool no_merge;
 extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;

@@ -33,7 +33,6 @@ int main(int argc, char **argv) {
         decomposition_output = false;
         benchmark_script = false;
         no_fcpn_min = true;
-        only_minimal_regions = false;
         fcptnet = false;
         pn_synthesis = false;
         for(int i=2; i < argc; i++) {
@@ -46,6 +45,9 @@ int main(int argc, char **argv) {
             else if(args[i]=="KFC") {
                 fcptnet = true;
                 k_fcpn_decomposition = true;
+            }
+            else if(args[i] == "NOMERGE"){
+                no_merge = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -97,9 +99,6 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "MIN"){
                 no_fcpn_min = false;
-            }
-            else if(args[i] == "ONLYMIN"){
-                only_minimal_regions = true;
             }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
@@ -502,7 +501,7 @@ int main(int argc, char **argv) {
                             }
                         }
                     }
-                    (*map_of_SM_post_regions)[sm] = pprg->create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
+                    (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
                 }
 
                 //if(decomposition_debug)
@@ -668,23 +667,6 @@ int main(int argc, char **argv) {
                     }
 
                     delete final_fcpn_set;
-                    /*
-                    for (auto rec: *map_of_PN_pre_regions) {
-                        for (auto subset: *rec.second) {
-                            delete subset.second;
-                        }
-                        delete rec.second;
-                    }
-                    delete map_of_PN_pre_regions;
-                    for (auto rec: *map_of_PN_post_regions) {
-                        for (auto subset: *rec.second) {
-                            delete subset.second;
-                        }
-                        delete rec.second;
-                    }
-                    delete map_of_PN_post_regions;
-                    delete regions_mapping;*/
-
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 }
                 printf("\nTime region gen: %.5fs\n", t_region_gen);

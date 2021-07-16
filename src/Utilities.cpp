@@ -17,7 +17,7 @@ bool python_all;
 bool ts_output;
 bool ects_output;
 bool k_fcpn_decomposition;
-bool only_minimal_regions;
+bool no_merge;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -916,8 +916,6 @@ namespace Utilities {
         for (auto reg : *initial_reg) {
             fout << "\tr" << regions_mapping->at(reg) << ";\n";
         }
-
-
 
         fout << "}\n";
         // regioni non iniziali

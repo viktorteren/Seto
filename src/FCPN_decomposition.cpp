@@ -460,8 +460,8 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
 
-    auto map_of_FCPN_pre_regions = new map < SM *, map<int, set<Region*> *> * > ();
-    auto map_of_FCPN_post_regions = new map < SM *, map<int, set<Region*> *> * > ();
+    auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
+    auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
 
     for (auto FCPN: *fcpn_set) {
         (*map_of_FCPN_pre_regions)[FCPN] = new map < int, set<Region*> * > ();
@@ -478,10 +478,45 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
     }
 
-    //todo da testare il merge
-    auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file, aliases);
+    if(!no_merge) {
+        auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
+                                    aliases);
+        delete merge;
+    }
+    else if(decomposition_output){
+        string output_name = file;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
 
-    delete merge;
+        cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
+
+        //map with key the pointer to SM
+        auto map_of_PN_pre_regions = new map<SM *, map<int, set<Region *> *> *>();
+        auto map_of_PN_post_regions = new map<SM *, map<int, set<Region *> *> *>();
+
+        for (auto pn: *fcpn_set) {
+            (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *>();
+            for (auto rec: *pprg->get_pre_regions()) {
+                for (auto reg: *rec.second) {
+                    if (pn->find(reg) != pn->end()) {
+                        if ((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()) {
+                            (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
+                        }
+                        (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
+                    }
+                }
+            }
+            (*map_of_PN_post_regions)[pn] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
+        }
+        int pn_counter = 0;
+        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
+        for (auto pn: *fcpn_set) {
+            print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
+                                file, pn_counter);
+            pn_counter++;
+        }
+    }
 
     delete regions_vector;
 
@@ -512,6 +547,21 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     delete minimal_regions;
 
     delete regions_copy;
+
+    for(auto rec: *map_of_FCPN_pre_regions){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete map_of_FCPN_pre_regions;
+    for(auto rec: *map_of_FCPN_post_regions){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete map_of_FCPN_post_regions;
 
     return fcpn_set;
 }

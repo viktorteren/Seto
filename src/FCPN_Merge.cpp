@@ -361,6 +361,11 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     if(decomposition_output){
         print_after_merge(FCPNs, map_of_FCPN_pre_regions, map_of_FCPN_post_regions,aliases,file);
     }
+
+    for(auto cl: *clauses){
+        delete cl;
+    }
+    delete clauses;
 }
 
 void FCPN_Merge::print_after_merge(set<set<Region *> *> *FCPNs,
