@@ -516,6 +516,21 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                                 file, pn_counter);
             pn_counter++;
         }
+        delete regions_mapping;
+        for(auto rec: *map_of_PN_pre_regions){
+            for(auto rec1: *rec.second){
+                delete rec1.second;
+            }
+            delete rec.second;
+        }
+        delete map_of_PN_pre_regions;
+        for(auto rec: *map_of_PN_post_regions){
+            for(auto rec1: *rec.second){
+                delete rec1.second;
+            }
+            delete rec.second;
+        }
+        delete map_of_PN_post_regions;
     }
 
     delete regions_vector;
