@@ -65,7 +65,7 @@ add_executable(TS_splitter
         src/FCPN_decomposition.cpp
         src/k_FCPN_decomposition.cpp
         include/k_FCPN_decomposition.h
-        src/GreedyRemoval.cpp)
+        src/GreedyRemoval.cpp include/FCPN_Merge.h src/FCPN_Merge.cpp)
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
 target_link_libraries(TS_splitter python2.7)

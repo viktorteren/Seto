@@ -5,6 +5,7 @@
 
 #include <include/GreedyRemoval.h>
 #include "../include/FCPN_decomposition.h"
+#include "../include/FCPN_Merge.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -464,9 +465,28 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
 
+    auto map_of_FCPN_pre_regions = new map < SM *, map<int, set<Region*> *> * > ();
+    auto map_of_FCPN_post_regions = new map < SM *, map<int, set<Region*> *> * > ();
+
+    for (auto FCPN: *fcpn_set) {
+        (*map_of_FCPN_pre_regions)[FCPN] = new map < int, set<Region*> * > ();
+        for (auto rec: *pprg->get_pre_regions()) {
+            for (auto reg: *rec.second) {
+                if (FCPN->find(reg) != FCPN->end()) {
+                    if((*map_of_FCPN_pre_regions)[FCPN]->find(rec.first) == (*map_of_FCPN_pre_regions)[FCPN]->end()){
+                        (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first] = new set<Region *>();
+                    }
+                    (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first]->insert(reg);
+                }
+            }
+        }
+        (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
+    }
+
+    //todo da testare il merge
+    auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file);
+
     delete regions_vector;
-
-
 
     for (auto rec: *region_ex_event_map) {
         delete rec.second;
