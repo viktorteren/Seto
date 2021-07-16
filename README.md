@@ -120,6 +120,8 @@ Independently by the used flags, after each execution the stats.csv file is upda
 <b>MIN</b>: once found a minimum number of FCPNs perform a minimization on the set of regions
 <b>(not recommended)</b>
 
+<b>NOMERGE</b>: avoids the Merge step
+
 ### d) Combined flows
 
 The flags M and FC/KFC can be used together.

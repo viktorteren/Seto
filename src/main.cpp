@@ -665,6 +665,12 @@ int main(int argc, char **argv) {
                     } else {
                         cout << pn_counter << " FCPNs" << endl;
                     }
+                    int num_places = 0;
+                    for(auto FCPN: *final_fcpn_set){
+                        num_places += FCPN->size();
+                    }
+
+                    cout << "Total number of places: " << num_places << endl;
 
                     delete final_fcpn_set;
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
