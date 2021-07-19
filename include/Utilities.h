@@ -167,6 +167,7 @@ namespace Utilities {
     int getMaxPTSum(map<SM*, map<int, Region *>*>* pre_regions);
     int getMaxTransitionsNumber(map<SM*, map<int, Region *>*>* pre_regions);
     int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions, map<int, int> *label_aliases);
+    int getMaxAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases);
     __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
     __attribute__((unused)) SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
     bool have_common_regions(set<Region *> *first, set<Region *> *second);
@@ -175,7 +176,6 @@ namespace Utilities {
     void print_clause(set<int32_t> *clause);
     map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs, map<int, set<Region *> *> *pre_regions);
     __attribute__((unused)) void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map);
-
     __attribute__((unused)) bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2);
     __attribute__((unused)) bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2);
     map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set);

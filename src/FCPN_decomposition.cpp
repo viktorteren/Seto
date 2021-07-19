@@ -482,6 +482,20 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
         delete merge;
+        /*
+        auto used_regions_map = get_map_of_used_regions(fcpn_set, pre_regions_map);
+        excitation_closure = is_excitation_closed(used_regions_map, ER);
+        if(excitation_closure){
+            cout << "EC OK" << endl;
+        }
+        else{
+            cerr << "EC not satisfied -> WRONG DECOMPOSITION" << endl;
+            exit(1);
+        }
+        for(auto rec: *used_regions_map){
+            delete rec.second;
+        }
+        delete used_regions_map;*/
     }
     else if(decomposition_output){
         string output_name = file;
@@ -532,6 +546,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         }
         delete map_of_PN_post_regions;
     }
+
+    auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
+
+    cout << "MAX alphabet: " << maxAlphabet << endl;
 
     delete regions_vector;
 
