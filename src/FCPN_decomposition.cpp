@@ -548,8 +548,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     }
 
     auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
+    auto avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
 
     cout << "MAX alphabet: " << maxAlphabet << endl;
+    cout << "AVG alphabet: " << avgAlphabet << endl;
 
     delete regions_vector;
 
