@@ -40,7 +40,12 @@ void TS_parser::parse(string file) {
     if ((file[file.size() - 2]) == 't' && (file[file.size() - 1] == 's')) {
         parse_TS(fin);
         if(ts_output){
-            print_ts_dot_file(file, nullptr);
+            if(aut_output){
+                print_ts_aut_file(file, nullptr);
+            }
+            else{
+                print_ts_dot_file(file, nullptr);
+            }
             exit(0);
         }
 
@@ -54,8 +59,14 @@ void TS_parser::parse(string file) {
         //file nel fromato SIS .g
     else if (file[file.size() - 1] == 'g') {
         parse_SIS(fin);
-        if(ts_output) {
-            print_ts_dot_file(file, nullptr);
+        if(ts_output){
+            if(aut_output){
+                print_ts_aut_file(file, nullptr);
+            }
+            else{
+                print_ts_dot_file(file, nullptr);
+            }
+            exit(0);
         }
     } else {
         cout << "Not supported extension" << endl;
@@ -110,7 +121,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
     while (true) {
         previous_temp = temp;
         fin >> temp;
-        if(temp.compare(previous_temp) == 0){
+        if(temp == previous_temp){
             if(temp == ".end"){
                 cout << "syntax error" <<endl;
                 exit(1);
@@ -366,8 +377,8 @@ void TS_parser::add_new_state_with_alias(int num, const string& name) {
     }
 }
 
- void TS_parser::check_wrong_end(string previous_temp, string temp){
-     if(temp.compare(previous_temp) == 0){
+ void TS_parser::check_wrong_end(const string& previous_temp, const string& temp){
+     if(temp == previous_temp){
          if(temp == ".end"){
              cout << "syntax error" <<endl;
              exit(1);

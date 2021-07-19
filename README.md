@@ -30,7 +30,7 @@ pip install networkx
 
 Input extensions: .g .ts
 
-Output extensions: .dot .g
+Output extensions: .dot .g .aut
 
 Building
 --------
@@ -145,17 +145,15 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 
 ### e) Additional tools
 
-Conversion of .g or .ts extension TS in .dot extension file.
+Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 ```Bash
-./TS_splitter <file_path> TS
+./TS_splitter <file_path> (TS | ECTS) <optional_flag>
 ```
 
-Creation of .dot extension ECTS file starting from .g or .ts extension TS.
+#### Optional flags:
 
-```Bash
-./TS_splitter <file_path> TS
-```
+<b>AUT</b>: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
 PN visualization
 ----------------

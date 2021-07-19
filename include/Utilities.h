@@ -48,6 +48,7 @@ extern bool python_all;
 extern bool info;
 extern bool fcptnet;
 extern bool no_merge;
+extern bool aut_output;
 extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;
@@ -104,6 +105,7 @@ namespace Utilities {
     __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set);
     __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set);
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
+    void print_ts_aut_file(string file_path, map<int, int> *aliases);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,

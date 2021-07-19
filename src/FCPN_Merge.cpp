@@ -16,7 +16,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              const string& file,
              map<int, int> *aliases){
     cout << "MERGE MODULE" << endl;
-    //TODO
 
     //STEPS OF THE ALGORITHM
     // 1. create the map between SMs and integers from 1 to K
@@ -24,7 +23,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
     // have to be true
-    // 4. create the map between event and linked regions for each FCPN
+    // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
+    // connected to more than 2 regions
     // 5. translate the map into clauses
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
@@ -34,7 +34,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // N regions, K FCPNs, M labels
     // ENCODING FOR LABEL i OF FCPN j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
     // it's an invalid variable value
-    // ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
+    // ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N =
+    // K*(N+M)]
     auto clauses = new vector<vector<int32_t>*>();
 
     //STEP 1:

@@ -21,6 +21,7 @@ bool no_merge;
 //bool log_file;
 bool info;
 bool fcptnet;
+bool aut_output;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;
 __attribute__((unused)) bool fcpn_with_levels;
@@ -681,6 +682,98 @@ namespace Utilities {
         delete alias_counter_original;
 
         fout << "}\n";
+        fout.close();
+    }
+
+    void print_ts_aut_file(string file_path, map<int, int> *aliases) {
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+        if (aliases != nullptr) {
+            in_name += "_ECTS";
+            output_name = output_name + "_ECTS.aut";
+        } else {
+            output_name = output_name + ".aut";
+        }
+
+        ofstream fout(output_name);
+        fout << "des (";
+        fout << initial_state;
+        fout << ",";
+        fout << num_states;
+        fout <<",";
+        fout << num_transactions;
+        fout << ")" << endl;
+
+
+
+        map<int, int> *alias_counter = nullptr;
+        map<int, int> *alias_counter_original = nullptr;
+        if (aliases != nullptr) {
+            alias_counter = new map<int, int>();
+            alias_counter_original = new map<int, int>();
+            for (auto al:*aliases) {
+                (*alias_counter)[al.second] = 0;
+                (*alias_counter_original)[al.second] = 0;
+            }
+            for (auto al:*aliases) {
+                (*alias_counter)[al.second]++;
+                (*alias_counter_original)[al.second]++;
+            }
+
+            /*cout << "alias counter" << endl;
+            for (auto r: *alias_counter)
+                cout << r.first << "->" << r.second << endl;*/
+
+        }
+
+        for (const auto& rec : *ts_map) {
+            //l'evento è un alias
+            int label;
+            string to_add;
+            if (aliases != nullptr && aliases->find(rec.first) != aliases->end()) {
+                label = aliases->at(rec.first);
+                for (int i = 0; i < (*alias_counter_original)[label] - (*alias_counter)[label] + 1; ++i) {
+                    to_add += "'";
+                }
+                (*alias_counter)[label]--;
+                //cout << " ev " << rec.first << "to add " << to_add << endl;
+            } else {
+                label = rec.first;
+            }
+            for (auto edge : rec.second) {
+                fout << "(";
+                fout << edge->first;
+                fout << ",\"";
+                if(!g_input){
+                    fout << label;
+                }
+                else{
+                    fout << (*aliases_map_number_name)[label];
+                }
+                fout << to_add;
+                fout << "\",";
+                fout << edge->second;
+                fout << ")" << endl;
+            }
+
+        }
+
+        delete alias_counter;
+        delete alias_counter_original;
         fout.close();
     }
 

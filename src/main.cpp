@@ -100,6 +100,9 @@ int main(int argc, char **argv) {
             else if(args[i] == "MIN"){
                 no_fcpn_min = false;
             }
+            else if(args[i] == "AUT"){
+                aut_output = true;
+            }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
                 exit(1);
@@ -116,6 +119,12 @@ int main(int argc, char **argv) {
         if(pn_synthesis && fcptnet){
             cerr << "PN synthesis cannot be done together with FCPN decomposition" << endl;
             exit(0);
+        }
+        if(aut_output){
+            if(!ts_output && !ects_output){
+                cerr << "AUT output flag is compatible only with TS and ECTS flags" << endl;
+                exit(0);
+            }
         }
     }
     else{
@@ -295,7 +304,12 @@ int main(int argc, char **argv) {
         delete ls;
 
         if(ects_output){
-            print_ts_dot_file(file, aliases);
+            if(aut_output){
+                print_ts_aut_file(file, aliases);
+            }
+            else{
+                print_ts_dot_file(file, aliases);
+            }
             exit(0);
         }
 

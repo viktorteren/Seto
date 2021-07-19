@@ -37,7 +37,7 @@ class TS_parser {
     static void parse_SIS(ifstream &fin);
     static void add_new_label_with_alias(int num, const string& name);
     static void add_new_state_with_alias(int num, const string& name);
-    static void check_wrong_end(string previous_temp, string temp);
+    static void check_wrong_end(const string& previous_temp, const string& temp);
 public:
   static void parse(string file);
 };
