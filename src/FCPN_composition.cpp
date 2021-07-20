@@ -11,6 +11,7 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
                                map<int, int> *aliases, string file_path){
+    cout << "============ [ COMPOSITION ] ===========" << endl;
     set<map<set<Region *>*, set<Region *>>> state_space; //set of maps where for each FCPN there is a set of current regions
     auto arcs = new vector<edge>();
     map<set<Region *>*, set<Region *>> current_map;
@@ -58,10 +59,17 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                             //event take part of the FCPN
                             if (rec1.second->find(event) != rec1.second->end()) {
                                 //insert into the next state the regions which were unchanged
-                                // (did'nt took part of the event firing)
+                                // (didn't took part of the event firing)
                                 for(auto reg: current_state.at(FCPN)){
-                                    if(map_FCPN_pre_regions->at(FCPN)->at(event)->find(reg) == map_FCPN_pre_regions->at(FCPN)->at(event)->end()){
-                                        next_state_map[FCPN].insert(reg);
+                                    if(map_FCPN_pre_regions->at(FCPN)->find(event) != map_FCPN_pre_regions->at(FCPN)->end()) {
+                                        if (map_FCPN_pre_regions->at(FCPN)->at(event)->find(reg) ==
+                                            map_FCPN_pre_regions->at(FCPN)->at(event)->end()) {
+                                            next_state_map[FCPN].insert(reg);
+                                        }
+                                    }
+                                    else{
+                                        cerr << "WRONG DECOMPOSITION: events without pre-regions" << endl;
+                                        exit(1);
                                     }
                                 }
                                 //regions activated after the event firing
