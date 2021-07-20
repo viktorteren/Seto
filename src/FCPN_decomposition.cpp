@@ -496,7 +496,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             delete rec.second;
         }
         delete used_regions_map;*/
+        //todo aggiungere flag per la composizione
+        FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions);
     }
+    //todo: aggiungere flag per la verifica in modo da entrare nel branch se si vuole generare la composizione
     else if(decomposition_output){
         string output_name = file;
         while (output_name[output_name.size() - 1] != '.') {

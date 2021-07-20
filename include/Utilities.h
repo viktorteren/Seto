@@ -98,12 +98,15 @@ namespace Utilities {
     bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
+    /*template<typename T, typename T2>
+    bool contains(T bigger_set, T2 smaller_set);*/
+    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     template <typename T>
     bool contains(T, Region *);
     bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set);
-    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set);
     __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set);
+
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,

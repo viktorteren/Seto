@@ -689,6 +689,7 @@ int main(int argc, char **argv) {
                     delete final_fcpn_set;
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 }
+                //todo implement FCPN composition
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
