@@ -11,7 +11,7 @@ bool print_step_by_step;
 bool print_step_by_step_debug;
 bool decomposition;
 bool decomposition_debug;
-bool decomposition_output;
+bool output;
 bool decomposition_output_sis;
 bool python_all;
 bool ts_output;

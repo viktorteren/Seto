@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
         print_step_by_step_debug = false;
         decomposition = false;
         decomposition_debug = false;
-        decomposition_output = false;
+        output = false;
         benchmark_script = false;
         no_fcpn_min = true;
         fcptnet = false;
@@ -83,10 +83,10 @@ int main(int argc, char **argv) {
                 log_file = true;
             }*/
             else if(args[i] == "O"){
-                decomposition_output = true;
+                output = true;
             }
             else if(args[i] == "G") {
-                decomposition_output = true;
+                output = true;
                 decomposition_output_sis = true;
                 benchmark_script = true;
             }
@@ -546,7 +546,7 @@ int main(int argc, char **argv) {
                 auto maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
 
                 //if(decomposition_debug)
-                if (decomposition_output) {
+                if (output) {
                     decomposition_output_sis ? cout
                             << "=======================[ CREATION OF A .g FILE FOR EACH SM / S-COMPONENT  ]================"
                             << endl : cout
@@ -749,31 +749,33 @@ int main(int argc, char **argv) {
 
             auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
-            pprg->create_post_regions(merged_map);
-            // pprg->create_post_regions(pprg->get_pre_regions());
+            if(output) {
+                pprg->create_post_regions(merged_map);
+                // pprg->create_post_regions(pprg->get_pre_regions());
 
-            auto post_regions = pprg->get_post_regions();
+                auto post_regions = pprg->get_post_regions();
 
-            // restore_default_labels(merged_map, pprg->get_events_alias());
-            // print_pn_dot_file( pprg->get_pre_regions(), post_regions,
-            // pprg->get_events_alias(), file);
-            /*cout << "print aliases" << endl;
-            for(auto rec: *aliases){
-                cout << rec.first << " : " << rec.second << endl;
-            }*/
+                // restore_default_labels(merged_map, pprg->get_events_alias());
+                // print_pn_dot_file( pprg->get_pre_regions(), post_regions,
+                // pprg->get_events_alias(), file);
+                /*cout << "print aliases" << endl;
+                for(auto rec: *aliases){
+                    cout << rec.first << " : " << rec.second << endl;
+                }*/
 
-            /*cout << "aliases: " << endl;
-            for(auto al: *aliases){
-                cout<<al.first<<"->"<<al.second<<endl;
-            }*/
+                /*cout << "aliases: " << endl;
+                for(auto al: *aliases){
+                    cout<<al.first<<"->"<<al.second<<endl;
+                }*/
 
-            //cout<<"print finale PN"<<endl;
-            //cout<<"post regions"<<endl;
-            //print(*post_regions);
-            //cout<<"pre regions merged map"<<endl;
-            //print(*merged_map);
+                //cout<<"print finale PN"<<endl;
+                //cout<<"post regions"<<endl;
+                //print(*post_regions);
+                //cout<<"pre regions merged map"<<endl;
+                //print(*merged_map);
 
-            print_pn_dot_file(merged_map, post_regions, aliases, file);
+                print_pn_dot_file(merged_map, post_regions, aliases, file);
+            }
 
             // cout << "fine ricerca " << endl;
 

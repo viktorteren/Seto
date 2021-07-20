@@ -67,6 +67,8 @@ Quick way (requirese graphviz library) with .ps file creation
 
 <b>S</b>: verbose info mode
 
+<b>O</b>: write output PN on file in .dot extension
+
 <b>--INFO</b>: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
 Independently by the used flags, after each execution the stats.csv file is updated.
@@ -83,9 +85,9 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>D</b>: debug info mode
 
-<b>O</b>: write output SMs in .dot extension
+<b>O</b>: write output SMs on file in .dot extension
 
-<b>G</b>: write output SMs in .g extension
+<b>G</b>: write output SMs on file in .g extension
 
 <b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
@@ -101,7 +103,7 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>D</b>: debug info mode
 
-<b>O</b>: write output FCPNs in .dot extension
+<b>O</b>: write output FCPNs on file in .dot extension
 
 #### Approximated algorithm (recommended):
 
@@ -111,11 +113,9 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 #### Optional flags:
 
-<b>ONLYMIN</b>: use only minimal regons during the search of new FCPNs
-
 <b>D</b>: debug info mode
 
-<b>O</b>: write output FCPNs in .dot extension
+<b>O</b>: write output FCPNs on file in .dot extension
 
 <b>MIN</b>: once found a minimum number of FCPNs perform a minimization on the set of regions
 <b>(not recommended)</b>

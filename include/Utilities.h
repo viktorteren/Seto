@@ -39,7 +39,7 @@ extern bool print_step_by_step;
 extern bool print_step_by_step_debug;
 extern bool decomposition;
 extern bool decomposition_debug;
-extern bool decomposition_output;
+extern bool output;
 extern bool decomposition_output_sis;
 extern bool ts_output;
 extern bool ects_output;

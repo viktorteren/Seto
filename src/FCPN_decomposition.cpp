@@ -497,7 +497,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         }
         delete used_regions_map;*/
     }
-    else if(decomposition_output){
+    else if(output){
         string output_name = file;
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);

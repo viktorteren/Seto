@@ -359,7 +359,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     delete events_to_remove_per_FCPN;
 
     //END MERGE
-    if(decomposition_output){
+    if(output){
         print_after_merge(FCPNs, map_of_FCPN_pre_regions, map_of_FCPN_post_regions,aliases,file);
     }
 
