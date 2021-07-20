@@ -496,11 +496,11 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             delete rec.second;
         }
         delete used_regions_map;*/
-        //todo aggiungere flag per la composizione
-        FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions);
+        if(composition)
+            FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
     }
     //todo: aggiungere flag per la verifica in modo da entrare nel branch se si vuole generare la composizione
-    else if(decomposition_output){
+    else if(decomposition_output || composition){
         string output_name = file;
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -526,23 +526,30 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             }
             (*map_of_PN_post_regions)[pn] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
         }
-        int pn_counter = 0;
-        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
-        for (auto pn: *fcpn_set) {
-            print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
-                                file, pn_counter);
-            pn_counter++;
+        if(composition){
+            FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
         }
-        delete regions_mapping;
-        for(auto rec: *map_of_PN_pre_regions){
-            for(auto rec1: *rec.second){
+        if(decomposition_output) {
+            int pn_counter = 0;
+            auto regions_mapping = get_regions_map(pprg->get_pre_regions());
+            for (auto pn: *fcpn_set) {
+                print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn),
+                                    aliases,
+                                    file, pn_counter);
+                pn_counter++;
+            }
+
+            delete regions_mapping;
+        }
+        for (auto rec: *map_of_PN_pre_regions) {
+            for (auto rec1: *rec.second) {
                 delete rec1.second;
             }
             delete rec.second;
         }
         delete map_of_PN_pre_regions;
-        for(auto rec: *map_of_PN_post_regions){
-            for(auto rec1: *rec.second){
+        for (auto rec: *map_of_PN_post_regions) {
+            for (auto rec1: *rec.second) {
                 delete rec1.second;
             }
             delete rec.second;

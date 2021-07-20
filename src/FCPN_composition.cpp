@@ -9,9 +9,10 @@ using namespace Utilities;
 
 void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
-                               map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions){
+                               map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
+                               map<int, int> *aliases, string file_path){
     set<map<set<Region *>*, set<Region *>>> state_space; //set of maps where for each FCPN there is a set of current regions
-    vector<edge> arcs;
+    auto arcs = new vector<edge>();
     map<set<Region *>*, set<Region *>> current_map;
     for(auto FCPN: *fcpn_set){
         set<Region *> initial_regions;
@@ -22,20 +23,13 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
         }
         (current_map)[FCPN] = initial_regions;
     }
+    auto initial_state_TS = current_map;
     state_space.insert(current_map);
 
     set<map<set<Region *>*, set<Region *>>> completely_explored_states;
 
     do {
-        //1)dato una regione la regione è pre-regione per 'e'
-        //2)se 'e' contiene più pre-regioni tutte devono far parte dello stato attuale
-        //3)se 'e' fa parte di un'altra FCPN anche tutte le pre-regioni di 'e' in quella FCPN devono far parte dello
-        //stato attuale
-        //4)crea arco
-        //5)aggiungi la destinazione nell'insieme degli stati
-        //6)avendo controllato tutti i possibili scatti aggiungi lo stato attuale a quelli esplorati
-
-        //different prospettive: given an event check if it can fire
+        //given an event check if it can fire
         for(auto current_state: state_space) {
             if(completely_explored_states.find(current_state) == completely_explored_states.end()) {
                 map<int, bool> firing;
@@ -49,7 +43,6 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                     for (auto rec1: *rec.second) {
                         auto event = rec1.first;
                         if(firing.at(event)) {
-                            //todo qui bug da sistemare
                             if (!contains(current_state.at(FCPN), *rec1.second)) {
                                 firing.at(event) = false;
                             }
@@ -64,20 +57,31 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                             auto FCPN = rec1.first;
                             //event take part of the FCPN
                             if (rec1.second->find(event) != rec1.second->end()) {
+                                //insert into the next state the regions which were unchanged
+                                // (did'nt took part of the event firing)
+                                for(auto reg: current_state.at(FCPN)){
+                                    if(map_FCPN_pre_regions->at(FCPN)->at(event)->find(reg) == map_FCPN_pre_regions->at(FCPN)->at(event)->end()){
+                                        next_state_map[FCPN].insert(reg);
+                                    }
+                                }
+                                //regions activated after the event firing
                                 for (auto reg: *rec1.second->at(event)) {
                                     next_state_map[FCPN].insert(reg);
                                 }
                             } else {
-                                next_state_map.at(FCPN) = current_state.at(FCPN);
+                                next_state_map[FCPN] = current_state.at(FCPN);
                             }
                         }
                         if(current_state != next_state_map){
                             state_space.insert(next_state_map);
                             edge arc;
                             arc.start = current_state;
-                            arc.event = event;
+                            if(event < num_events)
+                                arc.event = (*aliases_map_number_name)[event];
+                            else
+                                arc.event = (*aliases_map_number_name)[aliases->at(event)];
                             arc.end = next_state_map;
-                            arcs.push_back(arc);
+                            arcs->push_back(arc);
                         }
                     }
                 }
@@ -86,6 +90,13 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
         }
     } while(state_space != completely_explored_states);
 
-    //todo: creare una mappa tra stati ed interi univoci che verranno usati per l'output
+    auto state_aliases = new map <map<set<Region *>*, set<Region *>>, int>();
+    int cont = 0;
+    for(const auto& state: state_space){
+        (*state_aliases)[state] = cont;
+        cont++;
+    }
+
+    print_ts_aut_file(file_path, state_aliases,arcs, initial_state_TS);
 
 }

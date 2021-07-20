@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
         no_fcpn_min = true;
         fcptnet = false;
         pn_synthesis = false;
+        composition = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -48,6 +49,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "NOMERGE"){
                 no_merge = true;
+            }
+            else if(args[i] == "COMPOSE"){
+                composition = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -109,20 +113,26 @@ int main(int argc, char **argv) {
             }
         }
         if(fcptnet && decomposition_output_sis){
-            cerr << "SIS output not implemented for FCPNs, remove G flag"<< endl;
+            cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
             exit(0);
         }
         if(pn_synthesis && decomposition){
-            cerr << "PN synthesis cannot be done together with SM decomposition" << endl;
+            cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
             exit(0);
         }
         if(pn_synthesis && fcptnet){
-            cerr << "PN synthesis cannot be done together with FCPN decomposition" << endl;
+            cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
             exit(0);
         }
         if(aut_output){
             if(!ts_output && !ects_output){
-                cerr << "AUT output flag is compatible only with TS and ECTS flags" << endl;
+                cerr << "AUT output flag is compatible only with TS and ECTS flags." << endl;
+                exit(0);
+            }
+        }
+        if(composition){
+            if(!fcptnet){
+                cerr << "Composition works only with FCPN decomposition." << endl;
                 exit(0);
             }
         }

@@ -18,6 +18,7 @@ bool ts_output;
 bool ects_output;
 bool k_fcpn_decomposition;
 bool no_merge;
+bool composition;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -793,6 +794,49 @@ namespace Utilities {
 
         delete alias_counter;
         delete alias_counter_original;
+        fout.close();
+    }
+
+    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, map<set<Region *>*, set<Region *>> initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+
+        output_name = output_name + "_composed.aut";
+
+
+        ofstream fout(output_name);
+        fout << "des (";
+        fout << state_aliases->at(initial_state_TS);
+        fout << ",";
+        fout << state_aliases->size();
+        fout <<",";
+        fout << arcs->size();
+        fout << ")" << endl;
+
+        for(const auto& arc: *arcs){
+            fout << "(";
+            fout << state_aliases->at(arc.start);
+            fout << ",\"";
+            fout << arc.event;
+            fout << "\",";
+            fout << state_aliases->at(arc.end);
+            fout << ")" << endl;
+        }
+
         fout.close();
     }
 

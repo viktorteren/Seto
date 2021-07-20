@@ -122,6 +122,8 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>NOMERGE</b>: avoids the Merge step
 
+<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension
+
 ### d) Combined flows
 
 The flags M and FC/KFC can be used together.

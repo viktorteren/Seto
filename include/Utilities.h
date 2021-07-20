@@ -30,6 +30,12 @@ typedef std::pair<int, int> Edge;
 typedef set<int> *ER;
 typedef set<Edge *> Edges_list;
 
+struct edge{
+    map<set<Region *>*, set<Region *>> start;
+    string event;
+    map<set<Region *>*, set<Region *>> end;
+};
+
 const int OK = 0;
 const int NOCROSS = 1;
 const int EXIT_NOCROSS = 2;
@@ -48,6 +54,7 @@ extern bool python_all;
 extern bool info;
 extern bool fcptnet;
 extern bool no_merge;
+extern bool composition;
 extern bool aut_output;
 extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
@@ -109,6 +116,7 @@ namespace Utilities {
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
+    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, map<set<Region *>*, set<Region *>> initial_state_TS);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,

@@ -3,17 +3,16 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
+#pragma once
 #include "Utilities.h"
 
 class FCPN_composition {
 private:
-    struct edge{
-        map<set<Region *>*, set<Region *>> start;
-        int event;
-        map<set<Region *>*, set<Region *>> end;
-    };
+
 public:
     static void compose(set<set<Region *>*> *fcpn_set,
                         map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
-                        map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions);
+                        map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
+                        map <int, int> *aliases,
+                        string file_path);
 };
