@@ -733,9 +733,9 @@ namespace Utilities {
         fout << "des (";
         fout << initial_state;
         fout << ",";
-        fout << num_states;
-        fout <<",";
         fout << num_transactions;
+        fout <<",";
+        fout << num_states;
         fout << ")" << endl;
 
 
@@ -822,9 +822,9 @@ namespace Utilities {
         fout << "des (";
         fout << state_aliases->at(initial_state_TS);
         fout << ",";
-        fout << state_aliases->size();
-        fout <<",";
         fout << arcs->size();
+        fout <<",";
+        fout << state_aliases->size();
         fout << ")" << endl;
 
         for(const auto& arc: *arcs){
