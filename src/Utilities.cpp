@@ -18,6 +18,7 @@ bool ts_output;
 bool ects_output;
 bool k_fcpn_decomposition;
 bool no_merge;
+bool dot_output;
 bool composition;
 //bool log_file;
 bool info;
@@ -797,7 +798,10 @@ namespace Utilities {
         fout.close();
     }
 
-    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, map<set<Region *>*, set<Region *>> initial_state_TS){
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS){
         string output_name = std::move(file_path);
         string in_name;
         while (output_name[output_name.size() - 1] != '.') {
@@ -826,17 +830,56 @@ namespace Utilities {
         fout <<",";
         fout << state_aliases->size();
         fout << ")" << endl;
+        fout.close();
+    }
+
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+        output_name = output_name + "_composed.dot";
+
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        fout << in_name;
+        fout << "{\n";
+        fout << "\tlabel=\"(name=" << in_name << ",n=" << state_aliases->size()
+             << ",m=" << arcs->size() << ")\";\n";
+        fout << "\t_nil [style = \"invis\"];\n";
+        fout << "\tnode [shape = doublecircle]; ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+        fout << "\tnode [shape = circle];\n";
+        fout << "\t_nil -> ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
 
         for(const auto& arc: *arcs){
-            fout << "(";
+            fout << "\t";
             fout << state_aliases->at(arc.start);
-            fout << ",\"";
-            fout << arc.event;
-            fout << "\",";
+            fout << "->";
             fout << state_aliases->at(arc.end);
-            fout << ")" << endl;
+            fout << "[label=\"";
+            fout << arc.event;
+            fout << "\"];\n";
         }
 
+        fout << "}\n";
         fout.close();
     }
 
@@ -892,7 +935,7 @@ namespace Utilities {
     }
 
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
-        return convert_to_dimacs(file_path, num_var, num_clauses, clauses, nullptr);
+        return convert_to_dimacs(std::move(file_path), num_var, num_clauses, clauses, nullptr);
     }
 
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){

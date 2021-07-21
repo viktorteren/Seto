@@ -25,6 +25,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // have to be true
     // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
     // connected to more than 2 regions
+    // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
     // 5. translate the map into clauses
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
@@ -119,6 +120,44 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
         delete regions_connected_to_labels;
     }
+
+    // STEP 4b
+    /*
+    auto preregion_for = new map <set<Region*>*, map<Region*, set<int>*>*>();
+    for(auto FCPN: *FCPNs){
+        if(preregion_for->find(FCPN) == preregion_for->end())
+            (*preregion_for)[FCPN] = new map<Region *, set<int>*>();
+        for(auto rec: *(*map_of_FCPN_pre_regions)[FCPN]){
+            auto event = rec.first;
+            for(auto reg: *rec.second){
+                if((*preregion_for)[FCPN]->find(reg) == (*preregion_for)[FCPN]->end())
+                    (*(*preregion_for)[FCPN])[reg] = new set<int>();
+                (*(*preregion_for)[FCPN])[reg]->insert(event);
+            }
+        }
+    }
+
+    for(auto rec: *preregion_for){
+        auto FCPN = rec.first;
+        int FCPN_counter = FCPNs_map[FCPN];
+        for(auto rec1: *rec.second){
+            if(rec1.second->size() > 1){
+                clause = new vector<int32_t>();
+                int region_counter = regions_map_for_sat[rec1.first];
+                int region_encoding = (M * K) + N * (FCPN_counter - 1) + region_counter;
+                clause->push_back(region_encoding);
+                clauses->push_back(clause);
+            }
+        }
+    }
+
+    for(auto rec: *preregion_for){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete preregion_for;*/
 
     //STEP 6:
     vector<WeightedLit> literals_from_events = {};

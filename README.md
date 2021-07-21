@@ -124,6 +124,8 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension
 
+<b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+
 ### d) Combined flows
 
 The flags M and FC/KFC can be used together.

@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
         fcptnet = false;
         pn_synthesis = false;
         composition = false;
+        dot_output = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -52,6 +53,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "COMPOSE"){
                 composition = true;
+            }
+            else if(args[i] == "DOT"){
+                dot_output = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;

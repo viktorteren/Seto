@@ -49,6 +49,7 @@ extern bool decomposition_output;
 extern bool decomposition_output_sis;
 extern bool ts_output;
 extern bool ects_output;
+extern bool dot_output;
 //extern bool log_file;
 extern bool python_all;
 extern bool info;
@@ -115,8 +116,12 @@ namespace Utilities {
     __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set);
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS);
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
-    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, map<set<Region *>*, set<Region *>> initial_state_TS);
+    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, const map<set<Region *>*, set<Region *>>& initial_state_TS);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,

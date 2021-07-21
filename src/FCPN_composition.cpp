@@ -5,6 +5,8 @@
 
 #include "../include/FCPN_composition.h"
 
+#include <utility>
+
 using namespace Utilities;
 
 void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
@@ -105,6 +107,12 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
         cont++;
     }
 
-    print_ts_aut_file(file_path, state_aliases,arcs, initial_state_TS);
+    if(dot_output){
+        print_ts_dot_file(std::move(file_path), state_aliases,arcs, initial_state_TS);
+    }
+    else{
+        print_ts_aut_file(std::move(file_path), state_aliases,arcs, initial_state_TS);
+    }
+
 
 }
