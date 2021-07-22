@@ -114,5 +114,6 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
         print_ts_aut_file(std::move(file_path), state_aliases,arcs, initial_state_TS);
     }
 
-
+    delete arcs;
+    delete state_aliases;
 }

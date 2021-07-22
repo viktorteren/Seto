@@ -830,6 +830,17 @@ namespace Utilities {
         fout <<",";
         fout << state_aliases->size();
         fout << ")" << endl;
+
+        for(const auto& arc: *arcs){
+            fout << "(";
+            fout << state_aliases->at(arc.start);
+            fout << ",\"";
+            fout << arc.event;
+            fout << "\",";
+            fout << state_aliases->at(arc.end);
+            fout << ")\n";
+        }
+
         fout.close();
     }
 

@@ -23,6 +23,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
     // have to be true
+    // (OPTIONAL: don't know if needed) 3b. create clauses to satisfy at least one instance of each event currently part of the FCPN set
     // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
     // connected to more than 2 regions
     // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
@@ -82,6 +83,34 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
         clauses->push_back(clause);
     }
+
+
+    //STEP 3b
+    /*
+    auto events_inFCPNs = new map<int, set<set<Region *>*>*>();
+    for(auto rec: *map_of_FCPN_pre_regions){
+        auto FCPN = rec.first;
+        for(auto rec1: *rec.second){
+            auto event = rec1.first;
+            if(events_inFCPNs->find(event) == events_inFCPNs->end())
+                (*events_inFCPNs)[event] = new set<set<Region *>*>();
+            (*events_inFCPNs)[event]->insert(FCPN);
+        }
+    }
+
+    for(auto rec: *events_inFCPNs){
+        auto event = rec.first;
+        clause = new vector<int32_t>();
+        for(auto FCPN: *rec.second){
+            if(events_inFCPNs->at(event)->find(FCPN) != events_inFCPNs->at(event)->end()) {
+                int FCPN_counter = FCPNs_map[FCPN];
+                auto ev_encoding = M * (FCPN_counter - 1) + event + 1;
+                clause->push_back(ev_encoding);
+            }
+        }
+        clauses->push_back(clause);
+    }*/
+
 
     map<int, pair<int, int>> encoded_events_map; //map <encoded value, pair<sm, decoded_value>
     set<int> encoded_regions_set; //will be used in the 6th step
@@ -273,7 +302,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
         SM * current_SM = FCPNs_map_inverted[FCPN_counter];
         if (decomposition_debug) {
-            cout << "in SM " << FCPN_counter << endl;
+            cout << "in FCPN " << FCPN_counter << endl;
             cout << "removing event " << decoded_event << endl;
         }
         if (events_to_remove_per_FCPN->find(current_SM) == events_to_remove_per_FCPN->end()) {
@@ -305,88 +334,67 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             regions_to_merge->push_back(regions_connected_to_ev);
         }
 
-        for(auto reg_set: *regions_to_merge) {
-            if (reg_set->size() > 1) {
-                //union between sets
-                //cout << "union between sets" << endl;
-                for (unsigned long i = 0; i < regions_to_merge->size(); i++) {
-                    for (unsigned long k = i + 1; k < regions_to_merge->size(); k++) {
-                        //check if intersection between region sets is empty or not
-                        bool merge = false;
-                        if (!(*regions_to_merge)[i]->empty()) {
-                            merge = !empty_region_set_intersection((*regions_to_merge)[i], (*regions_to_merge)[k]);
-                            if (merge) {
-                                for (Region *reg: *(*regions_to_merge)[i])
-                                    (*regions_to_merge)[k]->insert(reg);
-                                (*regions_to_merge)[i]->clear();
-                            }
-                        }
-                    }
+        do{
+            set<Region *> *working_set = *regions_to_merge->begin();
+            Region * merged_regions = regions_union(working_set);
+            vector<Region *> to_erase;
+            for(auto reg: *working_set){
+                if(current_FCPN->find(reg) != current_FCPN->end()){
+                    to_erase.push_back(reg);
                 }
-                //merge effettivo tra regioni
-                set<Region *> merged_regions;
-                for (auto regionSet: *regions_to_merge) {
-                    merged_regions.insert(regions_union(regionSet));
-                }
-
-
-                //removing regions used for the merge
-                //cout << "removing regions" << endl;
-                vector<Region *> to_erase;
-                for (Region *reg: *current_FCPN) {
-                    for (Region *mergedReg: merged_regions) {
-                        if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
-                            //cout << "Adding for removal region ";
-                            //println(*reg);
-                            to_erase.push_back(reg);
-                            //current_SM->erase(reg);
-                        }
-                    }
-                }
-
-                for (auto reg: to_erase) {
-                    //cout << "Removing region ";
-                    //println(*reg);
-                    current_FCPN->erase(reg);
-                }
-
-
-                //cout << "adding merged regions" << endl;
-                for (Region *mergedReg: merged_regions) {
-                    if (!mergedReg->empty()) {
-                        //cout << "adding a merged region to an SM" << endl;
-                        //println(*mergedReg);
-                        current_FCPN->insert(mergedReg);
-                    } else {
-                        delete mergedReg;
-                    }
-                }
-                //todo: nel caso dell'input clock.g e alloc-outbound.g ci sono memory leak
-                /*for(Region * r: merged_regions){
-                    cout << "removing a region" << endl;
-                    println(*r);
-                    delete r;
-                }*/
-            } else {
-                cout << "Removed redundant label without merging regions" << endl;
             }
-        }
 
-        for (auto reg_set: *regions_to_merge) {
+            for (auto reg: to_erase) {
+                //cout << "Removing region ";
+                //println(*reg);
+                current_FCPN->erase(reg);
+            }
+
+            if(decomposition_debug) {
+                cout << "adding a merged region to an FCPN" << endl;
+                println(*merged_regions);
+            }
+            current_FCPN->insert(merged_regions);
+
+
+
+            for(auto tmp_set: *regions_to_merge){
+                bool entered = false;
+                if(tmp_set != working_set) {
+                    for(auto reg: *working_set){
+                        if(tmp_set->find(reg) != tmp_set->end()){
+                            entered = true;
+                            tmp_set->erase(reg);
+                        }
+                    }
+                }
+                if(entered){
+                    tmp_set->insert(merged_regions);
+                    cout << "changed another regions to merge set" << endl;
+                }
+            }
+
+            //(*regions_to_merge->begin())->clear();
+            regions_to_merge->erase(regions_to_merge->begin());
+        } while(!regions_to_merge->empty());
+
+
+
+        /*for (auto reg_set: *regions_to_merge) {
             delete reg_set;
-        }
+        }*/
         delete regions_to_merge;
     }
 
-    //UPDATING MAP OF SM-PRE/POST REGIONS
+    //UPDATING MAP OF FCPN-PRE/POST REGIONS
 
     for (auto FCPN: *FCPNs) {
-        auto removed_events_SM = (*events_to_remove_per_FCPN)[FCPN];
-        if (removed_events_SM != nullptr) {
+        auto removed_events_FCPN = (*events_to_remove_per_FCPN)[FCPN];
+        if (removed_events_FCPN != nullptr) {
             delete (*map_of_FCPN_pre_regions)[FCPN];
             delete (*map_of_FCPN_post_regions)[FCPN];
             //cout << "updating pre-regions map SM" << endl;
-            (*map_of_FCPN_pre_regions)[FCPN] = Pre_and_post_regions_generator::create_pre_regions_for_FCPN(FCPN, removed_events_SM);
+            (*map_of_FCPN_pre_regions)[FCPN] = Pre_and_post_regions_generator::create_pre_regions_for_FCPN(FCPN, removed_events_FCPN);
             //cout << "updating post-regions map SM" << endl;
             (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
         }
