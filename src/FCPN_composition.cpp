@@ -62,18 +62,19 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                             if (rec1.second->find(event) != rec1.second->end()) {
                                 //insert into the next state the regions which were unchanged
                                 // (didn't took part of the event firing)
-                                for(auto reg: current_state.at(FCPN)){
-                                    if(map_FCPN_pre_regions->at(FCPN)->find(event) != map_FCPN_pre_regions->at(FCPN)->end()) {
+                                if(map_FCPN_pre_regions->at(FCPN)->find(event) != map_FCPN_pre_regions->at(FCPN)->end()) {
+                                    for(auto reg: current_state.at(FCPN)) {
                                         if (map_FCPN_pre_regions->at(FCPN)->at(event)->find(reg) ==
                                             map_FCPN_pre_regions->at(FCPN)->at(event)->end()) {
                                             next_state_map[FCPN].insert(reg);
                                         }
                                     }
-                                    else{
-                                        cerr << "WRONG DECOMPOSITION: events without pre-regions" << endl;
-                                        exit(1);
-                                    }
                                 }
+                                else{
+                                    cerr << "WRONG DECOMPOSITION: events without pre-regions" << endl;
+                                    //exit(1);
+                                }
+
                                 //regions activated after the event firing
                                 for (auto reg: *rec1.second->at(event)) {
                                     next_state_map[FCPN].insert(reg);
