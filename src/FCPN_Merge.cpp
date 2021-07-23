@@ -318,7 +318,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
     // NEW MERGE
     for (auto rec: *events_to_remove_per_FCPN) {
-        //cout << "removing events SM" << endl;
+        cout << "removing events FCPN" << endl;
         SM *current_FCPN = rec.first;
         set<int> *removed_events = rec.second;
         auto regions_to_merge = new vector<set<Region *> *>();
@@ -348,17 +348,25 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                         break;
                     }
                 }
-                for (auto reg: *(*regions_to_merge)[k]) {
-                    regions_to_merge->at(i)->insert(reg);
+                if(merge) {
+                    for (auto reg: *(*regions_to_merge)[k]) {
+                        regions_to_merge->at(i)->insert(reg);
+                    }
+                    regions_to_merge->erase(regions_to_merge->begin() + k);
+                    k--;
                 }
-                regions_to_merge->erase(regions_to_merge->begin() + k);
-                k--;
             }
         }
 
         auto to_erase = set<Region *>();
         for(auto working_set: *regions_to_merge){
+            cout << "merging regions: " << endl;
+            for(auto reg: *working_set){
+                println(*reg);
+            }
+            cout << "into" << endl;
             auto merge = regions_union(working_set);
+            println(*merge);
             current_FCPN->insert(merge);
             for(auto reg: *working_set){
                 to_erase.insert(reg);
@@ -382,9 +390,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             //cout << "updating post-regions map SM" << endl;
             (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN(
                     (*map_of_FCPN_pre_regions)[FCPN]);
-            if((*map_of_FCPN_pre_regions)[FCPN]->size() != (*map_of_FCPN_post_regions)[FCPN]->size()){
-                cerr << "WARNING: different map sizes" << endl;
-            }
         }
     }
 
