@@ -353,20 +353,22 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                         regions_to_merge->at(i)->insert(reg);
                     }
                     regions_to_merge->erase(regions_to_merge->begin() + k);
-                    k--;
+                    k=i;
                 }
             }
         }
 
         auto to_erase = set<Region *>();
         for(auto working_set: *regions_to_merge){
-            cout << "merging regions: " << endl;
-            for(auto reg: *working_set){
-                println(*reg);
-            }
-            cout << "into" << endl;
             auto merge = regions_union(working_set);
-            println(*merge);
+            if(decomposition_debug) {
+                cout << "merging regions: " << endl;
+                for (auto reg: *working_set) {
+                    println(*reg);
+                }
+                cout << "into" << endl;
+                println(*merge);
+            }
             current_FCPN->insert(merge);
             for(auto reg: *working_set){
                 to_erase.insert(reg);

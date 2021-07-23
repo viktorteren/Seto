@@ -71,7 +71,7 @@ void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                                     }
                                 }
                                 else{
-                                    cerr << "WRONG DECOMPOSITION: events without pre-regions" << endl;
+                                    cerr << "WARNING: events without pre-regions" << endl;
                                     //exit(1);
                                 }
 
