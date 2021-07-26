@@ -150,8 +150,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         delete regions_connected_to_labels;
     }
 
-    // STEP 4b
-    /*
     auto preregion_for = new map <set<Region*>*, map<Region*, set<int>*>*>();
     for(auto FCPN: *FCPNs){
         if(preregion_for->find(FCPN) == preregion_for->end())
@@ -165,6 +163,24 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             }
         }
     }
+
+    auto postregion_for = new map <set<Region*>*, map<Region*, set<int>*>*>();
+    for(auto FCPN: *FCPNs){
+        if(postregion_for->find(FCPN) == postregion_for->end())
+            (*postregion_for)[FCPN] = new map<Region *, set<int>*>();
+        for(auto rec: *(*map_of_FCPN_post_regions)[FCPN]){
+            auto event = rec.first;
+            for(auto reg: *rec.second){
+                if((*postregion_for)[FCPN]->find(reg) == (*postregion_for)[FCPN]->end())
+                    (*(*postregion_for)[FCPN])[reg] = new set<int>();
+                (*(*postregion_for)[FCPN])[reg]->insert(event);
+            }
+        }
+    }
+
+    // STEP 4b
+    /*
+
 
     for(auto rec: *preregion_for){
         auto FCPN = rec.first;
@@ -356,6 +372,51 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     k=i;
                 }
             }
+        }
+
+        auto cancelled_events = new vector<int>();
+        for(int i=0; i< regions_to_merge->size();++i){
+            auto reg_set = (*regions_to_merge)[i];
+            int occurrencies = 0;
+            bool multiple_exit = false;
+            bool multiple_enter = false;
+            for(auto reg: *reg_set){
+                if(preregion_for->at(current_FCPN)->at(reg)->size() > 1){
+                    multiple_exit = true;
+                }
+                if(postregion_for->at(current_FCPN)->at(reg)->size() > 1){
+                    multiple_enter = true;
+                }
+                if(multiple_exit || multiple_enter)
+                    occurrencies++;
+            }
+            if(multiple_exit && multiple_enter && occurrencies > 1){
+                cout << "completely cancelling a merge" << endl;
+                for(auto r1: *reg_set){
+                    for(auto r2: *reg_set){
+                       if(r1 != r2){
+                           for(auto ev: *events_to_remove_per_FCPN->at(current_FCPN)){
+                               if(map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r1) != map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()){
+                                   if(map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r2) != map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()){
+                                       cancelled_events->push_back(ev);
+                                   }
+                               }
+                               else if(map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r2) != map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()){
+                                   if(map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r1) != map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()){
+                                       cancelled_events->push_back(ev);
+                                   }
+                               }
+                           }
+                       }
+                    }
+                }
+                regions_to_merge->erase(regions_to_merge->begin()+i);
+                i--;
+            }
+        }
+
+        for(auto ev: *cancelled_events){
+            events_to_remove_per_FCPN->at(current_FCPN)->erase(ev);
         }
 
         auto to_erase = set<Region *>();
