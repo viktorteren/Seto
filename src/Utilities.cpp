@@ -18,6 +18,8 @@ bool ts_output;
 bool ects_output;
 bool k_fcpn_decomposition;
 bool no_merge;
+bool dot_output;
+bool composition;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -514,6 +516,25 @@ namespace Utilities {
         return false;
     }
 
+
+    template<typename T, typename T2>
+    bool contains(T bigger_set, T2 smaller_set) {
+        if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
+            cerr << "wrong parameter type" << endl;
+            exit(1);
+        }
+        if (!is_same<T2, set<Region *>*>::value && !is_same<T2, vector<Region *>*>::value){
+            cerr << "wrong parameter type" << endl;
+            exit(1);
+        }
+
+        for (auto elem : *smaller_set) {
+            if(bigger_set->find(elem) == bigger_set->end())
+                return false;
+        }
+        return true;
+    }
+
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region) {
         for (auto elem : set) {
             if (are_equal(elem, region)) {
@@ -532,17 +553,17 @@ namespace Utilities {
         return false;
     }
 
-    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
-        for (auto elem : *smaller_set) {
-            if(bigger_set->find(elem) == bigger_set->end())
-            return false;
+    bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set) {
+        for (auto elem : smaller_set) {
+            if(bigger_set.find(elem) == bigger_set.end())
+                return false;
         }
         return true;
     }
 
-    bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set) {
-        for (auto elem : smaller_set) {
-            if(bigger_set.find(elem) == bigger_set.end())
+    bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
+        for (auto elem : *smaller_set) {
+            if(bigger_set->find(elem) == bigger_set->end())
                 return false;
         }
         return true;
@@ -713,9 +734,9 @@ namespace Utilities {
         fout << "des (";
         fout << initial_state;
         fout << ",";
-        fout << num_states;
-        fout <<",";
         fout << num_transactions;
+        fout <<",";
+        fout << num_states;
         fout << ")" << endl;
 
 
@@ -777,6 +798,197 @@ namespace Utilities {
         fout.close();
     }
 
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+
+        output_name = output_name + "_composed.aut";
+
+
+        ofstream fout(output_name);
+        fout << "des (";
+        fout << state_aliases->at(initial_state_TS);
+        fout << ",";
+        fout << arcs->size();
+        fout <<",";
+        fout << state_aliases->size();
+        fout << ")" << endl;
+
+        for(const auto& arc: *arcs){
+            fout << "(";
+            fout << state_aliases->at(arc.start);
+            fout << ",\"";
+            fout << arc.event;
+            fout << "\",";
+            fout << state_aliases->at(arc.end);
+            fout << ")\n";
+        }
+
+        fout.close();
+    }
+
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+
+        output_name = output_name + "_composed_SM.aut";
+
+
+        ofstream fout(output_name);
+        fout << "des (";
+        fout << state_aliases->at(initial_state_TS);
+        fout << ",";
+        fout << arcs->size();
+        fout <<",";
+        fout << state_aliases->size();
+        fout << ")" << endl;
+
+        for(const auto& arc: *arcs){
+            fout << "(";
+            fout << state_aliases->at(arc.start);
+            fout << ",\"";
+            fout << arc.event;
+            fout << "\",";
+            fout << state_aliases->at(arc.end);
+            fout << ")\n";
+        }
+        fout.close();
+    }
+
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+        output_name = output_name + "_composed.dot";
+
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        fout << in_name;
+        fout << "{\n";
+        fout << "\tlabel=\"(name=" << in_name << ",n=" << state_aliases->size()
+             << ",m=" << arcs->size() << ")\";\n";
+        fout << "\t_nil [style = \"invis\"];\n";
+        fout << "\tnode [shape = doublecircle]; ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+        fout << "\tnode [shape = circle];\n";
+        fout << "\t_nil -> ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+
+        for(const auto& arc: *arcs){
+            fout << "\t";
+            fout << state_aliases->at(arc.start);
+            fout << "->";
+            fout << state_aliases->at(arc.end);
+            fout << "[label=\"";
+            fout << arc.event;
+            fout << "\"];\n";
+        }
+
+        fout << "}\n";
+        fout.close();
+    }
+
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+        output_name = output_name + "_composed_SM.dot";
+
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        fout << in_name;
+        fout << "{\n";
+        fout << "\tlabel=\"(name=" << in_name << ",n=" << state_aliases->size()
+             << ",m=" << arcs->size() << ")\";\n";
+        fout << "\t_nil [style = \"invis\"];\n";
+        fout << "\tnode [shape = doublecircle]; ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+        fout << "\tnode [shape = circle];\n";
+        fout << "\t_nil -> ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+
+        for(const auto& arc: *arcs){
+            fout << "\t";
+            fout << state_aliases->at(arc.start);
+            fout << "->";
+            fout << state_aliases->at(arc.end);
+            fout << "[label=\"";
+            fout << arc.event;
+            fout << "\"];\n";
+        }
+
+        fout << "}\n";
+        fout.close();
+    }
+
 
     __attribute__((unused)) string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
@@ -829,7 +1041,7 @@ namespace Utilities {
     }
 
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
-        return convert_to_dimacs(file_path, num_var, num_clauses, clauses, nullptr);
+        return convert_to_dimacs(std::move(file_path), num_var, num_clauses, clauses, nullptr);
     }
 
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){

@@ -16,6 +16,7 @@
 #include "../include/FCPN_decomposition.h"
 #include "../include/GreedyRemoval.h"
 #include "../include/FCPN_Merge.h"
+#include "../include/SM_composition.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -35,6 +36,8 @@ int main(int argc, char **argv) {
         no_fcpn_min = true;
         fcptnet = false;
         pn_synthesis = false;
+        composition = false;
+        dot_output = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -48,6 +51,12 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "NOMERGE"){
                 no_merge = true;
+            }
+            else if(args[i] == "COMPOSE"){
+                composition = true;
+            }
+            else if(args[i] == "DOT"){
+                dot_output = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -109,20 +118,26 @@ int main(int argc, char **argv) {
             }
         }
         if(fcptnet && decomposition_output_sis){
-            cerr << "SIS output not implemented for FCPNs, remove G flag"<< endl;
+            cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
             exit(0);
         }
         if(pn_synthesis && decomposition){
-            cerr << "PN synthesis cannot be done together with SM decomposition" << endl;
+            cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
             exit(0);
         }
         if(pn_synthesis && fcptnet){
-            cerr << "PN synthesis cannot be done together with FCPN decomposition" << endl;
+            cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
             exit(0);
         }
         if(aut_output){
             if(!ts_output && !ects_output){
-                cerr << "AUT output flag is compatible only with TS and ECTS flags" << endl;
+                cerr << "AUT output flag is compatible only with TS and ECTS flags." << endl;
+                exit(0);
+            }
+        }
+        if(composition){
+            if((!fcptnet && !decomposition) || k_fcpn_decomposition){
+                cerr << "Composition works only with FCPN/SM decomposition (excluded k-FCPN decomposition)." << endl;
                 exit(0);
             }
         }
@@ -535,6 +550,9 @@ int main(int argc, char **argv) {
 
                 auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
+                if(composition)
+                    SM_composition::compose(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+
                 auto final_sum = getStatesSum(SMs);
                 auto final_avg = getStatesAvg(SMs);
                 auto final_var = getStatesVar(SMs);
@@ -686,6 +704,15 @@ int main(int argc, char **argv) {
 
                     cout << "Total number of places: " << num_places << endl;
 
+                    for(auto FCPN: *final_fcpn_set){
+                        for(auto reg: *FCPN){
+                            if(reg != nullptr) {
+                                if (regions_set->find(reg) == regions_set->end()) {
+                                    delete reg;
+                                }
+                            }
+                        }
+                    }
                     delete final_fcpn_set;
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 }

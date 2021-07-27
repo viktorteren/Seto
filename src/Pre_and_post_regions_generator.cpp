@@ -171,7 +171,6 @@ map<int, set<Region *>* >* Pre_and_post_regions_generator::create_post_regions_f
                         (*post_regions_FCPN)[r.first]->insert(reg);
                     }
                 }
-
             } else {
                 //cout << "ts_map non contiene " << rec.first << endl;
             }
@@ -228,24 +227,44 @@ map<int, Region *> * Pre_and_post_regions_generator::create_pre_regions_for_SM(S
     return pre_regions_SM;
 }
 
-map<int, set<Region*> *> * Pre_and_post_regions_generator::create_pre_regions_for_FCPN(SM *sm, set<int> *removed_events){
-    auto pre_regions_SM = new map<int, set<Region*> *>;
+map<int, set<Region*> *> * Pre_and_post_regions_generator::create_pre_regions_for_FCPN(SM *FCPN, set<int> *removed_events){
+    auto pre_regions_FCPN = new map<int, set<Region*> *>;
     set<Region*>::iterator it;
     for(auto record: *ts_map){
         int event = record.first;
         if(removed_events->find(event) == removed_events->end()) {
-            for (it = sm->begin(); it != sm->end(); ++it) {
+            for (it = FCPN->begin(); it != FCPN->end(); ++it) {
                 Region *region = *it;
                 if (is_pre_region(&record.second, region)) {
-                    if(pre_regions_SM->find(event) == pre_regions_SM->end()){
-                        (*pre_regions_SM)[event] = new set<Region *>();
+                    if(pre_regions_FCPN->find(event) == pre_regions_FCPN->end()){
+                        (*pre_regions_FCPN)[event] = new set<Region *>();
                     }
-                    (*pre_regions_SM)[event]->insert(region);
+                    (*pre_regions_FCPN)[event]->insert(region);
                 }
             }
         }
     }
-    return pre_regions_SM;
+    return pre_regions_FCPN;
+}
+
+map<int, set<Region*> *> * Pre_and_post_regions_generator::create_pre_regions_for_FCPN(SM *FCPN, set<int> considered_events){
+    auto pre_regions_FCPN = new map<int, set<Region*> *>;
+    set<Region*>::iterator it;
+    for(auto record: *ts_map){
+        int event = record.first;
+        if(considered_events.find(event) != considered_events.end()) {
+            for (it = FCPN->begin(); it != FCPN->end(); ++it) {
+                Region *region = *it;
+                if (is_pre_region(&record.second, region)) {
+                    if(pre_regions_FCPN->find(event) == pre_regions_FCPN->end()){
+                        (*pre_regions_FCPN)[event] = new set<Region *>();
+                    }
+                    (*pre_regions_FCPN)[event]->insert(region);
+                }
+            }
+        }
+    }
+    return pre_regions_FCPN;
 }
 
 void Pre_and_post_regions_generator::create_pre_regions() {
