@@ -304,8 +304,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     for (auto rec: encoded_events_map) {
         auto encoded_event = rec.first;
         if (solver.model[encoded_event - 1] == l_False) {
-            if (decomposition_debug)
-                cout << "add encoding " << encoded_event << " to removal events" << endl;
+            /*if (decomposition_debug)
+                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
             to_remove.push_back(encoded_event);
         }
     }
@@ -374,50 +374,112 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             }
         }
 
-        auto cancelled_events = new vector<int>();
-        for(int i=0; i< regions_to_merge->size();++i){
-            auto reg_set = (*regions_to_merge)[i];
-            int occurrencies = 0;
-            bool multiple_exit = false;
-            bool multiple_enter = false;
-            for(auto reg: *reg_set){
-                if(preregion_for->at(current_FCPN)->at(reg)->size() > 1){
-                    multiple_exit = true;
-                }
-                if(postregion_for->at(current_FCPN)->at(reg)->size() > 1){
-                    multiple_enter = true;
-                }
-                if(multiple_exit || multiple_enter)
-                    occurrencies++;
-            }
-            if(multiple_exit && multiple_enter && occurrencies > 1){
-                cout << "completely cancelling a merge" << endl;
-                for(auto r1: *reg_set){
-                    for(auto r2: *reg_set){
-                       if(r1 != r2){
-                           for(auto ev: *events_to_remove_per_FCPN->at(current_FCPN)){
-                               if(map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r1) != map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()){
-                                   if(map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r2) != map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()){
-                                       cancelled_events->push_back(ev);
-                                   }
-                               }
-                               else if(map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r2) != map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()){
-                                   if(map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r1) != map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()){
-                                       cancelled_events->push_back(ev);
-                                   }
-                               }
-                           }
-                       }
+        set<int> *cancelled_events = nullptr;
+        do {
+            delete cancelled_events;
+            cancelled_events = new set<int>();
+            for (auto reg_set : *regions_to_merge) {
+                int occurrences = 0;
+                bool multiple_exit = false;
+                bool multiple_enter = false;
+                auto involved_regions = new set<Region *>();
+                for (auto reg: *reg_set) {
+                    if (preregion_for->at(current_FCPN)->at(reg)->size() > 1) {
+                        multiple_exit = true;
+                    }
+                    if (postregion_for->at(current_FCPN)->at(reg)->size() > 1) {
+                        multiple_enter = true;
+                    }
+                    if (multiple_exit || multiple_enter) {
+                        occurrences++;
+                        involved_regions->insert(reg);
                     }
                 }
-                regions_to_merge->erase(regions_to_merge->begin()+i);
-                i--;
+                if (multiple_exit && multiple_enter && occurrences > 1) {
+                    if(decomposition_debug)
+                        cout << "removing an event from a merge with " << occurrences << " occurrences" << endl;
+                    bool entered = false;
+                    for (auto r1: *reg_set) {
+                        for (auto r2: *reg_set) {
+                            if (r1 != r2) {
+                                if (!entered) {
+                                    if (involved_regions->find(r1) != involved_regions->end() ||
+                                        involved_regions->find(r2) != involved_regions->end()) {
+                                        for (auto ev: *events_to_remove_per_FCPN->at(current_FCPN)) {
+                                            if (map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r1) !=
+                                                map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()) {
+                                                if (map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r2) !=
+                                                    map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()) {
+                                                    cancelled_events->insert(ev);
+                                                    entered = true;
+                                                }
+                                            } else if (map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r2) !=
+                                                       map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()) {
+                                                if (map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->find(r1) !=
+                                                    map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()) {
+                                                    cancelled_events->insert(ev);
+                                                    entered = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //regions_to_merge->erase(regions_to_merge->begin()+i);
+                    //i--;
+                }
+                delete involved_regions;
             }
-        }
 
-        for(auto ev: *cancelled_events){
-            events_to_remove_per_FCPN->at(current_FCPN)->erase(ev);
-        }
+            if (!cancelled_events->empty()) {
+                delete regions_to_merge;
+                regions_to_merge = new vector<set<Region *> *>();
+                for (auto ev: *removed_events) {
+                    if (cancelled_events->find(ev) == cancelled_events->end()) {
+                        auto regions_connected_to_ev = new set<Region *>();
+                        //a transition can be without input edges: infinite firing
+                        if ((*(*map_of_FCPN_pre_regions)[current_FCPN])[ev] != nullptr) {
+                            for (auto reg: *(*(*map_of_FCPN_pre_regions)[current_FCPN])[ev]) {
+                                regions_connected_to_ev->insert(reg);
+                            }
+                        }
+                        //a transition can be without exiting edges: firing it removes all incoming tokens from PN
+                        if ((*(*map_of_FCPN_post_regions)[current_FCPN])[ev] != nullptr) {
+                            for (auto reg: *(*(*map_of_FCPN_post_regions)[current_FCPN])[ev]) {
+                                regions_connected_to_ev->insert(reg);
+                            }
+                        }
+                        regions_to_merge->push_back(regions_connected_to_ev);
+                    }
+                }
+
+                for (int i = 0; i < regions_to_merge->size(); ++i) {
+                    for (int k = i + 1; k < regions_to_merge->size(); ++k) {
+                        bool merge = false;
+                        for (auto reg: *(*regions_to_merge)[i]) {
+                            if ((*regions_to_merge)[k]->find(reg) != (*regions_to_merge)[k]->end()) {
+                                merge = true;
+                                break;
+                            }
+                        }
+                        if (merge) {
+                            for (auto reg: *(*regions_to_merge)[k]) {
+                                regions_to_merge->at(i)->insert(reg);
+                            }
+                            regions_to_merge->erase(regions_to_merge->begin() + k);
+                            k = i;
+                        }
+                    }
+                }
+            }
+
+            for(auto ev: *cancelled_events){
+                events_to_remove_per_FCPN->at(current_FCPN)->erase(ev);
+            }
+        } while(!cancelled_events->empty());
+
 
         auto to_erase = set<Region *>();
         for(auto working_set: *regions_to_merge){
@@ -438,6 +500,10 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         for(auto reg: to_erase){
             current_FCPN->erase(reg);
         }
+
+        //todo: forse qui c'è da fare qualche check, del tipo eliminare regioni che non si vedranno più
+        delete regions_to_merge;
+        delete cancelled_events;
     }
 
     //UPDATING MAP OF FCPN-PRE/POST REGIONS
@@ -459,6 +525,33 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     if(decomposition_output){
         print_after_merge(FCPNs, map_of_FCPN_pre_regions, map_of_FCPN_post_regions,aliases,file);
     }
+
+    for(auto cl: *clauses){
+        delete cl;
+    }
+    delete clauses;
+
+    for(auto rec: *preregion_for){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete preregion_for;
+
+    for(auto rec: *postregion_for){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete postregion_for;
+
+    /*
+    for(auto rec: *events_to_remove_per_FCPN){
+        delete rec.second;
+    }
+    delete events_to_remove_per_FCPN;*/
 }
 
 void FCPN_Merge::print_after_merge(set<set<Region *> *> *FCPNs,
