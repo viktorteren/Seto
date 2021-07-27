@@ -528,7 +528,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         if(composition){
             FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
         }
-        if(decomposition_output) {
+        if(output) {
             int pn_counter = 0;
             auto regions_mapping = get_regions_map(pprg->get_pre_regions());
             for (auto pn: *fcpn_set) {
