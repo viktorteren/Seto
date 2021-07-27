@@ -89,6 +89,10 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
+<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension
+
+<b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+
 ### c) TS to interacting FCPNs flows
 
 #### Exact algorithm:
@@ -122,7 +126,7 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>NOMERGE</b>: avoids the Merge step
 
-<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension
+<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension (does not works with k-FCPN decomposition)
 
 <b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 

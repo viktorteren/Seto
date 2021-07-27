@@ -16,6 +16,7 @@
 #include "../include/FCPN_decomposition.h"
 #include "../include/GreedyRemoval.h"
 #include "../include/FCPN_Merge.h"
+#include "../include/SM_composition.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -135,8 +136,8 @@ int main(int argc, char **argv) {
             }
         }
         if(composition){
-            if(!fcptnet){
-                cerr << "Composition works only with FCPN decomposition." << endl;
+            if((!fcptnet && !decomposition) || k_fcpn_decomposition){
+                cerr << "Composition works only with FCPN/SM decomposition (excluded k-FCPN decomposition)." << endl;
                 exit(0);
             }
         }
@@ -548,6 +549,9 @@ int main(int argc, char **argv) {
 
 
                 auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+
+                if(composition)
+                    SM_composition::compose(SMs, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
 
                 auto final_sum = getStatesSum(SMs);
                 auto final_avg = getStatesAvg(SMs);

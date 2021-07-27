@@ -844,6 +844,51 @@ namespace Utilities {
         fout.close();
     }
 
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+
+        output_name = output_name + "_composed_SM.aut";
+
+
+        ofstream fout(output_name);
+        fout << "des (";
+        fout << state_aliases->at(initial_state_TS);
+        fout << ",";
+        fout << arcs->size();
+        fout <<",";
+        fout << state_aliases->size();
+        fout << ")" << endl;
+
+        for(const auto& arc: *arcs){
+            fout << "(";
+            fout << state_aliases->at(arc.start);
+            fout << ",\"";
+            fout << arc.event;
+            fout << "\",";
+            fout << state_aliases->at(arc.end);
+            fout << ")\n";
+        }
+        fout.close();
+    }
+
     void print_ts_dot_file(string file_path,
                            map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
                            vector<edge> *arcs,
@@ -865,6 +910,56 @@ namespace Utilities {
         std::replace( in_name.begin(), in_name.end(), '-', '_');
 
         output_name = output_name + "_composed.dot";
+
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        fout << in_name;
+        fout << "{\n";
+        fout << "\tlabel=\"(name=" << in_name << ",n=" << state_aliases->size()
+             << ",m=" << arcs->size() << ")\";\n";
+        fout << "\t_nil [style = \"invis\"];\n";
+        fout << "\tnode [shape = doublecircle]; ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+        fout << "\tnode [shape = circle];\n";
+        fout << "\t_nil -> ";
+        fout << state_aliases->at(initial_state_TS) << ";\n";
+
+        for(const auto& arc: *arcs){
+            fout << "\t";
+            fout << state_aliases->at(arc.start);
+            fout << "->";
+            fout << state_aliases->at(arc.end);
+            fout << "[label=\"";
+            fout << arc.event;
+            fout << "\"];\n";
+        }
+
+        fout << "}\n";
+        fout.close();
+    }
+
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS){
+        string output_name = std::move(file_path);
+        string in_name;
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        unsigned long lower = 0;
+        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_name.begin(), in_name.end(), '-', '_');
+
+        output_name = output_name + "_composed_SM.dot";
 
 
         ofstream fout(output_name);

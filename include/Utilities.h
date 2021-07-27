@@ -36,6 +36,12 @@ struct edge{
     map<set<Region *>*, set<Region *>> end;
 };
 
+struct SM_edge{
+    map<set<Region *>*, Region *> start;
+    string event;
+    map<set<Region *>*, Region *> end;
+};
+
 const int OK = 0;
 const int NOCROSS = 1;
 const int EXIT_NOCROSS = 2;
@@ -116,12 +122,19 @@ namespace Utilities {
     __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set);
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
+    //todo: use template to merge the two versions of print_ts_dot_file
     void print_ts_dot_file(string file_path,
                            map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
                            vector<edge> *arcs,
                            const map<set<Region *>*, set<Region *>>& initial_state_TS);
+    void print_ts_dot_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS);
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
+    //todo: use template to merge the two versions of print_ts_aut_file
     void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, const map<set<Region *>*, set<Region *>>& initial_state_TS);
+    void print_ts_aut_file(string file_path, map <map<set<Region *>*, Region *>, int> *state_aliases, vector<SM_edge> *arcs, const map<set<Region *>*, Region *>& initial_state_TS);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,
