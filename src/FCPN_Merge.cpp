@@ -547,11 +547,11 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     }
     delete postregion_for;
 
-    /*
+
     for(auto rec: *events_to_remove_per_FCPN){
         delete rec.second;
     }
-    delete events_to_remove_per_FCPN;*/
+    delete events_to_remove_per_FCPN;
 }
 
 void FCPN_Merge::print_after_merge(set<set<Region *> *> *FCPNs,

@@ -700,10 +700,18 @@ int main(int argc, char **argv) {
 
                     cout << "Total number of places: " << num_places << endl;
 
+                    for(auto FCPN: *final_fcpn_set){
+                        for(auto reg: *FCPN){
+                            if(reg != nullptr) {
+                                if (regions_set->find(reg) == regions_set->end()) {
+                                    delete reg;
+                                }
+                            }
+                        }
+                    }
                     delete final_fcpn_set;
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 }
-                //todo implement FCPN composition
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
