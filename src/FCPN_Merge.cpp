@@ -412,6 +412,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                                     map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()) {
                                                     cancelled_events->insert(ev);
                                                     entered = true;
+                                                    if(decomposition_debug)
+                                                        cout << "removed event: " << ev << endl;
                                                 }
                                             } else if (map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->find(r2) !=
                                                        map_of_FCPN_post_regions->at(current_FCPN)->at(ev)->end()) {
@@ -419,6 +421,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                                     map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->end()) {
                                                     cancelled_events->insert(ev);
                                                     entered = true;
+                                                    if(decomposition_debug)
+                                                        cout << "removed event: " << ev << endl;
                                                 }
                                             }
                                         }
