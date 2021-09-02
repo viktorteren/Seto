@@ -142,7 +142,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             }
             if(not_empty_intersection){
                 if(decomposition_debug)
-                    cout << "NOT EMPT INTERSECTION for event " << ev << endl;
+                    cout << "NOT EMPTY INTERSECTION for event " << ev << endl;
                 clause = new vector<int32_t>();
                 clause->push_back(ev_encoding);
                 clauses->push_back(clause);
