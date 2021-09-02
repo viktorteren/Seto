@@ -300,6 +300,15 @@ namespace Utilities {
         return intersection;
     }
 
+    bool empty_regions_intersection(Region *first, Region *second){
+        for (auto state : *first) {
+            if (second->find(state) != second->end()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     bool at_least_one_state_from_first_in_second(Region *first, Region *second){
         for (auto state : *first) {
             if (second->find(state) !=
@@ -355,12 +364,8 @@ namespace Utilities {
     bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second){
         for(auto r1: *first){
             for(auto r2: *second){
-                auto intersection = regions_intersection(r1, r2);
-                if(!intersection->empty()) {
-                    delete intersection;
+                if(!empty_regions_intersection(r1,r2))
                     return false;
-                }
-                delete intersection;
             }
         }
         return true;

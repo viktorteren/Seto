@@ -86,6 +86,7 @@ namespace Utilities {
     Region *regions_union(set<Region *> *vec);
     Region *regions_union(Region *first, Region *second);
     Region *regions_intersection(Region *first, Region *second);
+    bool empty_regions_intersection(Region *first, Region *second);
     bool at_least_one_state_from_first_in_second(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
     set<int> *regions_intersection(const set<Region *>& regions);
