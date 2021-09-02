@@ -28,7 +28,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // connected to more than 2 regions
     // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
     // 5. translate the map into clauses
-    // 5b: constraint on the emmpty intersection between regions which are going to be merged
+    // 5b: constraint on the empty intersection between regions which are going to be merged
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
