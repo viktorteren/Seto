@@ -28,6 +28,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // connected to more than 2 regions
     // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
     // 5. translate the map into clauses
+    // 5b: constraint on the emmpty intersection between regions which are going to be merged
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
@@ -38,6 +39,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // it's an invalid variable value
     // ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N =
     // K*(N+M)]
+
     auto clauses = new vector<vector<int32_t> *>();
 
     //STEP 1:
@@ -84,7 +86,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         clauses->push_back(clause);
     }
 
-
     //STEP 3b
     /*
     auto events_inFCPNs = new map<int, set<set<Region *>*>*>();
@@ -115,7 +116,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     map<int, pair<int, int>> encoded_events_map; //map <encoded value, pair<sm, decoded_value>
     set<int> encoded_regions_set; //will be used in the 6th step
 
-    //STEPS 4 and 5: conversion into clauses of pre and post regions for each SM
+    //STEPS 4 and 5 and 5b: conversion into clauses of pre and post regions for each SM
     for (auto FCPN: *FCPNs) {
         int FCPN_counter = FCPNs_map[FCPN];
         auto regions_connected_to_labels = merge_2_maps((*map_of_FCPN_pre_regions)[FCPN],
@@ -126,7 +127,27 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             auto ev = rec.first + 1; //events range must start from 1 not 0
             auto ev_encoding = M * (FCPN_counter - 1) + ev;
             (encoded_events_map)[ev_encoding] = make_pair(FCPN_counter, ev - 1);
-            if (rec.second->size() <= 2) {
+            set<Region *>::iterator it1;
+            set<Region *>::iterator it2;
+            bool not_empty_intersection = false;
+            for(it1=rec.second->begin();it1!=rec.second->end();++it1){
+                for(it2=next(it1);it2!=rec.second->end();++it2){
+                    if(!empty_regions_intersection(*it1, *it2)){
+                        not_empty_intersection = true;
+                        break;
+                    }
+                }
+                if(not_empty_intersection)
+                    break;
+            }
+            if(not_empty_intersection){
+                if(decomposition_debug)
+                    cout << "NOT EMPT INTERSECTION for event " << ev << endl;
+                clause = new vector<int32_t>();
+                clause->push_back(ev_encoding);
+                clauses->push_back(clause);
+            }
+            else{
                 for (auto reg: *rec.second) {
                     int region_counter = regions_map_for_sat[reg];
                     int region_encoding = (M * K) + N * (FCPN_counter - 1) + region_counter;
@@ -137,12 +158,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     clauses->push_back(clause);
                 }
             }
-                //event connected to more regions therefore we avoid merges which removes this label
-            else {
-                clause = new vector<int32_t>();
-                clause->push_back(ev_encoding);
-                clauses->push_back(clause);
-            }
+
         }
         for (auto rec: *regions_connected_to_labels) {
             delete rec.second;
@@ -180,7 +196,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
     // STEP 4b
     /*
-
 
     for(auto rec: *preregion_for){
         auto FCPN = rec.first;
