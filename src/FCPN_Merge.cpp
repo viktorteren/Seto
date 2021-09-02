@@ -493,6 +493,16 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 for (auto reg: *working_set) {
                     println(*reg);
                 }
+                set<set<int> *>::iterator it1;
+                set<set<int> *>::iterator it2;
+                for(it1 = working_set->begin();it1 != working_set->end();++it1){
+                    for(it2 = next(it1);it2 != working_set->end();++it2){
+                        auto inters = regions_intersection(*it1,*it2);
+                        if(!inters->empty()){
+                            cerr << "NOT EMPTY MERGE INTERSECTION" << endl;
+                        }
+                    }
+                }
                 cout << "into" << endl;
                 println(*merge);
             }
