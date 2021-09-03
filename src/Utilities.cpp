@@ -342,6 +342,50 @@ namespace Utilities {
         cout << " } ";
     }
 
+    bool is_a_region(set<int> *set_of_states){
+        for(const auto& rec: *ts_map){
+            auto event = rec.first;
+            bool enter = false;
+            bool exit = false;
+            bool no_cross = false;
+            for(auto edge: rec.second){
+                if(set_of_states->find(edge->first) != set_of_states->end()){
+                    //no cross
+                    if(set_of_states->find(edge->second) != set_of_states->end()){
+                        if(enter || exit)
+                            return false;
+                        if(!no_cross)
+                            no_cross = true;
+                    }
+                    //exit
+                    else{
+                        if(enter || no_cross)
+                            return false;
+                        if(!exit)
+                            exit = true;
+                    }
+                }
+                else{
+                    //enter
+                    if(set_of_states->find(edge->second) != set_of_states->end()){
+                        if(exit || no_cross)
+                            return false;
+                        if(!enter)
+                            enter = true;
+                    }
+                    //no cross
+                    else{
+                        if(exit || enter)
+                            return false;
+                        if(!no_cross)
+                            no_cross = true;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
     void print_transactions() {
         cout << "Transazioni: " << endl;
         for (unsigned int i = 0; i < num_transactions; i++) {

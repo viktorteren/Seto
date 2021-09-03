@@ -408,12 +408,13 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     int last_event_nocross = -1;
     auto expanded_regions = new Region[2];
     if(print_step_by_step_debug){
-    cout<<"eve:"<<event<<endl;
-    cout << "|||REGIONE: " << region << " --- ";
-    for (auto i : (*region)) {
-      cout << i << " ";
+        cout<<"eve:"<<event<<endl;
+        cout << "|||REGIONE: " << region << " --- ";
+        for (auto i : (*region)) {
+            cout << i << " ";
+        }
+        cout << endl;
     }
-    cout << endl;}
    // cout<<"id position reg: " << region_id_position<<endl;
 
     for (int i = 0; i < number_of_events; i++) {
@@ -435,7 +436,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
             if (event_types[e.first] == NOCROSS)
                 break;
         }
-            //è un ER non controllo l'evento relativo all'ER
+        //è un ER non controllo l'evento relativo all'ER
         else if (e.first == event) {
             //cout << " è un ER di " << event << endl;
             event_types[event] = OK;
@@ -525,9 +526,9 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         if (!region_in_queue(*expanded_regions, init_pos)) {
             queue_temp_regions->push_back(*expanded_regions);
             //cout << "Regione aggiunta alla coda" << endl;
-        } else {
+        } /*else {
             //cout << "Regione non aggiunta alla coda(già presente)" << endl;
-        }
+        }*/
 
         /*vector<Region>::iterator it;
         for (it = queue_temp_regions->begin(); it != queue_temp_regions->end();
@@ -701,9 +702,7 @@ map<int, vector<Region> *> *Region_generator::generate() {
 
         //cout << "*********************************: pos: " << pos
         //   << " reg queue size " << queue_temp_regions->size() << endl;
-        while (pos <
-               queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
-
+        while (pos < queue_temp_regions->size() /*&& queue_temp_regions->size()<2*/) {
             if ((*queue_temp_regions)[pos].size() != num_transactions)
                 expand(&((*queue_temp_regions)[pos]), e.first, false, init_pos,pos-init_pos);
             else
