@@ -28,11 +28,11 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
      *                      for each couple (r, pre(ev))
      *                          if r != pre(ev)
      *                              create clause (!r v !pre(ev))
-     *      3)  complete PN structure:
+     *      3) (REMOVED -> automatic given a set of regions the events are added later) complete PN structure:
      *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
      *      4) for the next constraint I have to add also constraint related to all connected events of a region
      *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
-     *      4b) (OPTIONAL) really hard new constraint if e has as pre-regions r1 and r2  and as post--regions r3 and r4
+     *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
      *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
      *      5) maximization function: number of new regions used in the result -> max covering
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
@@ -455,10 +455,24 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
 
+    int num_places = 0;
+    for(auto pn: *fcpn_set){
+        num_places += pn->size();
+    }
+
+    cout << "Number of places before greedy: " << num_places << endl;
+
     //STEP 9
     GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
+
+    num_places = 0;
+    for(auto pn: *fcpn_set){
+        num_places += pn->size();
+    }
+
+    cout << "Number of places after greedy: " << num_places << endl;
 
     auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
     auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
