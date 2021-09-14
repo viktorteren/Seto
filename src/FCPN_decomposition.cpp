@@ -403,7 +403,7 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                 }
                 clause = new vector<int32_t>();
                 for (auto reg: (*new_temp_set)[pos]) {
-                    cout << "added a new constraint" << endl;
+                    //cout << "added a new constraint" << endl;
                     clause->push_back(-1 + reg_map->at(reg));
                 }
                 splitting_constraint_clauses->push_back(clause);
@@ -461,6 +461,8 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
     }
 
     cout << "Number of places before greedy: " << num_places << endl;
+
+    //todo: in case of only one FCPN avoid greedy and merge procedures for performance improvement
 
     //STEP 9
     GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
@@ -569,6 +571,43 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         }
         delete map_of_PN_post_regions;
     }
+
+    cout << "Checking if the set of PNs are really FCPNs..." << endl;
+
+
+
+    for(auto pn: *fcpn_set){
+        for(auto rec: *map_of_FCPN_pre_regions->at(pn)){
+            for (auto rec_map: *region_ex_event_map) {
+                delete rec_map.second;
+            }
+            //completely deleting the pointer to the map we delete also empty records
+            delete region_ex_event_map;
+            region_ex_event_map = new map<Region *, set<int> *>();
+            auto ev = rec.first;
+            for (auto reg: *rec.second) {
+                if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
+                    (*region_ex_event_map)[reg] = new set<int>();
+                }
+                (*region_ex_event_map)[reg]->insert(ev);
+            }
+
+            auto set_of_regions = rec.second;
+            for (auto r: *set_of_regions) {
+                if ((*region_ex_event_map)[r]->size() > 1) {
+                    for (auto r2: *set_of_regions) {
+                        if (r != r2) {
+                            cerr << "One of PNs is not an FCPN!!!" << endl;
+                            exit(1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    cout << "Check passed." << endl;
+
 
     auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     auto avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
