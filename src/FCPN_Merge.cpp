@@ -30,6 +30,9 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // 5. translate the map into clauses
     // 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
     // intersection is not empty there is a check if the resultant set of states is a region
+    // 5c. constraint which deny the lose of FC property: given a couple of regions r1 and r2 connected by e and r1 is
+    // a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having r2 as pre-region which has more than one pre-region then create a clause (e)
+    // denying the merge of these two regions
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
@@ -215,6 +218,34 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 if((*postregion_for)[FCPN]->find(reg) == (*postregion_for)[FCPN]->end())
                     (*(*postregion_for)[FCPN])[reg] = new set<int>();
                 (*(*postregion_for)[FCPN])[reg]->insert(event);
+            }
+        }
+    }
+
+
+    //STEP 5c
+    for(auto pn: *FCPNs){
+        int FCPN_counter = FCPNs_map[pn];
+        for(auto rec: *map_of_FCPN_pre_regions->at(pn)){
+            auto ev = rec.first;
+            for(auto reg1: *rec.second){
+                int number_outgoing_events = preregion_for->at(pn)->at(reg1)->size();
+                if(number_outgoing_events > 1) {
+                    for (auto reg2: *map_of_FCPN_post_regions->at(pn)->at(ev)) {
+                        for(auto ev_temp: *preregion_for->at(pn)->at(reg2)){
+                            int number_pre_regions_of_temp_event = map_of_FCPN_pre_regions->at(pn)->at(ev_temp)->size();
+                            if(number_pre_regions_of_temp_event > 1){
+                                auto ev_encoding = M * (FCPN_counter - 1) + ev;
+                                clause = new vector<int32_t>();
+                                clause->push_back(ev_encoding);
+                                clauses->push_back(clause);
+                                if(decomposition_debug){
+                                    cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge" << endl;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
