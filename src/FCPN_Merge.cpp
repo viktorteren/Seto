@@ -23,7 +23,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
     // have to be true
-    // (OPTIONAL: don't know if needed) 3b. create clauses to satisfy at least one instance of each event currently part of the FCPN set
+    // (OPTIONAL: don't know if needed) 3b. create clauses to satisfy at least one instance of each event currently part
+    // of the FCPN set
     // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
     // connected to more than 2 regions
     // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
@@ -31,12 +32,14 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
     // intersection is not empty there is a check if the resultant set of states is a region
     // 5c. constraint which deny the lose of FC property: given a couple of regions r1 and r2 connected by e and r1 is
-    // a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having r2 as pre-region which has more than one pre-region then create a clause (e)
+    // a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having
+    // r2 as pre-region which has more than one pre-region then create a clause (e)
     // denying the merge of these two regions
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
     // 8. decode the result leaving only the states corresponding to regions of the model
+    //
     // ENCODINGS:
     // N regions, K FCPNs, M labels
     // ENCODING FOR LABEL i OF FCPN j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
@@ -457,6 +460,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 for (auto reg: *reg_set) {
                     if (preregion_for->at(current_FCPN)->at(reg)->size() > 1) {
                         multiple_exit = true;
+                        if(decomposition_debug)
+                            cerr << "MULTIPLE EXIT" << endl;
                     }
                     if (postregion_for->at(current_FCPN)->at(reg)->size() > 1) {
                         multiple_enter = true;
@@ -466,6 +471,9 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                         involved_regions->insert(reg);
                     }
                 }
+                //todo: relax the constraint checking if only pre regions of involved events are choices and
+                // only post-regions of involved events are returns from choice, in this way false positives could be
+                // avoided improving the minimization
                 if (multiple_exit && multiple_enter && occurrences > 1) {
                     if(decomposition_debug)
                         cout << "removing an event from a merge with " << occurrences << " occurrences" << endl;
@@ -556,10 +564,16 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         } while(!cancelled_events->empty());
 
 
+
         auto to_erase = set<Region *>();
         for(auto working_set: *regions_to_merge){
             auto merge = regions_union(working_set);
             if(decomposition_debug) {
+                for(auto reg: *working_set){
+                    if(preregion_for->at(current_FCPN)->at(reg)->size() > 1){
+                        cerr << "merging on choice place" << endl;
+                    }
+                }
                 cout << "merging regions: " << endl;
                 for (auto reg: *working_set) {
                     println(*reg);
