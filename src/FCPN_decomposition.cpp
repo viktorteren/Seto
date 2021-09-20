@@ -462,10 +462,9 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "Number of places before greedy: " << num_places << endl;
 
-    //todo: in case of only one FCPN avoid greedy and merge procedures for performance improvement
-
     //STEP 9
-    GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+    if(fcpn_set->size() > 1)
+        GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
 
@@ -492,6 +491,10 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             }
         }
         (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
+    }
+
+    if(fcpn_set->size() == 1){
+        no_merge = true;
     }
 
     if(!no_merge) {
