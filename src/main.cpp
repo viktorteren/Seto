@@ -715,6 +715,14 @@ int main(int argc, char **argv) {
                     }
                     delete final_fcpn_set;
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    std::ofstream outfile;
+                    outfile.open("stats.csv", std::ios_base::app);
+                    outfile << fixed
+                            << get_file_name(file) << ","
+                            << setprecision(4) << t_region_gen << ","
+                            << setprecision(4) << t_k_fcpn_decomposition << ","
+                            << num_places
+                            << endl;
                 }
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);

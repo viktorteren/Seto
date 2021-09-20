@@ -5,7 +5,7 @@ Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
 Tested only on Ubuntu 18.04 LTS
 
-### Required software:
+# Required software:
 - g++
 ```Bash
 sudo apt install g++
@@ -22,18 +22,19 @@ sudo apt install cmake
 pip install networkx
 ```
 
-### Key principles:
+# Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
 - Decomposition of Transition Systems into sets of interacting FCPNs
-### Supported extensions
+
+# Supported extensions
 
 Input extensions: .g .ts
 
 Output extensions: .dot .g .aut
 
-Building
---------
+# Building
+
 Enter to the project folder and execute the following instructions:
 ```bash
 mkdir cmake-build-debug
@@ -41,12 +42,12 @@ cd cmake-build-debug
 cmake ..
 make TS_splitter
 ```
+ 
+# Execution
 
-Execution
----------
 
 
-### a) TS to PN flow
+## a) TS to PN flow
 
 <!--
 Quick way (requirese graphviz library) with .ps file creation
@@ -56,7 +57,7 @@ Quick way (requirese graphviz library) with .ps file creation
 ```
 -->
 
-#### Simple way
+<!-- ### Simple way -->
 
 ```Bash
 ./TS_splitter <file_path> PN <optional_flags>
@@ -73,7 +74,7 @@ Quick way (requirese graphviz library) with .ps file creation
 
 Independently by the used flags, after each execution the stats.csv file is updated.
 
-### b) TS to Synchronized SMs flow
+## b) TS to Synchronized SMs flow
 
 ```Bash
 ./TS_splitter <file_path> M <optional_flags>
@@ -95,9 +96,9 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
-### c) TS to interacting FCPNs flows
+## c) TS to interacting FCPNs flows
 
-#### Exact algorithm:
+### Exact algorithm:
 
 ```Bash
 ./TS_splitter <file_path> KFC <optional_flags>
@@ -109,11 +110,17 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>O</b>: write output FCPNs on file in .dot extension
 
-#### Approximated algorithm (recommended):
+### Approximated algorithm (recommended):
 
 ```Bash
 ./TS_splitter <file_path> FC <optional_flags>
 ```
+
+Statistics are stored into *'stats.csv'* file (in the root folder). The data saved is the following:
+- file name
+- time region generation
+- time decomposition
+- number of final places
 
 #### Optional flags:
 
@@ -130,7 +137,17 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 <b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
-### d) Combined flows
+### d) Approximate algorithm using a script
+
+In the root folder the following script can be executed:
+
+```Bash
+./FC-benchmark.sh
+```
+
+The script runs the approximate algorithm on all benchmarks of *'auto_benchmark_dir'* folder. 
+
+### e) Combined flows
 
 The flags M and FC/KFC can be used together.
 
@@ -151,7 +168,7 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 ```
 -->
 
-### e) Additional tools
+### f) Additional tools
 
 Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
@@ -163,8 +180,7 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 <b>AUT</b>: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
-PN visualization
-----------------
+# PN visualization
 
 <b>Graphviz library is required!</b>
 
@@ -172,8 +188,8 @@ PN visualization
 dot -Tps filename.dot -o outfile.ps
 ```
 
-Known restrictions
-------------------
+# Known restrictions
+
 
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
 2) There is any check on .ts inputs.
