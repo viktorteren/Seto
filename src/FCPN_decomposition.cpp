@@ -455,12 +455,12 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
 
-    int num_places = 0;
+    places_after_initial_decomp = 0;
     for(auto pn: *fcpn_set){
-        num_places += pn->size();
+        places_after_initial_decomp += pn->size();
     }
 
-    cout << "Number of places before greedy: " << num_places << endl;
+    cout << "Number of places before greedy: " << places_after_initial_decomp << endl;
 
     //STEP 9
     if(fcpn_set->size() > 1)
@@ -468,12 +468,12 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
 
     cout << "FCPN set size: " << fcpn_set->size() << endl;
 
-    num_places = 0;
+    places_after_greedy = 0;
     for(auto pn: *fcpn_set){
-        num_places += pn->size();
+        places_after_greedy += pn->size();
     }
 
-    cout << "Number of places after greedy: " << num_places << endl;
+    cout << "Number of places after greedy: " << places_after_greedy << endl;
 
     auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
     auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();

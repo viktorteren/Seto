@@ -121,6 +121,9 @@ Statistics are stored into *'stats.csv'* file (in the root folder). The data sav
 - time region generation
 - time decomposition
 - number of final places
+- number of FCPNs
+- number of places after the initial step of decomposition (before greedy algorithm)
+- number of places after the greedy algorithm
 
 #### Optional flags:
 

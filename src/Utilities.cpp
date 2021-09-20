@@ -37,6 +37,8 @@ int num_clauses;
 map<pair<Region*, Region*>, bool> *overlaps_cache;
 bool benchmark_script;
 map<set<Region*>, set<int>*> *intersection_cache;
+int places_after_initial_decomp;
+int places_after_greedy;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){

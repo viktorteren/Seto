@@ -721,7 +721,10 @@ int main(int argc, char **argv) {
                             << get_file_name(file) << ","
                             << setprecision(4) << t_region_gen << ","
                             << setprecision(4) << t_k_fcpn_decomposition << ","
-                            << num_places
+                            << num_places  << ","
+                            << final_fcpn_set->size() << ","
+                            << places_after_initial_decomp << ","
+                            << places_after_greedy
                             << endl;
                 }
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
