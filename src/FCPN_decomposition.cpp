@@ -424,7 +424,8 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                     }
                 }
                 fcpn_set->insert(temp_PN);
-                cout << "adding new fcpn to solutions" << endl;
+                if(decomposition_debug)
+                    cout << "adding new fcpn to solutions" << endl;
             }
             delete new_temp_set;
             results_to_avoid->push_back(*last_solution);
