@@ -787,6 +787,18 @@ int main(int argc, char **argv) {
 
             auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
+            auto regions_set = new set<Region *>();
+            for(auto rec: *merged_map){
+                for(auto reg: *rec.second){
+                    regions_set->insert(reg);
+                }
+            }
+            int number_of_places = regions_set->size();
+
+            cout << "Number of places: " << number_of_places << endl;
+
+            delete regions_set;
+
             if(output) {
                 pprg->create_post_regions(merged_map);
                 // pprg->create_post_regions(pprg->get_pre_regions());
