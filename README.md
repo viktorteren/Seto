@@ -36,6 +36,7 @@ Output extensions: .dot .g .aut
 # Building
 
 Enter to the project folder and execute the following instructions:
+
 ```bash
 mkdir cmake-build-debug
 cd cmake-build-debug
@@ -49,28 +50,27 @@ make TS_splitter
 
 ## a) TS to PN flow
 
-<!--
-Quick way (requirese graphviz library) with .ps file creation
+[//]: # "Quick way (requirese graphviz library) with .ps file creation"
 
-```Bash
-./execute.sh
-```
--->
+[//]: # "```Bash"
+[//]: # "./execute.sh"
+[//]: # "```"
 
-<!-- ### Simple way -->
+[//]: # "### Simple way"
 
 ```Bash
 ./TS_splitter <file_path> PN <optional_flags>
 ```
+
 #### Optional flags:
 
-<b>D</b>: debug mode
+**D**: debug mode
 
-<b>S</b>: verbose info mode
+**S**: verbose info mode
 
-<b>O</b>: write output PN on file in .dot extension
+**O**: write output PN on file in .dot extension
 
-<b>--INFO</b>: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
+**--INFO**: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
 Independently by the used flags, after each execution the stats.csv file is updated.
 
@@ -82,19 +82,19 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 #### Optional flags:
 
-<!--L: creation of a log file-->
+[//]: # "L: creation of a log file"
 
-<b>D</b>: debug info mode
+**D**: debug info mode
 
-<b>O</b>: write output SMs on file in .dot extension
+**O**: write output SMs on file in .dot extension
 
-<b>G</b>: write output SMs on file in .g extension
+**G**: write output SMs on file in .g extension
 
-<b>-ALL</b>: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+**-ALL**: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension
+**COMPOSE**: perform the composition of FCPNs and create an output file in .aut extension
 
-<b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+**DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
 ## c) TS to interacting FCPNs flows
 
@@ -106,9 +106,9 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 #### Optional flags:
 
-<b>D</b>: debug info mode
+**D**: debug info mode
 
-<b>O</b>: write output FCPNs on file in .dot extension
+**O**: write output FCPNs on file in .dot extension
 
 ### Approximated algorithm (recommended):
 
@@ -127,18 +127,18 @@ Statistics are stored into *'stats.csv'* file (in the root folder). The data sav
 
 #### Optional flags:
 
-<b>D</b>: debug info mode
+**D**: debug info mode
 
-<b>O</b>: write output FCPNs on file in .dot extension
+**O**: write output FCPNs on file in .dot extension
 
-<b>MIN</b>: once found a minimum number of FCPNs perform a minimization on the set of regions
-<b>(not recommended)</b>
+**MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions
+**(not recommended)**
 
-<b>NOMERGE</b>: avoids the Merge step
+**NOMERGE**: avoids the Merge step
 
-<b>COMPOSE</b>: perform the composition of FCPNs and create an output file in .aut extension (does not works with k-FCPN decomposition)
+**COMPOSE**: perform the composition of FCPNs and create an output file in .aut extension (does not works with k-FCPN decomposition)
 
-<b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+**DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
 ### d) Approximate algorithm using a script
 
@@ -154,22 +154,22 @@ The script runs the approximate algorithm on all benchmarks of *'auto_benchmark_
 
 The flags M and FC/KFC can be used together.
 
-<!--
-#### Benchmarks on a set of files (still present some issues, better avoid it):
 
-Execution of the decomposition on each file in ./auto_benchmark_dir/:
+[//]: # "#### Benchmarks on a set of files (still present some issues, better avoid it):"
 
-```Bash
-cd cmake-build-debug
-./benchmark.sh
-```
+[//]: # "Execution of the decomposition on each file in ./auto_benchmark_dir/:"
 
-Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL flag:
+[//]: # "```Bash"
+[//]: # "cd cmake-build-debug"
+[//]: # "./benchmark.sh"
+[//]: # "```"
 
-```Bash
-./benchmark-exact-alg.sh
-```
--->
+[//]: # "Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL flag:"
+
+[//]: # "```Bash"
+[//]: # "./benchmark-exact-alg.sh"
+[//]: # "```"
+
 
 ### f) Additional tools
 
@@ -181,11 +181,11 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 #### Optional flags:
 
-<b>AUT</b>: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
+**AUT**: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
 # PN visualization
 
-<b>Graphviz library is required!</b>
+**Graphviz library is required!**
 
 ```bash
 dot -Tps filename.dot -o outfile.ps
@@ -195,12 +195,11 @@ dot -Tps filename.dot -o outfile.ps
 
 
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
+
 2) There is any check on .ts inputs.
 
-<!--
-Known issues
-------------------
--->
+[//]: # "Known issues"
+[//]: # "------------------"
 
 ## License ##
 
