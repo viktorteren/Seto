@@ -31,10 +31,13 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // 5. translate the map into clauses
     // 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
     // intersection is not empty there is a check if the resultant set of states is a region
-    // 5c. constraint which deny the lose of FC property: given a couple of regions r1 and r2 connected by e and r1 is
+    // 5c. constraint which deny the loss of FC property: given a couple of regions r1 and r2 connected by e and r1 is
     // a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having
-    // r2 as pre-region which has more than one pre-region then create a clause (e)
-    // denying the merge of these two regions
+    // r2 as pre-region which has more than one pre-region then create a clause (e): denying the merge of these two regions
+    // 5d. constraint which deny the loss of AC property: given a couple of regions r1 and r2 connected by e and r1 is
+    //    a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having
+    //    r2 as pre-region which has more than one pre-region, if a pre-region of this event (different from r2) has
+    //    multiple outgoing events then create a clause (e): denying the merge of these two regions (r1 and r2)
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
     // instances
@@ -237,13 +240,29 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     for (auto reg2: *map_of_FCPN_post_regions->at(pn)->at(ev)) {
                         for(auto ev_temp: *preregion_for->at(pn)->at(reg2)){
                             int number_pre_regions_of_temp_event = map_of_FCPN_pre_regions->at(pn)->at(ev_temp)->size();
-                            if(number_pre_regions_of_temp_event > 1){
+                            if(fcptnet && number_pre_regions_of_temp_event > 1){
                                 auto ev_encoding = M * (FCPN_counter - 1) + ev;
                                 clause = new vector<int32_t>();
                                 clause->push_back(ev_encoding);
                                 clauses->push_back(clause);
                                 if(decomposition_debug){
-                                    cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge" << endl;
+                                    cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an FCPN." << endl;
+                                }
+                            }
+                            //ACPN case
+                            else{
+                                for(auto reg3: *map_of_FCPN_pre_regions->at(pn)->at(ev_temp)){
+                                    if(reg3 != reg2){
+                                        if(preregion_for->at(pn)->at(reg3)->size() > 1){
+                                            auto ev_encoding = M * (FCPN_counter - 1) + ev;
+                                            clause = new vector<int32_t>();
+                                            clause->push_back(ev_encoding);
+                                            clauses->push_back(clause);
+                                            if(decomposition_debug){
+                                                cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an ACPN." << endl;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -460,8 +479,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 for (auto reg: *reg_set) {
                     if (preregion_for->at(current_FCPN)->at(reg)->size() > 1) {
                         multiple_exit = true;
-                        if(decomposition_debug)
-                            cerr << "MULTIPLE EXIT" << endl;
+                        /*if(decomposition_debug)
+                            cerr << "MULTIPLE EXIT" << endl;*/
                     }
                     if (postregion_for->at(current_FCPN)->at(reg)->size() > 1) {
                         multiple_enter = true;
@@ -569,27 +588,30 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         for(auto working_set: *regions_to_merge){
             auto merge = regions_union(working_set);
             if(decomposition_debug) {
+                /*
                 for(auto reg: *working_set){
                     if(preregion_for->at(current_FCPN)->at(reg)->size() > 1){
                         cerr << "merging on choice place" << endl;
                     }
-                }
+                }*/
                 cout << "merging regions: " << endl;
                 for (auto reg: *working_set) {
                     println(*reg);
                 }
-                set<set<int> *>::iterator it1;
-                set<set<int> *>::iterator it2;
-                for(it1 = working_set->begin();it1 != working_set->end();++it1){
-                    for(it2 = next(it1);it2 != working_set->end();++it2){
-                        auto inters = regions_intersection(*it1,*it2);
-                        if(!inters->empty()){
-                            cerr << "NOT EMPTY MERGE INTERSECTION" << endl;
-                        }
-                    }
-                }
                 cout << "into" << endl;
                 println(*merge);
+            }
+            set<set<int> *>::iterator it1;
+            set<set<int> *>::iterator it2;
+            for(it1 = working_set->begin();it1 != working_set->end();++it1){
+                for(it2 = next(it1);it2 != working_set->end();++it2){
+                    auto inters = regions_intersection(*it1,*it2);
+                    if(!inters->empty()){
+                        cerr << "NOT EMPTY MERGE INTERSECTION" << endl;
+                        if(is_a_region(inters))
+                            cerr << "THE INTERSECTION IS A REGION" << endl;
+                    }
+                }
             }
             current_FCPN->insert(merge);
             for(auto reg: *working_set){

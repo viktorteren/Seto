@@ -35,6 +35,7 @@ int main(int argc, char **argv) {
         benchmark_script = false;
         no_fcpn_min = true;
         fcptnet = false;
+        acpn = false;
         pn_synthesis = false;
         composition = false;
         dot_output = false;
@@ -45,6 +46,8 @@ int main(int argc, char **argv) {
                 ts_output = true;
             else if(args[i]=="FC")
                 fcptnet = true;
+            else if(args[i]=="AC")
+                acpn = true;
             else if(args[i]=="KFC") {
                 fcptnet = true;
                 k_fcpn_decomposition = true;
@@ -121,12 +124,20 @@ int main(int argc, char **argv) {
             cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
             exit(0);
         }
+        if(acpn && decomposition_output_sis){
+            cerr << "SIS output not implemented for ACPNs, remove G flag."<< endl;
+            exit(0);
+        }
         if(pn_synthesis && decomposition){
             cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
             exit(0);
         }
         if(pn_synthesis && fcptnet){
             cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
+            exit(0);
+        }
+        if(pn_synthesis && acpn){
+            cerr << "PN synthesis cannot be done together with ACPN decomposition." << endl;
             exit(0);
         }
         if(aut_output){
@@ -136,10 +147,14 @@ int main(int argc, char **argv) {
             }
         }
         if(composition){
-            if((!fcptnet && !decomposition) || k_fcpn_decomposition){
+            if((!fcptnet && !decomposition && !acpn) || k_fcpn_decomposition){
                 cerr << "Composition works only with FCPN/SM decomposition (excluded k-FCPN decomposition)." << endl;
                 exit(0);
             }
+        }
+        if(fcptnet && acpn){
+            cerr << "FCPN decomposition and ACPN decomposition cannot be performed on the same run." << endl;
+            exit(0);
         }
     }
     else{
@@ -347,7 +362,7 @@ int main(int argc, char **argv) {
         double t_irred;
         tStart_partial = clock();
 
-        if (decomposition || fcptnet) {
+        if (decomposition || fcptnet || acpn) {
             auto regions_set = copy_map_to_set(pre_regions);
             aliases_region_pointer = new map<int, Region *>();
             aliases_region_pointer_inverted = new map<Region *, int>();
@@ -575,7 +590,7 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                if (decomposition_debug && !fcptnet) {
+                if (decomposition_debug && (!fcptnet && !acpn)) {
                     cout << "Final SMs" << endl;
                     for (auto SM: *SMs) {
                         cout << "SM:" << endl;
@@ -662,7 +677,7 @@ int main(int argc, char **argv) {
                         << endl;
             }
 
-            if(fcptnet){
+            if(fcptnet || acpn){
                 tStart_partial = clock();
                 double t_k_fcpn_decomposition;
                 if(k_fcpn_decomposition){
@@ -683,9 +698,9 @@ int main(int argc, char **argv) {
                                                                                    pprg, new_ER, aliases);
 
                     if (decomposition_debug) {
-                        cout << "Final FCPNs" << endl;
+                        cout << "Final" << (fcptnet ? " FCPNs" : " ACPNs") << endl;
                         for (auto FCPN: *final_fcpn_set) {
-                            cout << "FCPN:" << endl;
+                            cout << (fcptnet ? "FCPN:" : "ACPN:") << endl;
                             println(*FCPN);
                         }
                     }
@@ -693,9 +708,9 @@ int main(int argc, char **argv) {
                     int pn_counter = final_fcpn_set->size();
 
                     if (pn_counter == 1) {
-                        cout << "1 FCPN" << endl;
+                        cout << (fcptnet ? "1 FCPN" : "1 ACPN") << endl;
                     } else {
-                        cout << pn_counter << " FCPNs" << endl;
+                        cout << pn_counter << (fcptnet ? " FCPNs" : " ACPNs") << endl;
                     }
                     int num_places = 0;
                     for(auto FCPN: *final_fcpn_set){
@@ -732,8 +747,10 @@ int main(int argc, char **argv) {
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
                 if(k_fcpn_decomposition)
                     printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
-                else
+                else if (fcptnet)
                     printf("Time FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
+                else
+                    printf("Time ACPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
             }
             //FREE
             rg->basic_delete();

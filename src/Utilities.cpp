@@ -23,6 +23,7 @@ bool composition;
 //bool log_file;
 bool info;
 bool fcptnet;
+bool acpn;
 bool aut_output;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;

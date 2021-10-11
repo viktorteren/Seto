@@ -60,6 +60,7 @@ extern bool dot_output;
 extern bool python_all;
 extern bool info;
 extern bool fcptnet;
+extern bool acpn;
 extern bool no_merge;
 extern bool composition;
 extern bool aut_output;

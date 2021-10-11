@@ -140,7 +140,7 @@ Statistics are stored into *'stats.csv'* file (in the root folder). The data sav
 
 <b>DOT</b>: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
-### d) Approximate algorithm using a script
+### Approximate algorithm using a script
 
 In the root folder the following script can be executed:
 
@@ -148,11 +148,22 @@ In the root folder the following script can be executed:
 ./FC-benchmark.sh
 ```
 
-The script runs the approximate algorithm on all benchmarks of *'auto_benchmark_dir'* folder. 
+The script runs the approximate algorithm for FCPN decommposition on all benchmarks of *'auto_benchmark_dir'* folder.
 
-### e) Combined flows
 
-The flags M and FC/KFC can be used together.
+## d) TS to interacting ACPNs flows
+
+```Bash
+./TS_splitter <file_path> AC <optional_flags>
+```
+
+#### Optional flags:
+
+See FCPN flow.
+
+## Combined flows
+
+The flags M and AC/FC/KFC can be used together.
 
 <!--
 #### Benchmarks on a set of files (still present some issues, better avoid it):
@@ -171,7 +182,7 @@ Execution of the decomposition on each file in ./benchmark_all_flag/ using -ALL 
 ```
 -->
 
-### f) Additional tools
+## Additional tools
 
 Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
