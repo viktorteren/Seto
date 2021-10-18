@@ -3,14 +3,14 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include "../include/FCPN_composition.h"
+#include "../include/PN_composition.h"
 
 #include <utility>
 
 using namespace Utilities;
 
-//Composition of FCPNs into one TS for the check of the behaviour
-void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
+//Composition of PNs into one TS for the check of the behaviour
+void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
                                map<int, int> *aliases, string file_path){

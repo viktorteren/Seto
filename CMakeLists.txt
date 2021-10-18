@@ -33,7 +33,7 @@ add_library(libminisat STATIC
         minisat/utils/ParseUtils.h
         minisat/utils/System.h
         minisat/simp/SimpSolver.h
-        include/FCPN_decomposition.h
+        include/PN_decomposition.h
         include/GreedyRemoval.h)
 
 target_include_directories(libminisat
@@ -62,10 +62,10 @@ add_executable(TS_splitter
         include/Merging_Minimal_Preregions_module.h
         src/Merge.cpp
         include/Merge.h
-        src/FCPN_decomposition.cpp
+        src/PN_decomposition.cpp
         src/k_FCPN_decomposition.cpp
         include/k_FCPN_decomposition.h
-        src/GreedyRemoval.cpp include/FCPN_Merge.h src/FCPN_Merge.cpp include/FCPN_composition.h src/FCPN_composition.cpp include/SM_composition.h src/SM_composition.cpp)
+        src/GreedyRemoval.cpp include/FCPN_Merge.h src/FCPN_Merge.cpp include/PN_composition.h src/PN_composition.cpp include/SM_composition.h src/SM_composition.cpp)
 target_link_libraries(TS_splitter libminisat)
 target_link_libraries(TS_splitter pblib)
 target_link_libraries(TS_splitter python2.7)

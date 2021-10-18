@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <include/k_FCPN_decomposition.h>
 #include "../include/Merge.h"
-#include "../include/FCPN_decomposition.h"
+#include "../include/PN_decomposition.h"
 #include "../include/GreedyRemoval.h"
 #include "../include/FCPN_Merge.h"
 #include "../include/SM_composition.h"
@@ -694,7 +694,7 @@ int main(int argc, char **argv) {
                         }
                     }
 
-                    auto final_fcpn_set = FCPN_decomposition::search(number_of_events, *regions_set, file,
+                    auto final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
                                                                                    pprg, new_ER, aliases);
 
                     if (decomposition_debug) {

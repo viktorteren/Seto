@@ -4,14 +4,14 @@
  */
 
 #include <include/GreedyRemoval.h>
-#include "../include/FCPN_decomposition.h"
+#include "../include/PN_decomposition.h"
 #include "../include/FCPN_Merge.h"
 
 using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
-set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
+set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
@@ -557,56 +557,56 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
         delete regions_mapping;
     }
     if(composition)
-        FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
+        PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
-    //todo: check the code for FCPN check using ACPNs -> counterexamples
-    if(fcptnet) {
-        cout << "Checking if the set of PNs are really FCPNs..." << endl;
-        for (auto pn: *fcpn_set) {
-            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
-                for (auto rec_map: *region_ex_event_map) {
-                    delete rec_map.second;
-                }
-                //completely deleting the pointer to the map we delete also empty records
-                delete region_ex_event_map;
-                region_ex_event_map = new map<Region *, set<int> *>();
+
+    cout << "Checking if the set of PNs are really " << (fcptnet ? "FCPNs..." : "ACPNs...") << endl;
+
+    for (auto rec_map: *region_ex_event_map) {
+        delete rec_map.second;
+    }
+    //completely deleting the pointer to the map we delete also empty records
+    delete region_ex_event_map;
+    region_ex_event_map = new map<Region *, set<int> *>();
+
+    for (auto pn: *fcpn_set) {
+        for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
+            /*for (auto rec_map: *region_ex_event_map) {
+                delete rec_map.second;
             }
-        }
-
-        for (auto pn: *fcpn_set) {
-            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
-                /*for (auto rec_map: *region_ex_event_map) {
-                    delete rec_map.second;
+            //completely deleting the pointer to the map we delete also empty records
+            delete region_ex_event_map;
+            region_ex_event_map = new map<Region *, set<int> *>();*/
+            auto ev = rec.first;
+            for (auto reg: *rec.second) {
+                if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
+                    (*region_ex_event_map)[reg] = new set<int>();
                 }
-                //completely deleting the pointer to the map we delete also empty records
-                delete region_ex_event_map;
-                region_ex_event_map = new map<Region *, set<int> *>();*/
-                auto ev = rec.first;
-                for (auto reg: *rec.second) {
-                    if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
-                        (*region_ex_event_map)[reg] = new set<int>();
-                    }
-                    (*region_ex_event_map)[reg]->insert(ev);
-                }
+                (*region_ex_event_map)[reg]->insert(ev);
+            }
 
-                auto set_of_regions = rec.second;
-                for (auto r: *set_of_regions) {
-                    if ((*region_ex_event_map)[r]->size() > 1) {
-                        for (auto r2: *set_of_regions) {
-                            if (r != r2) {
+            auto set_of_regions = rec.second;
+            for (auto r: *set_of_regions) {
+                if ((*region_ex_event_map)[r]->size() > 1) {
+                    for (auto r2: *set_of_regions) {
+                        if (r != r2) {
+                            if(fcptnet) {
                                 cerr << "One of PNs is not an FCPN!!!" << endl;
                                 exit(1);
+                            }
+                            else if(acpn){
+                                if ((*region_ex_event_map)[r2]->size() > 1) {
+                                    cerr << "One of PNs is not an ACPN!!!" << endl;
+                                    exit(1);
+                                }
                             }
                         }
                     }
                 }
             }
         }
-        cout << "Check passed." << endl;
     }
-    else{
-        //TODO: check for ACPNs
-    }
+    cout << "Check passed." << endl;
 
 
     auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);

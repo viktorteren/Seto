@@ -6,7 +6,7 @@
 #pragma once
 #include "Utilities.h"
 
-class FCPN_composition {
+class PN_composition {
 private:
 
 public:
