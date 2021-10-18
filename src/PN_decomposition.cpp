@@ -595,9 +595,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                 exit(1);
                             }
                             else if(acpn){
+                                //todo: improve the check: symmetric choice is countes as violation
                                 if ((*region_ex_event_map)[r2]->size() > 1) {
-                                    cerr << "One of PNs is not an ACPN!!!" << endl;
-                                    exit(1);
+                                    if((*region_ex_event_map)[r2]->size() != (*region_ex_event_map)[r]->size()) {
+                                        cerr << "One of PNs is not an ACPN!!!" << endl;
+                                        exit(1);
+                                    }
+                                    else{
+                                        for(auto event_in_middle: *(*region_ex_event_map)[r]){
+                                            if((*region_ex_event_map)[r2]->find(event_in_middle) == (*region_ex_event_map)[r2]->end()){
+                                                cerr << "One of PNs is not an ACPN!!!" << endl;
+                                                exit(1);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
