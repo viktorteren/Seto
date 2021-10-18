@@ -544,70 +544,24 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
             delete rec.second;
         }
         delete used_regions_map;*/
-        if(composition)
-            FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
     }
-    else if(output || composition){
-        string output_name = file;
-        while (output_name[output_name.size() - 1] != '.') {
-            output_name = output_name.substr(0, output_name.size() - 1);
-        }
-
-        cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH PN ]================" << endl;
-
-        //map with key the pointer to SM
-        auto map_of_PN_pre_regions = new map<SM *, map<int, set<Region *> *> *>();
-        auto map_of_PN_post_regions = new map<SM *, map<int, set<Region *> *> *>();
-
+    else if(output){
+        int pn_counter = 0;
+        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
         for (auto pn: *fcpn_set) {
-            (*map_of_PN_pre_regions)[pn] = new map<int, set<Region *> *>();
-            for (auto rec: *pprg->get_pre_regions()) {
-                for (auto reg: *rec.second) {
-                    if (pn->find(reg) != pn->end()) {
-                        if ((*map_of_PN_pre_regions)[pn]->find(rec.first) == (*map_of_PN_pre_regions)[pn]->end()) {
-                            (*(*map_of_PN_pre_regions)[pn])[rec.first] = new set<Region *>();
-                        }
-                        (*(*map_of_PN_pre_regions)[pn])[rec.first]->insert(reg);
-                    }
-                }
-            }
-            (*map_of_PN_post_regions)[pn] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_PN_pre_regions)[pn]);
+            print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
+                              aliases,
+                              file, pn_counter);
+            pn_counter++;
         }
-        if(composition){
-            FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
-        }
-        if(output) {
-            int pn_counter = 0;
-            auto regions_mapping = get_regions_map(pprg->get_pre_regions());
-            for (auto pn: *fcpn_set) {
-                print_fcpn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn),
-                                    aliases,
-                                    file, pn_counter);
-                pn_counter++;
-            }
-
-            delete regions_mapping;
-        }
-        for (auto rec: *map_of_PN_pre_regions) {
-            for (auto rec1: *rec.second) {
-                delete rec1.second;
-            }
-            delete rec.second;
-        }
-        delete map_of_PN_pre_regions;
-        for (auto rec: *map_of_PN_post_regions) {
-            for (auto rec1: *rec.second) {
-                delete rec1.second;
-            }
-            delete rec.second;
-        }
-        delete map_of_PN_post_regions;
+        delete regions_mapping;
     }
+    if(composition)
+        FCPN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
     //todo: check the code for FCPN check using ACPNs -> counterexamples
     if(fcptnet) {
         cout << "Checking if the set of PNs are really FCPNs..." << endl;
-
         for (auto pn: *fcpn_set) {
             for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
                 for (auto rec_map: *region_ex_event_map) {
@@ -616,6 +570,17 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                 //completely deleting the pointer to the map we delete also empty records
                 delete region_ex_event_map;
                 region_ex_event_map = new map<Region *, set<int> *>();
+            }
+        }
+
+        for (auto pn: *fcpn_set) {
+            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
+                /*for (auto rec_map: *region_ex_event_map) {
+                    delete rec_map.second;
+                }
+                //completely deleting the pointer to the map we delete also empty records
+                delete region_ex_event_map;
+                region_ex_event_map = new map<Region *, set<int> *>();*/
                 auto ev = rec.first;
                 for (auto reg: *rec.second) {
                     if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
@@ -637,7 +602,6 @@ set<set<Region *> *> *FCPN_decomposition::search(int number_of_events,
                 }
             }
         }
-
         cout << "Check passed." << endl;
     }
     else{

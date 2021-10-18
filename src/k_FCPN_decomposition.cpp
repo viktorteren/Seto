@@ -916,7 +916,8 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
     int pn_counter=0;
     auto regions_mapping = get_regions_map(pre_regions_map);
     for(auto pn: *fcpn_set){
-        print_fcpn_dot_file(regions_mapping,map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases, output_name,pn_counter);
+        print_pn_dot_file(regions_mapping, map_of_PN_pre_regions->at(pn), map_of_PN_post_regions->at(pn), aliases,
+                          output_name, pn_counter);
         pn_counter++;
     }
 

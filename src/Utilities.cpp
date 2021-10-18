@@ -1185,13 +1185,13 @@ namespace Utilities {
     void print_fcpn_dot_file(map<int, set<Region *> *> *pre_regions,
                              map<int, set<Region *> *> *post_regions,
                              map<int, int> *aliases, const string& file_name, int FCPN_number){
-        print_fcpn_dot_file(nullptr,pre_regions,post_regions,aliases,file_name,FCPN_number);
+        print_pn_dot_file(nullptr, pre_regions, post_regions, aliases, file_name, FCPN_number);
     }
 
-    void print_fcpn_dot_file(map<Region *, int> *regions_mapping,
-                             map<int, set<Region *> *> *pre_regions,
-                             map<int, set<Region *> *> *post_regions,
-                             map<int, int> *aliases, const string& file_name, int FCPN_number){
+    void print_pn_dot_file(map<Region *, int> *regions_mapping,
+                           map<int, set<Region *> *> *pre_regions,
+                           map<int, set<Region *> *> *post_regions,
+                           map<int, int> *aliases, const string& file_name, int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
         /*
         if(initial_reg->empty()){
@@ -1245,7 +1245,7 @@ namespace Utilities {
         // cout << "out name: " << in_dot_name << endl;
 
         if(FCPN_number >= 0){
-            output_name += "_FCPN_";
+            output_name += (acpn ? "_ACPN_" : "_FCPN_");
             output_name+=std::to_string(FCPN_number);
             output_name+=".dot";
         }

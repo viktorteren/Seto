@@ -9,6 +9,7 @@
 
 using namespace Utilities;
 
+//Composition of FCPNs into one TS for the check of the behaviour
 void FCPN_composition::compose(set<set<Region *>*> *fcpn_set,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
