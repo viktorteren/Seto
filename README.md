@@ -202,6 +202,29 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 dot -Tps filename.dot -o outfile.ps
 ```
 
+# Decomposition check
+
+In order to check the correctness of the decomposition mCLR2 tool can be used (https://www.mcrl2.org/web/user_manual/index.html).
+
+Steps for the verification:
+
+1) Generate the TS with AUT extension
+
+```Bash
+./TS_splitter <file_path> (TS | ECTS) AUT
+```
+
+2) Generate the FCPN/ACPN with COMPOSE flag:
+
+```Bash
+./TS_splitter <file_path> (FC | AC) COMPOSE
+```
+
+3) Verify the bisimulation between the initial TS (suppose example_TS.aut) and the composition of the PNs (suppose example_FCPN_composed.aut)
+```Bash
+ltscompare --equivalence=bisim <TS_aut_file> <PN_aut_file> 
+```
+
 # Known restrictions
 
 
