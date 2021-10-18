@@ -621,8 +621,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         for(auto reg: to_erase){
             current_FCPN->erase(reg);
         }
-
-        //todo: forse qui c'è da fare qualche check, del tipo eliminare regioni che non si vedranno più
         delete regions_to_merge;
         delete cancelled_events;
     }

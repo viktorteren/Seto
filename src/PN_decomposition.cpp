@@ -50,7 +50,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      * 9) greedy FCPN removal
      */
 
-    cout << "=========[FCPN DECOMPOSITION MODULE]===============" << endl;
+    cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;
     auto regions_copy = new set<Region *>();
     for(auto reg: regions){
         regions_copy->insert(reg);
