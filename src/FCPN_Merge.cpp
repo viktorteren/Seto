@@ -9,6 +9,7 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
+//TODO: fix mmerge for ACPN: isend hase some merges which provides a generic PN
 FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              int number_of_events,
              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,

@@ -569,6 +569,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     delete region_ex_event_map;
     region_ex_event_map = new map<Region *, set<int> *>();
 
+    int pn_counter = 0;
     for (auto pn: *fcpn_set) {
         for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
             /*for (auto rec_map: *region_ex_event_map) {
@@ -591,20 +592,19 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     for (auto r2: *set_of_regions) {
                         if (r != r2) {
                             if(fcptnet) {
-                                cerr << "One of PNs is not an FCPN!!!" << endl;
+                                cerr << "PN " << pn_counter << " is not an FCPN!!!" << endl;
                                 exit(1);
                             }
                             else if(acpn){
-                                //todo: improve the check: symmetric choice is countes as violation
                                 if ((*region_ex_event_map)[r2]->size() > 1) {
                                     if((*region_ex_event_map)[r2]->size() != (*region_ex_event_map)[r]->size()) {
-                                        cerr << "One of PNs is not an ACPN!!!" << endl;
+                                        cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
                                         exit(1);
                                     }
                                     else{
                                         for(auto event_in_middle: *(*region_ex_event_map)[r]){
                                             if((*region_ex_event_map)[r2]->find(event_in_middle) == (*region_ex_event_map)[r2]->end()){
-                                                cerr << "One of PNs is not an ACPN!!!" << endl;
+                                                cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
                                                 exit(1);
                                             }
                                         }
@@ -616,6 +616,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
             }
         }
+        pn_counter++;
     }
     cout << "Check passed." << endl;
 
