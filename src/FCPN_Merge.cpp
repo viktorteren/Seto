@@ -9,7 +9,6 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
-//TODO: fix mmerge for ACPN: isend hase some merges which provides a generic PN
 FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              int number_of_events,
              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
@@ -229,49 +228,83 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
     }
 
-
+    auto saved_encodings = new set<int>();
     //STEP 5c
     for(auto pn: *FCPNs){
         int FCPN_counter = FCPNs_map[pn];
-        for(auto rec: *map_of_FCPN_pre_regions->at(pn)){
+        for(auto rec: *map_of_FCPN_pre_regions->at(pn)) {
             auto ev = rec.first;
-            for(auto reg1: *rec.second){
-                int number_outgoing_events = preregion_for->at(pn)->at(reg1)->size();
-                if(number_outgoing_events > 1) {
-                    for (auto reg2: *map_of_FCPN_post_regions->at(pn)->at(ev)) {
-                        for(auto ev_temp: *preregion_for->at(pn)->at(reg2)){
-                            int number_pre_regions_of_temp_event = map_of_FCPN_pre_regions->at(pn)->at(ev_temp)->size();
-                            if(fcptnet && number_pre_regions_of_temp_event > 1){
-                                auto ev_encoding = M * (FCPN_counter - 1) + ev;
-                                clause = new vector<int32_t>();
-                                clause->push_back(ev_encoding);
-                                clauses->push_back(clause);
-                                if(decomposition_debug){
-                                    cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an FCPN." << endl;
-                                }
-                            }
-                            //ACPN case
-                            else{
-                                for(auto reg3: *map_of_FCPN_pre_regions->at(pn)->at(ev_temp)){
-                                    if(reg3 != reg2){
-                                        if(preregion_for->at(pn)->at(reg3)->size() > 1){
-                                            auto ev_encoding = M * (FCPN_counter - 1) + ev;
+            auto ev_encoding = M * (FCPN_counter - 1) + ev;
+            for (auto reg1: *rec.second) {
+                if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
+                    int number_outgoing_events = preregion_for->at(pn)->at(reg1)->size();
+                    if (number_outgoing_events > 1) {
+                        for (auto reg2: *map_of_FCPN_post_regions->at(pn)->at(ev)) {
+                            if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
+                                for (auto ev_temp: *preregion_for->at(pn)->at(reg2)) {
+                                    if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
+                                        int number_pre_regions_of_temp_event = map_of_FCPN_pre_regions->at(pn)->at(
+                                                ev_temp)->size();
+                                        if (fcptnet && number_pre_regions_of_temp_event > 1) {
                                             clause = new vector<int32_t>();
                                             clause->push_back(ev_encoding);
                                             clauses->push_back(clause);
-                                            if(decomposition_debug){
-                                                cerr << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an ACPN." << endl;
+                                            if (decomposition_debug) {
+                                                cerr
+                                                        << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an FCPN."
+                                                        << endl;
+                                            }
+                                            saved_encodings->insert(ev_encoding);
+                                        }
+                                        //todo here: fix merge for ACPN: isend has some merges which provides a generic PN with the situation described in 5d
+                                        //5d: ACPN case
+                                        else {
+                                            for (auto reg3: *map_of_FCPN_pre_regions->at(pn)->at(ev_temp)) {
+                                                if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
+                                                    if (reg3 != reg2) {
+                                                        if (preregion_for->at(pn)->at(reg3)->size() > 1) {
+                                                            clause = new vector<int32_t>();
+                                                            clause->push_back(ev_encoding);
+                                                            clauses->push_back(clause);
+                                                            if (decomposition_debug) {
+                                                                cerr
+                                                                        << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an ACPN: event "
+                                                                        << ev << " in FCPN " << FCPN_counter << endl;
+                                                            }
+                                                            saved_encodings->insert(ev_encoding);
+                                                        }
+                                                    }
+                                                } else {
+                                                    if (decomposition_debug)
+                                                        cerr << "CACHE HIT 1" << endl;
+                                                    break;
+                                                }
                                             }
                                         }
+                                    } else {
+                                        if (decomposition_debug)
+                                            cerr << "CACHE HIT 2" << endl;
+                                        break;
                                     }
                                 }
+                            }
+                            else{
+                                if (decomposition_debug)
+                                    cerr << "CACHE HIT 3" << endl;
+                                break;
                             }
                         }
                     }
                 }
+                else{
+                    if(decomposition_debug)
+                        cerr << "CACHE HIT 4" << endl;
+                    break;
+                }
             }
         }
     }
+    delete saved_encodings;
 
     // STEP 4b
     /*
