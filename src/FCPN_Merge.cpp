@@ -642,16 +642,13 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                             for(auto ev: *events_in_middle){
                                 if(counterexample_found)
                                     break;
-                                if(map_fundamental_events_PN->find(current_FCPN) != map_fundamental_events_PN->end()) {
-                                    if (map_fundamental_events_PN->at(current_FCPN)->find(ev) !=
-                                        map_fundamental_events_PN->at(current_FCPN)->end()) {
-                                        avoided_sets->insert(reg_set);
-                                        counterexample_found = true;
-                                        if (decomposition_debug) {
-                                            //todo: this kind of error not always is found, need further investment
-                                            cerr << "FOUND incompatible set of regions to merge: a merge was avoided."
-                                                 << endl;
-                                        }
+                                if(map_fundamental_events_PN->at(current_FCPN)->find(ev) != map_fundamental_events_PN->at(current_FCPN)->end()){
+                                    avoided_sets->insert(reg_set);
+                                    counterexample_found = true;
+                                    if(decomposition_debug) {
+                                        //todo: this kind of error not always is found, need further investment
+                                        cerr << "FOUND incompatible set of regions to merge: a merge was avoided."
+                                             << endl;
                                     }
                                 }
                             }
