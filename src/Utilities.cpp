@@ -25,6 +25,7 @@ bool info;
 bool fcptnet;
 bool acpn;
 bool aut_output;
+int repeat_counter;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;
 __attribute__((unused)) bool fcpn_with_levels;
@@ -2915,6 +2916,12 @@ namespace Utilities {
         }
         //cout << "found two not connected sets" << endl;
         return false;
+    }
+
+    bool is_number(const std::string& s)
+    {
+        return !s.empty() && std::find_if(s.begin(),
+                                          s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
     }
 
 }

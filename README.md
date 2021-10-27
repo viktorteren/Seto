@@ -194,6 +194,8 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 **AUT**: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
+**REPEAT <number_of_iterations>**: allows to run the chosen flow a fixed number of times (used for debugging purposes)
+
 # PN visualization
 
 **Graphviz library is required!**
