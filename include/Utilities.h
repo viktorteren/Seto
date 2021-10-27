@@ -64,7 +64,6 @@ extern bool acpn;
 extern bool no_merge;
 extern bool composition;
 extern bool aut_output;
-extern int repeat_counter;
 extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;
@@ -221,5 +220,4 @@ namespace Utilities {
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
     bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections);
     bool is_a_region(set<int> *set_of_states);
-    bool is_number(const std::string& s);
 };
