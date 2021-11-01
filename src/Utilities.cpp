@@ -25,6 +25,7 @@ bool info;
 bool fcptnet;
 bool acpn;
 bool aut_output;
+bool ignore_correctness;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;
 __attribute__((unused)) bool fcpn_with_levels;
@@ -1250,14 +1251,14 @@ namespace Utilities {
             output_name+=".dot";
         }
         else{
-            output_name += "_FCPN.dot";
+            output_name += (acpn ? "_ACPN.dot" :"_FCPN.dot");
         }
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
         if(FCPN_number >= 0){
-            fout << in_dot_name + "_FCPN_";
+            fout << in_dot_name + (acpn ? "_ACPN_" : "_FCPN_");
             fout << std::to_string(FCPN_number);
         }
         else{

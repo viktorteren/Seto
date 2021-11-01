@@ -140,6 +140,8 @@ Statistics are stored into *'stats.csv'* file (in the root folder). The data sav
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
+**I**: ignore incorrect decomposition in order to allow to produce the output PNs
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:
@@ -148,7 +150,7 @@ In the root folder the following script can be executed:
 ./FC-benchmark.sh
 ```
 
-The script runs the approximate algorithm for FCPN decommposition on all benchmarks of *'auto_benchmark_dir'* folder.
+The script runs the approximate algorithm for FCPN decomposition on all benchmarks of *'auto_benchmark_dir'* folder.
 
 
 ## d) TS to interacting ACPNs flows
@@ -159,7 +161,7 @@ The script runs the approximate algorithm for FCPN decommposition on all benchma
 
 #### Optional flags:
 
-See FCPN flow.
+See FCPN flow (approximated algorithm).
 
 ## Combined flows
 

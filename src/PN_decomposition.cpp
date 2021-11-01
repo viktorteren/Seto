@@ -268,18 +268,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             if (sat) {
                 exists_solution = true;
+                /*
                 if (decomposition_debug) {
                     cout << "SAT with value " << current_value << ": representing the number of new covered regions"
                          << endl;
                     cout << "Model: ";
-                }
+                }*/
                 last_solution->clear();
                 for (int i = 0; i < solver.nVars(); ++i) {
                     if (solver.model[i] != l_Undef) {
+                        /*
                         if (decomposition_debug) {
                             fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
                                     i + 1);
-                        }
+                        }*/
                         if (i < k) {
                             if (solver.model[i] == l_True) {
                                 last_solution->insert(i + 1);
@@ -289,8 +291,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         }
                     }
                 }
+                /*
                 if (decomposition_debug)
                     cout << endl;
+                */
                 min = current_value;
             } else {
                 if (decomposition_debug) {
@@ -570,6 +574,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     region_ex_event_map = new map<Region *, set<int> *>();
 
     int pn_counter = 0;
+    bool check_not_passed = false;
     for (auto pn: *fcpn_set) {
         for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
             /*for (auto rec_map: *region_ex_event_map) {
@@ -593,19 +598,28 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         if (r != r2) {
                             if(fcptnet) {
                                 cerr << "PN " << pn_counter << " is not an FCPN!!!" << endl;
-                                exit(1);
+                                if(!ignore_correctness) {
+                                    exit(1);
+                                }
+                                check_not_passed = true;
                             }
                             else if(acpn){
                                 if ((*region_ex_event_map)[r2]->size() > 1) {
                                     if((*region_ex_event_map)[r2]->size() != (*region_ex_event_map)[r]->size()) {
                                         cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                        exit(1);
+                                        if(!ignore_correctness) {
+                                            exit(1);
+                                        }
+                                        check_not_passed = true;
                                     }
                                     else{
                                         for(auto event_in_middle: *(*region_ex_event_map)[r]){
                                             if((*region_ex_event_map)[r2]->find(event_in_middle) == (*region_ex_event_map)[r2]->end()){
                                                 cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                                exit(1);
+                                                if(!ignore_correctness) {
+                                                    exit(1);
+                                                }
+                                                check_not_passed = true;
                                             }
                                         }
                                     }
@@ -618,8 +632,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
         pn_counter++;
     }
-    cout << "Check passed." << endl;
-
+    if(!check_not_passed)
+        cout << "Check passed." << endl;
 
     auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     auto avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);

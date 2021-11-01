@@ -20,27 +20,21 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     //STEPS OF THE ALGORITHM
     // 1. create the map between SMs and integers from 1 to K
     // 2. create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
-    // instances of the same region
+    //      instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
-    // have to be true
-    // (OPTIONAL: don't know if needed) 3b. create clauses to satisfy at least one instance of each event currently part
-    // of the FCPN set
+    //      have to be true
     // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
-    // connected to more than 2 regions
-    // (OPTIONAL: don't know if needed) 4b. create clauses avoiding the removal of regions having more than one outgoing edges
+    //      connected to more than 2 regions
     // 5. translate the map into clauses
     // 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
-    // intersection is not empty there is a check if the resultant set of states is a region
-    // 5c. constraint which deny the loss of FC property: given a couple of regions r1 and r2 connected by e and r1 is
-    // a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having
-    // r2 as pre-region which has more than one pre-region then create a clause (e): denying the merge of these two regions
-    // 5d. constraint which deny the loss of AC property: given a couple of regions r1 and r2 connected by e and r1 is
-    //    a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event having
-    //    r2 as pre-region which has more than one pre-region, if a pre-region of this event (different from r2) has
-    //    multiple outgoing events then create a clause (e): denying the merge of these two regions (r1 and r2)
+    //      intersection is not empty there is a check if the resultant set of states is a region
+    // 5c. constraint which deny the loss of AC/FC property: given a couple of regions r1 and r2 connected by e and r1
+    //      is a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event
+    //      having r2 as pre-region which has more than one pre-region then create a clause (e): denying the merge of
+    //      these two regions
     // 6. create clauses for the events with pbLib
     // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
-    // instances
+    //      instances
     // 8. decode the result leaving only the states corresponding to regions of the model
     //
     // ENCODINGS:
@@ -96,33 +90,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         clauses->push_back(clause);
     }
 
-    //STEP 3b
-    /*
-    auto events_inFCPNs = new map<int, set<set<Region *>*>*>();
-    for(auto rec: *map_of_FCPN_pre_regions){
-        auto FCPN = rec.first;
-        for(auto rec1: *rec.second){
-            auto event = rec1.first;
-            if(events_inFCPNs->find(event) == events_inFCPNs->end())
-                (*events_inFCPNs)[event] = new set<set<Region *>*>();
-            (*events_inFCPNs)[event]->insert(FCPN);
-        }
-    }
-
-    for(auto rec: *events_inFCPNs){
-        auto event = rec.first;
-        clause = new vector<int32_t>();
-        for(auto FCPN: *rec.second){
-            if(events_inFCPNs->at(event)->find(FCPN) != events_inFCPNs->at(event)->end()) {
-                int FCPN_counter = FCPNs_map[FCPN];
-                auto ev_encoding = M * (FCPN_counter - 1) + event + 1;
-                clause->push_back(ev_encoding);
-            }
-        }
-        clauses->push_back(clause);
-    }*/
-
-
     map<int, pair<int, int>> encoded_events_map; //map <encoded value, pair<sm, decoded_value>
     set<int> encoded_regions_set; //will be used in the 6th step
 
@@ -134,9 +101,9 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
         //conversion into clauses
         for (auto rec: *regions_connected_to_labels) {
-            auto ev = rec.first + 1; //events range must start from 1 not 0
-            auto ev_encoding = M * (FCPN_counter - 1) + ev;
-            (encoded_events_map)[ev_encoding] = make_pair(FCPN_counter, ev - 1);
+            auto ev = rec.first;
+            auto ev_encoding = M * (FCPN_counter - 1) + ev + 1;
+            (encoded_events_map)[ev_encoding] = make_pair(FCPN_counter, ev);
             set<Region *>::iterator it1;
             set<Region *>::iterator it2;
             bool not_empty_intersection = false;
@@ -235,7 +202,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         int FCPN_counter = FCPNs_map[pn];
         for(auto rec: *map_of_FCPN_pre_regions->at(pn)) {
             auto ev = rec.first;
-            auto ev_encoding = M * (FCPN_counter - 1) + ev;
+            auto ev_encoding = M * (FCPN_counter - 1) + ev + 1;
             for (auto reg1: *rec.second) {
                 if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
                     int number_outgoing_events = preregion_for->at(pn)->at(reg1)->size();
@@ -246,49 +213,20 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                     if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
                                         int number_pre_regions_of_temp_event = map_of_FCPN_pre_regions->at(pn)->at(
                                                 ev_temp)->size();
-                                        if (fcptnet && number_pre_regions_of_temp_event > 1) {
+                                        if (number_pre_regions_of_temp_event > 1) {
                                             clause = new vector<int32_t>();
                                             clause->push_back(ev_encoding);
                                             clauses->push_back(clause);
+                                            //cerr << "ev encoding: " << ev_encoding << endl;
                                             if(map_fundamental_events_PN->find(pn) == map_fundamental_events_PN->end()){
                                                 (*map_fundamental_events_PN)[pn] = new set<int>();
                                             }
                                             map_fundamental_events_PN->at(pn)->insert(ev);
                                             if (decomposition_debug) {
-                                                cerr
-                                                        << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an FCPN."
-                                                        << endl;
+                                                cerr << "Added constraint for PN structure safeness: "  << ev
+                                                << " in ACPN/FCPN " << FCPN_counter << endl;
                                             }
                                             saved_encodings->insert(ev_encoding);
-                                        }
-                                        //todo here: fix merge for ACPN: isend has some merges which provides a generic PN with the situation described in 5d
-                                        //5d: ACPN case
-                                        else {
-                                            for (auto reg3: *map_of_FCPN_pre_regions->at(pn)->at(ev_temp)) {
-                                                if (saved_encodings->find(ev_encoding) == saved_encodings->end()) {
-                                                    if (reg3 != reg2) {
-                                                        if (preregion_for->at(pn)->at(reg3)->size() > 1) {
-                                                            clause = new vector<int32_t>();
-                                                            clause->push_back(ev_encoding);
-                                                            clauses->push_back(clause);
-                                                            if(map_fundamental_events_PN->find(pn) == map_fundamental_events_PN->end()){
-                                                                (*map_fundamental_events_PN)[pn] = new set<int>();
-                                                            }
-                                                            map_fundamental_events_PN->at(pn)->insert(ev);
-                                                            if (decomposition_debug) {
-                                                                cerr
-                                                                        << "FOUND a case where additional clause was needed in order to ensure the safeness of the merge for an ACPN: event "
-                                                                        << ev << " in FCPN " << FCPN_counter << endl;
-                                                            }
-                                                            saved_encodings->insert(ev_encoding);
-                                                        }
-                                                    }
-                                                } else {
-                                                    if (decomposition_debug)
-                                                        cerr << "CACHE HIT 1" << endl;
-                                                    break;
-                                                }
-                                            }
                                         }
                                     } else {
                                         if (decomposition_debug)
@@ -315,31 +253,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     }
     delete saved_encodings;
 
-    // STEP 4b
-    /*
-
-    for(auto rec: *preregion_for){
-        auto FCPN = rec.first;
-        int FCPN_counter = FCPNs_map[FCPN];
-        for(auto rec1: *rec.second){
-            if(rec1.second->size() > 1){
-                clause = new vector<int32_t>();
-                int region_counter = regions_map_for_sat[rec1.first];
-                int region_encoding = (M * K) + N * (FCPN_counter - 1) + region_counter;
-                clause->push_back(region_encoding);
-                clauses->push_back(clause);
-            }
-        }
-    }
-
-    for(auto rec: *preregion_for){
-        for(auto rec1: *rec.second){
-            delete rec1.second;
-        }
-        delete rec.second;
-    }
-    delete preregion_for;*/
-
     //STEP 6:
     vector<WeightedLit> literals_from_events = {};
 
@@ -364,6 +277,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     for (auto cl: *clauses) {
         formula.addClause(*cl);
     }
+    /*if(decomposition_debug)
+        formula.printFormula(cout);*/
 
     Minisat::Solver solver;
 
@@ -398,6 +313,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
+            /*
             if (decomposition_debug) {
                 //cout << "----------" << endl;
                 cout << "SAT with value " << current_value << endl;
@@ -411,7 +327,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     }
                 }
                 cout << endl;
-            }
+            }*/
             true_model.clear(true);
             for (auto val: solver.model) {
                 true_model.push(val);
@@ -451,6 +367,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     for (auto encoded_event: to_remove) {
         int FCPN_counter = encoded_events_map[encoded_event].first;
         int decoded_event = encoded_events_map[encoded_event].second;
+        //cerr << "encodings to remove " << encoded_event << " decoded as " << decoded_event << " in ACPN/FCPN " <<FCPN_counter << endl;
 
         SM *current_FCPN = FCPNs_map_inverted[FCPN_counter];
         if (decomposition_debug) {
@@ -460,6 +377,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             } else {
                 cout << aliases_map_number_name->at(decoded_event) << endl;
             }
+            //auto regions_connected_to_labels = merge_2_maps((*map_of_FCPN_pre_regions)[current_FCPN],
+             //                                               (*map_of_FCPN_post_regions)[current_FCPN]);
         }
 
         if (events_to_remove_per_FCPN->find(current_FCPN) == events_to_remove_per_FCPN->end()) {
@@ -620,7 +539,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 }
             }
 
-            //todo: add check on regions to merge: extract connected events and if one of the events is between the regions of the set
+
+            //(CURRENTLY NOT USED) additional check of current merges: merging regions the PN will still be an ACPN?
             auto avoided_sets = new set<set<Region *>*>();
             for(auto reg_set: *regions_to_merge){
                 bool counterexample_found = false;
@@ -632,7 +552,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                             break;
                         if(reg1 != reg2){
                             auto events_after_reg1 = preregion_for->at(current_FCPN)->at(reg1);
-                            auto events_before_reg2 =postregion_for->at(current_FCPN)->at(reg2);
+                            auto events_before_reg2 = postregion_for->at(current_FCPN)->at(reg2);
                             auto events_in_middle = new set<int>();
                             for(auto ev: *events_after_reg1){
                                 if(events_before_reg2->find(ev) != events_before_reg2->end()){
@@ -648,9 +568,9 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                         avoided_sets->insert(reg_set);
                                         counterexample_found = true;
                                         if (decomposition_debug) {
-                                            //todo: this kind of error not always is found, need further investment
-                                            cerr << "FOUND incompatible set of regions to merge: a merge was avoided."
-                                                 << endl;
+                                            //todo: this kind of error not always is found, need further investigation
+                                            cerr << "FOUND incompatible set of regions, a merge was avoided: " << ev << " in " << (acpn ? "ACPN " : "FCPN ")
+                                            << FCPNs_map[current_FCPN] << endl;
                                         }
                                     }
                                 }
