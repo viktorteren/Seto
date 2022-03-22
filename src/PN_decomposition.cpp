@@ -352,7 +352,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             AuxVarManager auxvars2(k + m + 2);
             PBConstraint constraint3(literals_from_regions, BOTH,
                                      current_value, current_value);
-
+            /*
             do {
                 solver2 = new Minisat::Solver();
                 auxvars2.resetAuxVarsTo(k + m + 2);
@@ -373,7 +373,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 if (decomposition_debug)
                     cout << "Formula size: " << formula2.getClauses().size() << endl;
 
-                dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/,
+                dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(),
                                                 num_clauses_formula,
                                                 formula2.getClauses(), results_to_avoid);
                 sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
@@ -411,6 +411,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 current_value2 = (min2 + max2) / 2;
                 delete solver2;
             } while ((max2 - min2) > 1);
+            */
         }
 
         if (exists_solution) {
@@ -486,6 +487,13 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     }
     delete splitting_constraint_clauses;
 
+    if(decomposition_debug) {
+        for (auto pn: *fcpn_set) {
+            cout << "PN:" << endl;
+            println(pn);
+        }
+    }
+
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
 
     places_after_initial_decomp = 0;
@@ -553,6 +561,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         int pn_counter = 0;
         auto regions_mapping = get_regions_map(pprg->get_pre_regions());
         for (auto pn: *fcpn_set) {
+            //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN
             print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);

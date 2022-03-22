@@ -136,6 +136,10 @@ int main(int argc, char **argv) {
             cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
             exit(0);
         }
+        if(decomposition && no_merge){
+            cerr << "SM decomposition cannot be performed with NOERGE flag." << endl; //TODO
+            exit(0);
+        }
         if(pn_synthesis && fcptnet){
             cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
             exit(0);
@@ -553,19 +557,23 @@ int main(int argc, char **argv) {
                 }
 
                 //if(decomposition_debug)
-                cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================"
-                     << endl;
-                tStart_partial = clock();
+                Merge* merge;
+
+                if(!no_merge) {
+                    cout << "=======================[ FINAL SMs REDUCTION MODULE / LABELS REMOVAL ]================"
+                         << endl;
+                    tStart_partial = clock();
 
 
-                auto *merge = new Merge(SMs,
-                                        clauses,
-                                        number_of_events,
-                                        map_of_SM_pre_regions,
-                                        map_of_SM_post_regions,
-                                        file,
-                                        pprg);
+                    merge = new Merge(SMs,
+                                            clauses,
+                                            number_of_events,
+                                            map_of_SM_pre_regions,
+                                            map_of_SM_post_regions,
+                                            file,
+                                            pprg);
 
+                }
 
                 auto t_labels_removal = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
@@ -606,7 +614,8 @@ int main(int argc, char **argv) {
                 const char* dimacs = merge->dimacs_file.c_str();
 
                 //===========FREE===========
-                delete merge;
+                if(!no_merge)
+                    delete merge;
                 //delete SMs_sum;
                 for (auto SM: *SMs) {
                     delete SM;
@@ -772,30 +781,40 @@ int main(int argc, char **argv) {
                     pn_module->get_irredundant_regions();
 
             Merging_Minimal_Preregions_module *merging_module = nullptr;
+            map<int, set<Region *>*> *merged_map;
+            if(!no_merge) {
 
-            //cout << "pre-regioni essenziali" << endl;
-            //print(*essential_regions);
 
-            if (irredundant_regions != nullptr) {
-                //cout << "pre-regioni irridondanti" << endl;
-                //print(*irredundant_regions);
-                merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions, new_ER);
-                // print_PN(essential_regions,irredundant_regions);
-            } else {
-                merging_module = new Merging_Minimal_Preregions_module(essential_regions,
-                                                                       nullptr, new_ER);
-                // print_PN(essential_regions, nullptr);
+                //cout << "pre-regioni essenziali" << endl;
+                //print(*essential_regions);
+
+                if (irredundant_regions != nullptr) {
+                    //cout << "pre-regioni irridondanti" << endl;
+                    //print(*irredundant_regions);
+                    merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions,
+                                                                           new_ER);
+                    // print_PN(essential_regions,irredundant_regions);
+                } else {
+                    merging_module = new Merging_Minimal_Preregions_module(essential_regions,
+                                                                           nullptr, new_ER);
+                    // print_PN(essential_regions, nullptr);
+                }
+
+                merged_map = merging_module->get_merged_preregions_map();
+
+
+                //cout << "not merged pre-regions: " << endl;
+                //print(*merging_module->get_total_preregions_map());
+
+
+                if (merged_map == nullptr) {
+                    merged_map = merging_module->get_total_preregions_map();
+                }
+            }
+            else{
+                merged_map = pre_regions;
             }
 
-            auto merged_map = merging_module->get_merged_preregions_map();
-
-            //cout << "not merged pre-regions: " << endl;
-            //print(*merging_module->get_total_preregions_map());
-
-
-            if (merged_map == nullptr) {
-                merged_map = merging_module->get_total_preregions_map();
-            }
 
             //cout << "merged pre-regions: " << endl;
             //print(*merging_module->get_merged_preregions_map());
@@ -810,11 +829,13 @@ int main(int argc, char **argv) {
             auto t_merge = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 
             auto regions_set = new set<Region *>();
-            for(auto rec: *merged_map){
-                for(auto reg: *rec.second){
+
+            for (auto rec: *merged_map) {
+                for (auto reg: *rec.second) {
                     regions_set->insert(reg);
                 }
             }
+
             int number_of_places = regions_set->size();
 
             cout << "Number of places: " << number_of_places << endl;

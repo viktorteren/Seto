@@ -22,7 +22,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     // 2. create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
     //      instances of the same region
     // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
-    //      have to be true
+    //      has to be true
     // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
     //      connected to more than 2 regions
     // 5. translate the map into clauses
