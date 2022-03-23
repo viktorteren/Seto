@@ -96,6 +96,16 @@ Independently by the used flags, after each execution the stats.csv file is upda
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
+### Execution using a script
+
+In the root folder the following script can be executed, but firsly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
+
+```Bash
+./Benchmark.sh
+```
+
+The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
+
 ## c) TS to interacting FCPNs flows
 
 ### Exact algorithm:

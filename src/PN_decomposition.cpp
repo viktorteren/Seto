@@ -65,7 +65,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
     auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
-    auto fcpn_set = new set<set<Region *> *>();
+    auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int> *>();
@@ -234,9 +234,23 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
         }
 
+
+/*
+        if(decomposition_debug){
+            if(fcpn_set->size() == 1) {
+                cerr << "WARNING USE ONLY DURING DEBUG: devo avere 2 FCPN senza questo codice" << endl;
+                for (int i = 0; i < k; i++) {
+                    if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
+                        clause = new vector<int32_t>();
+                        int region_encoding = 1 + reg_map->at((*regions_vector)[i]);
+                        clause->push_back(region_encoding);
+                        clauses->push_back(clause);
+                    }
+                }
+            }
+        }*/
+
         int current_value = 1;
-        int min = 0;
-        int max = k;
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
@@ -268,12 +282,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             if (sat) {
                 exists_solution = true;
-                /*
+
                 if (decomposition_debug) {
                     cout << "SAT with value " << current_value << ": representing the number of new covered regions"
                          << endl;
-                    cout << "Model: ";
-                }*/
+                    //cout << "Model: ";
+                }
                 last_solution->clear();
                 for (int i = 0; i < solver.nVars(); ++i) {
                     if (solver.model[i] != l_Undef) {
@@ -291,15 +305,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         }
                     }
                 }
-                /*
-                if (decomposition_debug)
-                    cout << endl;
-                */
-                min = current_value;
+                current_value++;
             } else {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
-                    cout << "UNSAT with value " << current_value << endl;
+
+                    cout << "UNSAT with value " << current_value << endl;/*
                     if (exists_solution) {
                         cout << "Model: ";
                         for (int i = 0; i < solver.nVars(); ++i) {
@@ -309,12 +320,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             }
                         }
                         cout << endl;
-                    }
+                    }*/
                 }
-                max = current_value;
+                break;
             }
-            current_value = (min + max) / 2;
-        } while ((max - min) > 1);
+        } while (true);
 
         if (!no_fcpn_min) {
             //STEP 6
@@ -352,7 +362,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             AuxVarManager auxvars2(k + m + 2);
             PBConstraint constraint3(literals_from_regions, BOTH,
                                      current_value, current_value);
-            /*
+
             do {
                 solver2 = new Minisat::Solver();
                 auxvars2.resetAuxVarsTo(k + m + 2);
@@ -373,7 +383,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 if (decomposition_debug)
                     cout << "Formula size: " << formula2.getClauses().size() << endl;
 
-                dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(),
+                dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/,
                                                 num_clauses_formula,
                                                 formula2.getClauses(), results_to_avoid);
                 sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
@@ -411,7 +421,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 current_value2 = (min2 + max2) / 2;
                 delete solver2;
             } while ((max2 - min2) > 1);
-            */
         }
 
         if (exists_solution) {
@@ -457,8 +466,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                 }
                 fcpn_set->insert(temp_PN);
-                if(decomposition_debug)
-                    cout << "adding new fcpn to solutions" << endl;
+                if(decomposition_debug) {
+                    cout << "adding new fcpn to solutions (size: " << temp_PN->size() << ")" << endl;
+                    println(temp_PN);
+                }
             }
             delete new_temp_set;
             results_to_avoid->push_back(*last_solution);
@@ -489,7 +500,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     if(decomposition_debug) {
         for (auto pn: *fcpn_set) {
-            cout << "PN:" << endl;
+            cout << "PN: (size:" << pn->size() << ")" << endl;
             println(pn);
         }
     }
