@@ -80,7 +80,7 @@ Independently by the used flags, after each execution the stats.csv file is upda
 ./TS_splitter <file_path> M <optional_flags>
 ```
 
-Statistics are stored into *'stats.csv'* file (in the root folder, or in case of execution with benchmark.sh in the execution folder such as *'cmake-build-debug'*). The file contains the following data:
+Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
 - file name
 - time region generation
 - time decomposition
@@ -150,7 +150,8 @@ The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_di
 ./TS_splitter <file_path> FC <optional_flags>
 ```
 
-Statistics are stored into *'stats.csv'* file (in the root folder). The data saved is the following:
+Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
+
 - file name
 - time region generation
 - time decomposition
