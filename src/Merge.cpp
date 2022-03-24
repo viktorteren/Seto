@@ -158,13 +158,13 @@ Merge::Merge(set<SM *> *SMs,
                 cout << "SAT with value " << current_value << endl;
                 //cout << "formula: " << endl;
                 //formula.printFormula(cout);
-                cout << "Model: ";
+                /*cout << "Model: ";
                 for (int i = 0; i < solver.nVars(); ++i) {
                     if (solver.model[i] != l_Undef) {
                         fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
                                 i + 1);
                     }
-                }
+                }*/
                 cout << endl;
             }
             true_model.clear(true);
