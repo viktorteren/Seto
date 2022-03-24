@@ -80,6 +80,28 @@ Independently by the used flags, after each execution the stats.csv file is upda
 ./TS_splitter <file_path> M <optional_flags>
 ```
 
+Statistics are stored into *'stats.csv'* file (in the root folder, or in case of execution with benchmark.sh in the execution folder such as *'cmake-build-debug'*). The file contains the following data:
+- file name
+- time region generation
+- time decomposition
+- time greedy algorithm
+- time merge
+- number of places after the initial creation of the set of SMs
+- number of places after the execution of greedy algorithm
+- final number of places
+- number of transitions after the initial creation of the set of SMs
+- number of transitions after the execution of greedy algorithm
+- final number of transitions
+- number of SMs
+- max (place+transition) sum
+- max alphabet (for the alphabet a and a' are the same)
+- max transitions
+- average number of places
+- variance of the number of places
+- average number of transitions
+- variance of the number of transitions
+
+
 #### Optional flags:
 
 [//]: # "L: creation of a log file"
@@ -95,6 +117,8 @@ Independently by the used flags, after each execution the stats.csv file is upda
 **COMPOSE**: perform the composition of FCPNs and create an output file in .aut extension
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+
+
 
 ### Execution using a script
 

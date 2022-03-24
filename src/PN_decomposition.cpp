@@ -234,22 +234,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
         }
 
-
-/*
-        if(decomposition_debug){
-            if(fcpn_set->size() == 1) {
-                cerr << "WARNING USE ONLY DURING DEBUG: devo avere 2 FCPN senza questo codice" << endl;
-                for (int i = 0; i < k; i++) {
-                    if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
-                        clause = new vector<int32_t>();
-                        int region_encoding = 1 + reg_map->at((*regions_vector)[i]);
-                        clause->push_back(region_encoding);
-                        clauses->push_back(clause);
-                    }
-                }
-            }
-        }*/
-
         int current_value = 1;
 
         PBConfig config = make_shared<PBConfigClass>();
