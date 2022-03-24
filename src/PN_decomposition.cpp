@@ -235,6 +235,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
 
         int current_value = 1;
+        int min = 0;
+        int max = k;
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
@@ -255,9 +257,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         auto last_solution = new set<int>();
         //iteration in the search of a correct assignment decreasing the total weight
         do {
-            IncPBConstraint constraint(literals_from_regions, GEQ,
+            PBConstraint constraint(literals_from_regions, GEQ,
                                        current_value); //the sum have to be greater or equal to current_value
-            pb2cnf.encodeIncInital(constraint, formula, auxvars);
+            pb2cnf.encode(constraint, formula, auxvars);
             int num_clauses_formula = formula.getClauses().size();
             //cout << "formula 1" << endl;
             //formula.printFormula(cout);
@@ -266,12 +268,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             sat = check_sat_formula_from_dimacs(solver, dimacs_file);
             if (sat) {
                 exists_solution = true;
-
+                /*
                 if (decomposition_debug) {
                     cout << "SAT with value " << current_value << ": representing the number of new covered regions"
                          << endl;
-                    //cout << "Model: ";
-                }
+                    cout << "Model: ";
+                }*/
                 last_solution->clear();
                 for (int i = 0; i < solver.nVars(); ++i) {
                     if (solver.model[i] != l_Undef) {
@@ -289,7 +291,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         }
                     }
                 }
-                current_value++;
+                /*
+                if (decomposition_debug)
+                    cout << endl;
+                */
+                min = current_value;
             } else {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
@@ -306,9 +312,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         cout << endl;
                     }*/
                 }
-                break;
+                max = current_value;
             }
-        } while (true);
+            current_value = (min + max) / 2;
+        } while ((max - min) > 1);
 
         if (!no_fcpn_min) {
             //STEP 6

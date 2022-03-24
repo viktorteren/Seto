@@ -267,6 +267,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
     //STEP 7:
     int current_value = encoded_events_map.size();
+    int min = 0;
+    int max = encoded_events_map.size();
 
     PBConfig config = make_shared<PBConfigClass>();
     VectorClauseDatabase formula(config);
@@ -330,15 +332,17 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             for (auto val: solver.model) {
                 true_model.push(val);
             }
-            current_value--;
+            //maxValueToCheck--;
+            max = current_value;
         } else {
             if (decomposition_debug) {
                 //cout << "----------" << endl;
                 cout << "UNSAT with value " << current_value << endl;
             }
-            break;
+            min = current_value;
         }
-    } while (true);
+        current_value = (min + max) / 2;
+    } while ((max - min) > 1);
     //if(decomposition_debug)
     //   cout << "UNSAT with value " << maxValueToCheck << endl;
 
