@@ -253,11 +253,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         bool exists_solution = false;
 
         auto last_solution = new set<int>();
+
+        IncPBConstraint constraint(literals_from_regions, GEQ,
+                                   current_value); //the sum have to be greater or equal to current_value
+        pb2cnf.encodeIncInital(constraint, formula, auxvars);
         //iteration in the search of a correct assignment decreasing the total weight
         do {
-            IncPBConstraint constraint(literals_from_regions, GEQ,
-                                       current_value); //the sum have to be greater or equal to current_value
-            pb2cnf.encodeIncInital(constraint, formula, auxvars);
             int num_clauses_formula = formula.getClauses().size();
             //cout << "formula 1" << endl;
             //formula.printFormula(cout);
@@ -308,6 +309,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 break;
             }
+            constraint.encodeNewGeq(current_value,formula,auxvars);
         } while (true);
 
         if (!no_fcpn_min) {
