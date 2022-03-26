@@ -744,6 +744,7 @@ int main(int argc, char **argv) {
                             }
                         }
                     }
+
                     t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
@@ -754,10 +755,14 @@ int main(int argc, char **argv) {
                             << num_places  << ","
                             << final_fcpn_set->size() << ","
                             << places_after_initial_decomp << ","
-                            << places_after_greedy
+                            << places_after_greedy << ","
+                            << maxAlphabet << ","
+                            << avgAlphabet
                             << endl;
                     delete final_fcpn_set;
                 }
+                cout << "MAX alphabet: " << maxAlphabet << endl;
+                cout << "AVG alphabet: " << avgAlphabet << endl;
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);

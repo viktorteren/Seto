@@ -159,6 +159,8 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 - number of FCPNs
 - number of places after the initial step of decomposition (before greedy algorithm)
 - number of places after the greedy algorithm
+- maximum alphabet
+- average alphabet
 
 #### Optional flags:
 

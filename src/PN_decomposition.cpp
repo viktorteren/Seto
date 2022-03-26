@@ -641,11 +641,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     if(!check_not_passed)
         cout << "Check passed." << endl;
 
-    auto maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
-    auto avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
-
-    cout << "MAX alphabet: " << maxAlphabet << endl;
-    cout << "AVG alphabet: " << avgAlphabet << endl;
+    maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
+    avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
 
     delete regions_vector;
 

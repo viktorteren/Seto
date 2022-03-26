@@ -81,6 +81,8 @@ extern bool benchmark_script;
 extern map<set<Region*>, set<int>*> *intersection_cache;
 extern int places_after_initial_decomp;
 extern int places_after_greedy;
+extern double maxAlphabet;
+extern double avgAlphabet;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
