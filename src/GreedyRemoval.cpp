@@ -7,8 +7,13 @@
 #include "../include/GreedyRemoval.h"
 
 using namespace Utilities;
+using namespace Minisat;
+using namespace PBLib;
 
-void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_generator *pprg, map<int, ER> *new_ER, map<int, set<Region *> *> *pre_regions){
+void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
+                             Pre_and_post_regions_generator *pprg,
+                             map<int, ER> *new_ER,
+                             map<int, set<Region *> *> *pre_regions){
     vector<set<Region *> *> SMs_to_remove;
     bool excitation_closure;
     auto SMs_descending = new set<set<Region *>*>();
@@ -20,7 +25,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_gene
 
     for (auto SM: *SMs_ascending) {
         /*if (decomposition_debug) {
-            cout << "check if can rermove the SM: " << endl;
+            cout << "check if can remove the SM: " << endl;
             println(*SM);
         }*/
         auto tmp_SMs = new set<set<Region *> *>();
@@ -188,4 +193,183 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_gene
     if (((unsigned int) num_SMs - num_candidates) == SMs->size()) {
         cout << "All candidate PNs/SMs has been removed" << endl;
     }*/
+}
+
+void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
+                             const string& file){
+    cout << "[EXACT SEARCH]=====================" << endl;
+    /* Encodings:
+     * SMs: [1, number of SMs = K]
+     * places: [number of SMs + 1 = K + 1, number of places*number of SMs + number of SMs = N*K+K = K*(N+1)]
+     */
+
+    /*
+     * Constraints:
+     * 1) minimization of the number of SMs
+     * 2) at least one occurrence of each region among different PNs
+     * 3) given an SM all it's region have to take part of the result if the SM takes part of the result and vice versa
+     *      the clauses for A => (B and C) are converted into (!A v B) and (!A v C)
+     *      the clauses for (B and C) => A are converted into (!B v A) and (!C v A)
+     */
+
+    auto clauses = new vector<vector<int32_t> *>();
+
+    // create the map between SMs and integers from 1 to K
+    map<SM *, int> FCPNs_map;
+    map<int, SM *> FCPNs_map_inverted;
+    int counter = 1;
+    for (auto FCPN: *SMs) {
+        FCPNs_map[FCPN] = counter;
+        FCPNs_map_inverted[counter] = FCPN;
+        counter++;
+    }
+
+    // create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
+    //      instances of the same region
+    map<Region *, int> regions_map_for_sat;
+    counter = 1;
+    for (auto FCPN: *SMs) {
+        for (auto reg: *FCPN) {
+            if (regions_map_for_sat.find(reg) == regions_map_for_sat.end()) {
+                regions_map_for_sat[reg] = counter;
+                counter++;
+            }
+        }
+    }
+
+    // STEP 2 using encoding for regions
+    int K = SMs->size();
+    int N = counter;
+    for (auto vec: *clauses) {
+        delete vec;
+    }
+    clauses->clear();
+    vector<int32_t> *clause;
+    for (auto rec: regions_map_for_sat) {
+        auto region = rec.first;
+        auto region_counter = rec.second;
+        clause = new vector<int32_t>();
+        for (auto FCPN: *SMs) {
+            int SM_counter = FCPNs_map[FCPN];
+            if (FCPN->find(region) != FCPN->end()) {
+                clause->push_back(K+N*(SM_counter - 1) + region_counter+1); //encoding of the place,
+                                                                    // region counter is always greater of 0,
+                                                                    // the same for SM_counter
+            }
+        }
+        clauses->push_back(clause); //all same places from different PNs
+    }
+
+    //STEP 3
+    for (auto rec: regions_map_for_sat) {
+        auto region = rec.first;
+        auto region_counter = rec.second;
+        for (auto FCPN: *SMs) {
+            int SM_counter = FCPNs_map[FCPN];
+            if (FCPN->find(region) != FCPN->end()) {
+                clause = new vector<int32_t>();
+                clause->push_back(K+N*(SM_counter - 1) + region_counter+1); //place
+                clause->push_back(-SM_counter);
+                clauses->push_back(clause); //(!A v B)
+                clause = new vector<int32_t>();
+                clause->push_back(-(K+N*(SM_counter - 1) + region_counter+1)); //place
+                clause->push_back(SM_counter);
+                clauses->push_back(clause); //(A v !B)
+            }
+        }
+    }
+
+    //STEP 1
+    vector<WeightedLit> literals_from_SMs = {};
+    literals_from_SMs.reserve(K); //improves the speed
+    for (int i = 1; i <= K; i++) {
+        literals_from_SMs.emplace_back(i, 1);
+    }
+
+    PBConfig config = make_shared<PBConfigClass>();
+    VectorClauseDatabase formula(config);
+    PB2CNF pb2cnf(config);
+    AuxVarManager auxvars(K*(N+1)+2);
+    for (auto cl: *clauses) {
+        formula.addClause(*cl);
+    }
+    Minisat::Solver solver;
+    bool sat;
+    string dimacs_file;
+    bool exists_solution;
+
+    int current_value = K;
+    auto last_solution = new set<int>();
+    IncPBConstraint constraint(literals_from_SMs, LEQ,
+                               current_value);
+    pb2cnf.encodeIncInital(constraint, formula, auxvars);
+    //iteration in the search of a correct assignment decreasing the total weight
+    do {
+        int num_clauses_formula = formula.getClauses().size();
+        //cout << "formula 1" << endl;
+        //formula.printFormula(cout);
+        dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+                                        formula.getClauses());
+        sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+        if (sat) {
+            exists_solution = true;
+
+            if (decomposition_debug) {
+                cout << "SAT with value " << current_value << ": representing the number of PNs"
+                     << endl;
+                cout << "Model: ";
+            }
+            last_solution->clear();
+            for (int i = 0; i < solver.nVars(); ++i) {
+                if (solver.model[i] != l_Undef) {
+                    /*
+                    if (decomposition_debug) {
+                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                i + 1);
+                    }*/
+                    if (i < K) {
+                        if (solver.model[i] == l_True) {
+                            last_solution->insert(i + 1);
+                        } else {
+                            last_solution->insert(-i - 1);
+                        }
+                    }
+                }
+            }
+            current_value--;
+        } else {
+            if (decomposition_debug) {
+                //cout << "----------" << endl;
+
+                cout << "UNSAT with value " << current_value << endl;/*
+                    if (exists_solution) {
+                        cout << "Model: ";
+                        for (int i = 0; i < solver.nVars(); ++i) {
+                            if (solver.model[i] != l_Undef) {
+                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                        i + 1);
+                            }
+                        }
+                        cout << endl;
+                    }*/
+            }
+            break;
+        }
+        constraint.encodeNewLeq(current_value,formula,auxvars);
+    } while (true);
+
+    vector<set<Region *>*> to_remove;
+
+    for(auto PN: *SMs){
+        int encoded_value = FCPNs_map[PN];
+        if (solver.model[encoded_value - 1] == l_False) {
+            /*if (decomposition_debug)
+                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
+            to_remove.push_back(PN);
+        }
+    }
+
+    for(auto PN: to_remove){
+        SMs->erase(PN);
+    }
 }

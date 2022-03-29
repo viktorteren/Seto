@@ -43,6 +43,7 @@ int places_after_initial_decomp;
 int places_after_greedy;
 double maxAlphabet;
 double avgAlphabet;
+bool greedy_exact;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){

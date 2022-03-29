@@ -4,11 +4,17 @@
  */
 
 #include "Utilities.h"
+#include "../pblib/pb2cnf.h"
 #include "../include/Pre_and_post_regions_generator.h"
 
 class GreedyRemoval {
 private:
 
 public:
-    static void minimize(set<set<Region *>*> *SMs, Pre_and_post_regions_generator *pprg, map<int, ER> *new_ER, map<int, set<Region *> *> *pre_regions);
+    static void minimize(set<set<Region *>*> *SMs,
+                         Pre_and_post_regions_generator *pprg,
+                         map<int, ER> *new_ER,
+                         map<int, set<Region *> *> *pre_regions);
+    static void minimize_sat(set<set<Region *>*> *SMs,
+                         const string& file);
 };

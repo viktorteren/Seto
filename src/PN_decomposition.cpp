@@ -509,7 +509,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
         }
         cout << "PNs before greedy (with the addition of SMs): " << fcpn_set->size() << endl;
-        GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+        if(greedy_exact)
+            GreedyRemoval::minimize_sat(fcpn_set, file);
+        else
+            GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
     }
 
     cout << (fcptnet ? "FCPN" : "ACPN") << " set size: " << fcpn_set->size() << endl;

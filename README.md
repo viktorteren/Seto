@@ -182,6 +182,9 @@ algorithm
 
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
+**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
+in order to find the minimal number of FCPNs, indeed this search have very restricted constraints: at least one occurrence of each region in at least one FCPN, as result providing worst results compared to greedy algorithm **(not recommended)**
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:

@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
         acpn = false;
         pn_synthesis = false;
         composition = false;
+        greedy_exact = false;
         dot_output = false;
         ignore_correctness = false;
         for(int i=2; i < argc; i++) {
@@ -61,6 +62,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "DOT"){
                 dot_output = true;
+            }
+            else if(args[i] == "GE"){
+                greedy_exact = true;
             }
             else if(args[i] == "B"){
                 fcptnet = true;
