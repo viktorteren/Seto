@@ -230,13 +230,46 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     //      instances of the same region
     map<Region *, int> regions_map_for_sat;
     counter = 1;
-    cout << "all different regions"  << endl;
+    if(decomposition_debug)
+        cout << "all different regions" << endl;
     for (auto FCPN: *SMs) {
         for (auto reg: *FCPN) {
             if (regions_map_for_sat.find(reg) == regions_map_for_sat.end()) {
                 regions_map_for_sat[reg] = counter;
                 counter++;
-                println(*reg);
+                //println(*reg);
+            }
+        }
+    }
+
+
+    if(decomposition_debug) {
+        auto cache = new set<pair<set<Region *> *, set<Region *> *>>();
+        for (auto FCPN: *SMs) {
+            for (auto FCPN2: *SMs) {
+                if (FCPN != FCPN2) {
+                    auto current_pair = make_pair(FCPN, FCPN2);
+                    if (cache->find(current_pair) == cache->end()) {
+                        auto inverted_pair = make_pair(FCPN2, FCPN);
+                        if (cache->find(inverted_pair) == cache->end()) {
+                            for (auto reg1: *FCPN) {
+                                for (auto reg2: *FCPN2) {
+                                    if (reg1 != reg2) {
+                                        if (contains(reg1, reg2) || contains(reg2, reg1)) {
+                                            cerr << "redundant regions or only with different pointers" << endl;
+                                            cerr << "reg1: " << reg1 << endl;
+                                            println(*reg1);
+                                            cerr << "reg2: " << reg2 << endl;
+                                            println(*reg2);
+                                        }
+                                    }
+                                }
+                            }
+                            cache->insert(current_pair);
+                            cache->insert(inverted_pair);
+                        }
+                    }
+                }
             }
         }
     }
@@ -315,7 +348,6 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
-
             if (decomposition_debug) {
                 cout << "SAT with value " << current_value << ": representing the number of PNs"
                      << endl;
@@ -383,8 +415,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
             new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
         }
     }
-    auto new_used_regions_map_tmp = new map < int, set<Region *>
-    * > ();
+    auto new_used_regions_map_tmp = new map < int, set<Region *> * > ();
     for (auto rec: *pre_regions) {
         (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
     }
