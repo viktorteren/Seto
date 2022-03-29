@@ -15,7 +15,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
-                                                 map<int, ER> *ER, map<int, int> *aliases){
+                                                 map<int, ER> *ER, map<int, int> *aliases,
+                                                 set<set<Region *>*>* SMs){
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
      * do
@@ -501,8 +502,15 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     cout << "Number of places before greedy: " << places_after_initial_decomp << endl;
 
     //STEP 9
-    if(fcpn_set->size() > 1)
+    if(fcpn_set->size() > 1) {
+        if(decomposition){
+            for(auto SM: *SMs){
+                fcpn_set->insert(SM);
+            }
+        }
+        cout << "PNs before greedy (with the addition of SMs): " << fcpn_set->size() << endl;
         GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+    }
 
     cout << (fcptnet ? "FCPN" : "ACPN") << " set size: " << fcpn_set->size() << endl;
 

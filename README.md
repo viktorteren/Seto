@@ -166,6 +166,9 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 **D**: debug info mode
 
+**B**: execute also SM decomposition combining the set of not minimized SMs to the FCPNs before performing the greedy 
+algorithm
+
 **O**: write output FCPNs on file in .dot extension
 
 **MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions
