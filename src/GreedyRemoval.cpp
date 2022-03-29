@@ -196,6 +196,8 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
 }
 
 void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
+                                 map<int, ER> *ER,
+                                 map<int, set<Region *> *> *pre_regions,
                              const string& file){
     cout << "[EXACT SEARCH]=====================" << endl;
     /* Encodings:
@@ -228,11 +230,13 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     //      instances of the same region
     map<Region *, int> regions_map_for_sat;
     counter = 1;
+    cout << "all different regions"  << endl;
     for (auto FCPN: *SMs) {
         for (auto reg: *FCPN) {
             if (regions_map_for_sat.find(reg) == regions_map_for_sat.end()) {
                 regions_map_for_sat[reg] = counter;
                 counter++;
+                println(*reg);
             }
         }
     }
@@ -296,7 +300,6 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     Minisat::Solver solver;
     bool sat;
     string dimacs_file;
-    bool exists_solution;
 
     int current_value = K;
     auto last_solution = new set<int>();
@@ -312,7 +315,6 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
-            exists_solution = true;
 
             if (decomposition_debug) {
                 cout << "SAT with value " << current_value << ": representing the number of PNs"
@@ -371,5 +373,36 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
 
     for(auto PN: to_remove){
         SMs->erase(PN);
+    }
+
+    //-----------------------------EC CHECK----------------------------------------------------------------
+
+    set<int> new_used_regions_tmp;
+    for (auto tmp_SM: *SMs) {
+        for (auto region: *tmp_SM) {
+            new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+        }
+    }
+    auto new_used_regions_map_tmp = new map < int, set<Region *>
+    * > ();
+    for (auto rec: *pre_regions) {
+        (*new_used_regions_map_tmp)[rec.first] = new set < Region * > ();
+    }
+
+    for (auto reg: new_used_regions_tmp) {
+        for (auto rec: *pre_regions) {
+            if (rec.second->find((*aliases_region_pointer)[reg]) != rec.second->end()) {
+                (*new_used_regions_map_tmp)[rec.first]->insert((*aliases_region_pointer)[reg]);
+            }
+        }
+    }
+
+    bool excitation_closure = is_excitation_closed(new_used_regions_map_tmp, ER);
+
+    if(excitation_closure){
+        cout << "EC satisfied" << endl;
+    }
+    else{
+        cerr << "EC not satisfied" << endl;
     }
 }

@@ -16,5 +16,7 @@ public:
                          map<int, ER> *new_ER,
                          map<int, set<Region *> *> *pre_regions);
     static void minimize_sat(set<set<Region *>*> *SMs,
-                         const string& file);
+                             map<int, ER> *ER,
+                             map<int, set<Region *> *> *pre_regions,
+                            const string& file);
 };
