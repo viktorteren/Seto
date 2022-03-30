@@ -242,41 +242,11 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
         }
     }
 
-
-    if(decomposition_debug) {
-        auto cache = new set<pair<set<Region *> *, set<Region *> *>>();
-        for (auto FCPN: *SMs) {
-            for (auto FCPN2: *SMs) {
-                if (FCPN != FCPN2) {
-                    auto current_pair = make_pair(FCPN, FCPN2);
-                    if (cache->find(current_pair) == cache->end()) {
-                        auto inverted_pair = make_pair(FCPN2, FCPN);
-                        if (cache->find(inverted_pair) == cache->end()) {
-                            for (auto reg1: *FCPN) {
-                                for (auto reg2: *FCPN2) {
-                                    if (reg1 != reg2) {
-                                        if (contains(reg1, reg2) || contains(reg2, reg1)) {
-                                            cerr << "redundant regions or only with different pointers" << endl;
-                                            cerr << "reg1: " << reg1 << endl;
-                                            println(*reg1);
-                                            cerr << "reg2: " << reg2 << endl;
-                                            println(*reg2);
-                                        }
-                                    }
-                                }
-                            }
-                            cache->insert(current_pair);
-                            cache->insert(inverted_pair);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     // STEP 2 using encoding for regions
     int K = SMs->size();
-    int N = counter;
+    int N = counter-1;
+    if(decomposition_debug)
+        cout << "N = " << N << endl;
     for (auto vec: *clauses) {
         delete vec;
     }
