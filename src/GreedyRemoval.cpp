@@ -193,46 +193,66 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
     if (((unsigned int) num_SMs - num_candidates) == SMs->size()) {
         cout << "All candidate PNs/SMs has been removed" << endl;
     }*/
+
+
+
+    //----------------- counting different regions-------------------------
+    if(decomposition_debug) {
+        set<int> new_used_regions_tmp;
+        for (auto tmp_SM: *SMs) {
+            for (auto region: *tmp_SM) {
+                new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
+            }
+        }
+
+        cout << "used regions: " << new_used_regions_tmp.size() << endl;
+    }
 }
 
-void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
+void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
+                                 set<set<Region *>*> *SMs,
                                  map<int, ER> *ER,
                                  map<int, set<Region *> *> *pre_regions,
                              const string& file){
     cout << "[EXACT SEARCH]=====================" << endl;
     /* Encodings:
-     * SMs: [1, number of SMs = K]
-     * places: [number of SMs + 1 = K + 1, number of places*number of SMs + number of SMs = N*K+K = K*(N+1)]
+     * FCPNs: [1, number of FCPNs and SMs = K]
+     * places: [number of FCPNs and SMs + 1 = K + 1, number of places*number of FCPNs and SMs + number of FCPNs and SMs = N*K+K = K*(N+1)]
      */
 
     /*
      * Constraints:
-     * 1) minimization of the number of SMs
-     * 2) at least one occurrence of each region among different PNs
-     * 3) given an SM all it's region have to take part of the result if the SM takes part of the result and vice versa
+     * 1) minimization of the number of FCPNs and SMs
+     * 2) at least one occurrence of each region among different FCPNs and SMs but considering only the regions contained in FCPNs
+     * 3) given an SM/FCPN all it's region have to take part of the result if the FCPN/SM takes part of the result and vice versa
      *      the clauses for A => (B and C) are converted into (!A v B) and (!A v C)
      *      the clauses for (B and C) => A are converted into (!B v A) and (!C v A)
      */
 
     auto clauses = new vector<vector<int32_t> *>();
 
-    // create the map between SMs and integers from 1 to K
+    // create the map between FCPNs and integers from 1 to K
     map<SM *, int> FCPNs_map;
     map<int, SM *> FCPNs_map_inverted;
     int counter = 1;
-    for (auto FCPN: *SMs) {
+    for (auto FCPN: *FCPNs) {
         FCPNs_map[FCPN] = counter;
         FCPNs_map_inverted[counter] = FCPN;
         counter++;
+    }
+    if(SMs != nullptr) {
+        for (auto FCPN: *SMs) {
+            FCPNs_map[FCPN] = counter;
+            FCPNs_map_inverted[counter] = FCPN;
+            counter++;
+        }
     }
 
     // create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
     //      instances of the same region
     map<Region *, int> regions_map_for_sat;
     counter = 1;
-    if(decomposition_debug)
-        cout << "all different regions" << endl;
-    for (auto FCPN: *SMs) {
+    for (auto FCPN: *FCPNs) {
         for (auto reg: *FCPN) {
             if (regions_map_for_sat.find(reg) == regions_map_for_sat.end()) {
                 regions_map_for_sat[reg] = counter;
@@ -243,45 +263,81 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     }
 
     // STEP 2 using encoding for regions
-    int K = SMs->size();
+    int K = FCPNs->size()+SMs->size();
     int N = counter-1;
-    if(decomposition_debug)
+    if(decomposition_debug) {
         cout << "N = " << N << endl;
-    for (auto vec: *clauses) {
-        delete vec;
+        cout << "K = " << K << endl;
     }
-    clauses->clear();
+
     vector<int32_t> *clause;
     for (auto rec: regions_map_for_sat) {
         auto region = rec.first;
         auto region_counter = rec.second;
         clause = new vector<int32_t>();
-        for (auto FCPN: *SMs) {
-            int SM_counter = FCPNs_map[FCPN];
+        for (auto FCPN: *FCPNs) {
+            int FCPN_counter = FCPNs_map[FCPN];
             if (FCPN->find(region) != FCPN->end()) {
-                clause->push_back(K+N*(SM_counter - 1) + region_counter+1); //encoding of the place,
+                clause->push_back(K+N*(FCPN_counter - 1) + region_counter); //encoding of the place,
                                                                     // region counter is always greater of 0,
                                                                     // the same for SM_counter
+                     //cout << "adding the encoding of region " << region_counter << " in SM " << SM_counter << endl;
             }
         }
-        clauses->push_back(clause); //all same places from different PNs
+        if(SMs != nullptr) {
+            for (auto FCPN: *SMs) {
+                int SM_counter = FCPNs_map[FCPN];
+                if (FCPN->find(region) != FCPN->end()) {
+                    clause->push_back(K + N * (SM_counter - 1) + region_counter); //encoding of the place,
+                    // region counter is always greater of 0,
+                    // the same for SM_counter
+                    //cout << "adding the encoding of region " << region_counter << " in SM " << SM_counter << endl;
+                }
+            }
+            clauses->push_back(clause); //all same places from different PNs
+            //cout << "complete clause" << endl;
+        }
+
     }
 
     //STEP 3
-    for (auto rec: regions_map_for_sat) {
-        auto region = rec.first;
-        auto region_counter = rec.second;
-        for (auto FCPN: *SMs) {
-            int SM_counter = FCPNs_map[FCPN];
+    for (auto FCPN: *FCPNs) {
+        int SM_counter = FCPNs_map[FCPN];
+        for (auto region: *FCPN) {
+            auto region_counter = regions_map_for_sat.at(region);
             if (FCPN->find(region) != FCPN->end()) {
                 clause = new vector<int32_t>();
-                clause->push_back(K+N*(SM_counter - 1) + region_counter+1); //place
+                clause->push_back(K+N*(SM_counter - 1) + region_counter); //place
                 clause->push_back(-SM_counter);
                 clauses->push_back(clause); //(!A v B)
+                //cout << "adding clause !SM v region: SM "  << SM_counter << " region " << region_counter << endl;
                 clause = new vector<int32_t>();
-                clause->push_back(-(K+N*(SM_counter - 1) + region_counter+1)); //place
+                clause->push_back(-(K+N*(SM_counter - 1) + region_counter)); //place
                 clause->push_back(SM_counter);
                 clauses->push_back(clause); //(A v !B)
+                //cout << "adding clause SM v !region: SM "  << SM_counter << " region " << region_counter << endl;
+            }
+        }
+    }
+    if(SMs != nullptr) {
+        for (auto FCPN: *SMs) {
+            int SM_counter = FCPNs_map[FCPN];
+            for (auto region: *FCPN) {
+                if (regions_map_for_sat.find(region) != regions_map_for_sat.end()) {
+                    auto region_counter = regions_map_for_sat.at(region);
+                    if (FCPN->find(region) != FCPN->end()) {
+                        clause = new vector<int32_t>();
+                        clause->push_back(K + N * (SM_counter - 1) + region_counter); //place
+                        clause->push_back(-SM_counter);
+                        clauses->push_back(clause); //(!A v B)
+                        //cout << "adding clause !SM v region: SM "  << SM_counter << " region " << region_counter << endl;
+                        clause = new vector<int32_t>();
+                        clause->push_back(-(K + N * (SM_counter - 1) + region_counter)); //place
+                        clause->push_back(SM_counter);
+                        clauses->push_back(clause); //(A v !B)
+                        //cout << "adding clause SM v !region: SM "  << SM_counter << " region " << region_counter << endl;
+                    }
+                }
             }
         }
     }
@@ -364,7 +420,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
 
     vector<set<Region *>*> to_remove;
 
-    for(auto PN: *SMs){
+    for(auto PN: *FCPNs){
         int encoded_value = FCPNs_map[PN];
         if (solver.model[encoded_value - 1] == l_False) {
             /*if (decomposition_debug)
@@ -374,14 +430,24 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     }
 
     for(auto PN: to_remove){
-        SMs->erase(PN);
+        FCPNs->erase(PN);
     }
+
+    for(auto PN: *SMs){
+        int encoded_value = FCPNs_map[PN];
+        if (solver.model[encoded_value - 1] == l_True) {
+            /*if (decomposition_debug)
+                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
+            FCPNs->insert(PN);
+        }
+    }
+
 
     //-----------------------------EC CHECK----------------------------------------------------------------
 
     set<int> new_used_regions_tmp;
-    for (auto tmp_SM: *SMs) {
-        for (auto region: *tmp_SM) {
+    for (auto tmp_FCPN: *FCPNs) {
+        for (auto region: *tmp_FCPN) {
             new_used_regions_tmp.insert((*aliases_region_pointer_inverted)[region]);
         }
     }
@@ -405,5 +471,10 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *SMs,
     }
     else{
         cerr << "EC not satisfied" << endl;
+    }
+
+    if(decomposition_debug) {
+        //----------------- counting different regions-------------------------
+        cout << "used regions: " << new_used_regions_tmp.size() << endl;
     }
 }

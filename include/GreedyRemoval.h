@@ -15,7 +15,8 @@ public:
                          Pre_and_post_regions_generator *pprg,
                          map<int, ER> *new_ER,
                          map<int, set<Region *> *> *pre_regions);
-    static void minimize_sat(set<set<Region *>*> *SMs,
+    static void minimize_sat(set<set<Region *>*> *FCPNs,
+                             set<set<Region *>*> *SMs,
                              map<int, ER> *ER,
                              map<int, set<Region *> *> *pre_regions,
                             const string& file);

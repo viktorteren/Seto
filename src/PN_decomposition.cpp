@@ -503,14 +503,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     //STEP 9
     if(fcpn_set->size() > 1) {
-        if(decomposition){
-            for(auto SM: *SMs){
-                fcpn_set->insert(SM);
-            }
+        if(decomposition) {
+            cout << "PNs before greedy (with the addition of SMs): " << fcpn_set->size() << endl;
         }
-        cout << "PNs before greedy (with the addition of SMs): " << fcpn_set->size() << endl;
         if(greedy_exact)
-            GreedyRemoval::minimize_sat(fcpn_set, ER, pre_regions_map, file);
+            GreedyRemoval::minimize_sat(fcpn_set, SMs, ER, pre_regions_map, file);
         else
             GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
     }
