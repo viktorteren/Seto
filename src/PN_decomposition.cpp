@@ -65,6 +65,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
+    auto clauses_pre = new vector<vector<int32_t> *>();
     auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     auto not_used_regions = new set<Region *>();
@@ -113,6 +114,104 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     bool excitation_closure;
     bool splitting_constraints_added = false;
 
+    //STEP 2 and 2b
+    //cout << "STEP 2" << endl;
+    /*
+     * ALGORITHM:
+     *      for each ev
+     *          for each r=pre(ev) -> place/region
+     *              if r has multiple outgoing edges
+     *                  for each couple (r, pre(ev))
+     *                      if r != pre(ev)
+     *                          //in case of 2b check if pre(ev) has multiple outgoing edges
+     *                              create clause (!r v !pre(ev))
+     */
+    //for each ev
+    for (auto rec: *pre_regions_map) {
+        //auto ev = rec.first;
+        auto set_of_regions = rec.second;
+        for (auto r: *set_of_regions) {
+            if ((*region_ex_event_map)[r]->size() > 1) {
+                for (auto r2: *set_of_regions) {
+                    if (r != r2) {
+                        if(fcptnet){
+                            clause = new vector<int32_t>();
+                            clause->push_back(-(*reg_map)[r] - 1);
+                            clause->push_back(-(*reg_map)[r2] - 1);
+                            clauses_pre->push_back(clause);
+                            //print_clause(clause);
+                        }
+                            //ACPN case
+                        else if((*region_ex_event_map)[r2]->size() > 1){
+                            bool symmetric_choice = true;
+                            for(auto event: *(*region_ex_event_map)[r2]){
+                                if((*region_ex_event_map)[r]->find(event) == (*region_ex_event_map)[r]->end()){
+                                    symmetric_choice = false;
+                                    break;
+                                }
+                            }
+                            if(!symmetric_choice){
+                                clause = new vector<int32_t>();
+                                clause->push_back(-(*reg_map)[r] - 1);
+                                clause->push_back(-(*reg_map)[r2] - 1);
+                                clauses_pre->push_back(clause);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //STEP 4
+    for (auto rec:*region_ex_event_map) {
+        auto reg = rec.first;
+        for (auto ev: *rec.second) {
+            int region_encoding = 1 + reg_map->at(reg);
+            auto ev_encoding = k + 2 + ev;
+            clause = new vector<int32_t>();
+            clause->push_back(-region_encoding);
+            clause->push_back(ev_encoding);
+            clauses_pre->push_back(clause);
+        }
+    }
+
+    for (auto rec:*region_ent_event_map) {
+        auto reg = rec.first;
+        int region_encoding = 1 + reg_map->at(reg);
+        for (auto ev: *rec.second) {
+            auto ev_encoding = k + 2 + ev;
+            clause = new vector<int32_t>();
+            clause->push_back(-region_encoding);
+            clause->push_back(ev_encoding);
+            clauses_pre->push_back(clause);
+        }
+    }
+
+    //STEP 4b
+    for (auto rec: *pre_regions_map) {
+        auto ev = rec.first;
+        auto ev_encoding = k + 2 + ev;
+        clause = new vector<int32_t>();
+        clause->push_back(-ev_encoding);
+        for (auto reg: *rec.second) {
+            int region_encoding = 1 + reg_map->at(reg);
+            clause->push_back(region_encoding);
+        }
+        clauses_pre->push_back(clause);
+    }
+    for (auto rec: *post_regions_map) {
+        auto ev = rec.first;
+        auto ev_encoding = k + 2 + ev;
+        clause = new vector<int32_t>();
+        clause->push_back(-ev_encoding);
+        for (auto reg: *rec.second) {
+            int region_encoding = 1 + reg_map->at(reg);
+            clause->push_back(region_encoding);
+        }
+        clauses_pre->push_back(clause);
+    }
+
     do {
         for (auto cl: *clauses) {
             delete cl;
@@ -124,103 +223,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 splitting_constraint_clauses->clear();
                 cout << "removing splitting constraints" << endl;
             }
-        }
-
-        //STEP 2 and 2b
-        //cout << "STEP 2" << endl;
-        /*
-         * ALGORITHM:
-         *      for each ev
-         *          for each r=pre(ev) -> place/region
-         *              if r has multiple outgoing edges
-         *                  for each couple (r, pre(ev))
-         *                      if r != pre(ev)
-         *                          //in case of 2b check if pre(ev) has multiple outgoing edges
-         *                              create clause (!r v !pre(ev))
-         */
-        //for each ev
-        for (auto rec: *pre_regions_map) {
-            //auto ev = rec.first;
-            auto set_of_regions = rec.second;
-            for (auto r: *set_of_regions) {
-                if ((*region_ex_event_map)[r]->size() > 1) {
-                    for (auto r2: *set_of_regions) {
-                        if (r != r2) {
-                            if(fcptnet){
-                                clause = new vector<int32_t>();
-                                clause->push_back(-(*reg_map)[r] - 1);
-                                clause->push_back(-(*reg_map)[r2] - 1);
-                                clauses->push_back(clause);
-                                //print_clause(clause);
-                            }
-                            //ACPN case
-                            else if((*region_ex_event_map)[r2]->size() > 1){
-                                bool symmetric_choice = true;
-                                for(auto event: *(*region_ex_event_map)[r2]){
-                                    if((*region_ex_event_map)[r]->find(event) == (*region_ex_event_map)[r]->end()){
-                                        symmetric_choice = false;
-                                        break;
-                                    }
-                                }
-                                if(!symmetric_choice){
-                                    clause = new vector<int32_t>();
-                                    clause->push_back(-(*reg_map)[r] - 1);
-                                    clause->push_back(-(*reg_map)[r2] - 1);
-                                    clauses->push_back(clause);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //STEP 4
-        for (auto rec:*region_ex_event_map) {
-            auto reg = rec.first;
-            for (auto ev: *rec.second) {
-                int region_encoding = 1 + reg_map->at(reg);
-                auto ev_encoding = k + 2 + ev;
-                clause = new vector<int32_t>();
-                clause->push_back(-region_encoding);
-                clause->push_back(ev_encoding);
-                clauses->push_back(clause);
-            }
-        }
-        for (auto rec:*region_ent_event_map) {
-            auto reg = rec.first;
-            int region_encoding = 1 + reg_map->at(reg);
-            for (auto ev: *rec.second) {
-                auto ev_encoding = k + 2 + ev;
-                clause = new vector<int32_t>();
-                clause->push_back(-region_encoding);
-                clause->push_back(ev_encoding);
-                clauses->push_back(clause);
-            }
-        }
-
-        //STEP 4b
-        for (auto rec: *pre_regions_map) {
-            auto ev = rec.first;
-            auto ev_encoding = k + 2 + ev;
-            clause = new vector<int32_t>();
-            clause->push_back(-ev_encoding);
-            for (auto reg: *rec.second) {
-                int region_encoding = 1 + reg_map->at(reg);
-                clause->push_back(region_encoding);
-            }
-            clauses->push_back(clause);
-        }
-        for (auto rec: *post_regions_map) {
-            auto ev = rec.first;
-            auto ev_encoding = k + 2 + ev;
-            clause = new vector<int32_t>();
-            clause->push_back(-ev_encoding);
-            for (auto reg: *rec.second) {
-                int region_encoding = 1 + reg_map->at(reg);
-                clause->push_back(region_encoding);
-            }
-            clauses->push_back(clause);
         }
 
         //STEP 5
@@ -241,6 +243,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         VectorClauseDatabase formula(config);
         PB2CNF pb2cnf(config);
         AuxVarManager auxvars(k + m + 2);
+        for (auto cl: *clauses_pre) {
+            formula.addClause(*cl);
+        }
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
