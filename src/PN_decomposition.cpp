@@ -438,7 +438,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 clause = new vector<int32_t>();
                 for (auto reg: (*new_temp_set)[pos]) {
                     //cout << "added a new constraint" << endl;
-                    clause->push_back(-1 + reg_map->at(reg));
+                    clause->push_back(-1 - reg_map->at(reg));
                 }
                 splitting_constraint_clauses->push_back(clause);
                 delete temp_PN;
