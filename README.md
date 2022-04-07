@@ -277,6 +277,8 @@ ltscompare --equivalence=bisim <TS_aut_file> <PN_aut_file>
 
 2) There is any check on .ts inputs.
 
+3) It is not possible to run two parallel instances of the program on the same input file since there is a file dependency used by the SAT solver therefore the results could result wrong.
+
 [//]: # "Known issues"
 [//]: # "------------------"
 
