@@ -489,11 +489,7 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
     bool found = false;
     auto result = new vector<int>();
 
-    vector<int> temp;
-    temp.push_back(1);
-    temp.push_back(2);
-    temp.push_back(3);
-    int max = temp.size()-1;
+    int max = SMs->size()-1;
 
     for(int size=1;size<=SMs->size();++size){
         cout <<  "size:" << size << endl;
