@@ -518,7 +518,10 @@ int main(int argc, char **argv) {
 
                     tStart_partial = clock();
 
-                    GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
+                    if(greedy_exact)
+                        GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                    else
+                        GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
 
                     auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 

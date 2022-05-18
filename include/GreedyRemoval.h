@@ -9,6 +9,12 @@
 
 class GreedyRemoval {
 private:
+    static bool check_EC(vector<int>* vec,
+                         vector<set<Region*>*> *SM_vector,
+                         map<int, set<Region *> *> *pre_regions,
+                         map<int, ER> *ER);
+    static bool exists_next(vector<int>* vec, int max);
+    static vector<int>* next_set(vector<int>* vec, int max);
 
 public:
     static void minimize(set<set<Region *>*> *SMs,
@@ -20,4 +26,13 @@ public:
                              map<int, ER> *ER,
                              map<int, set<Region *> *> *pre_regions,
                             const string& file);
+    static void minimize_sat_SM(set<set<Region *>*> *SMs,
+                             map<int, ER> *ER,
+                             map<int, set<Region *> *> *pre_regions,
+                             const string& file);
+    static void minimize_sat_SM_exact(set<set<Region *>*> *SMs,
+                                        map<int, ER> *ER,
+                                        map<int, set<Region *> *> *pre_regions);
+
+
 };
