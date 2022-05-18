@@ -490,6 +490,7 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
     auto result = new vector<int>();
 
     int max = SMs->size()-1;
+    cout << "NUM SMs: " << SMs->size()<<endl;
 
     for(int size=1;size<=SMs->size();++size){
         cout <<  "size:" << size << endl;
@@ -497,21 +498,24 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
         for(int i=0;i<size;++i){
             temp_vec->push_back(i);
         }
+
+        /*
         cout << "temp vec: ";
         for(int j : *temp_vec){
             cout << j << " ";
         }
-        cout << endl;
+        cout << endl;*/
         do{
             found = check_EC(temp_vec,SM_vector,pre_regions,ER);
             if(!found){
                 if(exists_next(temp_vec,max)){
                     temp_vec = next_set(temp_vec,max);
+                    /*
                     cout << "temp vec: ";
                     for(int j : *temp_vec){
                         cout << j << " ";
                     }
-                    cout << endl;
+                    cout << endl;*/
                 }
                 else break;
             }
@@ -562,46 +566,33 @@ bool GreedyRemoval::check_EC(vector<int>* vec,
 
 bool GreedyRemoval::exists_next(vector<int> *vec,int max){
     for(int i=vec->size()-1;i>=0;i--){
-        if(vec->at(i) < max && i == vec->size()-1)
+        if(vec->at(i) <= max - (vec->size()-i)){
             return true;
-        if(vec->at(i) < max && i != vec->size()-1)
-            if(vec->at(i+1) > vec->at(i)+1)
-                return true;
+        }
     }
     return false;
 }
 
+//TODO: algoritmo sbagliato, si saltanto diverse combinazioni
+// vme_read e vme_write ancora buggati
 vector<int>* GreedyRemoval::next_set(vector<int>* vec, int max){
     for(int i=vec->size()-1;i>=0;i--){
-        if(vec->at(i) < max && i == vec->size()-1){
+        if(vec->at(i) <= max - (vec->size()-i)){
             auto temp = new vector<int>();
             for(int k=0;k<vec->size();k++){
-                if(k != i){
+                if(k < i){
                     temp->push_back(vec->at(k));
                 }
-                else{
+                if(k == i){
                     temp->push_back(vec->at(k)+1);
                 }
+                if(k > i){
+                    temp->push_back(vec->at(i)+1+(k-i));
+                }
+
             }
-            if(temp->size() != vec->size())
-                cout << "different size"<< endl;
             return temp;
         }
-        if(vec->at(i) < max && i != vec->size()-1)
-            if(vec->at(i+1) > vec->at(i)+1){
-                auto temp = new vector<int>();
-                for(int k=0;k<vec->size();k++){
-                    if(k != i){
-                        temp->push_back(vec->at(k));
-                    }
-                    else{
-                        temp->push_back(vec->at(k)+1);
-                    }
-                }
-                if(temp->size() != vec->size())
-                    cout << "different size"<< endl;
-                return temp;
-            }
     }
 }
 

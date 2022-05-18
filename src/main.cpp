@@ -518,7 +518,7 @@ int main(int argc, char **argv) {
 
                     tStart_partial = clock();
 
-                    if(greedy_exact)
+                    if(greedy_exact && SMs->size() < 20)
                         GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
                     else
                         GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
