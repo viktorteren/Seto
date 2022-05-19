@@ -512,16 +512,18 @@ int main(int argc, char **argv) {
 
                 //if(decomposition_debug)
                 if(!fcptnet) {
-                    cout
-                            << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
-                            << endl;
+
 
                     tStart_partial = clock();
 
                     if(greedy_exact && SMs->size() < 20)
                         GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
-                    else
+                    else{
+                        cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
+                                << endl;
                         GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
+                    }
+
 
                     auto t_greedy = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
 

@@ -118,6 +118,7 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
+**GE**: perform an exact algorithm instead of greedy one during the removal of redundant SMs
 
 
 ### Execution using a script

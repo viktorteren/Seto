@@ -482,6 +482,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
 void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
                                     map<int, ER> *ER,
                                     map<int, set<Region *> *> *pre_regions){
+    cout << "[EXACT SEARCH]=====================" << endl;
     auto SM_vector = new vector<set<Region*>*>();
     for(auto SM: *SMs){
         SM_vector->push_back(SM);
@@ -490,10 +491,10 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
     auto result = new vector<int>();
 
     int max = SMs->size()-1;
-    cout << "NUM SMs: " << SMs->size()<<endl;
 
     for(int size=1;size<=SMs->size();++size){
-        cout <<  "size:" << size << endl;
+        if(decomposition_debug)
+            cout <<  "size:" << size << endl;
         auto temp_vec = new vector<int>();
         for(int i=0;i<size;++i){
             temp_vec->push_back(i);
@@ -520,24 +521,51 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
                 else break;
             }
             else{
-                cout << "FOUND"<< endl;
                 result = temp_vec;
             }
         }while(!found);
         if(found) break;
     }
 
-    cout << "result vec: ";
-    for(int j : *result){
-        cout << j << " ";
+    if(decomposition_debug) {
+        cout << "result vec: ";
+        for (int j: *result) {
+            cout << j << " ";
+        }
+        cout << endl;
     }
-    cout << endl;
+
+    auto final_set = new set<set<Region*>*>();
+    for(auto index: *result){
+        final_set->insert(SM_vector->at(index));
+    }
+
+    auto to_remove = new set<set<Region*>*>();
+    for(auto SM: *SMs){
+        if(final_set->find(SM) == final_set->end()){
+            to_remove->insert(SM);
+        }
+    }
+
+    for(auto SM: *to_remove){
+        SMs->erase(SM);
+    }
+
+    delete SM_vector;
+    delete to_remove;
+    delete final_set;
 }
 
 bool GreedyRemoval::check_EC(vector<int>* vec,
                              vector<set<Region*>*> *SM_vector,
                              map<int, set<Region *> *> *pre_regions,
                              map<int, ER> *ER ){
+    /*
+    cout << "checking" << endl;
+    for(auto v: *vec){
+        cout << v << " ";
+    }
+    cout << endl;*/
     auto SMs = new set<set<Region*>*>();
     for(auto index: *vec){
         SMs->insert(SM_vector->at(index));
@@ -561,7 +589,9 @@ bool GreedyRemoval::check_EC(vector<int>* vec,
         }
     }
 
-    return is_excitation_closed(new_used_regions_map_tmp, ER);
+    bool ec =  is_excitation_closed(new_used_regions_map_tmp, ER);
+    delete SMs;
+    return ec;
 }
 
 bool GreedyRemoval::exists_next(vector<int> *vec,int max){
@@ -600,7 +630,7 @@ void GreedyRemoval::minimize_sat_SM(set<set<Region *>*> *SMs,
                                  map<int, ER> *ER,
                                  map<int, set<Region *> *> *pre_regions,
                                  const string& file){
-    cout << "[EXACT SEARCH]=====================" << endl;
+    cout << "[NEAR EXACT HEURISTIC SEARCH]=====================" << endl;
     /* Encodings:
      * FCPNs: [1, number of FCPNs and SMs = K]
      * places: [number of FCPNs and SMs + 1 = K + 1, number of places*number of FCPNs and SMs + number of FCPNs and SMs = N*K+K = K*(N+1)]
