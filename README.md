@@ -156,6 +156,8 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 - file name
 - time region generation
 - time decomposition
+- time greedy/exact SM removal
+- time labels removal
 - number of final places
 - number of FCPNs
 - number of places after the initial step of decomposition (before greedy algorithm)

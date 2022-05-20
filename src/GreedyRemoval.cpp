@@ -488,7 +488,7 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
         SM_vector->push_back(SM);
     }
     bool found = false;
-    auto result = new vector<int>();
+    vector<int> *result;
 
     int max = SMs->size()-1;
 
@@ -510,7 +510,9 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
             found = check_EC(temp_vec,SM_vector,pre_regions,ER);
             if(!found){
                 if(exists_next(temp_vec,max)){
-                    temp_vec = next_set(temp_vec,max);
+                    auto tmp = next_set(temp_vec,max);
+                    delete temp_vec;
+                    temp_vec = tmp;
                     /*
                     cout << "temp vec: ";
                     for(int j : *temp_vec){
@@ -524,7 +526,9 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
                 result = temp_vec;
             }
         }while(!found);
-        if(found) break;
+        if(found) {
+            break;
+        }
     }
 
     if(decomposition_debug) {
@@ -539,6 +543,7 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
     for(auto index: *result){
         final_set->insert(SM_vector->at(index));
     }
+    delete result;
 
     auto to_remove = new set<set<Region*>*>();
     for(auto SM: *SMs){
@@ -591,6 +596,10 @@ bool GreedyRemoval::check_EC(vector<int>* vec,
 
     bool ec =  is_excitation_closed(new_used_regions_map_tmp, ER);
     delete SMs;
+    for(auto rec: *new_used_regions_map_tmp){
+        delete rec.second;
+    }
+    delete new_used_regions_map_tmp;
     return ec;
 }
 
