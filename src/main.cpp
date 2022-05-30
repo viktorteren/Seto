@@ -516,8 +516,14 @@ int main(int argc, char **argv) {
 
                     tStart_partial = clock();
 
-                    if(greedy_exact && SMs->size() < 20)
-                        GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                    if(greedy_exact)
+                        if(SMs->size() < 20)
+                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                        else{
+                            cerr << "Remove GE flag: 20 or more SM were generated in the first computation step" << endl;
+                            cerr << "Exact algorithm cannot be performed O(2^n)" << endl;
+                            exit(1);
+                        }
                     else{
                         cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
                                 << endl;
