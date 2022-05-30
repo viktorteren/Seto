@@ -520,7 +520,10 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
                     }
                     cout << endl;*/
                 }
-                else break;
+                else {
+                    delete temp_vec;
+                    break;
+                }
             }
             else{
                 result = temp_vec;
