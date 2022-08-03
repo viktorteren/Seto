@@ -753,10 +753,21 @@ int main(int argc, char **argv) {
                 tStart_partial = clock();
                 double t_k_fcpn_decomposition;
                 if(bdd_usage){
+                    //TODO: qui dovrei scrivere un algoritmo che:
+                    // 1) prende gli eventi uno ad uno
+                    // 2) per questo evento prende tutte le pre-regioni e l'ER
+                    // 3) cerca tutte le combinazioni (minimali) di pre-regioni per soddisfare l'EC per tale evento
+                    // 4) potrei usare un codice ricorsivo: partendo da ogni regione, l'ordine ottimale sarebbe però
+                    // quello che segue una BFS e non DFS: prima controllo le singole regioni, poi coppie ...
+                    // quindi scorro per ogni regione e faccio il controllo, salvando i vincitori nella cache
+                    // una volto scorso per tutti aggiungo solo quelli che sono maggiori dei precedenti e non sono nella
+                    // cache come vincenti
                     for(auto rec: *pre_regions){
                         auto event = rec.first;
+                        auto pre_region_set_for_event = rec.second;
+                        auto event_ER = new_ER->at(event);
                         for(auto pre_region: *rec.second){
-
+                            ...
                         }
                     }
                 }
