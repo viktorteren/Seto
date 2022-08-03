@@ -20,6 +20,7 @@ bool k_fcpn_decomposition;
 bool no_merge;
 bool dot_output;
 bool composition;
+bool bdd_usage;
 //bool log_file;
 bool info;
 bool fcptnet;

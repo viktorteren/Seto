@@ -7,7 +7,6 @@
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
-#include "../pblib/pb2cnf.h"
 #include <algorithm>
 #include <Python.h>
 #include <iomanip>
@@ -17,6 +16,11 @@
 #include "../include/GreedyRemoval.h"
 #include "../include/FCPN_Merge.h"
 #include "../include/SM_composition.h"
+
+#include "../include/BoolFunc.h"
+//#include "cudd-release/cplusplus/cuddObj.hh"
+
+#include <cuddObj.hh>
 
 using namespace PBLib;
 using namespace Minisat;
@@ -40,6 +44,7 @@ int main(int argc, char **argv) {
         composition = false;
         greedy_exact = false;
         dot_output = false;
+        bdd_usage = false;
         ignore_correctness = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
@@ -69,6 +74,9 @@ int main(int argc, char **argv) {
             else if(args[i] == "B"){
                 fcptnet = true;
                 decomposition = true;
+            }
+            else if(args[i] == "BDD"){
+                bdd_usage = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -183,6 +191,26 @@ int main(int argc, char **argv) {
     TS_parser::parse(file);
 
     cout << "===========[PARSING DONE]===========" << endl;
+
+
+    Cudd mgr(0,0);
+    BDD x = mgr.bddVar();
+    BDD y = mgr.bddVar();
+    BDD f = x * y;
+    BDD g = y + !x;
+    char const* inames[] = {"x", "y"};
+    char const* onames[] = {"f", "g"};
+    DdNode *Dds[] = {f.getNode(), g.getNode()};
+    FILE* fp = fopen("graph.dot", "w");
+    Cudd_DumpDot(mgr.getManager(), 2, Dds, (char**) inames, (char**) onames, fp);
+
+    BoolFunc xf(x);
+    BoolFunc yf(y);
+    auto somma = xf+yf;
+    BDD somma_bdd= somma.getBDD();
+
+
+
 
     if(!ts_output) {
         if (print_step_by_step_debug) {
@@ -337,6 +365,8 @@ int main(int argc, char **argv) {
         auto rg = new Region_generator(number_of_events);
         rg->generate();
         new_ER = rg->get_ER_set();
+
+
 
         if (print_step_by_step) {
             int cont = 0;
@@ -722,71 +752,80 @@ int main(int argc, char **argv) {
             if(fcptnet || acpn){
                 tStart_partial = clock();
                 double t_k_fcpn_decomposition;
-                if(k_fcpn_decomposition){
+                if(bdd_usage){
+                    for(auto rec: *pre_regions){
+                        auto event = rec.first;
+                        for(auto pre_region: *rec.second){
 
-                    auto k_fcpn_decomposition_module = new k_FCPN_decomposition(number_of_events, regions_set, file,
-                                                                         pprg, aliases, new_ER);
-                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-                    delete k_fcpn_decomposition_module;
+                        }
+                    }
                 }
-                else{
-                    for(auto reg: *regions_set){
-                        if(aliases_region_pointer_inverted->find(reg) == aliases_region_pointer_inverted->end()){
-                            region_mapping(reg);
-                        }
-                    }
+                else {
+                    if (k_fcpn_decomposition) {
 
-                    auto final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
-                                                                                   pprg, new_ER, aliases, SMs);
-                    /*
-                    if (decomposition_debug) {
-                        cout << "Final" << (fcptnet ? " FCPNs" : " ACPNs") << endl;
-                        for (auto FCPN: *final_fcpn_set) {
-                            cout << (fcptnet ? "FCPN:" : "ACPN:") << endl;
-                            println(*FCPN);
-                        }
-                    }
-                     */
-
-                    int pn_counter = final_fcpn_set->size();
-
-                    if (pn_counter == 1) {
-                        cout << (fcptnet ? "1 FCPN" : "1 ACPN") << endl;
+                        auto k_fcpn_decomposition_module = new k_FCPN_decomposition(number_of_events, regions_set, file,
+                                                                                    pprg, aliases, new_ER);
+                        t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                        delete k_fcpn_decomposition_module;
                     } else {
-                        cout << pn_counter << (fcptnet ? " FCPNs" : " ACPNs") << endl;
-                    }
-                    int num_places = 0;
-                    for(auto FCPN: *final_fcpn_set){
-                        num_places += FCPN->size();
-                    }
+                        for (auto reg: *regions_set) {
+                            if (aliases_region_pointer_inverted->find(reg) == aliases_region_pointer_inverted->end()) {
+                                region_mapping(reg);
+                            }
+                        }
 
-                    cout << "Total number of places: " << num_places << endl;
+                        auto final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
+                                                                       pprg, new_ER, aliases, SMs);
+                        /*
+                        if (decomposition_debug) {
+                            cout << "Final" << (fcptnet ? " FCPNs" : " ACPNs") << endl;
+                            for (auto FCPN: *final_fcpn_set) {
+                                cout << (fcptnet ? "FCPN:" : "ACPN:") << endl;
+                                println(*FCPN);
+                            }
+                        }
+                         */
 
-                    for(auto FCPN: *final_fcpn_set){
-                        for(auto reg: *FCPN){
-                            if(reg != nullptr) {
-                                if (regions_set->find(reg) == regions_set->end()) {
-                                    delete reg;
+                        int pn_counter = final_fcpn_set->size();
+
+                        if (pn_counter == 1) {
+                            cout << (fcptnet ? "1 FCPN" : "1 ACPN") << endl;
+                        } else {
+                            cout << pn_counter << (fcptnet ? " FCPNs" : " ACPNs") << endl;
+                        }
+                        int num_places = 0;
+                        for (auto FCPN: *final_fcpn_set) {
+                            num_places += FCPN->size();
+                        }
+
+                        cout << "Total number of places: " << num_places << endl;
+
+                        for (auto FCPN: *final_fcpn_set) {
+                            for (auto reg: *FCPN) {
+                                if (reg != nullptr) {
+                                    if (regions_set->find(reg) == regions_set->end()) {
+                                        delete reg;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-                    std::ofstream outfile;
-                    outfile.open("stats.csv", std::ios_base::app);
-                    outfile << fixed
-                            << get_file_name(file) << ","
-                            << setprecision(4) << t_region_gen << ","
-                            << setprecision(4) << t_k_fcpn_decomposition << ","
-                            << num_places  << ","
-                            << final_fcpn_set->size() << ","
-                            << places_after_initial_decomp << ","
-                            << places_after_greedy << ","
-                            << maxAlphabet << ","
-                            << avgAlphabet
-                            << endl;
-                    delete final_fcpn_set;
+                        t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                        std::ofstream outfile;
+                        outfile.open("stats.csv", std::ios_base::app);
+                        outfile << fixed
+                                << get_file_name(file) << ","
+                                << setprecision(4) << t_region_gen << ","
+                                << setprecision(4) << t_k_fcpn_decomposition << ","
+                                << num_places << ","
+                                << final_fcpn_set->size() << ","
+                                << places_after_initial_decomp << ","
+                                << places_after_greedy << ","
+                                << maxAlphabet << ","
+                                << avgAlphabet
+                                << endl;
+                        delete final_fcpn_set;
+                    }
                 }
                 cout << "MAX alphabet: " << maxAlphabet << endl;
                 cout << "AVG alphabet: " << avgAlphabet << endl;

@@ -63,6 +63,7 @@ extern bool fcptnet;
 extern bool acpn;
 extern bool no_merge;
 extern bool composition;
+extern bool bdd_usage;
 extern bool aut_output;
 extern bool ignore_correctness;
 extern bool k_fcpn_decomposition;

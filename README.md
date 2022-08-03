@@ -186,7 +186,9 @@ algorithm
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
 **GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
-in order to find the minimal number of FCPNs, indeed this search have very restricted constraints: at least one occurrence of each region in at least one FCPN, as result providing worst results compared to greedy algorithm **(not recommended)**
+in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, as result providing worst results compared to greedy algorithm **(not recommended)**
+
+**BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs **(Not implemented yet!!!)**
 
 ### Approximate algorithm using a script
 
