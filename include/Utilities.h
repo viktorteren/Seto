@@ -123,6 +123,8 @@ namespace Utilities {
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
     /*template<typename T, typename T2>
     bool contains(T bigger_set, T2 smaller_set);*/
+    bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set);
+    bool contains(const set<Region *>& reg_set, Region * reg);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     template <typename T>
     bool contains(T, Region *);

@@ -575,7 +575,7 @@ namespace Utilities {
 
 
     template<typename T, typename T2>
-    bool contains(T bigger_set, T2 smaller_set) {
+    inline bool contains(T bigger_set, T2 smaller_set) {
         if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
             cerr << "wrong parameter type" << endl;
             exit(1);
@@ -592,7 +592,7 @@ namespace Utilities {
         return true;
     }
 
-    __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region) {
+    bool contains(const set<Region *>& set, const Region& region) {
         for (auto elem : set) {
             if (are_equal(elem, region)) {
                 return true;
@@ -618,12 +618,28 @@ namespace Utilities {
         return true;
     }
 
+    bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set){
+        for(auto elem: *set_of_sets){
+            if(elem == *reg_set)
+                return true;
+        }
+        return false;
+    }
+
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
         for (auto elem : *smaller_set) {
             if(bigger_set->find(elem) == bigger_set->end())
                 return false;
         }
         return true;
+    }
+
+    bool contains(const set<Region *>& reg_set, Region * reg){
+        for(auto reg1: reg_set){
+            if(reg == reg1)
+                return true;
+        }
+        return false;
     }
 
     __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set){
