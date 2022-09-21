@@ -734,7 +734,7 @@ int main(int argc, char **argv) {
                 tStart_partial = clock();
                 double t_k_fcpn_decomposition;
                 if(bdd_usage){
-                    BDD_encoding *be = new BDD_encoding(pre_regions,new_ER,regions_set);
+                    auto be = new BDD_encoding(pre_regions,new_ER,regions_set);
 
                     exit(1);
                 }

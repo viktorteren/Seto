@@ -19,7 +19,7 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
     // quello che segue una BFS e non DFS: prima controllo le singole regioni, poi coppie ...
     // Quindi scorro per ogni regione e faccio il controllo, salvando i vincitori nella cache
     // una volto scorso per tutti aggiungo solo quelli che sono maggiori dei precedenti e non sono nella
-    // cache come vincenti
+    // cache come vincenti e non contengono un vincente (significa che sono minimali)
     for(auto rec: *pre_regions){
         auto event = rec.first;
         cout << "event: " << event << endl;
@@ -34,6 +34,14 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
             temp->insert(pre_region);
             if(enough){
                 valid_sets->at(event)->insert(*temp);
+                /*cout << "valid sets: \n";
+                for(auto rec: *valid_sets){
+                    cout << "new set: \n";
+                    auto tmp = rec.second;
+                    for(auto tmp2: *tmp){
+                        println(tmp2);
+                    }
+                }*/
             }
             else{
                 invalid_sets->at(event)->insert(*temp);
@@ -52,7 +60,7 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
                         auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
                         temp_set->insert(reg);
                         auto tep = invalid_sets->at(event);
-                        //if temp_set is already in invalide_set it means that it was already analyzed
+                        //if temp_set is already in invalid_set it means that it was already analyzed
                         if(!contains(invalid_sets->at(event), temp_set)){
                             bool contains_a_valid_set = false;
                             //if temp_set contains at least one of the sets of valid set it means that temp_set is
@@ -67,9 +75,17 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
                                 bool enough = test_if_enough(event_ER, temp_set);
                                 if (enough) {
                                     valid_sets->at(event)->insert(*temp_set);
+                                    /*cout << "valid sets: \n";
+                                    for(auto rec: *valid_sets){
+                                        cout << "new set: \n";
+                                        auto tmp = rec.second;
+                                        for(auto tmp2: *tmp){
+                                            println(tmp2);
+                                        }
+                                    }*/
                                 } else {
                                     to_add_later->insert(temp_set);
-                                    cout << "to add later: ";
+                                    cout << "to add later: \n";
                                     println(temp_set);
                                 }
                             }
@@ -130,14 +146,40 @@ void BDD_encoding::encode(set<Region *> *regions){
         }
     }
 
-    auto inames = new string();
+    char const* inames[regions->size()];
+    char const* onames[num_events];
+    //auto inames = new string();
     for(int i=0;i<regions->size();++i){
-        string tmp = "r";
-        tmp.append(to_string(i));
-        //inames->push_back(tmp);
+        string *tmp = new string();
+        *tmp = "r";
+        tmp->append(to_string(i));
+        inames[i] = tmp->c_str();
     }
 
+    //assign for each value of onames a char array with nsie the integer of the position
+    for(int i=0;i<num_events;++i){
+        string *tmp = new string();
+        *tmp = "";
+        tmp->append(to_string(i));
+        onames[i] = tmp->c_str();
+    }
 
+    for(auto str: inames){
+        cout << str << endl;
+    }
+
+    for(auto str: onames){
+        cout << str << endl;
+    }
+
+    DdNode *Dds[num_events];
+    for(int i=0;i<num_events;++i){
+        Dds[i] = event_bdd_encodings.at(i).getNode();
+    }
+    FILE* fp = fopen("graph.dot", "w");
+    Cudd_DumpDot(mgr.getManager(), num_events, Dds, (char**) inames, (char**) onames, fp);
+
+    cout << "ok" << endl;
     //codice di esempio
     /*
     Cudd mgr(0,0);
