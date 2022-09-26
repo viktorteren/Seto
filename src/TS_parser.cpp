@@ -56,7 +56,7 @@ void TS_parser::parse(string file) {
         }
 
     }
-        //file nel fromato SIS .g
+    //file nel formato SIS .g
     else if (file[file.size() - 1] == 'g') {
         parse_SIS(fin);
         if(ts_output){

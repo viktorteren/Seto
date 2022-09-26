@@ -109,6 +109,7 @@ BDD_encoding::~BDD_encoding() {
         delete rec.second;
     }
     delete invalid_sets;
+    delete map_of_EC_clauses;
 }
 
 bool BDD_encoding::test_if_enough(ER er, set<Region *> *regions) {
@@ -127,7 +128,6 @@ bool BDD_encoding::test_if_enough(ER er, Region *region) {
 
 void BDD_encoding::encode(set<Region *> *regions){
     Cudd mgr(0,0);
-    auto event_bdds = new vector<BDD>(num_events);
     map<Region *, BDD> regions_bdd_map;
     map<int, BDD> event_bdd_encodings;
     for(auto reg: *regions){
@@ -148,12 +148,15 @@ void BDD_encoding::encode(set<Region *> *regions){
 
     char const* inames[regions->size()];
     char const* onames[num_events];
-    //auto inames = new string();
-    for(int i=0;i<regions->size();++i){
+    map<int, Region *> tmp_reg_map;
+    int i=0;
+    for(auto reg: *regions){
         string *tmp = new string();
         *tmp = "r";
         tmp->append(to_string(i));
         inames[i] = tmp->c_str();
+        i++;
+        tmp_reg_map[i] = reg;
     }
 
     //assign for each value of onames a char array with nsie the integer of the position
@@ -180,17 +183,90 @@ void BDD_encoding::encode(set<Region *> *regions){
     Cudd_DumpDot(mgr.getManager(), num_events, Dds, (char**) inames, (char**) onames, fp);
 
     cout << "ok" << endl;
-    //codice di esempio
-    /*
-    Cudd mgr(0,0);
-    BDD x = mgr.bddVar();
-    BDD y = mgr.bddVar();
-    BDD f = x * y;
-    BDD g = y + !x;
-    char const* inames[] = {"x", "y"};
-    char const* onames[] = {"f", "g"};
-    DdNode *Dds[] = {f.getNode(), g.getNode()};
-    FILE* fp = fopen("graph.dot", "w");
-    Cudd_DumpDot(mgr.getManager(), 2, Dds, (char**) inames, (char**) onames, fp);
-     */
+
+    char const *inames_without_r[regions->size()];
+
+    //removing from inames r, leaving only the index
+    for(int i=0;i< regions->size();++i){
+        string tmp = inames[i];
+        std::size_t pos = 1;
+        auto tmp2 = tmp.substr(pos);
+        char* tmp3=new char();
+        strcpy(tmp3,tmp2.c_str());
+        inames_without_r[i] = tmp3;
+    }
+
+    // TEST code foor clause creation and dump on file
+    FILE* fpb = fopen("BDD_clauses.txt", "w");
+    for(int i=0;i<event_bdd_encodings.size();++i) {
+        event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fpb);
+    }
+
+    fclose(fpb);
+
+    //reading elements from file:
+    string inFile = "BDD_clauses.txt";
+    ifstream fin(inFile);
+    //TODO: scrivere i file temporanei in memoria e non su disco
+    string tmp, last;
+    set<set<Region *>> *clause_set;
+    clause_set = new set<set<Region *>>();
+    set<Region *> tmp_set;
+    vector<string> data;
+    while(true){
+        if((last == tmp) && (!last.empty())) {
+            //clause_set.insert(tmp_set);
+            break;
+        }
+        last = tmp;
+        fin >> tmp;
+        data.push_back(tmp);
+        cout << tmp << endl;
+    }
+
+
+    for(int i=0;i < data.size();++i){
+        if(i == data.size()-1){
+            tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
+            clause_set->insert(tmp_set);
+            cout << "adding entire clause" << endl;
+            break;
+        }
+        else if(i == 0){
+            tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
+            cout << "adding" << endl;
+            //cout << "adding " << data[i] << endl;
+        }
+        else {
+            if(data[i] != "|"){
+                if(data[i-1] != "|"){
+                    clause_set->insert(tmp_set);
+                    cout << "adding entire clause" << endl;
+                    tmp_set.clear();
+                    tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
+                    cout << "adding" << endl;
+                }
+                else{
+                    tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
+                    cout << "adding" << endl;
+                }
+            }
+            else{
+
+            }
+        }
+    }
+
+
+    for(auto s: *clause_set){
+        println(s);
+    }
+
+    //TODO: verificare che la mappa effettivamente rappresenti le regioni che soddisfano l'EC degli eventi corrispondenti
+    map_of_EC_clauses = clause_set;
+
+}
+
+set<set<Region *>> *BDD_encoding::getMapOfECClaues() {
+    return map_of_EC_clauses;
 }
