@@ -735,6 +735,14 @@ int main(int argc, char **argv) {
                 double t_k_fcpn_decomposition;
                 if(bdd_usage){
                     auto be = new BDD_encoding(pre_regions,new_ER,regions_set);
+                    auto ECClauses = be->getMapOfECClaues();
+
+                    //search a solution with n FCPNs increasing n until the result becomes SAT
+                    set<set<Region *> *> *final_FCPN_set = nullptr;
+                    do{
+                        final_FCPN_set = PN_decomposition::search_k(number_of_events, *regions_set, file,
+                                                                  pprg, new_ER, aliases, SMs, ECClauses);
+                    } while(final_FCPN_set == nullptr);
 
                     exit(1);
                 }

@@ -704,3 +704,15 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     return fcpn_set;
 }
+
+set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
+                                               const set<Region *>& regions,
+                                               const string& file,
+                                               Pre_and_post_regions_generator *pprg,
+                                               map<int, ER> *ER, map<int, int> *aliases,
+                                               set<set<Region *>*>* SMs, set<set<Region *>> *EC_clauses){
+    //TODO
+
+    cerr << "Not implemented yet" << endl;
+    exit(1);
+}
