@@ -713,6 +713,150 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                                set<set<Region *>*>* SMs, set<set<Region *>> *EC_clauses){
     //TODO
 
+    //encoding: [1, m] events range: m events
+    //encoding: [m+1, k+m+1] first FCPN regions range: k regions
+    //encoding: [k+m+2, 2k+m+2] second FCPN regions reange: k regions
+
+    /*
+     * 1) FCPN constraint
+     * 2) EC clauses: set of sets of regions  -> WRONG CODE, in case of n FCPNs each set of clauses is in OR with others
+     * 3) for the next constraint I have to add also constraint related to all connected events of a region
+     *    if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
+     */
+
+    cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
+    int num_FCPNs_try = 1;
+    auto regions_copy = new set<Region *>();
+    for(auto reg: regions){
+        regions_copy->insert(reg);
+    }
+    auto pre_regions_map = pprg->get_pre_regions();
+    auto post_regions_map = pprg->get_post_regions();
+    auto minimal_regions = new set<Region *>();
+    for(auto reg: regions){
+        minimal_regions->insert(reg);
+    }
+    auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
+                                                    post_regions_map);
+    auto clauses = new vector<vector<int32_t> *>();
+    auto clauses_pre = new vector<vector<int32_t> *>();
+    auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
+    auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
+    auto not_used_regions = new set<Region *>();
+    //create map (region, exiting events)
+    auto region_ex_event_map = new map<Region *, set<int> *>();
+    auto region_ent_event_map = new map<Region *, set<int> *>();
+    for (auto rec: *pre_regions_map) {
+        auto ev = rec.first;
+        for (auto reg: *rec.second) {
+            if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
+                (*region_ex_event_map)[reg] = new set<int>();
+            }
+            (*region_ex_event_map)[reg]->insert(ev);
+        }
+    }
+    for (auto rec: *post_regions_map) {
+        auto ev = rec.first;
+        for (auto reg: *rec.second) {
+            if (region_ent_event_map->find(reg) == region_ent_event_map->end()) {
+                (*region_ent_event_map)[reg] = new set<int>();
+            }
+            (*region_ent_event_map)[reg]->insert(ev);
+        }
+    }
+
+    auto reg_map = new map<Region *, int>();
+    auto regions_vector = new vector<Region *>();
+    int temp = 0;
+    for (auto reg: *regions_copy) {
+        (*reg_map)[reg] = temp;
+        regions_vector->push_back(reg);
+        temp++;
+    }
+
+    for (auto reg: *minimal_regions) {
+        not_used_regions->insert(reg);
+    }
+
+    vector<int32_t> *clause;
+
+
+    int m = number_of_events;
+    int k = regions_copy->size();
+    bool excitation_closure;
+    bool splitting_constraints_added = false;
+
+    //STEP 1
+    /*
+     * ALGORITHM:
+     *      for each ev
+     *          for each r=pre(ev) -> place/region
+     *              if r has multiple outgoing edges
+     *                  for each couple (r, pre(ev))
+     *                      if r != pre(ev)
+     *                          //in case of 2b check if pre(ev) has multiple outgoing edges
+     *                              for each FCPN
+     *                                  create clause (!r v !pre(ev))
+     */
+    //for each ev
+    for (auto rec: *pre_regions_map) {
+        //auto ev = rec.first;
+        auto set_of_regions = rec.second;
+        for (auto r: *set_of_regions) {
+            if ((*region_ex_event_map)[r]->size() > 1) {
+                for (auto r2: *set_of_regions) {
+                    if (r != r2) {
+                        if(fcptnet){
+                            clause = new vector<int32_t>();
+                            int offset =  m + (num_FCPNs_try-1)*k+1;
+                            clause->push_back(-(*reg_map)[r] - offset);
+                            clause->push_back(-(*reg_map)[r2] - offset);
+                            clauses_pre->push_back(clause);
+                            //print_clause(clause);
+                        }
+                        //ACPN case
+                        /*else if((*region_ex_event_map)[r2]->size() > 1){
+                            bool symmetric_choice = true;
+                            for(auto event: *(*region_ex_event_map)[r2]){
+                                if((*region_ex_event_map)[r]->find(event) == (*region_ex_event_map)[r]->end()){
+                                    symmetric_choice = false;
+                                    break;
+                                }
+                            }
+                            if(!symmetric_choice){
+                                clause = new vector<int32_t>();
+                                clause->push_back(-(*reg_map)[r] - 1);
+                                clause->push_back(-(*reg_map)[r2] - 1);
+                                clauses_pre->push_back(clause);
+                            }
+                        }*/
+                    }
+                }
+            }
+        }
+    }
+
+    //STEP 2 [WRONG]
+    /* ALGORITHM
+     * for each FCPN
+     *      encode clause
+     */
+    //This code adds each time the EC clauses of the current cycle BUT at the second cycle adding the new clauses we
+    // have the clauses of the first cycle in AND with the clauses of the second cycle, there should be a complete
+    // reorganization of the clauses because the clauses of the first cycle for an event are in OR with the clauses of
+    // the same event in the second cycle
+    for(const auto& reg_set: *EC_clauses){
+        clause = new vector<int32_t>();
+        int offset =  m + (num_FCPNs_try-1)*k+1;
+        for(auto reg: reg_set){
+            clause->push_back(-(*reg_map)[reg] - offset);
+        }
+        clauses_pre->push_back(clause);
+    }
+
+
+
+
     cerr << "Not implemented yet" << endl;
     exit(1);
 }
