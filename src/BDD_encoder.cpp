@@ -168,6 +168,8 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
             inames[k] = tmp->c_str();
             //tmp_reg_map[k] = reg;
             k++;
+            //cout << k << ": ";
+            //println(*reg);
         }
     }
 
@@ -255,14 +257,11 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
             if(data[i] != "|"){
                 if(data[i-1] != "|"){
                     clause_set->insert(tmp_set);
-                    //cout << "adding entire clause" << endl;
                     tmp_set.clear();
                     tmp_set.insert(stoi(data[i]));
-                    //cout << "adding" << endl;
                 }
                 else{
                     tmp_set.insert(stoi(data[i]));
-                    //cout << "adding" << endl;
                 }
             }
             else{
@@ -276,7 +275,6 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
         println(s);
     }*/
 
-    //TODO: verificare che la mappa effettivamente rappresenti le regioni che soddisfano l'EC degli eventi corrispondenti
     map_of_EC_clauses = clause_set;
 
 }

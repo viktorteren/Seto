@@ -16,7 +16,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
-                                                 map<int, ER> *ER, map<int, int> *aliases,
+                                                 map<int, ER> *ER,
+                                                 map<int, int> *aliases,
                                                  set<set<Region *>*>* SMs){
     /* Possible algorithm for the creation of one FCPN with SAT:
      * ALGORITHM STEPS:
@@ -939,6 +940,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 auto temp_PN = new set<Region *>();
                 for (int index = 0; index < k; ++index) {
                     auto temp = solution->at(index + k * i);
+                    temp = temp - m - i*k;
+                    cout << "temp: " << temp << endl;
                     if (temp > 0) {
                         temp_PN->insert((*regions_vector)[temp - 1]);
                     }

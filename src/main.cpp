@@ -757,7 +757,7 @@ int main(int argc, char **argv) {
                         final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
                                                                        pprg, new_ER, aliases, SMs);
                     }
-                    /*
+
                     if (decomposition_debug) {
                         cout << "Final" << (fcptnet ? " FCPNs" : " ACPNs") << endl;
                         for (auto FCPN: *final_fcpn_set) {
@@ -765,7 +765,7 @@ int main(int argc, char **argv) {
                             println(*FCPN);
                         }
                     }
-                     */
+
 
                     int pn_counter = final_fcpn_set->size();
 
