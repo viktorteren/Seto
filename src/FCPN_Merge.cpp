@@ -369,7 +369,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         SM *current_FCPN = FCPNs_map_inverted[FCPN_counter];
         if (decomposition_debug) {
             cout << "in FCPN " << FCPN_counter << " removing event " << decoded_event << " ";// << endl;
-            if (decoded_event >= num_events) {
+            if (decoded_event >= num_events_before_label_splitting) {
                 cout << aliases_map_number_name->at(aliases->at(decoded_event)) << endl;
             } else {
                 cout << aliases_map_number_name->at(decoded_event) << endl;

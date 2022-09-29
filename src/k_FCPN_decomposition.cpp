@@ -607,7 +607,7 @@ k_FCPN_decomposition::k_FCPN_decomposition(int number_of_ev,
         //STEP 5b
         /*if(decomposition_debug)
             cout << "STEP 5" << endl;
-        for(int i=0;i<num_events;++i){
+        for(int i=0;i<num_events_before_label_splitting;++i){
             lit_set = new set<int32_t>();
             for(int k=1;k<=number_of_FCPNs;++k){
                 int encoded_ev = encoded_event(i, k);

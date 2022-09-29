@@ -7,6 +7,7 @@
 #include "../pblib/pb2cnf.h"
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/PN_composition.h"
+#include "BDD_encoder.h"
 
 
 class PN_decomposition {
@@ -14,16 +15,18 @@ private:
 
 public:
     static set<set<Region *> *> *search(int number_of_events,
-                                 const set<Region *>& regions,
-                                 const string& file,
-                                 Pre_and_post_regions_generator *pprg,
-                                 map<int, ER> *ER,
-                                 map<int, int> *aliases,
-                                 set<set<Region *>*>* SMs);
+                                        const set<Region *>& regions,
+                                        const string& file,
+                                        Pre_and_post_regions_generator *pprg,
+                                        map<int, ER> *ER,
+                                        map<int, int> *aliases,
+                                        set<set<Region *>*>* SMs);
     static set<set<Region *> *> *search_k(int number_of_events,
-                    const set<Region *>& regions,
-                    const string& file,
-                    Pre_and_post_regions_generator *pprg,
-                    map<int, ER> *ER, map<int, int> *aliases,
-                    set<set<Region *>*>* SMs, set<set<Region *>> *EC_clauses);
+                                          set<Region *> *regions,
+                                          const string& file,
+                                          Pre_and_post_regions_generator *pprg,
+                                          map<int, ER> *ER,
+                                          map<int, int> *aliases,
+                                          set<set<Region *>*>* SMs,
+                                          BDD_encoder *be);
 };

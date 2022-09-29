@@ -6,6 +6,7 @@
 #include <include/GreedyRemoval.h>
 #include "../include/PN_decomposition.h"
 #include "../include/FCPN_Merge.h"
+#include "include/BDD_encoder.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -706,41 +707,51 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 }
 
 set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
-                                               const set<Region *>& regions,
+                                               set<Region *> *regions,
                                                const string& file,
                                                Pre_and_post_regions_generator *pprg,
-                                               map<int, ER> *ER, map<int, int> *aliases,
-                                               set<set<Region *>*>* SMs, set<set<Region *>> *EC_clauses){
+                                               map<int, ER> *ER,
+                                               map<int, int> *aliases,
+                                               set<set<Region *>*>* SMs,
+                                               BDD_encoder *be) {
     //TODO
 
     //encoding: [1, m] events range: m events
     //encoding: [m+1, k+m+1] first FCPN regions range: k regions
-    //encoding: [k+m+2, 2k+m+2] second FCPN regions reange: k regions
+    //encoding: [k+m+2, 2k+m+2] second FCPN regions range: k regions
+    // ... and so on
 
     /*
      * 1) FCPN constraint
      * 2) EC clauses: set of sets of regions  -> WRONG CODE, in case of n FCPNs each set of clauses is in OR with others
      * 3) for the next constraint I have to add also constraint related to all connected events of a region
      *    if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
+     * 4) (optional) minimization function: number of used regions
+     * 5) decoding
      */
 
     cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
+
+    set<set<int>> *ECClauses;
+    auto solution = new vector<int>();
+
+    bool solution_found = false;
     int num_FCPNs_try = 1;
     auto regions_copy = new set<Region *>();
-    for(auto reg: regions){
+    for (auto reg: *regions) {
         regions_copy->insert(reg);
     }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
     auto minimal_regions = new set<Region *>();
-    for(auto reg: regions){
+    for (auto reg: *regions) {
         minimal_regions->insert(reg);
     }
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
     auto clauses_pre = new vector<vector<int32_t> *>();
-    auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
+    //auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
@@ -806,9 +817,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             if ((*region_ex_event_map)[r]->size() > 1) {
                 for (auto r2: *set_of_regions) {
                     if (r != r2) {
-                        if(fcptnet){
+                        if (fcptnet) {
                             clause = new vector<int32_t>();
-                            int offset =  m + (num_FCPNs_try-1)*k+1;
+                            int offset = m + (num_FCPNs_try - 1) * k + 1;
                             clause->push_back(-(*reg_map)[r] - offset);
                             clause->push_back(-(*reg_map)[r2] - offset);
                             clauses_pre->push_back(clause);
@@ -836,27 +847,114 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
 
-    //STEP 2 [WRONG]
-    /* ALGORITHM
-     * for each FCPN
-     *      encode clause
-     */
-    //This code adds each time the EC clauses of the current cycle BUT at the second cycle adding the new clauses we
-    // have the clauses of the first cycle in AND with the clauses of the second cycle, there should be a complete
-    // reorganization of the clauses because the clauses of the first cycle for an event are in OR with the clauses of
-    // the same event in the second cycle
-    for(const auto& reg_set: *EC_clauses){
-        clause = new vector<int32_t>();
-        int offset =  m + (num_FCPNs_try-1)*k+1;
-        for(auto reg: reg_set){
-            clause->push_back(-(*reg_map)[reg] - offset);
+    do {
+        for (auto cl: *clauses) {
+            delete cl;
         }
-        clauses_pre->push_back(clause);
-    }
+        clauses->clear();
 
+        //STEP 2
+        be->encode(regions, num_FCPNs_try);
+        ECClauses = be->getMapOfECClaues();
+        for (const auto &reg_set: *ECClauses) {
+            clause = new vector<int32_t>();
+            for (auto reg: reg_set) {
+                clause->push_back(m + reg + 1); //regions start from 0 but region encoding space starts from m+1
+            }
+            clauses->push_back(clause);
+        }
 
+        //STEP 3
+        for (int i = 0; i < num_FCPNs_try; ++i) {
+            for (auto rec: *region_ex_event_map) {
+                auto reg = rec.first;
+                for (auto ev: *rec.second) {
+                    int region_encoding = 1 + m + i * k + reg_map->at(reg);
+                    auto ev_encoding = ev + 1;
+                    clause = new vector<int32_t>();
+                    clause->push_back(-region_encoding);
+                    clause->push_back(ev_encoding);
+                    clauses_pre->push_back(clause);
+                }
+            }
+        }
 
+        //SAT computation
+        PBConfig config = make_shared<PBConfigClass>();
+        VectorClauseDatabase formula(config);
+        //PB2CNF pb2cnf(config);
+        AuxVarManager auxvars(k * num_FCPNs_try + m + 2);
+        for (auto cl: *clauses_pre) {
+            formula.addClause(*cl);
+        }
+        for (auto cl: *clauses) {
+            formula.addClause(*cl);
+        }
+        /*
+        for (auto cl: *splitting_constraint_clauses) {
+            formula.addClause(*cl);
+        }*/
+        Minisat::Solver solver;
 
-    cerr << "Not implemented yet" << endl;
-    exit(1);
+        bool sat;
+        string dimacs_file;
+
+        //iteration in the search of a correct assignment decreasing the total weight
+
+        int num_clauses_formula = formula.getClauses().size();
+        //cout << "formula 1" << endl;
+        //formula.printFormula(cout);
+        cout << m + k * num_FCPNs_try << endl;
+        dimacs_file = convert_to_dimacs(file, m + k * num_FCPNs_try, num_clauses_formula,
+                                        formula.getClauses());
+        sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+        if (sat) {
+            solution_found = true;
+            cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
+
+            cout << "solver n vars: " << solver.nVars() << endl;
+            for (int i = 0; i < solver.nVars(); ++i) {
+                if (solver.model[i] != l_Undef) {
+
+                    //if (decomposition_debug) {
+                    fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                            i + 1);
+                    cout << endl;
+                    //}
+                    if (i >= m && i <= m + 1 + k * num_FCPNs_try) {
+                        if (solver.model[i] == l_True) {
+                            solution->push_back(i + 1);
+                        } else {
+                            solution->push_back(-i - 1);
+                        }
+                    }
+                } else {
+                    cerr << "undef" << endl;
+                }
+
+            }
+
+            //STEP 5
+            for (int i = 0; i < num_FCPNs_try; ++i) {
+                auto temp_PN = new set<Region *>();
+                for (int index = 0; index < k; ++index) {
+                    auto temp = solution->at(index + k * i);
+                    if (temp > 0) {
+                        temp_PN->insert((*regions_vector)[temp - 1]);
+                    }
+                }
+                fcpn_set->insert(temp_PN);
+            }
+
+            break;
+        } else {
+            cout << "UNSAT" << endl;
+        }
+
+        num_FCPNs_try++;
+        /*if(num_FCPNs_try == 2)
+            exit(1);*/
+    } while (!solution_found);
+
+    return fcpn_set;
 }

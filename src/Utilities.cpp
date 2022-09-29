@@ -1117,7 +1117,8 @@ namespace Utilities {
         return convert_to_dimacs(std::move(file_path), num_var, num_clauses, clauses, nullptr);
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses,
+                             vector<set<int>>* new_results_to_avoid){
         if(decomposition_debug)
             cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
@@ -1338,7 +1339,7 @@ namespace Utilities {
         delete alias_counter;
         //transazioni (eventi) iniziali
         for (auto record : *pre_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 if(g_input){
                     fout << "\t" << record.first << " [label = \""
                          << (*aliases_map_number_name)[record.first];
@@ -1351,7 +1352,7 @@ namespace Utilities {
             }
         }
         for (auto record : *post_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 if(pre_regions->find(record.first) == pre_regions->end()) {
                     if (g_input) {
                         fout << "\t" << record.first << " [label = \""
@@ -1369,7 +1370,7 @@ namespace Utilities {
         //regione -> evento
         for (auto record : *pre_regions) {
             for (auto reg : *record.second) {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     //if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\tr" << regions_mapping->at(reg) << " -> "
                          << record.first << ";\n";
@@ -1492,7 +1493,7 @@ namespace Utilities {
         set<string> used_labels;
         for(auto rec: *pre_regions){
             int ev = rec.first;
-            if(ev >= num_events){
+            if(ev >= num_events_before_label_splitting){
                 ev = (*aliases)[ev];
             }
             string eventString = (*aliases_map_number_name)[ev];
@@ -1545,7 +1546,7 @@ namespace Utilities {
         else{
             fout << ".internal ";
             for (auto record : *pre_regions) {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     fout << "e" << record.first << " ";
                 }
             }
@@ -1568,7 +1569,7 @@ namespace Utilities {
             fout << "r" << regions_mapping->at(reg);
             for(auto ev: *record.second){
                 if(g_input){
-                    if(ev >= num_events){
+                    if(ev >= num_events_before_label_splitting){
                         int original_label = (*aliases)[ev];
                         fout << " " << (*aliases_map_number_name)[original_label];
                         fout << "/" << alias_event_index_map[ev];
@@ -1578,7 +1579,7 @@ namespace Utilities {
                     }
                 }
                 else {
-                    if (ev < num_events) {
+                    if (ev < num_events_before_label_splitting) {
                         fout << " e" << ev;
                     } else {
                         int original_label = (*aliases)[ev];
@@ -1593,7 +1594,7 @@ namespace Utilities {
         for (auto record : *post_regions) {
             auto reg = record.second;
             if(g_input){
-                if(record.first >= num_events){
+                if(record.first >= num_events_before_label_splitting){
                     int original_label = (*aliases)[record.first];
                     fout << (*aliases_map_number_name)[original_label];
                     fout << "/" << alias_event_index_map[record.first];
@@ -1603,7 +1604,7 @@ namespace Utilities {
                 }
             }
             else {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     fout << "e" << record.first;
                 } else {
                     int original_label = (*aliases)[record.first];
@@ -1733,7 +1734,7 @@ namespace Utilities {
         //initial transitions (events)
         auto initial_pre = new set<int>();
         for (auto record : *pre_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 initial_pre->insert(record.first);
                 if(g_input){
                     fout << "\t" << record.first << " [label = \""
@@ -1746,7 +1747,7 @@ namespace Utilities {
             }
         }
         for (auto record : *post_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 //if the event takes part of initial_pre it has been already written on the file
                 if(initial_pre->find(record.first) == initial_pre->end()) {
                     if (g_input) {
@@ -1766,7 +1767,7 @@ namespace Utilities {
         //region -> event
         for (auto record : *pre_regions) {
             auto reg = record.second;
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 fout << "\tr" << regions_mapping->at(reg) << " -> "
                      << record.first << ";\n";
             } else {
@@ -1931,7 +1932,7 @@ namespace Utilities {
                         region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
             }
             counter++;
-            if (counter == num_events)
+            if (counter == num_events_before_label_splitting)
                 break;
         }
         for (auto rec : aliases) {
@@ -2512,7 +2513,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }
@@ -2538,7 +2539,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }
@@ -2564,7 +2565,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }

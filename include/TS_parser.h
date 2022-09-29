@@ -20,7 +20,7 @@ typedef std::map<int, Edges_list> My_Map;
 
 extern My_Map *ts_map;
 extern unsigned int num_states;
-extern int initial_state, num_events, num_events_after_splitting;
+extern int initial_state, num_events_before_label_splitting, num_events_after_splitting;
 extern unsigned int num_transactions;
 extern map<int, string> *aliases_map_number_name;
 extern map< string, int> *aliases_map_name_number;

@@ -3,11 +3,11 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include "include/BDD_encoding.h"
+#include "include/BDD_encoder.h"
 
 using namespace Utilities;
 
-BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map, set<Region *> *regions) {
+BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map, set<Region *> *regions) {
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
     // [IN ITALIAN]
@@ -22,7 +22,7 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
     // cache come vincenti e non contengono un vincente (significa che sono minimali)
     for(auto rec: *pre_regions){
         auto event = rec.first;
-        cout << "event: " << event << endl;
+        //cout << "event: " << event << endl;
         (*valid_sets)[event] = new set<set<Region *>>();
         (*invalid_sets)[event] = new set<set<Region *>>();
         auto pre_region_set_for_event = rec.second;
@@ -85,8 +85,8 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
                                     }*/
                                 } else {
                                     to_add_later->insert(temp_set);
-                                    cout << "to add later: \n";
-                                    println(temp_set);
+                                    //cout << "to add later: \n";
+                                    //println(temp_set);
                                 }
                             }
                         }
@@ -95,12 +95,9 @@ BDD_encoding::BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER
             }
         }while(!to_add_later->empty());
     }
-    cout << "here " << endl;
-
-    encode(regions);
 }
 
-BDD_encoding::~BDD_encoding() {
+BDD_encoder::~BDD_encoder() {
     for(auto rec: *valid_sets){
         delete rec.second;
     }
@@ -112,7 +109,7 @@ BDD_encoding::~BDD_encoding() {
     delete map_of_EC_clauses;
 }
 
-bool BDD_encoding::test_if_enough(ER er, set<Region *> *regions) {
+bool BDD_encoder::test_if_enough(ER er, set<Region *> *regions) {
     auto intersection = regions_intersection(regions);
     if(*er == *intersection){
         return true;
@@ -120,74 +117,91 @@ bool BDD_encoding::test_if_enough(ER er, set<Region *> *regions) {
     return false;
 }
 
-bool BDD_encoding::test_if_enough(ER er, Region *region) {
+bool BDD_encoder::test_if_enough(ER er, Region *region) {
     if(*region == *er)
         return true;
     return false;
 }
 
-void BDD_encoding::encode(set<Region *> *regions){
+//todo: change the data written on file, based on the number of FCPNs
+void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
     Cudd mgr(0,0);
-    map<Region *, BDD> regions_bdd_map;
+    map<Region *, vector<BDD>*> regions_bdd_map;
     map<int, BDD> event_bdd_encodings;
-    for(auto reg: *regions){
-        regions_bdd_map[reg] = mgr.bddVar();
-    }
-
-    for(int i=0;i<num_events;++i){
-        event_bdd_encodings[i] = mgr.bddZero();
-        auto current_set = valid_sets->at(i);
-        for(const auto& combination: *current_set){
-            BDD current = mgr.bddOne();
-            for(auto reg: combination){
-                current *= regions_bdd_map[reg];
-            }
-            event_bdd_encodings[i] += current;
+    //creation of variables for each region
+    for(int index=0;index < num_fcpns;++index){
+        for(auto reg: *regions){
+            if(regions_bdd_map.find(reg) == regions_bdd_map.end())
+                regions_bdd_map[reg] = new vector<BDD>();
+            regions_bdd_map[reg]->push_back(mgr.bddVar());
         }
     }
 
-    char const* inames[regions->size()];
-    char const* onames[num_events];
-    map<int, Region *> tmp_reg_map;
-    int i=0;
-    for(auto reg: *regions){
-        string *tmp = new string();
-        *tmp = "r";
-        tmp->append(to_string(i));
-        inames[i] = tmp->c_str();
-        i++;
-        tmp_reg_map[i] = reg;
+    //BDD creation
+    for(int i=0; i < num_events_after_splitting; ++i){
+        event_bdd_encodings[i] = mgr.bddZero();
+        auto current_set = valid_sets->at(i);
+        for(const auto& combination: *current_set){
+            for(int index =0; index < num_fcpns;++index) {
+                BDD current = mgr.bddOne();
+                for (auto reg: combination) {
+                    current *= regions_bdd_map[reg]->at(index);
+                }
+                event_bdd_encodings[i] += current;
+            }
+        }
     }
 
-    //assign for each value of onames a char array with nsie the integer of the position
-    for(int i=0;i<num_events;++i){
-        string *tmp = new string();
+    char const* inames[regions->size()*num_fcpns];
+    char const* onames[num_events_after_splitting];
+    //map<int, Region *> tmp_reg_map;
+    int k=0;
+    for(int index = 0; index < num_fcpns;++index) {
+        for (auto reg: *regions) {
+            auto tmp = new string();
+            *tmp = "r";
+            tmp->append(to_string(k));
+            /*
+            for(int k=0; k< index;++k){
+                tmp->append("'");
+            }*/
+            inames[k] = tmp->c_str();
+            //tmp_reg_map[k] = reg;
+            k++;
+        }
+    }
+
+    //assign for each value of onames a char array with inside the integer of the position
+    for(int i=0; i < num_events_after_splitting; ++i){
+        auto tmp = new string();
         *tmp = "";
         tmp->append(to_string(i));
         onames[i] = tmp->c_str();
     }
 
+    /*
     for(auto str: inames){
         cout << str << endl;
     }
 
     for(auto str: onames){
         cout << str << endl;
-    }
+    }*/
 
-    DdNode *Dds[num_events];
-    for(int i=0;i<num_events;++i){
+    DdNode *Dds[num_events_after_splitting];
+    for(int i=0; i < num_events_after_splitting; ++i){
         Dds[i] = event_bdd_encodings.at(i).getNode();
     }
     FILE* fp = fopen("graph.dot", "w");
-    Cudd_DumpDot(mgr.getManager(), num_events, Dds, (char**) inames, (char**) onames, fp);
+    Cudd_DumpDot(mgr.getManager(), num_events_after_splitting, Dds, (char**) inames, (char**) onames, fp);
 
-    cout << "ok" << endl;
+    fclose(fp);
+    //cout << "ok" << endl;
 
-    char const *inames_without_r[regions->size()];
+    char const *inames_without_r[regions->size()*num_fcpns];
 
     //removing from inames r, leaving only the index
-    for(int i=0;i< regions->size();++i){
+    for(int i=0;i< regions->size()*num_fcpns;++i){
         string tmp = inames[i];
         std::size_t pos = 1;
         auto tmp2 = tmp.substr(pos);
@@ -196,7 +210,7 @@ void BDD_encoding::encode(set<Region *> *regions){
         inames_without_r[i] = tmp3;
     }
 
-    // TEST code foor clause creation and dump on file
+    //code for clause creation and dump on file
     FILE* fpb = fopen("BDD_clauses.txt", "w");
     for(int i=0;i<event_bdd_encodings.size();++i) {
         event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fpb);
@@ -209,9 +223,9 @@ void BDD_encoding::encode(set<Region *> *regions){
     ifstream fin(inFile);
     //TODO: scrivere i file temporanei in memoria e non su disco
     string tmp, last;
-    set<set<Region *>> *clause_set;
-    clause_set = new set<set<Region *>>();
-    set<Region *> tmp_set;
+    set<set<int>> *clause_set;
+    clause_set = new set<set<int>>();
+    set<int> tmp_set;
     vector<string> data;
     while(true){
         if((last == tmp) && (!last.empty())) {
@@ -221,34 +235,34 @@ void BDD_encoding::encode(set<Region *> *regions){
         last = tmp;
         fin >> tmp;
         data.push_back(tmp);
-        cout << tmp << endl;
+        //cout << tmp << endl;
     }
 
 
     for(int i=0;i < data.size();++i){
         if(i == data.size()-1){
-            tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
+            tmp_set.insert(stoi(data[i]));
             clause_set->insert(tmp_set);
-            cout << "adding entire clause" << endl;
+            //cout << "adding entire clause" << endl;
             break;
         }
         else if(i == 0){
-            tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
-            cout << "adding" << endl;
+            tmp_set.insert(stoi(data[i]));
+            //cout << "adding" << endl;
             //cout << "adding " << data[i] << endl;
         }
         else {
             if(data[i] != "|"){
                 if(data[i-1] != "|"){
                     clause_set->insert(tmp_set);
-                    cout << "adding entire clause" << endl;
+                    //cout << "adding entire clause" << endl;
                     tmp_set.clear();
-                    tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
-                    cout << "adding" << endl;
+                    tmp_set.insert(stoi(data[i]));
+                    //cout << "adding" << endl;
                 }
                 else{
-                    tmp_set.insert(tmp_reg_map.at(stoi(data[i])));
-                    cout << "adding" << endl;
+                    tmp_set.insert(stoi(data[i]));
+                    //cout << "adding" << endl;
                 }
             }
             else{
@@ -257,16 +271,16 @@ void BDD_encoding::encode(set<Region *> *regions){
         }
     }
 
-
+    /*
     for(auto s: *clause_set){
         println(s);
-    }
+    }*/
 
     //TODO: verificare che la mappa effettivamente rappresenti le regioni che soddisfano l'EC degli eventi corrispondenti
     map_of_EC_clauses = clause_set;
 
 }
 
-set<set<Region *>> *BDD_encoding::getMapOfECClaues() {
+set<set<int>> *BDD_encoder::getMapOfECClaues() {
     return map_of_EC_clauses;
 }

@@ -13,21 +13,23 @@
 
 using namespace std;
 
-class BDD_encoding {
+class BDD_encoder {
 public:
-    BDD_encoding(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map, set<Region *> *regions);
-    ~BDD_encoding();
+    BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map, set<Region *> *regions);
+    ~BDD_encoder();
     /**
-     * @brief This method should take valid region combinations for each region and encode these in boolean formulas
+     * @brief This method should take valid region combinations for each event and encode these in boolean formulas, for
+     * each FCPN
+     * @param num_fcpns Number of FCPNs
      */
-    void encode(set<Region *> *regions);
-    set<set<Region *>> *getMapOfECClaues();
+    void encode(set<Region *> *regions, int num_fcpns);
+    set<set<int>> *getMapOfECClaues();
 private:
     map<int, set<set<Region *>>*> *valid_sets;
     map<int, set<set<Region *>>*> *invalid_sets;
     static bool test_if_enough(ER er, set<Region *>* regions);
     static bool test_if_enough(ER er, Region * region);
-    set<set<Region *>> *map_of_EC_clauses;
+    set<set<int>> *map_of_EC_clauses;
 };
 
 
