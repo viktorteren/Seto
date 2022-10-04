@@ -725,7 +725,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     /*
      * 1) FCPN constraint
-     * 2) EC clauses: set of sets of regions  -> WRONG CODE, in case of n FCPNs each set of clauses is in OR with others
+     * 2) EC clauses
      * 3) for the next constraint I have to add also constraint related to all connected events of a region
      *    if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
      * 4) (optional) minimization function: number of used regions
@@ -752,7 +752,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
-    auto clauses_pre = new vector<vector<int32_t> *>();
+    //auto clauses_pre = new vector<vector<int32_t> *>();
     //auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     auto not_used_regions = new set<Region *>();
@@ -804,14 +804,42 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cout << "k: " << k << endl;
     }
 
+    if(decomposition_debug) {
+        //todo: da rimuovere in futuro
+        cout << "Pre-regions" << endl;
+        for (auto rec: *pre_regions_map) {
+            auto ev = rec.first;
+            cout << "event: " << ev << endl;
+            for (auto reg: *rec.second) {
+                println(*reg);
+            }
+        }
+
+        cout << "Post-regions" << endl;
+        for (auto rec: *post_regions_map) {
+            auto ev = rec.first;
+            cout << "event: " << ev << endl;
+            for (auto reg: *rec.second) {
+                println(*reg);
+            }
+        }
+
+        cout << "-----" << endl;
+    }
+
+    auto cache = new set<set<Region *>>();
+
     do {
         for (auto cl: *clauses) {
             delete cl;
         }
         clauses->clear();
 
-        //todo: check better if STEP 1 is right
-        //STEP 1
+        cache->clear();
+
+        if(decomposition_debug)
+            cout << "STEP 1" << endl;
+        //STEP 1: FCPN constraint
         /*
          * ALGORITHM:
          *      for each ev
@@ -821,7 +849,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
          *                      if r != pre(ev)
          *                          //in case of 2b check if pre(ev) has multiple outgoing edges
          *                              for each FCPN
-         *                                  create clause (!r v !pre(ev))
+         *                                  if not added previously
+         *                                      create clause (!r v !pre(ev))
          */
         //for each ev
         for (auto rec: *pre_regions_map) {
@@ -832,14 +861,29 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     for (auto r2: *set_of_regions) {
                         if (r != r2) {
                             if (fcptnet) {
-                                for(int index = 0;index < num_FCPNs_try;++index) {
-                                    clause = new vector<int32_t>();
-                                    int offset = m + index * k;
-                                    clause->push_back(-(*reg_map)[r] - offset);
-                                    clause->push_back(-(*reg_map)[r2] - offset);
-                                    clauses_pre->push_back(clause);
-                                    print_clause(clause);
+                                auto check = new set<Region *>();
+                                check->insert(r);
+                                check->insert(r2);
+                                if(cache->find(*check) == cache->end()) {
+                                    cache->insert(*check);
+                                    for (int index = 0; index < num_FCPNs_try; ++index) {
+                                        clause = new vector<int32_t>();
+                                        int offset = m + index * k;
+                                        clause->push_back(-(*reg_map)[r] - offset);
+                                        clause->push_back(-(*reg_map)[r2] - offset);
+                                        clauses->push_back(clause);
+                                        print_clause(clause);
+                                        /*
+                                        cout << "conflict" << endl;
+                                        println(*r);
+                                        println(*r2);
+                                         */
+                                    }
                                 }
+                                /*
+                                else{
+                                    cout << "cache hit" << endl;
+                                }*/
                             }
                             //ACPN case
                             /*else if((*region_ex_event_map)[r2]->size() > 1){
@@ -863,16 +907,29 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             }
         }
 
+        if(decomposition_debug)
+            cout << "STEP 2" << endl;
+
+        //TODO: wrong code -> not valid for multiple FCPNs
         //STEP 2
         be->encode(regions, num_FCPNs_try);
         ECClauses = be->getMapOfECClaues();
+        cout << "EC clauses" << endl;
+        for(auto reg: *ECClauses){
+            println(reg);
+        }
+        cout << "---" << endl;
         for (const auto &reg_set: *ECClauses) {
             clause = new vector<int32_t>();
             for (auto reg: reg_set) {
                 clause->push_back(m + reg + 1); //regions start from 0 but region encoding space starts from m+1
             }
             clauses->push_back(clause);
+            print_clause(clause);
         }
+
+        if(decomposition_debug)
+            cout << "STEP 3" << endl;
 
         //STEP 3
         for (int i = 0; i < num_FCPNs_try; ++i) {
@@ -884,7 +941,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause = new vector<int32_t>();
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
-                    clauses_pre->push_back(clause);
+                    clauses->push_back(clause);
+                    print_clause(clause);
                 }
             }
         }
@@ -894,9 +952,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         VectorClauseDatabase formula(config);
         //PB2CNF pb2cnf(config);
         AuxVarManager auxvars(k * num_FCPNs_try + m + 2);
-        for (auto cl: *clauses_pre) {
-            formula.addClause(*cl);
-        }
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
@@ -912,8 +967,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //iteration in the search of a correct assignment decreasing the total weight
 
         int num_clauses_formula = formula.getClauses().size();
-        //cout << "formula 1" << endl;
-        //formula.printFormula(cout);
+        cout << "formula:" << endl;
+        formula.printFormula(cout);
         cout << m + k * num_FCPNs_try << endl;
         dimacs_file = convert_to_dimacs(file, m + k * num_FCPNs_try, num_clauses_formula,
                                         formula.getClauses());
@@ -942,6 +997,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
 
             }
+            cout << endl;
 
             //STEP 5
             for (int i = 0; i < num_FCPNs_try; ++i) {
@@ -963,11 +1019,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         num_FCPNs_try++;
-        /*if(num_FCPNs_try == 2)
-            exit(1);*/
+        //TODO: da togliere in futuro (codice debug)
+        if(num_FCPNs_try == 3)
+            exit(1);
     } while (!solution_found);
 
     //TODO: memory leaks fix
+    delete cache;
 
     return fcpn_set;
 }
