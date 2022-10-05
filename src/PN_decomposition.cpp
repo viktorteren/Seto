@@ -866,18 +866,19 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                 check->insert(r2);
                                 if(cache->find(*check) == cache->end()) {
                                     cache->insert(*check);
+                                    //todo: export all the computation outside the do while cycle and repeat only the
+                                    // creation of clauses here each time a new FCPN is added
                                     for (int index = 0; index < num_FCPNs_try; ++index) {
                                         clause = new vector<int32_t>();
-                                        int offset = m + index * k;
+                                        int offset = m + index * k+1;
                                         clause->push_back(-(*reg_map)[r] - offset);
                                         clause->push_back(-(*reg_map)[r2] - offset);
                                         clauses->push_back(clause);
                                         print_clause(clause);
-                                        /*
                                         cout << "conflict" << endl;
                                         println(*r);
                                         println(*r2);
-                                         */
+
                                     }
                                 }
                                 /*
