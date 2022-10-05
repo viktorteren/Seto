@@ -716,7 +716,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                                map<int, int> *aliases,
                                                set<set<Region *>*>* SMs,
                                                BDD_encoder *be) {
-    //TODO
 
     //encoding: [1, m] events range: m events
     //encoding: [m+1, k+m+1] symbolic FCPN regions range: k regions, each region represent a set of regions in different

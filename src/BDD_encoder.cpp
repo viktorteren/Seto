@@ -7,7 +7,11 @@
 
 using namespace Utilities;
 
-BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map, set<Region *> *regions) {
+BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map) {
+    //TODO: implement a mechanism which stops without having explored all possibleEC combinations
+    // a possible result could be a normal computation for n cycles and at this point a search for only events without
+    // any set of regions for their EC
+    cout << "==============[BDD ENCODER]===============" << endl;
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
     // [IN ITALIAN]

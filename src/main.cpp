@@ -747,7 +747,7 @@ int main(int argc, char **argv) {
                     }
                     set<set<Region *> *> *final_fcpn_set=nullptr;
                     if(bdd_usage){
-                        auto be = new BDD_encoder(pre_regions, new_ER, regions_set);
+                        auto be = new BDD_encoder(pre_regions, new_ER);
 
                         //search a solution with n FCPNs increasing n until the result becomes SAT
                         final_fcpn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
