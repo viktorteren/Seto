@@ -22,7 +22,7 @@ public:
      * each FCPN
      * @param num_fcpns Number of FCPNs
      */
-    void encode(set<Region *> *regions, int num_fcpns);
+    void encode(set<Region *> *regions);
     set<set<int>> *getMapOfECClaues();
 private:
     map<int, set<set<Region *>>*> *valid_sets;

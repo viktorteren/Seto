@@ -124,19 +124,16 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
 }
 
 //todo: change the data written on file, based on the number of FCPNs
-void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
+void BDD_encoder::encode(set<Region *> *regions){
     Cudd mgr(0,0);
     //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN
-    map<Region *, vector<BDD>*> regions_bdd_map;
+    map<Region *, BDD> regions_bdd_map;
     map<int, BDD> event_bdd_encodings;
     //creation of variables for each region
-    for(int index=0;index < num_fcpns;++index){
-        for(auto reg: *regions){
-            if(regions_bdd_map.find(reg) == regions_bdd_map.end())
-                regions_bdd_map[reg] = new vector<BDD>();
-            regions_bdd_map[reg]->push_back(mgr.bddVar());
-        }
+    for(auto reg: *regions){
+        regions_bdd_map[reg]=mgr.bddVar();
     }
+
 
     cout << "valid sets" << endl;
     if(decomposition_debug){
@@ -148,49 +145,32 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
         }
     }
 
-    //TODO: change the encoding, the current one is too restrictive and does not allow the creation of valid FCPNs
-    // for the EC is sufficient to have the desired regions across all FCPNs not to have the combination in a certain
-    // FCPN
 
-    // having 2 FCPNs and 2 regions I should have the following result:
-    // (r1 A r2) v (r1 A r2') v (r1' A r2) v (r1' A  r2')
-    // and NOT only: (r1 A r2) v (r1' A  r2')
 
     //BDD creation
     for(int i=0; i < num_events_after_splitting; ++i){
         event_bdd_encodings[i] = mgr.bddZero();
         auto current_set = valid_sets->at(i);
         for(const auto& combination: *current_set){
-            for(int index =0; index < num_fcpns;++index) {
-                BDD current = mgr.bddOne();
-                for (auto reg: combination) {
-                    current *= regions_bdd_map[reg]->at(index);
-                }
-                event_bdd_encodings[i] += current;
+            BDD current = mgr.bddOne();
+            for (auto reg: combination) {
+                current *= regions_bdd_map[reg];
             }
+            event_bdd_encodings[i] += current;
         }
     }
 
-    char const* inames[regions->size()*num_fcpns];
+    char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
-    //map<int, Region *> tmp_reg_map;
     int k=0;
-    for(int index = 0; index < num_fcpns;++index) {
-        for (auto reg: *regions) {
-            auto tmp = new string();
-            *tmp = "r";
-            tmp->append(to_string(k));
-            /*
-            for(int k=0; k< index;++k){
-                tmp->append("'");
-            }*/
-            inames[k] = tmp->c_str();
-            //tmp_reg_map[k] = reg;
-            k++;
-            //cout << k << ": ";
-            //println(*reg);
-        }
+    for (auto reg: *regions) {
+        auto tmp = new string();
+        *tmp = "r";
+        tmp->append(to_string(k));
+        inames[k] = tmp->c_str();
+        k++;
     }
+
 
     //assign for each value of onames a char array with inside the integer of the position
     for(int i=0; i < num_events_after_splitting; ++i){
@@ -219,10 +199,10 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
     fclose(fp);
     //cout << "ok" << endl;
 
-    char const *inames_without_r[regions->size()*num_fcpns];
+    char const *inames_without_r[regions->size()];
 
     //removing from inames r, leaving only the index
-    for(int i=0;i< regions->size()*num_fcpns;++i){
+    for(int i=0;i< regions->size();++i){
         string tmp = inames[i];
         std::size_t pos = 1;
         auto tmp2 = tmp.substr(pos);
