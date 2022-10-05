@@ -135,8 +135,8 @@ void BDD_encoder::encode(set<Region *> *regions){
     }
 
 
-    cout << "valid sets" << endl;
     if(decomposition_debug){
+        cout << "valid sets" << endl;
         for(auto rec: *valid_sets){
             cout << "ev: " << rec.first << endl;
             for(auto reg_set: *rec.second){

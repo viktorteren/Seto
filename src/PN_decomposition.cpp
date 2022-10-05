@@ -955,7 +955,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //ENCODING/BINDING symbolic regions and effective regions
         //if we have t FCPNs
         //symbolic sr0 -> r0 v r0'  => !sr0 v r0 v r0'
-        cout << "BINDINGS" << endl;
+        if(decomposition_debug)
+            cout << "BINDINGS" << endl;
         //FIRST IMPLICATION
         for(int i=0;i<k;++i){
             clause = new vector<int32_t>();
@@ -1010,17 +1011,19 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //iteration in the search of a correct assignment decreasing the total weight
 
         int num_clauses_formula = formula.getClauses().size();
-        cout << "formula:" << endl;
-        formula.printFormula(cout);
-        cout << m + k * num_FCPNs_try << endl;
+        //cout << "formula:" << endl;
+        //formula.printFormula(cout);
+        //cout << m + k * num_FCPNs_try << endl;
         dimacs_file = convert_to_dimacs(file, m + k * num_FCPNs_try, num_clauses_formula,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
             solution_found = true;
-            cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
+            if(decomposition_debug) {
+                cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
 
-            cout << "solver n vars: " << solver.nVars() << endl;
+                cout << "solver n vars: " << solver.nVars() << endl;
+            }
             for (int i = 0; i < solver.nVars(); ++i) {
                 if (solver.model[i] != l_Undef) {
 
@@ -1059,7 +1062,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
             break;
         } else {
-            cout << "UNSAT" << endl;
+            if(decomposition_debug)
+                cout << "UNSAT" << endl;
         }
 
         num_FCPNs_try++;
