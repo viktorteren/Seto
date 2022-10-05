@@ -908,25 +908,39 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         if(decomposition_debug)
-            cout << "STEP 2" << endl;
+            cout << "STEP 2 (wrong)" << endl;
 
-        //TODO: wrong code -> not valid for multiple FCPNs
         //STEP 2
+        //TODO: wrong code -> not valid for multiple FCPNs
+
+        //potrei fare la codifica per ogni evento, avendo la codifica per un evento posso espanderla manualmente per k FCPN?
+        //problema: il risultato per un evento è un insieme di clausole e non un'unica clausola
+        //1 FCPN: (r1 v r2) A (r3 v r4)
+        //2 FCPN: non posso avere come risultato r1 e r3'
+        //la formula sarebbe:
+        //[(r1 v r2) A (r3 v r4)] v [(r1' v r2') A (r3' v r4')]   -> DNF soluzione non valida
+
         be->encode(regions, num_FCPNs_try);
         ECClauses = be->getMapOfECClaues();
-        cout << "EC clauses" << endl;
-        for(auto reg: *ECClauses){
-            println(reg);
+        if(decomposition_debug) {
+            cout << "EC clauses" << endl;
+            for (auto reg: *ECClauses) {
+                println(reg);
+            }
+            cout << "---" << endl;
         }
-        cout << "---" << endl;
+
         for (const auto &reg_set: *ECClauses) {
             clause = new vector<int32_t>();
             for (auto reg: reg_set) {
-                clause->push_back(m + reg + 1); //regions start from 0 but region encoding space starts from m+1
+                //regions start from 0 but region encoding global space starts from m+1
+                clause->push_back(m + reg + 1);
             }
+
             clauses->push_back(clause);
             print_clause(clause);
         }
+
 
         if(decomposition_debug)
             cout << "STEP 3" << endl;

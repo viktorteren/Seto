@@ -126,6 +126,7 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
 //todo: change the data written on file, based on the number of FCPNs
 void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
     Cudd mgr(0,0);
+    //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN
     map<Region *, vector<BDD>*> regions_bdd_map;
     map<int, BDD> event_bdd_encodings;
     //creation of variables for each region
