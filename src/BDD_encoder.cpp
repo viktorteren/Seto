@@ -138,6 +138,24 @@ void BDD_encoder::encode(set<Region *> *regions, int num_fcpns){
         }
     }
 
+    cout << "valid sets" << endl;
+    if(decomposition_debug){
+        for(auto rec: *valid_sets){
+            cout << "ev: " << rec.first << endl;
+            for(auto reg_set: *rec.second){
+                println(reg_set);
+            }
+        }
+    }
+
+    //TODO: change the encoding, the current one is too restrictive and does not allow the creation of valid FCPNs
+    // for the EC is sufficient to have the desired regions across all FCPNs not to have the combination in a certain
+    // FCPN
+
+    // having 2 FCPNs and 2 regions I should have the following result:
+    // (r1 A r2) v (r1 A r2') v (r1' A r2) v (r1' A  r2')
+    // and NOT only: (r1 A r2) v (r1' A  r2')
+
     //BDD creation
     for(int i=0; i < num_events_after_splitting; ++i){
         event_bdd_encodings[i] = mgr.bddZero();

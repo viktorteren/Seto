@@ -719,17 +719,23 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     //TODO
 
     //encoding: [1, m] events range: m events
-    //encoding: [m+1, k+m+1] first FCPN regions range: k regions
-    //encoding: [k+m+2, 2k+m+2] second FCPN regions range: k regions
+    //encoding: [m+1, k+m+1] symbolic FCPN regions range: k regions, each region represent a set of regions in different
+    // FCPNs
+    //encoding: [k+m+2, 2k+m+2] first FCPN regions range: k regions
     // ... and so on
 
     /*
+     * 0) I want to satisfy all events
      * 1) FCPN constraint
      * 2) EC clauses
-     * 3) for the next constraint I have to add also constraint related to all connected events of a region
+     * 3) binding between symbolic region and all it's representations in different FCPNs:
+     *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
+     *      it will become (sr1 v r1 v r1')
+     *
+     * 4) for the next constraint I have to add also constraint related to all connected events of a region
      *    if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
-     * 4) (optional) minimization function: number of used regions
-     * 5) decoding
+     * 5) (optional) minimization function: number of used regions
+     * 6) decoding
      */
 
     cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
@@ -837,6 +843,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
         cache->clear();
 
+        //STEP 0
+        for(int i=0;i <num_events_after_splitting;++i){
+            clause = new vector<int32_t>();
+            clause->push_back(i+1);
+            clauses->push_back(clause);
+        }
+
         if(decomposition_debug)
             cout << "STEP 1" << endl;
         //STEP 1: FCPN constraint
@@ -870,7 +883,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                     // creation of clauses here each time a new FCPN is added
                                     for (int index = 0; index < num_FCPNs_try; ++index) {
                                         clause = new vector<int32_t>();
-                                        int offset = m + index * k+1;
+                                        int offset = m + index * k+1+k;
                                         clause->push_back(-(*reg_map)[r] - offset);
                                         clause->push_back(-(*reg_map)[r2] - offset);
                                         clauses->push_back(clause);
@@ -921,7 +934,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //la formula sarebbe:
         //[(r1 v r2) A (r3 v r4)] v [(r1' v r2') A (r3' v r4')]   -> DNF soluzione non valida
 
-        be->encode(regions, num_FCPNs_try);
+        be->encode(regions, 1);
         ECClauses = be->getMapOfECClaues();
         if(decomposition_debug) {
             cout << "EC clauses" << endl;
@@ -934,7 +947,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         for (const auto &reg_set: *ECClauses) {
             clause = new vector<int32_t>();
             for (auto reg: reg_set) {
-                //regions start from 0 but region encoding global space starts from m+1
+                //regions start from 0 but region encoding global space starts from m+1+k (from m+1 to m+k there are
+                // symbolic regions
                 clause->push_back(m + reg + 1);
             }
 
@@ -942,16 +956,32 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             print_clause(clause);
         }
 
+        //STEP 3
+        //ENCODING/BINDING symbolic regions and effective regions
+        //if we have t FCPNs
+        //symbolic sr0 -> r0 v r0'  => !sr0 v r0 v r0'
+        cout << "BINDINGS" << endl;
+        //FIRST IMPLICATION
+        for(int i=0;i<k;++i){
+            clause = new vector<int32_t>();
+            clause->push_back(-m-1-i);
+            for(int index=0;index < num_FCPNs_try;++index){
+                clause->push_back(m+1+i+k*(index+1));
+            }
+            print_clause(clause);
+            clauses->push_back(clause);
+        }
+
 
         if(decomposition_debug)
             cout << "STEP 3" << endl;
 
-        //STEP 3
+        //STEP 4
         for (int i = 0; i < num_FCPNs_try; ++i) {
             for (auto rec: *region_ex_event_map) {
                 auto reg = rec.first;
                 for (auto ev: *rec.second) {
-                    int region_encoding = 1 + m + i * k + reg_map->at(reg);
+                    int region_encoding = 1 + m + i * k + reg_map->at(reg)+k;
                     auto ev_encoding = ev + 1;
                     clause = new vector<int32_t>();
                     clause->push_back(-region_encoding);
@@ -966,7 +996,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
         //PB2CNF pb2cnf(config);
-        AuxVarManager auxvars(k * num_FCPNs_try + m + 2);
+        AuxVarManager auxvars(k * num_FCPNs_try + m + 2+k);
         for (auto cl: *clauses) {
             formula.addClause(*cl);
         }
