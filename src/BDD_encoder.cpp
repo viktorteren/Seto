@@ -7,8 +7,9 @@
 
 using namespace Utilities;
 
+//complexity (worst case): num_events*num_regions!
 BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map) {
-    //TODO: implement a mechanism which stops without having explored all possibleEC combinations
+    //TODO: implement a mechanism which stops without having explored all possible EC combinations
     // a possible result could be a normal computation for n cycles and at this point a search for only events without
     // any set of regions for their EC
     cout << "==============[BDD ENCODER]===============" << endl;
@@ -52,52 +53,62 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                 secondary_regions->push_back(pre_region);
             }
         }
-        auto to_add_later = new set<set<Region *>*>();
-        do {
-            for(auto reg_set: *to_add_later){
-                invalid_sets->at(event)->insert(*reg_set);
-            }
-            to_add_later->clear();
-            for (const auto& reg_set: *invalid_sets->at(event)) {
-                for (auto reg: *secondary_regions) {
-                    if (!contains(reg_set, reg)) {
-                        auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
-                        temp_set->insert(reg);
-                        auto tep = invalid_sets->at(event);
-                        //if temp_set is already in invalid_set it means that it was already analyzed
-                        if(!contains(invalid_sets->at(event), temp_set)){
-                            bool contains_a_valid_set = false;
-                            //if temp_set contains at least one of the sets of valid set it means that temp_set is
-                            // redundant
-                            for (const auto& valid_set: *valid_sets->at(event)) {
-                                if (contains(*temp_set, valid_set)) {
-                                    contains_a_valid_set = true;
-                                    break;
+        if(valid_sets->at(event)->empty()) {
+            int cycle_counter = 0;
+            auto to_add_later = new set<set<Region *>>();
+            do {
+                cycle_counter++;
+                for (auto reg_set: *to_add_later) {
+                    invalid_sets->at(event)->insert(reg_set);
+                }
+                to_add_later->clear();
+                for (const auto &reg_set: *invalid_sets->at(event)) {
+                    for (auto reg: *secondary_regions) {
+                        if (!contains(reg_set, reg)) {
+                            auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
+                            temp_set->insert(reg);
+                            auto tep = invalid_sets->at(event);
+                            //if temp_set is already in invalid_set it means that it was already analyzed
+                            if (!contains(invalid_sets->at(event), temp_set)) {
+                                bool contains_a_valid_set = false;
+                                //if temp_set contains at least one of the sets of valid_set it means that temp_set is
+                                // redundant
+                                for (const auto &valid_set: *valid_sets->at(event)) {
+                                    if (contains(*temp_set, valid_set)) {
+                                        contains_a_valid_set = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (!contains_a_valid_set) {
-                                bool enough = test_if_enough(event_ER, temp_set);
-                                if (enough) {
-                                    valid_sets->at(event)->insert(*temp_set);
-                                    /*cout << "valid sets: \n";
-                                    for(auto rec: *valid_sets){
-                                        cout << "new set: \n";
-                                        auto tmp = rec.second;
-                                        for(auto tmp2: *tmp){
-                                            println(tmp2);
+                                if (!contains_a_valid_set) {
+                                    bool enough = test_if_enough(event_ER, temp_set);
+                                    if (enough) {
+                                        valid_sets->at(event)->insert(*temp_set);
+                                        /*cout << "valid sets: \n";
+                                        for(auto rec: *valid_sets){
+                                            cout << "new set: \n";
+                                            auto tmp = rec.second;
+                                            for(auto tmp2: *tmp){
+                                                println(tmp2);
+                                            }
+                                        }*/
+                                    } else {
+                                        //approximation in case of very big benchmarks
+                                        if(cycle_counter > 1000 && !valid_sets->at(event)->empty()){
+                                            //don't add anything
                                         }
-                                    }*/
-                                } else {
-                                    to_add_later->insert(temp_set);
-                                    //cout << "to add later: \n";
-                                    //println(temp_set);
+                                        else{
+                                            to_add_later->insert(*temp_set);
+                                        }
+                                        //cout << "to add later: \n";
+                                        //println(temp_set);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        }while(!to_add_later->empty());
+            } while (!to_add_later->empty());
+        }
     }
 }
 
