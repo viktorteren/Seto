@@ -190,6 +190,8 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs **(Under development, not completely implemented!!!)**
 
+**CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:
@@ -272,7 +274,7 @@ Steps for the verification:
 
 3) Verify the bisimulation between the initial TS (suppose example_TS.aut) and the composition of the PNs (suppose example_FCPN_composed.aut)
 ```Bash
-ltscompare --equivalence=bisim <TS_aut_file> <PN_aut_file> 
+ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file> 
 ```
 
 # Known restrictions

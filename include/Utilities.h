@@ -85,6 +85,7 @@ extern int places_after_greedy;
 extern double maxAlphabet;
 extern double avgAlphabet;
 extern bool greedy_exact;
+extern bool check_structure;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);

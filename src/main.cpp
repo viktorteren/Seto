@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
         dot_output = false;
         bdd_usage = false;
         ignore_correctness = false;
+        check_structure = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -78,6 +79,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "BDD"){
                 bdd_usage = true;
+            }
+            else if(args[i] == "CHECK"){
+                check_structure = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;

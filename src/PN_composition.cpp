@@ -32,7 +32,9 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
 
     set<map<set<Region *>*, set<Region *>>> completely_explored_states;
 
+    int c = 0;
     do {
+        c++;
         //given an event check if it can fire
         for(auto current_state: state_space) {
             if(completely_explored_states.find(current_state) == completely_explored_states.end()) {
@@ -99,6 +101,12 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                 }
                 completely_explored_states.insert(current_state);
             }
+        }
+        if(c==10){
+            cout << endl;
+        }
+        if(c == 500){
+            cout << endl;
         }
     } while(state_space != completely_explored_states);
 
