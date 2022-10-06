@@ -815,7 +815,7 @@ int main(int argc, char **argv) {
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-                if(k_fcpn_decomposition)
+                if(k_fcpn_decomposition || bdd_usage)
                     printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
                 else if (fcptnet)
                     printf("Time FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);

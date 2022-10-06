@@ -12,6 +12,8 @@
 
 class PN_decomposition {
 private:
+    static int k_search_event_offset(int num_events, int num_regions, int num_FCPNs);
+    static int k_search_region_offset(int num_events, int num_regions, int num_FCPNs);
 
 public:
     static set<set<Region *> *> *search(int number_of_events,
