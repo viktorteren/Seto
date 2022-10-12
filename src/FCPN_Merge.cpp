@@ -572,6 +572,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                     }
                                 }
                             }
+                            delete events_in_middle;
                         }
                     }
                 }
@@ -584,6 +585,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     }
                 }
             }
+            delete avoided_sets;
 
             for(auto ev: *cancelled_events){
                 events_to_remove_per_FCPN->at(current_FCPN)->erase(ev);

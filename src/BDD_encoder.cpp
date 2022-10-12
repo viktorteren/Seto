@@ -67,7 +67,6 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                         if (!contains(reg_set, reg)) {
                             auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
                             temp_set->insert(reg);
-                            auto tep = invalid_sets->at(event);
                             //if temp_set is already in invalid_set it means that it was already analyzed
                             if (!contains(invalid_sets->at(event), temp_set)) {
                                 bool contains_a_valid_set = false;
@@ -93,8 +92,9 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                                         }*/
                                     } else {
                                         //approximation in case of very big benchmarks
-                                        if(cycle_counter > 1000 && !valid_sets->at(event)->empty()){
+                                        if(cycle_counter > 100 && !valid_sets->at(event)->empty()){
                                             //don't add anything
+                                            delete temp_set;
                                         }
                                         else{
                                             to_add_later->insert(*temp_set);
@@ -103,12 +103,20 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                                         //println(temp_set);
                                     }
                                 }
+                                else{
+                                    delete temp_set;
+                                }
+                            }
+                            else{
+                                delete temp_set;
                             }
                         }
                     }
                 }
             } while (!to_add_later->empty());
+            delete to_add_later;
         }
+        delete secondary_regions;
     }
 }
 
@@ -177,22 +185,19 @@ void BDD_encoder::encode(set<Region *> *regions){
 
     char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
-    int k=0;
-    for (auto reg: *regions) {
+    for (int k=0;k < regions->size();++k) {
         auto tmp = new string();
         *tmp = "r";
         tmp->append(to_string(k));
         inames[k] = tmp->c_str();
-        k++;
     }
 
 
     //assign for each value of onames a char array with inside the integer of the position
     for(int i=0; i < num_events_after_splitting; ++i){
-        auto tmp = new string();
-        *tmp = "";
-        tmp->append(to_string(i));
-        onames[i] = tmp->c_str();
+        string tmp;
+        tmp.append(to_string(i));
+        onames[i] = tmp.c_str();
     }
 
     /*
@@ -291,6 +296,9 @@ void BDD_encoder::encode(set<Region *> *regions){
 
     map_of_EC_clauses = clause_set;
 
+    for(auto val: inames_without_r){
+        delete val;
+    }
 }
 
 set<set<int>> *BDD_encoder::getMapOfECClaues() {

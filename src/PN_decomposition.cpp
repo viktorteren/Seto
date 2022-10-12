@@ -55,10 +55,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      */
 
     cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;
-    auto regions_copy = new set<Region *>();
-    for(auto reg: regions){
-        regions_copy->insert(reg);
-    }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
     auto minimal_regions = new set<Region *>();
@@ -98,7 +94,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     auto reg_map = new map<Region *, int>();
     auto regions_vector = new vector<Region *>();
     int temp = 0;
-    for (auto reg: *regions_copy) {
+    for (auto reg: regions) {
         (*reg_map)[reg] = temp;
         regions_vector->push_back(reg);
         temp++;
@@ -113,7 +109,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     //encoding: [1, k] regions range: k regions
     //encoding: [k+1, k+m+1] events range: m events
     int m = number_of_events;
-    int k = regions_copy->size();
+    int k = regions.size();
     bool excitation_closure;
     bool splitting_constraints_added = false;
 
@@ -689,7 +685,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     delete minimal_regions;
 
-    delete regions_copy;
 
     for(auto rec: *map_of_FCPN_pre_regions){
         for(auto rec1: *rec.second){
@@ -755,17 +750,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
-    auto minimal_regions = new set<Region *>();
-    for (auto reg: *regions) {
-        minimal_regions->insert(reg);
-    }
+
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
     //auto clauses_pre = new vector<vector<int32_t> *>();
     //auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
-    auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int> *>();
     auto region_ent_event_map = new map<Region *, set<int> *>();
@@ -797,9 +788,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         temp++;
     }
 
-    for (auto reg: *minimal_regions) {
-        not_used_regions->insert(reg);
-    }
+
 
     vector<int32_t> *clause;
 
@@ -920,13 +909,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                         println(*r);
                                         println(*r2);
                                     }
-
-
                                 }
                                 /*
                                 else{
                                     cout << "cache hit" << endl;
                                 }*/
+                                delete check;
                             }
                             //ACPN case
                             /*else if((*region_ex_event_map)[r2]->size() > 1){
@@ -1121,7 +1109,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             }
             cout << endl;
 
-            //todo: STEP 8
+            //STEP 8
             for (int i = 0; i < num_FCPNs_try; ++i) {
                 auto temp_PN = new set<Region *>();
                 for (int index = 0; index < k; ++index) {
@@ -1272,10 +1260,50 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         if (!check_not_passed)
             cout << "Check passed." << endl;
 
+
+        for(auto rec: *region_ex_event_map){
+            delete rec.second;
+        }
+        delete region_ex_event_map;
     }
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
+
+
+    for(auto rec: *region_ent_event_map){
+        delete rec.second;
+    }
+    delete region_ent_event_map;
+
+    for(auto rec: *map_of_FCPN_post_regions){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+    }
+    delete map_of_FCPN_post_regions;
+
+    for(auto rec: *map_of_FCPN_pre_regions){
+        for(auto rec1: *rec.second){
+            delete rec1.second;
+        }
+        delete rec.second;
+        delete rec.first;
+    }
+    delete map_of_FCPN_pre_regions;
+    delete regions_vector;
+    for(auto val:*clauses_pre){
+        delete val;
+    }
+    delete clauses_pre;
+    for(auto val:*clauses){
+        delete val;
+    }
+    delete clauses;
+    delete solution;
+    delete regions_copy;
+    delete reg_map;
 
     return fcpn_set;
 }

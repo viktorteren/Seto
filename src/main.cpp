@@ -735,6 +735,9 @@ int main(int argc, char **argv) {
             }
 
             if(fcptnet || acpn){
+                if(!decomposition){
+                    delete SMs;
+                }
                 tStart_partial = clock();
                 double t_k_fcpn_decomposition;
                 if (k_fcpn_decomposition) {
@@ -756,6 +759,7 @@ int main(int argc, char **argv) {
                         //search a solution with n FCPNs increasing n until the result becomes SAT
                         final_fcpn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
                                                                     pprg, new_ER, aliases, SMs, be);
+                        delete be;
                     }
                     else{
                         final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
@@ -785,13 +789,11 @@ int main(int argc, char **argv) {
 
                     cout << "Total number of places: " << num_places << endl;
 
-                    if(!bdd_usage) {
-                        for (auto FCPN: *final_fcpn_set) {
-                            for (auto reg: *FCPN) {
-                                if (reg != nullptr) {
-                                    if (regions_set->find(reg) == regions_set->end()) {
-                                        delete reg;
-                                    }
+                    for (auto FCPN: *final_fcpn_set) {
+                        for (auto reg: *FCPN) {
+                            if (reg != nullptr) {
+                                if (regions_set->find(reg) == regions_set->end()) {
+                                    delete reg;
                                 }
                             }
                         }
