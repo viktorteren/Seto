@@ -171,6 +171,10 @@ int main(int argc, char **argv) {
             cerr << "PN synthesis cannot be done together with ACPN decomposition." << endl;
             exit(0);
         }
+        if(bdd_usage && !no_fcpn_min){
+            cerr << "BDD usage cannot be performed with PN minimization (yet)." << endl;
+            exit(0);
+        }
         if(aut_output){
             if(!ts_output && !ects_output){
                 cerr << "AUT output flag is compatible only with TS and ECTS flags." << endl;

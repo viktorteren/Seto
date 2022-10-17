@@ -25,6 +25,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
     // Quindi scorro per ogni regione e faccio il controllo, salvando i vincitori nella cache
     // una volto scorso per tutti aggiungo solo quelli che sono maggiori dei precedenti e non sono nella
     // cache come vincenti e non contengono un vincente (significa che sono minimali)
+    int approx_counter = 0;
     for(auto rec: *pre_regions){
         auto event = rec.first;
         //cout << "event: " << event << endl;
@@ -59,11 +60,11 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         }
         //cout << "Secondary regions size: " << secondary_regions->size() << endl;
         if(valid_sets->at(event)->empty()) {
-            //int cycle_counter = 0;
+            int cycle_counter = 0;
             auto to_add_later = new set<set<Region *>>();
             auto cache = set<set<Region *>*>();
             do {
-                //cycle_counter++;
+                cycle_counter++;
                 for (auto reg_set: *to_add_later) {
                     invalid_sets->at(event)->insert(reg_set);
                 }
@@ -101,13 +102,14 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                                         } else {
                                             to_add_later->insert(*temp_set);
                                             //approximation in case of very big benchmarks -> improves performance approximating the result
-                                            /*if (cycle_counter > 2 && !valid_sets->at(event)->empty()) {
+                                            if (cycle_counter > 2 && !valid_sets->at(event)->empty()) {
+                                                approx_counter++;
                                                 //don't add anything
                                                 delete temp_set;
                                                 //cout << "CUT" << endl;
                                             } else {
                                                 to_add_later->insert(*temp_set);
-                                            }*/
+                                            }
                                             //cout << "to add later: \n";
                                             //println(temp_set);
                                         }
@@ -128,6 +130,9 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
             delete to_add_later;
         }
         delete secondary_regions;
+    }
+    if(approx_counter > 0){
+        cout << "EC APPROXIMATION APPLIED" << endl;
     }
 }
 
@@ -304,7 +309,6 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         println(s);
     }*/
 
-    //todo: insieme di clausole incompleto
     map_of_EC_clauses = clause_set;
 
     for(auto val: inames_without_r){

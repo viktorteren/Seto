@@ -175,7 +175,7 @@ algorithm
 **O**: write output FCPNs on file in .dot extension
 
 **MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions
-**(not recommended)**
+**(not recommended, not compatible with BDD flag)**
 
 **NOMERGE**: avoids the Merge step
 
@@ -186,9 +186,9 @@ algorithm
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
 **GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
-in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, as result providing worst results compared to greedy algorithm **(not recommended)**
+in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, provides worst results compared to greedy algorithm **(not recommended and not copatible with BDD flag)**
 
-**BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs **(Under development, not completely implemented!!!)**
+**BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs
 
 **CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure, also in case of BDD usage check if excitation closure is satisfied
 
