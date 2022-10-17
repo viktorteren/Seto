@@ -53,11 +53,13 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                 secondary_regions->push_back(pre_region);
             }
         }
+        //cout << "Secondary regions size: " << secondary_regions->size() << endl;
         if(valid_sets->at(event)->empty()) {
-            int cycle_counter = 0;
+            //int cycle_counter = 0;
             auto to_add_later = new set<set<Region *>>();
+            auto cache = set<set<Region *>*>();
             do {
-                cycle_counter++;
+                //cycle_counter++;
                 for (auto reg_set: *to_add_later) {
                     invalid_sets->at(event)->insert(reg_set);
                 }
@@ -67,48 +69,53 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                         if (!contains(reg_set, reg)) {
                             auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
                             temp_set->insert(reg);
-                            //if temp_set is already in invalid_set it means that it was already analyzed
-                            if (!contains(invalid_sets->at(event), temp_set)) {
-                                bool contains_a_valid_set = false;
-                                //if temp_set contains at least one of the sets of valid_set it means that temp_set is
-                                // redundant
-                                for (const auto &valid_set: *valid_sets->at(event)) {
-                                    if (contains(*temp_set, valid_set)) {
-                                        contains_a_valid_set = true;
-                                        break;
-                                    }
-                                }
-                                if (!contains_a_valid_set) {
-                                    bool enough = test_if_enough(event_ER, temp_set);
-                                    if (enough) {
-                                        valid_sets->at(event)->insert(*temp_set);
-                                        /*cout << "valid sets: \n";
-                                        for(auto rec: *valid_sets){
-                                            cout << "new set: \n";
-                                            auto tmp = rec.second;
-                                            for(auto tmp2: *tmp){
-                                                println(tmp2);
-                                            }
-                                        }*/
-                                    } else {
-                                        //approximation in case of very big benchmarks
-                                        if(cycle_counter > 100 && !valid_sets->at(event)->empty()){
-                                            //don't add anything
-                                            delete temp_set;
+                            if(cache.find(temp_set) == cache.end()) {
+                                cache.insert(temp_set);
+                                //if temp_set is already in invalid_set it means that it was already analyzed
+                                if (!contains(invalid_sets->at(event), temp_set)) {
+                                    bool contains_a_valid_set = false;
+                                    //if temp_set contains at least one of the sets of valid_set it means that temp_set is
+                                    // redundant
+                                    for (const auto &valid_set: *valid_sets->at(event)) {
+                                        if (contains(*temp_set, valid_set)) {
+                                            contains_a_valid_set = true;
+                                            break;
                                         }
-                                        else{
+                                    }
+                                    if (!contains_a_valid_set) {
+                                        bool enough = test_if_enough(event_ER, temp_set);
+                                        if (enough) {
+                                            valid_sets->at(event)->insert(*temp_set);
+                                            /*cout << "valid sets: \n";
+                                            for(auto rec: *valid_sets){
+                                                cout << "new set: \n";
+                                                auto tmp = rec.second;
+                                                for(auto tmp2: *tmp){
+                                                    println(tmp2);
+                                                }
+                                            }*/
+                                        } else {
                                             to_add_later->insert(*temp_set);
+                                            //approximation in case of very big benchmarks -> improves performance approximating the result
+                                            /*if (cycle_counter > 2 && !valid_sets->at(event)->empty()) {
+                                                //don't add anything
+                                                delete temp_set;
+                                                //cout << "CUT" << endl;
+                                            } else {
+                                                to_add_later->insert(*temp_set);
+                                            }*/
+                                            //cout << "to add later: \n";
+                                            //println(temp_set);
                                         }
-                                        //cout << "to add later: \n";
-                                        //println(temp_set);
+                                    } else {
+                                        delete temp_set;
                                     }
-                                }
-                                else{
+                                } else {
                                     delete temp_set;
                                 }
                             }
                             else{
-                                delete temp_set;
+                                //cout << "CACHE HIT!!!" << endl;
                             }
                         }
                     }
@@ -146,7 +153,6 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
     return false;
 }
 
-//todo: change the data written on file, based on the number of FCPNs
 void BDD_encoder::encode(set<Region *> *regions){
     Cudd mgr(0,0);
     //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN

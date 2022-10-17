@@ -739,12 +739,12 @@ int main(int argc, char **argv) {
                     delete SMs;
                 }
                 tStart_partial = clock();
-                double t_k_fcpn_decomposition;
+                double t_fcpn_decomposition;
                 if (k_fcpn_decomposition) {
 
                     auto k_fcpn_decomposition_module = new k_FCPN_decomposition(number_of_events, regions_set, file,
                                                                                 pprg, aliases, new_ER);
-                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     delete k_fcpn_decomposition_module;
                 } else {
                     for (auto reg: *regions_set) {
@@ -789,23 +789,26 @@ int main(int argc, char **argv) {
 
                     cout << "Total number of places: " << num_places << endl;
 
-                    for (auto FCPN: *final_fcpn_set) {
-                        for (auto reg: *FCPN) {
-                            if (reg != nullptr) {
-                                if (regions_set->find(reg) == regions_set->end()) {
-                                    delete reg;
+                    //todo: remove if solving memory leak, why the internal code is a problem for isend?
+                    if(!bdd_usage) {
+                        for (auto FCPN: *final_fcpn_set) {
+                            for (auto reg: *FCPN) {
+                                if (reg != nullptr) {
+                                    if (regions_set->find(reg) == regions_set->end()) {
+                                        delete reg;
+                                    }
                                 }
                             }
                         }
                     }
 
-                    t_k_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+                    t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
                     outfile << fixed
                             << get_file_name(file) << ","
                             << setprecision(4) << t_region_gen << ","
-                            << setprecision(4) << t_k_fcpn_decomposition << ","
+                            << setprecision(4) << t_fcpn_decomposition << ","
                             << num_places << ","
                             << final_fcpn_set->size() << ","
                             << places_after_initial_decomp << ","
@@ -822,11 +825,11 @@ int main(int argc, char **argv) {
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
                 if(k_fcpn_decomposition || bdd_usage)
-                    printf("Time k-FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
+                    printf("Time k-FCPN decomposition: %.5fs\n", t_fcpn_decomposition);
                 else if (fcptnet)
-                    printf("Time FCPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
+                    printf("Time FCPN decomposition: %.5fs\n", t_fcpn_decomposition);
                 else
-                    printf("Time ACPN decomposition: %.5fs\n", t_k_fcpn_decomposition);
+                    printf("Time ACPN decomposition: %.5fs\n", t_fcpn_decomposition);
             }
             //FREE
             rg->basic_delete();

@@ -190,7 +190,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs **(Under development, not completely implemented!!!)**
 
-**CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure
+**CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure, also in case of BDD usage check if excitation closure is satisfied
 
 ### Approximate algorithm using a script
 

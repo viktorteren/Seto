@@ -1136,7 +1136,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         num_FCPNs_try++;
     } while (!solution_found);
 
-    //TODO: memory leaks fix
     delete cache;
 
     if (decomposition_debug) {
@@ -1184,12 +1183,34 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete regions_mapping;
     }
 
-    //TODO: not working with vme_read
-    if (composition)
-        PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
-
-
     if (check_structure){
+        cout << "EC check" << endl;
+
+        auto new_pre_regions_map = new map<int, set<Region *>*>();
+        for(auto rec: *pre_regions_map){
+            auto event = rec.first;
+            (*new_pre_regions_map)[event] = new set<Region *>();
+            for(auto reg: *rec.second){
+                bool found = false;
+                for(auto pn_rec: *map_of_FCPN_pre_regions){
+                    if((*pn_rec.second).find(event) != (*pn_rec.second).end()) {
+                        if ((*pn_rec.second)[event]->find(reg) != (*pn_rec.second)[event]->end()) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if(found){
+                    (*new_pre_regions_map)[event]->insert(reg);
+                }
+            }
+        }
+
+        bool ec = is_excitation_closed(new_pre_regions_map, ER);
+        if(!ec){
+            cerr << "EXCITATION CLOSURE NOT SATISFIED!!!" << endl;
+            exit(1);
+        }
         cout << "Checking if the set of PNs contains really " << (fcptnet ? "FCPNs..." : "ACPNs...") << endl;
 
         for (auto rec_map: *region_ex_event_map) {
@@ -1266,6 +1287,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
         delete region_ex_event_map;
     }
+
+    //TODO: not working with vme_read, isend instead is wrong
+    if (composition)
+        PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
+
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
