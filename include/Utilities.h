@@ -116,6 +116,7 @@ namespace Utilities {
     void println(Region &region);
     void println(set<Region *> *regions);
     void println(set<Region *> &regions);
+    void println_simplified(set<Region *> *regions, map<Region*, int> *regions_alias_mapping);
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);
     bool are_equal(Region *r1, Region *r2);

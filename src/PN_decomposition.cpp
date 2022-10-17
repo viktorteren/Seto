@@ -714,10 +714,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                                BDD_encoder *be) {
 
     //encoding: [1, m] symbolic events range: m events
-    //encoding: [m+1, k+m+1] symbolic FCPN regions range: k regions, each region represent a set of regions in different
+    //encoding: [m+1, k+m] symbolic FCPN regions range: k regions, each region represent a set of regions in different
     // FCPNs
-    //encoding: [k+m+2, k+2m+2] first FCPN range: m events
-    //encoding: [k+2m+3, 2k+2m+3] first FCPN regions range: k regions
+    //encoding: [k+m+1, k+2m] first FCPN range: m events
+    //encoding: [k+2m+1, 2k+2m] first FCPN regions range: k regions
     // ... and so on, regions+events for each FCPN
 
     /*
@@ -738,6 +738,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      */
 
     cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
+
+    map<Region *, int> *regions_alias_mapping;
+    auto regions_alias_mapping_inverted = new map<int,Region *>();
+    regions_alias_mapping = get_regions_map(pprg->get_pre_regions());
+    for(auto rec: *regions_alias_mapping){
+        (*regions_alias_mapping_inverted)[rec.second] = rec.first;
+    }
 
     set<set<int>> *ECClauses;
     auto solution = new vector<int>();
@@ -779,17 +786,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
 
-    auto reg_map = new map<Region *, int>();
-    auto regions_vector = new vector<Region *>();
-    int temp = 0;
-    for (auto reg: *regions_copy) {
-        (*reg_map)[reg] = temp;
-        regions_vector->push_back(reg);
-        temp++;
-    }
-
-
-
     vector<int32_t> *clause;
 
 
@@ -808,8 +804,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cout << "Pre-regions" << endl;
         for (auto rec: *pre_regions_map) {
             auto ev = rec.first;
-            cout << "event: " << ev << endl;
+            if(ev < num_events_before_label_splitting)
+                cout << "event: " << ev << " (" << aliases_map_number_name->at(ev) << ")" <<endl;
+            else
+                cout << "event: " << ev << " (" << aliases_map_number_name->at(aliases->at(ev)) << ")" <<endl;
             for (auto reg: *rec.second) {
+                cout << "r" << regions_alias_mapping->at(reg) << ": ";
                 println(*reg);
             }
         }
@@ -819,6 +819,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             auto ev = rec.first;
             cout << "event: " << ev << endl;
             for (auto reg: *rec.second) {
+                cout << "r" << regions_alias_mapping->at(reg) << ": ";
                 println(*reg);
             }
         }
@@ -838,7 +839,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     //STEP 1
-    be->encode(regions);
+    be->encode(regions, regions_alias_mapping);
     ECClauses = be->getMapOfECClaues();
     if (decomposition_debug) {
         cout << "STEP 1: EC clauses" << endl;
@@ -856,8 +857,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         clauses_pre->push_back(clause);
-        if (decomposition_debug)
+        if (decomposition_debug) {
+            cout << "-----------------------------" << endl;
             print_clause(clause);
+        }
     }
 
     do {
@@ -900,8 +903,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                     cache->insert(*check);
                                     clause = new vector<int32_t>();
                                     int offset = k_search_region_offset(m, k, num_FCPNs_try);
-                                    clause->push_back(-(*reg_map)[r] - offset);
-                                    clause->push_back(-(*reg_map)[r2] - offset);
+                                    clause->push_back(-(*regions_alias_mapping)[r] - offset);
+                                    clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                                     clauses_pre->push_back(clause);
                                     if (decomposition_debug) {
                                         print_clause(clause);
@@ -968,7 +971,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 for (auto ev: *rec.second) {
                     //reg_map contains values in [0, k-1]
                     int reg_offset = k_search_region_offset(m, k, i + 1);
-                    int region_encoding = reg_map->at(reg) + reg_offset;
+                    int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
                     int ev_offset = k_search_event_offset(m, k, i + 1);
                     auto ev_encoding = ev + ev_offset;
                     clause = new vector<int32_t>();
@@ -984,7 +987,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 for (auto ev: *rec.second) {
                     //reg_map contains values in [0, k-1]
                     int reg_offset = k_search_region_offset(m, k, i + 1);
-                    int region_encoding = reg_map->at(reg) + reg_offset;
+                    int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
                     int ev_offset = k_search_event_offset(m, k, i + 1);
                     auto ev_encoding = ev + ev_offset;
                     clause = new vector<int32_t>();
@@ -1008,7 +1011,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             clause = new vector<int32_t>();
             clause->push_back(-ev_encoding);
             for (auto reg: *rec.second) {
-                int region_encoding = reg_map->at(reg) + reg_offset;
+                int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
                 clause->push_back(region_encoding);
             }
             clauses_pre->push_back(clause);
@@ -1023,7 +1026,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             clause = new vector<int32_t>();
             clause->push_back(-ev_encoding);
             for (auto reg: *rec.second) {
-                int region_encoding = reg_map->at(reg) + reg_offset;
+                int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
                 clause->push_back(region_encoding);
             }
             clauses_pre->push_back(clause);
@@ -1110,18 +1113,30 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             cout << endl;
 
             //STEP 8
+            if(decomposition_debug)
+                cout << "STEP 8" << endl;
             for (int i = 0; i < num_FCPNs_try; ++i) {
                 auto temp_PN = new set<Region *>();
+                //cout << "pn " << i << endl;
                 for (int index = 0; index < k; ++index) {
-                    auto temp1 = m + index + (k + m) * (i + 1);
-                    auto temp = solution->at(temp1);
+                    int temp1;
+                    if(i == 0) {
+                        temp1 = m + k + m +index+1;
+                    }
+                    else{
+                        temp1 = m + k + m + index + i*(m+k)+1;
+                    }
+                    //cout << temp1 << endl;
+                    auto temp = solution->at(temp1-1);
                     while (temp > m + k) {
                         temp = temp - (m + k);
                     }
                     temp = temp - m;
                     //cout << "temp: " << temp << endl;
                     if (temp > 0) {
-                        temp_PN->insert((*regions_vector)[temp - 1]);
+                        //todo: here wrong
+                        temp_PN->insert(regions_alias_mapping_inverted->at(temp-1));
+                        //cout << "r" << regions_alias_mapping->at(regions_alias_mapping_inverted->at(temp-1)) << endl;
                     }
                 }
                 fcpn_set->insert(temp_PN);
@@ -1141,7 +1156,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     if (decomposition_debug) {
         for (auto FCPN: *fcpn_set) {
             cout << "FCPN:" << endl;
-            println(FCPN);
+            println_simplified(FCPN, regions_alias_mapping);
         }
     }
 
@@ -1172,16 +1187,15 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
     else if(output){
         int pn_counter = 0;
-        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
         for (auto pn: *fcpn_set) {
             //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN
-            print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
+            print_pn_dot_file(regions_alias_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);
             pn_counter++;
         }
-        delete regions_mapping;
     }
+    delete regions_alias_mapping;
 
     if (check_structure){
         cout << "EC check" << endl;
@@ -1318,7 +1332,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete rec.first;
     }
     delete map_of_FCPN_pre_regions;
-    delete regions_vector;
     for(auto val:*clauses_pre){
         delete val;
     }
@@ -1329,7 +1342,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     delete clauses;
     delete solution;
     delete regions_copy;
-    delete reg_map;
 
     return fcpn_set;
 }

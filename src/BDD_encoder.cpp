@@ -51,6 +51,10 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
             else{
                 invalid_sets->at(event)->insert(*temp);
                 secondary_regions->push_back(pre_region);
+                if(invalid_sets->at(event)->size() > 45){
+                    cerr << "TOO MANY EVENTS FOR BDD EXECUTION" << endl;
+                    exit(1);
+                }
             }
         }
         //cout << "Secondary regions size: " << secondary_regions->size() << endl;
@@ -153,7 +157,7 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
     return false;
 }
 
-void BDD_encoder::encode(set<Region *> *regions){
+void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping){
     Cudd mgr(0,0);
     //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN
     map<Region *, BDD> regions_bdd_map;
@@ -170,6 +174,7 @@ void BDD_encoder::encode(set<Region *> *regions){
             cout << "ev: " << rec.first << endl;
             for(auto reg_set: *rec.second){
                 println(reg_set);
+                cout << "--" << endl;
             }
         }
     }
@@ -191,19 +196,20 @@ void BDD_encoder::encode(set<Region *> *regions){
 
     char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
-    for (int k=0;k < regions->size();++k) {
+    int k=0;
+    for(auto reg: *regions){
         auto tmp = new string();
         *tmp = "r";
-        tmp->append(to_string(k));
+        tmp->append(to_string(regions_alias_mapping->at(reg)));
         inames[k] = tmp->c_str();
+        k++;
     }
-
 
     //assign for each value of onames a char array with inside the integer of the position
     for(int i=0; i < num_events_after_splitting; ++i){
-        string tmp;
-        tmp.append(to_string(i));
-        onames[i] = tmp.c_str();
+        auto tmp = new string();
+        tmp->append(to_string(i));
+        onames[i] = tmp->c_str();
     }
 
     /*
@@ -255,10 +261,8 @@ void BDD_encoder::encode(set<Region *> *regions){
     set<int> tmp_set;
     vector<string> data;
     while(true){
-        if((last == tmp) && (!last.empty())) {
-            //clause_set.insert(tmp_set);
+        if(fin.eof()!=0)
             break;
-        }
         last = tmp;
         fin >> tmp;
         data.push_back(tmp);
@@ -300,6 +304,7 @@ void BDD_encoder::encode(set<Region *> *regions){
         println(s);
     }*/
 
+    //todo: insieme di clausole incompleto
     map_of_EC_clauses = clause_set;
 
     for(auto val: inames_without_r){

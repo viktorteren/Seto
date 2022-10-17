@@ -1214,7 +1214,9 @@ namespace Utilities {
     void print_pn_dot_file(map<Region *, int> *regions_mapping,
                            map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, const string& file_name, int FCPN_number){
+                           map<int, int> *aliases,
+                           const string& file_name,
+                           int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
         /*
         if(initial_reg->empty()){
@@ -2332,14 +2334,14 @@ namespace Utilities {
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
                     if(print_step_by_step_debug || decomposition_debug){
-                        /*cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
+                        cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
                             cout << "empty" << endl;
                         }
                         else{
                             println(*intersec);
-                        }*/
+                        }
                         /*cout << "the pre-regions of event are: " << endl;
                         for(auto val: *pre_regions->at(event)){
                             println(*val);
@@ -2938,6 +2940,13 @@ namespace Utilities {
         }
         //cout << "found two not connected sets" << endl;
         return false;
+    }
+
+    void println_simplified(set<Region *> *regions, map<Region *, int> *regions_alias_mapping) {
+        for (auto reg : *regions) {
+            cout << "r" << regions_alias_mapping->at(reg) << ": ";
+            println(*reg);
+        }
     }
 
 }
