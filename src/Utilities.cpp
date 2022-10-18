@@ -636,10 +636,8 @@ namespace Utilities {
     }
 
     bool contains(const set<Region *>& reg_set, Region * reg){
-        for(auto reg1: reg_set){
-            if(reg == reg1)
-                return true;
-        }
+        if(reg_set.find(reg) != reg_set.end())
+            return true;
         return false;
     }
 
