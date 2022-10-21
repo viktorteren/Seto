@@ -59,7 +59,36 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
             }
         }
         //cout << "Secondary regions size: " << secondary_regions->size() << endl;
+        //approximation
         if(valid_sets->at(event)->empty()) {
+            auto supreme_set = new set<Region *>();
+            for (auto set: *invalid_sets->at(event)) {
+                for (auto reg: set) {
+                    supreme_set->insert(reg);
+                }
+            }
+            auto necessary_regions = new set<Region *>();
+            for (auto reg: *supreme_set) {
+                auto reg_set = new set < Region * > ();
+                //insert into reg_set all regions except reg
+                for (auto reg2: *supreme_set) {
+                    if (reg != reg2) {
+                        reg_set->insert(reg2);
+                    }
+                }
+                if (!test_if_enough(event_ER, reg_set)) {
+                    necessary_regions->insert(reg);
+                }
+            }
+            delete supreme_set;
+            if(!necessary_regions->empty()){
+                for(auto reg_set: *invalid_sets->at(event)){
+                    for(auto r: *necessary_regions){
+                        reg_set.insert(r);
+                    }
+                }
+            }
+
             int cycle_counter = 0;
             auto to_add_later = new set<set<Region *>>();
             auto cache = set<set<Region *>*>();
