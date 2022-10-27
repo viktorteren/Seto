@@ -15,7 +15,15 @@ sudo apt install g++
 sudo apt install cmake
 ```
 
-- python 2.7 
+- python 2.7
+```Bash
+sudo apt install python2-dev
+```
+
+- pip
+```Bash
+sudo apt install python-pip
+```
 
 - networkx
 ```Bash
@@ -43,7 +51,7 @@ cd cmake-build-debug
 cmake ..
 make TS_splitter
 ```
- 
+
 # Execution
 
 
@@ -129,7 +137,7 @@ In the root folder the following script can be executed, but firsly it has to be
 ./Benchmark.sh
 ```
 
-The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
+The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder.
 
 ## c) TS to interacting FCPNs flows
 
@@ -169,13 +177,13 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 **D**: debug info mode
 
-**B**: execute also SM decomposition combining the set of not minimized SMs to the FCPNs before performing the greedy 
+**B**: execute also SM decomposition combining the set of not minimized SMs to the FCPNs before performing the greedy
 algorithm
 
 **O**: write output FCPNs on file in .dot extension
 
 **MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions
-**(not recommended)**
+**(not recommended, not compatible with BDD flag)**
 
 **NOMERGE**: avoids the Merge step
 
@@ -185,8 +193,12 @@ algorithm
 
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
-**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
-in order to find the minimal number of FCPNs, indeed this search have very restricted constraints: at least one occurrence of each region in at least one FCPN, as result providing worst results compared to greedy algorithm **(not recommended)**
+**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search
+in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, provides worst results compared to greedy algorithm **(not recommended and not copatible with BDD flag)**
+
+**BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs
+
+**CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure, also in case of BDD usage check if excitation closure is satisfied
 
 ### Approximate algorithm using a script
 
@@ -270,7 +282,7 @@ Steps for the verification:
 
 3) Verify the bisimulation between the initial TS (suppose example_TS.aut) and the composition of the PNs (suppose example_FCPN_composed.aut)
 ```Bash
-ltscompare --equivalence=bisim <TS_aut_file> <PN_aut_file> 
+ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file> 
 ```
 
 # Known restrictions
@@ -298,15 +310,15 @@ All rights reserved.
 modification, are permitted provided that the following conditions are met:
 >
 >* Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
+   list of conditions and the following disclaimer.
 >
 >* Redistributions in binary form must reproduce the above copyright notice,
-  this list of conditions and the following disclaimer in the documentation
-  and/or other materials provided with the distribution.
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
 >
 >* Neither the name of the copyright holder nor the names of its
-  contributors may be used to endorse or promote products derived from
-  this software without specific prior written permission.
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
 >
 >THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
