@@ -15,6 +15,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
     cout << "==============[BDD ENCODER]===============" << endl;
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
+    int max_pre_regions = 0;
     // [IN ITALIAN]
     // qui dovrei scrivere un algoritmo che:
     // 1) prende gli eventi uno ad uno
@@ -59,6 +60,9 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
             }
         }
         //cout << "Secondary regions size: " << secondary_regions->size() << endl;
+        if(secondary_regions->size() > max_pre_regions)
+            max_pre_regions = secondary_regions->size();
+
         //approximation
         if(valid_sets->at(event)->empty()) {
             auto supreme_set = new set<Region *>();
@@ -163,6 +167,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
     if(approx_counter > 0){
         cout << "EC APPROXIMATION APPLIED" << endl;
     }
+    cout << "MAX NOT PRIMARY PREREIONS SIZE: " << max_pre_regions << endl;
 }
 
 BDD_encoder::~BDD_encoder() {
