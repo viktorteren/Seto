@@ -744,6 +744,7 @@ int main(int argc, char **argv) {
                 }
                 tStart_partial = clock();
                 double t_fcpn_decomposition;
+                double t_runtime;
                 if (k_fcpn_decomposition) {
 
                     auto k_fcpn_decomposition_module = new k_FCPN_decomposition(number_of_events, regions_set, file,
@@ -806,11 +807,23 @@ int main(int argc, char **argv) {
                         }
                     }
 
+                    t_runtime = (double) (clock() - tStart) / CLOCKS_PER_SEC;
                     t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
+                    if(bdd_usage)
+                        outfile << "FCPN_BDD";
+                    else if(acpn)
+                        outfile << "ACPN";
+                    else
+                        outfile << "FCPN";
+                    if(decomposition_debug)
+                        outfile << "_DEBUG,";
+                    else
+                        outfile << ",";
                     outfile << fixed
                             << get_file_name(file) << ","
+                            << setprecision(4) << t_runtime << ","
                             << setprecision(4) << t_region_gen << ","
                             << setprecision(4) << t_fcpn_decomposition << ","
                             << num_places << ","
@@ -834,6 +847,7 @@ int main(int argc, char **argv) {
                     printf("Time FCPN decomposition: %.5fs\n", t_fcpn_decomposition);
                 else
                     printf("Time ACPN decomposition: %.5fs\n", t_fcpn_decomposition);
+                printf("Total time: %.5fs\n", t_runtime);
             }
             //FREE
             rg->basic_delete();

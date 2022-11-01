@@ -15,8 +15,16 @@ sudo apt install g++
 sudo apt install cmake
 ```
 
-- python 2.7 
+- python 2.7
+```Bash
+sudo apt install python2-dev
+```
 
+- pip
+```Bash
+sudo apt install python-pip
+```
+  
 - networkx
 ```Bash
 pip install networkx
@@ -123,13 +131,13 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 ### Execution using a script
 
-In the root folder the following script can be executed, but firsly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
+In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
 
 ```Bash
 ./Benchmark.sh
 ```
 
-The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
+The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
 
 ## c) TS to interacting FCPNs flows
 
@@ -153,7 +161,9 @@ The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_di
 
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
 
+- decomposition type: FCPN, ACPN, FCPN_BDD, FCPN_DEBUG, ACPN_DEBUG, FCPN_BDD_DEBUG
 - file name
+- runtime
 - time region generation
 - time decomposition
 - time greedy/exact SM removal

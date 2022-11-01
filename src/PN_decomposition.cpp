@@ -472,9 +472,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     delete rec.second;
                 }
                 delete used_regions_map;
+                /*
                 if (excitation_closure) {
                     cout << "ec ok" << endl;
-                }
+                }*/
             }
             formula.clearDatabase();
         } else {
