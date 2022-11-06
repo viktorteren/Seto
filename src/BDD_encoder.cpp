@@ -133,7 +133,6 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                                                 }
                                             }*/
                                         } else {
-                                            to_add_later->insert(*temp_set);
                                             //approximation in case of very big benchmarks -> improves performance approximating the result
                                             if (cycle_counter > 2 && !valid_sets->at(event)->empty()) {
                                                 approx_counter++;
