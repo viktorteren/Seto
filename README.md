@@ -35,10 +35,10 @@ pip install networkx
 sudo apt-get install libboost-all-dev
 ```
 
-- mCRL2 (Optional): install in order to allow to check the decoposition correctness for FCPNs
+- mCRL2 (Optional): install in order to allow to check the decomposition correctness for FCPNs
 ```Bash
-sudo add-apt-repository ppa:mcrl2/release-ppa
-sudo apt update
+sudo apt-get update
+sudo apt-get install mcrl2
 ```
 
 # Key principles:
