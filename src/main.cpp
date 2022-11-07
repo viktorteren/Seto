@@ -825,7 +825,7 @@ int main(int argc, char **argv) {
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
                     if(bdd_usage)
-                        outfile << "FCPN_BDD";
+                        outfile << "FCPN_BDD_mixed_with_heuristics";
                     else if(acpn)
                         outfile << "ACPN";
                     else
