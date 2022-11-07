@@ -299,11 +299,11 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         number_of_missing_region_instances += N - FCPN->size();
     }*/
 
-    IncPBConstraint constraint(literals_from_events, LEQ,
-                               current_value); //the sum have to be less or equal to current_value
-    pb2cnf.encodeIncInital(constraint, formula, auxvars);
     //iteration in the search of a correct assignment decreasing the total weight
     do {
+        PBConstraint constraint(literals_from_events, LEQ,
+                                current_value); //the sum have to be lesser or equal to current_value
+        pb2cnf.encode(constraint, formula, auxvars);
         int num_clauses_formula = formula.getClauses().size();
         dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() //-
                 //number_of_missing_event_instances -
