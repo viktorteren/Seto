@@ -63,108 +63,64 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         if(secondary_regions->size() > max_pre_regions)
             max_pre_regions = secondary_regions->size();
 
-        //approximation
-        if(valid_sets->at(event)->empty()) {
-            auto supreme_set = new set<Region *>();
-            for (auto set: *invalid_sets->at(event)) {
-                for (auto reg: set) {
-                    supreme_set->insert(reg);
-                }
+        auto to_add_later = new set<set<Region *>>();
+        auto cache = set<set<Region *>*>();
+        do {
+            for (auto reg_set: *to_add_later) {
+                invalid_sets->at(event)->insert(reg_set);
             }
-            auto necessary_regions = new set<Region *>();
-            for (auto reg: *supreme_set) {
-                auto reg_set = new set < Region * > ();
-                //insert into reg_set all regions except reg
-                for (auto reg2: *supreme_set) {
-                    if (reg != reg2) {
-                        reg_set->insert(reg2);
-                    }
-                }
-                if (!test_if_enough(event_ER, reg_set)) {
-                    necessary_regions->insert(reg);
-                }
-            }
-            delete supreme_set;
-            if(!necessary_regions->empty()){
-                for(auto reg_set: *invalid_sets->at(event)){
-                    for(auto r: *necessary_regions){
-                        reg_set.insert(r);
-                    }
-                }
-            }
-
-            int cycle_counter = 0;
-            auto to_add_later = new set<set<Region *>>();
-            auto cache = set<set<Region *>*>();
-            do {
-                cycle_counter++;
-                for (auto reg_set: *to_add_later) {
-                    invalid_sets->at(event)->insert(reg_set);
-                }
-                to_add_later->clear();
-                for (const auto &reg_set: *invalid_sets->at(event)) {
-                    for (auto reg: *secondary_regions) {
-                        if (!contains(reg_set, reg)) {
-                            auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
-                            temp_set->insert(reg);
-                            if(cache.find(temp_set) == cache.end()) {
-                                cache.insert(temp_set);
-                                //if temp_set is already in invalid_set it means that it was already analyzed
-                                if (!contains(invalid_sets->at(event), temp_set)) {
-                                    bool contains_a_valid_set = false;
-                                    //if temp_set contains at least one of the sets of valid_set it means that temp_set is
-                                    // redundant
-                                    for (const auto &valid_set: *valid_sets->at(event)) {
-                                        if (contains(*temp_set, valid_set)) {
-                                            contains_a_valid_set = true;
-                                            break;
-                                        }
+            to_add_later->clear();
+            for (const auto &reg_set: *invalid_sets->at(event)) {
+                for (auto reg: *secondary_regions) {
+                    if (!contains(reg_set, reg)) {
+                        auto temp_set = new set<Region *>(reg_set.begin(), reg_set.end());
+                        temp_set->insert(reg);
+                        if(cache.find(temp_set) == cache.end()) {
+                            cache.insert(temp_set);
+                            //if temp_set is already in invalid_set it means that it was already analyzed
+                            if (!contains(invalid_sets->at(event), temp_set)) {
+                                bool contains_a_valid_set = false;
+                                //if temp_set contains at least one of the sets of valid_set it means that temp_set is
+                                // redundant
+                                for (const auto &valid_set: *valid_sets->at(event)) {
+                                    if (contains(*temp_set, valid_set)) {
+                                        contains_a_valid_set = true;
+                                        break;
                                     }
-                                    if (!contains_a_valid_set) {
-                                        bool enough = test_if_enough(event_ER, temp_set);
-                                        if (enough) {
-                                            valid_sets->at(event)->insert(*temp_set);
-                                            /*cout << "valid sets: \n";
-                                            for(auto rec: *valid_sets){
-                                                cout << "new set: \n";
-                                                auto tmp = rec.second;
-                                                for(auto tmp2: *tmp){
-                                                    println(tmp2);
-                                                }
-                                            }*/
-                                        } else {
-                                            //approximation in case of very big benchmarks -> improves performance approximating the result
-                                            if (cycle_counter > 2 && !valid_sets->at(event)->empty()) {
-                                                approx_counter++;
-                                                //don't add anything
-                                                delete temp_set;
-                                                //cout << "CUT" << endl;
-                                            } else {
-                                                to_add_later->insert(*temp_set);
+                                }
+                                if (!contains_a_valid_set) {
+                                    bool enough = test_if_enough(event_ER, temp_set);
+                                    if (enough) {
+                                        valid_sets->at(event)->insert(*temp_set);
+                                        /*cout << "valid sets: \n";
+                                        for(auto rec: *valid_sets){
+                                            cout << "new set: \n";
+                                            auto tmp = rec.second;
+                                            for(auto tmp2: *tmp){
+                                                println(tmp2);
                                             }
-                                            //cout << "to add later: \n";
-                                            //println(temp_set);
-                                        }
+                                        }*/
                                     } else {
-                                        delete temp_set;
+                                        to_add_later->insert(*temp_set);
+                                        //cout << "to add later: \n";
+                                        //println(temp_set);
                                     }
                                 } else {
                                     delete temp_set;
                                 }
+                            } else {
+                                delete temp_set;
                             }
-                            else{
-                                //cout << "CACHE HIT!!!" << endl;
-                            }
+                        }
+                        else{
+                            //cout << "CACHE HIT!!!" << endl;
                         }
                     }
                 }
-            } while (!to_add_later->empty());
-            delete to_add_later;
-        }
+            }
+        } while (!to_add_later->empty());
+        delete to_add_later;
         delete secondary_regions;
-    }
-    if(approx_counter > 0){
-        cout << "EC APPROXIMATION APPLIED" << endl;
     }
     cout << "MAX NOT PRIMARY PREREIONS SIZE: " << max_pre_regions << endl;
 }
