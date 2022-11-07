@@ -766,6 +766,7 @@ int main(int argc, char **argv) {
                                 max_num_pre_regions = num_pre_regions_event;
                         }
 
+                        cout << "MAX NUMBER OF EVENT PRE-REGIONS: " << max_num_pre_regions << endl;
                         if(max_num_pre_regions <= 10) {
                             auto be = new BDD_encoder(pre_regions, new_ER);
 
