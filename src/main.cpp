@@ -759,12 +759,25 @@ int main(int argc, char **argv) {
                     }
                     set<set<Region *> *> *final_fcpn_set=nullptr;
                     if(bdd_usage){
-                        auto be = new BDD_encoder(pre_regions, new_ER);
+                        int max_num_pre_regions = 0;
+                        for(auto rec: *pre_regions){
+                            int num_pre_regions_event = rec.second->size();
+                            if(num_pre_regions_event > max_num_pre_regions)
+                                max_num_pre_regions = num_pre_regions_event;
+                        }
 
-                        //search a solution with n FCPNs increasing n until the result becomes SAT
-                        final_fcpn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
-                                                                    pprg, new_ER, aliases, SMs, be);
-                        delete be;
+                        if(max_num_pre_regions <= 10) {
+                            auto be = new BDD_encoder(pre_regions, new_ER);
+
+                            //search a solution with n FCPNs increasing n until the result becomes SAT
+                            final_fcpn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
+                                                                        pprg, new_ER, aliases, SMs, be);
+                            delete be;
+                        }
+                        else{
+                            final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
+                                                                      pprg, new_ER, aliases, SMs);
+                        }
                     }
                     else{
                         final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
