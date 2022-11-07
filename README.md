@@ -30,6 +30,12 @@ sudo apt install python-pip
 pip install networkx
 ```
 
+- mCRL2 (Optional): install in order to allow to check the decoposition correctness for FCPNs
+```Bash
+sudo add-apt-repository ppa:mcrl2/release-ppa
+sudo apt update
+```
+
 # Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
@@ -122,7 +128,7 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 **-ALL**: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-**COMPOSE**: perform the composition of FCPNs and create an output file in .aut extension
+**COMPOSE**: perform the composition of SMs and create an output file in .aut extension
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
