@@ -30,6 +30,11 @@ sudo apt install python-pip
 pip install networkx
 ```
 
+- boost (necessary for the installation of mCRL2)
+```Bash
+sudo apt-get install libboost-all-dev
+```
+
 - mCRL2 (Optional): install in order to allow to check the decoposition correctness for FCPNs
 ```Bash
 sudo add-apt-repository ppa:mcrl2/release-ppa
