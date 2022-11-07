@@ -267,6 +267,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
     //STEP 7:
     int current_value = encoded_events_map.size();
+    int min = 0;
+    int max = encoded_events_map.size();
 
     PBConfig config = make_shared<PBConfigClass>();
     VectorClauseDatabase formula(config);
@@ -297,11 +299,11 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         number_of_missing_region_instances += N - FCPN->size();
     }*/
 
-    IncPBConstraint constraint(literals_from_events, LEQ,
-                               current_value); //the sum have to be less or equal to current_value
-    pb2cnf.encodeIncInital(constraint, formula, auxvars);
     //iteration in the search of a correct assignment decreasing the total weight
     do {
+        PBConstraint constraint(literals_from_events, LEQ,
+                                current_value); //the sum have to be lesser or equal to current_value
+        pb2cnf.encode(constraint, formula, auxvars);
         int num_clauses_formula = formula.getClauses().size();
         dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar() //-
                 //number_of_missing_event_instances -
@@ -311,35 +313,36 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
-
+            /*
             if (decomposition_debug) {
                 //cout << "----------" << endl;
                 cout << "SAT with value " << current_value << endl;
                 //cout << "formula: " << endl;
                 //formula.printFormula(cout);
-                /*cout << "Model: ";
+                cout << "Model: ";
                 for (int i = 0; i < solver.nVars(); ++i) {
                     if (solver.model[i] != l_Undef) {
                         fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
                                 i + 1);
                     }
                 }
-                cout << endl;*/
-            }
+                cout << endl;
+            }*/
             true_model.clear(true);
             for (auto val: solver.model) {
                 true_model.push(val);
             }
-            current_value--;
+            //maxValueToCheck--;
+            max = current_value;
         } else {
             if (decomposition_debug) {
                 //cout << "----------" << endl;
                 cout << "UNSAT with value " << current_value << endl;
             }
-            break;
+            min = current_value;
         }
-        constraint.encodeNewLeq(current_value,formula,auxvars);
-    } while (true);
+        current_value = (min + max) / 2;
+    } while ((max - min) > 1);
     //if(decomposition_debug)
     //   cout << "UNSAT with value " << maxValueToCheck << endl;
 

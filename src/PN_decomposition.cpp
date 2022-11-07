@@ -238,6 +238,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
 
         int current_value = 1;
+        int min = 0;
+        int max = k;
 
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
@@ -296,7 +298,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         }
                     }
                 }
-                current_value++;
+                min = current_value;
             } else {
                 if (decomposition_debug) {
                     //cout << "----------" << endl;
@@ -313,10 +315,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         cout << endl;
                     }*/
                 }
-                break;
+                max = current_value;
             }
-            constraint.encodeNewGeq(current_value,formula,auxvars);
-        } while (true);
+            current_value = (min + max) / 2;
+        } while ((max - min) > 1);
 
         if (!no_fcpn_min) {
             //STEP 6
@@ -354,7 +356,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             AuxVarManager auxvars2(k + m + 2);
             PBConstraint constraint3(literals_from_regions, BOTH,
                                      current_value, current_value);
-
+            /*
             do {
                 solver2 = new Minisat::Solver();
                 auxvars2.resetAuxVarsTo(k + m + 2);
@@ -375,7 +377,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 if (decomposition_debug)
                     cout << "Formula size: " << formula2.getClauses().size() << endl;
 
-                dimacs_file = convert_to_dimacs(file, /*std::max(*/auxvars2.getBiggestReturnedAuxVar()/*, max_number)*/,
+                dimacs_file = convert_to_dimacs(file, auxvars2.getBiggestReturnedAuxVar(),
                                                 num_clauses_formula,
                                                 formula2.getClauses(), results_to_avoid);
                 sat = check_sat_formula_from_dimacs(*solver2, dimacs_file);
@@ -413,6 +415,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 current_value2 = (min2 + max2) / 2;
                 delete solver2;
             } while ((max2 - min2) > 1);
+            */
         }
 
         if (exists_solution) {
