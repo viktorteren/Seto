@@ -170,6 +170,11 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
         delete tmp_SMs;
     }
 
+    if(decomposition_debug) {
+        cout << "ASCENDING: " << SMs_ascending->size() << endl;
+        cout << "DESCENDING: " << SMs_descending->size() << endl;
+    }
+
     if(SMs_ascending->size() > SMs_descending->size()){
         for(set<Region *> *SM: *SMs){
             if(SMs_descending->find(SM) == SMs_descending->end()){
