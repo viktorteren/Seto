@@ -156,8 +156,8 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         regions_bdd_map[reg]=mgr.bddVar();
     }
 
-
     if(decomposition_debug){
+        cout << "number of regions: " << regions->size()<<endl;
         cout << "valid sets" << endl;
         for(auto rec: *valid_sets){
             cout << "ev: " << rec.first << endl;

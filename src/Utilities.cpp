@@ -16,7 +16,6 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool ects_output;
-bool k_fcpn_decomposition;
 bool no_merge;
 bool dot_output;
 bool composition;
@@ -641,7 +640,7 @@ namespace Utilities {
         return false;
     }
 
-    __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set){
+    bool contains(set<int> bigger_set, const set<int>& smaller_set){
         for (auto elem : smaller_set) {
             if(bigger_set.find(elem) == bigger_set.end())
                 return false;
@@ -2340,12 +2339,12 @@ namespace Utilities {
                         else{
                             println(*intersec);
                         }
-                        /*cout << "the pre-regions of event are: " << endl;
+                        cout << "the pre-regions of event are: " << endl;
                         for(auto val: *pre_regions->at(event)){
                             println(*val);
                         }
                         cout << "er: ";
-                        println(*er);*/
+                        println(*er);
                     }
                     for(auto rec: *regions_intersection_map){
                         delete rec.second;

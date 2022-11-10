@@ -66,7 +66,6 @@ extern bool composition;
 extern bool bdd_usage;
 extern bool aut_output;
 extern bool ignore_correctness;
-extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;
 __attribute__((unused)) extern bool fcpn_with_levels;

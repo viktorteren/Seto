@@ -152,20 +152,6 @@ The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_d
 
 ## c) TS to interacting FCPNs flows
 
-### Exact algorithm:
-
-```Bash
-./TS_splitter <file_path> KFC <optional_flags>
-```
-
-#### Optional flags:
-
-**D**: debug info mode
-
-**O**: write output FCPNs on file in .dot extension
-
-### Approximated algorithm (recommended):
-
 ```Bash
 ./TS_splitter <file_path> FC <optional_flags>
 ```

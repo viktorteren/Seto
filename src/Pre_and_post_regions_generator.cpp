@@ -281,7 +281,7 @@ void Pre_and_post_regions_generator::create_pre_regions() {
         for(it=regions->begin(); it!=regions->end();++it){
             Region* region= &(*it);
             if(is_pre_region(&record.second, region)){
-                //se l'evento non era presente nella mappa creo lo spazioo per il relativo set di regioni
+                //se l'evento non era presente nella mappa creo lo spazio per il relativo set di regioni
                 if (pre_regions->find(record.first) == pre_regions->end()){
                     (*pre_regions)[record.first] = new set<Region *> ();
                 }
