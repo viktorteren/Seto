@@ -123,8 +123,6 @@ Merge::Merge(set<SM *> *SMs,
 
     //int maxValueToCheck = encoded_events_map.size();
     int current_value = encoded_events_map.size();
-    int min = 0;
-    int max = encoded_events_map.size();
 
     PBConfig config = make_shared<PBConfigClass>();
     VectorClauseDatabase formula(config);
@@ -145,11 +143,11 @@ Merge::Merge(set<SM *> *SMs,
     bool sat = true;
     vec < lbool > true_model;
 
+    IncPBConstraint constraint(literals_from_events, LEQ,
+                               current_value); //the sum have to be less or equal to current_value
+    pb2cnf.encodeIncInital(constraint, formula, auxvars);
     //iteration in the search of a correct assignment decreasing the total weight
     do {
-        PBConstraint constraint(literals_from_events, LEQ,
-                                   current_value); //the sum have to be lesser or equal to current_value
-        pb2cnf.encode(constraint, formula, auxvars);
         int num_clauses_formula = formula.getClauses().size();
         dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
                                         formula.getClauses(), nullptr);
@@ -173,17 +171,16 @@ Merge::Merge(set<SM *> *SMs,
             for (auto val: solver.model) {
                 true_model.push(val);
             }
-            //maxValueToCheck--;
-            max = current_value;
+            current_value--;
         } else {
             if (decomposition_debug) {
                 //cout << "----------" << endl;
                 cout << "UNSAT with value " << current_value << endl;
             }
-            min = current_value;
+            break;
         }
-        current_value = (min + max) / 2;
-    } while ((max - min) > 1);
+        constraint.encodeNewLeq(current_value,formula,auxvars);
+    } while (true);
     //if(decomposition_debug)
     //   cout << "UNSAT with value " << maxValueToCheck << endl;
 
