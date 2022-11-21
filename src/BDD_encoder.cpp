@@ -388,7 +388,7 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         println(s);
     }*/
 
-    set_of_EC_clauses = clause_set;
+    //set_of_EC_clauses = clause_set;
 
     for(auto val: inames_without_r){
         delete val;
