@@ -125,6 +125,10 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
     }
 }
 
+/**
+ *
+ * @return Map with ERs of each event
+ */
 map<int, ER> *Region_generator::get_ER_set() { return ER_set; }
 
 int Region_generator::branch_selection(Edges_list *list, Region *region,

@@ -7,7 +7,6 @@
 #include "../include/Merging_Minimal_Preregions_module.h"
 #include "../include/Regions_generator.h"
 #include "../include/Place_irredundant_pn_creation_module.h"
-#include "../pblib/pb2cnf.h"
 #include <algorithm>
 #include <Python.h>
 #include <iomanip>
