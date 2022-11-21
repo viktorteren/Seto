@@ -843,7 +843,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     //STEP 1
-    be->encode(regions, regions_alias_mapping);
+    //be->encode(regions, regions_alias_mapping);
     if(decomposition_debug) {
         cout << "regions alias mapping:" << endl;
         for(auto rec: *regions_alias_mapping){
@@ -851,7 +851,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             println(*rec.first);
         }
     }
-    ECClauses = be->getMapOfECClaues();
+    ECClauses = be->get_set_of_EC_clauses(regions_alias_mapping);
     if (decomposition_debug) {
         cout << "STEP 1: EC clauses" << endl;
         for (auto reg: *ECClauses) {

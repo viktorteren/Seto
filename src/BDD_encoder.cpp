@@ -4,6 +4,7 @@
  */
 
 #include "include/BDD_encoder.h"
+#include "libs/cudd-3.0.0/st/st.h"
 
 using namespace Utilities;
 
@@ -62,7 +63,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         auto to_add_later = new set<set<Region *>>();
         auto cache = set<set<Region *>*>();
         do {
-            for (auto reg_set: *to_add_later) {
+            for (const auto& reg_set: *to_add_later) {
                 invalid_sets->at(event)->insert(reg_set);
             }
             to_add_later->clear();
@@ -117,6 +118,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         } while (!to_add_later->empty());
         delete to_add_later;
         delete secondary_regions;
+        map_of_EC_clauses = dnf_to_cnf(valid_sets);
     }
 }
 
@@ -168,20 +170,7 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         }
     }
 
-
-
-    //BDD creation
-    for(int i=0; i < num_events_after_splitting; ++i){
-        event_bdd_encodings[i] = mgr.bddZero();
-        auto current_set = valid_sets->at(i);
-        for(const auto& combination: *current_set){
-            BDD current = mgr.bddOne();
-            for (auto reg: combination) {
-                current *= regions_bdd_map[reg];
-            }
-            event_bdd_encodings[i] += current;
-        }
-    }
+    FILE* fstdout = stdout;
 
     char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
@@ -194,12 +183,120 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         k++;
     }
 
+    char const *inames_without_r[regions->size()];
+    int inames_int[regions->size()];
+
+    //removing from inames r, leaving only the index
+    for(int i=0;i < regions->size();++i){
+        string tmp = inames[i];
+        std::size_t pos = 1;
+        auto tmp2 = tmp.substr(pos);
+        char* tmp3=new char();
+        strcpy(tmp3,tmp2.c_str());
+        inames_without_r[i] = tmp3;
+        inames_int[i] = stoi(inames_without_r[i]);
+    }
+
     //assign for each value of onames a char array with inside the integer of the position
     for(int i=0; i < num_events_after_splitting; ++i){
         auto tmp = new string();
         tmp->append(to_string(i));
         onames[i] = tmp->c_str();
     }
+
+    //BDD creation
+    for(int i=0; i < num_events_after_splitting; ++i){
+        //BDD temp;
+        //event_bdd_encodings[i] = mgr
+        if(i == 2) {
+            auto current_set = valid_sets->at(i);
+            auto c = new vector(current_set->begin(), current_set->end());
+            for (int m = 0; m < c->size(); ++m) {
+                auto combination = c->at(m);
+                auto comb = vector<Region *>(combination.begin(), combination.end());
+                BDD current;
+                for (int k = 0; k < comb.size(); ++k) {
+                    if (k == 0) {
+                        current = regions_bdd_map[comb.at(k)];
+                        cout << "enter" << endl;
+                        current.PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
+                        //cout << "----" << endl;
+                        //current.print(1);
+                        current.PrintFactoredForm();
+                        cout << endl;
+                        /*current.PrintCover();
+                        cout << endl;*/
+                        ZDD z = current.PortToZdd();
+                        /*z.PrintMinterm();
+                        cout << endl;*/
+                    } else {
+                        //current *= regions_bdd_map[comb.at(k)];
+                        current = current.And(regions_bdd_map[comb.at(k)]);
+                        cout << "enter" << endl;
+                        current.PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
+                        //cout << "----" << endl;
+                        //current.print(1);
+                        current.PrintFactoredForm();
+                        cout << endl;
+                        /*current.PrintCover();
+                        cout << endl;*/
+                        ZDD z = current.PortToZdd();
+                        /*z.PrintMinterm();
+                        cout << endl;*/
+
+                    }
+                    cout << "----" << endl;
+                }
+                if (m == 0) {
+                    cout << "finale" << endl;
+
+                    event_bdd_encodings[i] = current;
+                    event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
+                    event_bdd_encodings[i].PrintFactoredForm();
+                    cout << endl;
+                } else {
+                    //event_bdd_encodings[i] += current;
+                    cout << "finale"  << endl;
+
+                    event_bdd_encodings[i] = event_bdd_encodings[i].Or(current);
+                    event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
+                    event_bdd_encodings[i].PrintFactoredForm();
+                    cout << endl;
+                    DdManager *dd;
+
+
+                    auto node = event_bdd_encodings[i].getNode();
+                    BDD t;
+                    BDD e;
+                    vector<DdNode *> queue;
+                    queue.push_back(node);
+                    do{
+                        auto last = queue[0];
+                        if(Cudd_IsConstant(last)){
+                            cout << "leaf" << endl;
+                            auto tmp = BDD(mgr,last);
+                            if(tmp.IsOne()){
+                                cout << "one" << endl;
+                            }
+                        }
+                        else{
+                            queue.push_back(Cudd_T(last));
+                            queue.push_back(Cudd_E(last));
+                            cout << "paths: " << Cudd_CountPath(last) << endl;
+                            Cudd_CountPath(last);
+                        }
+                        queue.erase(queue.begin());
+                    }while(!queue.empty());
+
+                }
+            }
+        }
+        else{
+            event_bdd_encodings[i] = mgr.bddZero();
+        }
+    }
+
+
 
     /*
     for(auto str: inames){
@@ -220,31 +317,30 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     fclose(fp);
     //cout << "ok" << endl;
 
-    char const *inames_without_r[regions->size()];
 
-    //removing from inames r, leaving only the index
-    for(int i=0;i< regions->size();++i){
-        string tmp = inames[i];
-        std::size_t pos = 1;
-        auto tmp2 = tmp.substr(pos);
-        char* tmp3=new char();
-        strcpy(tmp3,tmp2.c_str());
-        inames_without_r[i] = tmp3;
-    }
 
     //code for clause creation and dump on file
-    FILE* fpb = fopen("BDD_clauses.txt", "w");
-    for(int i=0;i<event_bdd_encodings.size();++i) {
-        event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fpb);
-    }
+    string inFile = "BDD_clauses.txt";
 
+    FILE* fpb = fopen("BDD_clauses.txt", "w");
     fclose(fpb);
 
+    for(int i = 0;i < event_bdd_encodings.size();++i) {
+        ofstream fon(inFile, std::ios_base::app);
+        fon << "-----" << i <<"------" << endl;
+        fon.close();
+        fpb = fopen("BDD_clauses.txt", "a");
+        event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fpb);
+        fclose(fpb);
+    }
+
+
+
     //reading elements from file:
-    string inFile = "BDD_clauses.txt";
+    inFile = "BDD_clauses.txt";
     ifstream fin(inFile);
     //TODO: scrivere i file temporanei in memoria e non su disco
-    string tmp, last;
+    string tmp;
     set<set<int>> *clause_set;
     clause_set = new set<set<int>>();
     set<int> tmp_set;
@@ -252,7 +348,6 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     while(true){
         if(fin.eof()!=0)
             break;
-        last = tmp;
         fin >> tmp;
         data.push_back(tmp);
         //cout << tmp << endl;
@@ -293,13 +388,24 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         println(s);
     }*/
 
-    map_of_EC_clauses = clause_set;
+    set_of_EC_clauses = clause_set;
 
     for(auto val: inames_without_r){
         delete val;
     }
 }
 
-set<set<int>> *BDD_encoder::getMapOfECClaues() {
-    return map_of_EC_clauses;
+set<set<int>> *BDD_encoder::get_set_of_EC_clauses(map<Region *, int> *regions_alias_mapping) {
+    auto tmp = new set<set<int>>();
+
+    for(auto rec: *map_of_EC_clauses){
+        for(auto clause: *rec.second){
+            set<int> current_clause;
+            for(auto reg: *clause){
+                current_clause.insert(regions_alias_mapping->at(reg));
+            }
+            tmp->insert(current_clause);
+        }
+    }
+    return tmp;
 }
