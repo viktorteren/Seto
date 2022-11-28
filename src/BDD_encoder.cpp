@@ -118,7 +118,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         } while (!to_add_later->empty());
         delete to_add_later;
         delete secondary_regions;
-        map_of_EC_clauses = dnf_to_cnf(valid_sets);
+        //map_of_EC_clauses = dnf_to_cnf(valid_sets);
     }
 }
 
@@ -148,7 +148,7 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
     return false;
 }
 
-void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping){
+void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping, map<int, set<set<int> *> *> *pre_regions){
     Cudd mgr(0,0);
     //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN
     map<Region *, BDD> regions_bdd_map;
@@ -171,6 +171,20 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     }
 
     FILE* fstdout = stdout;
+
+    //todo: rifare usando la notazione vecchia oppure scoprire l'uso di restrict con questa notazione
+    //BDD creation
+    for(int i=0; i < num_events_after_splitting; ++i){
+        event_bdd_encodings[i] = mgr.bddZero();
+        auto current_set = valid_sets->at(i);
+        for(const auto& combination: *current_set){
+            BDD current = mgr.bddOne();
+            for (auto reg: combination) {
+                current *= regions_bdd_map[reg];
+            }
+            event_bdd_encodings[i] += current;
+        }
+    }
 
     char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
@@ -204,97 +218,85 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         onames[i] = tmp->c_str();
     }
 
-    //BDD creation
+    DdManager* manager = Cudd_Init(0, 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
+
+    //todo: the number assigned to the node is not the same of the region
+    vector<DdNode *> inodes;
+    for(int counter = 0; counter < regions->size();++counter){
+        auto tmp = Cudd_bddIthVar(manager, counter);
+        inodes.push_back(tmp);
+    }
+
+    auto t = event_bdd_encodings.at(0);
+    //DdNode *restrictBy;
+    //restrictBy = Cudd_bddAnd(manager, inodes.at(0));
+    //Cudd_Ref(restrictBy);
+
+    //todo: provare a fare un esempio con una tavola di verità completa con 2 variabili e poi estendere
+
+    /*
+      CODE EXAMPLE:
+      x1 x2 | out
+      0  0  |  1
+      0  1  |  0
+      1  0  |  1
+      1  1  |  0
+
+      out = (!x1 A !x2) V (x1 A !x2)
+      x1 and x2 are inodes[0] e inodes[1]
+
+
+    DdNode* first = Cudd_bddAnd(manager, Cudd_Not(inodes[0]), Cudd_Not(inodes[1]));
+    DdNode* second = Cudd_bddAnd(manager, inodes[0], Cudd_Not(inodes[1]));
+    DdNode* out = Cudd_bddOr(manager, first, second);
+
+    DdNode* restrictBy = Cudd_bddAnd(manager, Cudd_Not(inodes[0]), Cudd_Not(inodes[1]));
+    auto testOut = Cudd_bddRestrict(manager, out, restrictBy);
+    cout <<  "x1 = 0, x2 = 0, out = " << (1 - Cudd_IsComplement(testOut)) << endl;
+
+    restrictBy = Cudd_bddAnd(manager, Cudd_Not(inodes[0]), inodes[1]);
+    testOut = Cudd_bddRestrict(manager, out, restrictBy);
+    cout <<  "x1 = 0, x2 = 1, out = " << (1 - Cudd_IsComplement(testOut)) << endl;
+
+    restrictBy = Cudd_bddAnd(manager, inodes[0], Cudd_Not(inodes[1]));
+    testOut = Cudd_bddRestrict(manager, out, restrictBy);
+    cout <<  "x1 = 1, x2 = 0, out = " << (1 - Cudd_IsComplement(testOut)) << endl;
+
+    restrictBy = Cudd_bddAnd(manager, inodes[0], inodes[1]);
+    testOut = Cudd_bddRestrict(manager, out, restrictBy);
+    cout <<  "x1 = 1, x2 = 1, out = " << (1 - Cudd_IsComplement(testOut)) << endl;
+
+     */
+
+     /*
+      * regions_bdd_map mappa le regioni e BDD da qui posso passare al DdNode e creare le restrizioni
+      * quando creo le combinazioni di regioni in input il bello è che il restrictBy può essere fatto per ogni evento
+      * o forse mi sto sbagliando, basterebbe limitarsi alle pre-regioni di quel evento quindi gli altri sono DC
+      * sia nel restrict by che nella creazione delle clausole
+      */
+
     for(int i=0; i < num_events_after_splitting; ++i){
-        //BDD temp;
-        //event_bdd_encodings[i] = mgr
-        if(i == 2) {
-            auto current_set = valid_sets->at(i);
-            auto c = new vector(current_set->begin(), current_set->end());
-            for (int m = 0; m < c->size(); ++m) {
-                auto combination = c->at(m);
-                auto comb = vector<Region *>(combination.begin(), combination.end());
-                BDD current;
-                for (int k = 0; k < comb.size(); ++k) {
-                    if (k == 0) {
-                        current = regions_bdd_map[comb.at(k)];
-                        cout << "enter" << endl;
-                        current.PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
-                        //cout << "----" << endl;
-                        //current.print(1);
-                        current.PrintFactoredForm();
-                        cout << endl;
-                        /*current.PrintCover();
-                        cout << endl;*/
-                        ZDD z = current.PortToZdd();
-                        /*z.PrintMinterm();
-                        cout << endl;*/
-                    } else {
-                        //current *= regions_bdd_map[comb.at(k)];
-                        current = current.And(regions_bdd_map[comb.at(k)]);
-                        cout << "enter" << endl;
-                        current.PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
-                        //cout << "----" << endl;
-                        //current.print(1);
-                        current.PrintFactoredForm();
-                        cout << endl;
-                        /*current.PrintCover();
-                        cout << endl;*/
-                        ZDD z = current.PortToZdd();
-                        /*z.PrintMinterm();
-                        cout << endl;*/
+        auto regs = pre_regions->at(i); //regions's set
+        auto regs_vector = new vector<Region *>(regs->begin(), regs->end());
+        //todo: here I have to create all binary combinations between these regions
+        for(int counter = 0; counter < pow(2,regs->size());++counter){ //all possible combinations between [0, 2^(num event pre-regions) - 1]
+            //todo: encoding of counter into a vector
 
-                    }
-                    cout << "----" << endl;
-                }
-                if (m == 0) {
-                    cout << "finale" << endl;
+            //todo: for each region of the vector encode the restriction and try the final result
 
-                    event_bdd_encodings[i] = current;
-                    event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
-                    event_bdd_encodings[i].PrintFactoredForm();
-                    cout << endl;
-                } else {
-                    //event_bdd_encodings[i] += current;
-                    cout << "finale"  << endl;
-
-                    event_bdd_encodings[i] = event_bdd_encodings[i].Or(current);
-                    event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fstdout);
-                    event_bdd_encodings[i].PrintFactoredForm();
-                    cout << endl;
-                    DdManager *dd;
-
-
-                    auto node = event_bdd_encodings[i].getNode();
-                    BDD t;
-                    BDD e;
-                    vector<DdNode *> queue;
-                    queue.push_back(node);
-                    do{
-                        auto last = queue[0];
-                        if(Cudd_IsConstant(last)){
-                            cout << "leaf" << endl;
-                            auto tmp = BDD(mgr,last);
-                            if(tmp.IsOne()){
-                                cout << "one" << endl;
-                            }
-                        }
-                        else{
-                            queue.push_back(Cudd_T(last));
-                            queue.push_back(Cudd_E(last));
-                            cout << "paths: " << Cudd_CountPath(last) << endl;
-                            Cudd_CountPath(last);
-                        }
-                        queue.erase(queue.begin());
-                    }while(!queue.empty());
-
-                }
-            }
-        }
-        else{
-            event_bdd_encodings[i] = mgr.bddZero();
+            //todo: i the result is 0 then create a clause
         }
     }
+
+
+
+
+    exit(1);
+
+    //todo: data la tavola di verità con i valori 0 creare le clausole cambiando i valori
+    //esempio: x1=0,x2=1, out=0 -> (x1 v !x2)
+    //ogni riga che porta a 0 è una clausola
+
 
 
 

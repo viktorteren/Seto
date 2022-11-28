@@ -843,7 +843,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     //STEP 1
-    //be->encode(regions, regions_alias_mapping);
+    be->encode(regions, regions_alias_mapping, pre_regions_map);
     if(decomposition_debug) {
         cout << "regions alias mapping:" << endl;
         for(auto rec: *regions_alias_mapping){
