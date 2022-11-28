@@ -161,6 +161,7 @@ The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_di
 
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
 
+- decomposition type
 - file name
 - time region generation
 - time decomposition
