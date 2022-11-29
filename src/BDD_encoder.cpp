@@ -149,6 +149,7 @@ bool BDD_encoder::test_if_enough(ER er, Region *region) {
 }
 
 void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping, map<int, set<set<int> *> *> *pre_regions){
+    clauses = new vector<vector<int32_t> *>();
     Cudd mgr(0,0);
     //regions_bdd_map is a map containing a vector of bdd variables, one BDD for each FCPN
     map<Region *, BDD> regions_bdd_map;
@@ -278,24 +279,69 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     for(int i=0; i < num_events_after_splitting; ++i){
         auto regs = pre_regions->at(i); //regions's set
         auto regs_vector = new vector<Region *>(regs->begin(), regs->end());
-        //todo: here I have to create all binary combinations between these regions
+        //here I have to create all binary combinations between these regions
         for(int counter = 0; counter < pow(2,regs->size());++counter){ //all possible combinations between [0, 2^(num event pre-regions) - 1]
-            //todo: encoding of counter into a vector
+            //encoding of counter into a vector
+            auto tmp_vec = new vector<int>();
+            int counter2 = counter;
+            while(counter2 != 0){
+                if(counter2 % 2 == 1){
+                    tmp_vec->push_back(1);
+                    counter2 = counter2 - 1;
+                }
+                else{
+                    tmp_vec->push_back(0);
+                }
+                counter2 = counter2 / 2;
+            }
+            while(tmp_vec->size() < regs->size()){
+                tmp_vec->push_back(0);
+            }
+            reverse(tmp_vec->begin(), tmp_vec->end());
+            /*
+            for(int s=0;s < tmp_vec->size();++s){
+                cout << tmp_vec->at(s) << ", ";
+            }
+            cout << endl;*/
 
             //todo: for each region of the vector encode the restriction and try the final result
+            //potrei usare la notazione BDD per creare il nodo restrict By e alla fine utilizzare getNode()
+            DdNode* restrictBy = Cudd_ReadOne(manager);
+            for(int pos=0;pos < tmp_vec->size();++pos){
+                auto tmp_BDD = regions_bdd_map.at(regs_vector->at(pos));
+                DdNode *tmp_node = tmp_BDD.getNode();
+                if(tmp_vec->at(pos) == 1){
+                    restrictBy = Cudd_bddAnd(manager, restrictBy, tmp_node);
+                }
+                else{
+                    restrictBy = Cudd_bddAnd(manager, restrictBy, Cudd_Not(tmp_node)); //here could be a problem: recursive assignment
+                }
+            }
+            DdNode *testEvent = Cudd_bddRestrict(manager, event_bdd_encodings[i].getNode(), restrictBy);
+            int result = (1 - Cudd_IsComplement(testEvent));
 
-            //todo: i the result is 0 then create a clause
+            //if the result is 0 then create a clause with all values inverted
+            if(result == 0){
+                auto clause = new vector<int32_t>();
+                for(int pos=0;pos < tmp_vec->size();++pos){
+                    int current_encoded_region = regions_alias_mapping->at(regs_vector->at(pos));
+                    if(tmp_vec->at(pos) == 1){
+                        clause->push_back(current_encoded_region);
+                    }
+                    else{
+                        clause->push_back(-current_encoded_region);
+                    }
+                }
+                clauses->push_back(clause);
+            }
         }
     }
 
-
-
+    for(auto clause: *clauses){
+        print_clause(clause);
+    }
 
     exit(1);
-
-    //todo: data la tavola di verità con i valori 0 creare le clausole cambiando i valori
-    //esempio: x1=0,x2=1, out=0 -> (x1 v !x2)
-    //ogni riga che porta a 0 è una clausola
 
 
 
@@ -410,4 +456,8 @@ set<set<int>> *BDD_encoder::get_set_of_EC_clauses(map<Region *, int> *regions_al
         }
     }
     return tmp;
+}
+
+vector<vector<int32_t> *> *BDD_encoder::get_clauses() {
+    return clauses;
 }

@@ -22,15 +22,16 @@ public:
      * each FCPN
      * @param num_fcpns Number of FCPNs
      */
-    __attribute__((unused)) void encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping, map<int, set<set<int> *> *> *pre_regions);
+    void encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping, map<int, set<set<int> *> *> *pre_regions);
     set<set<int>> * get_set_of_EC_clauses(map<Region *, int> *regions_alias_mapping);
+    vector<vector<int32_t> *>* get_clauses();
 private:
     map<int, set<set<Region *>>*> *valid_sets;
     map<int, set<set<Region *>>*> *invalid_sets;
     static bool test_if_enough(ER er, set<Region *>* regions);
     static bool test_if_enough(ER er, Region * region);
     map<int, set<set<Region *>*>*>* map_of_EC_clauses;
-
+    vector<vector<int32_t> *> *clauses;
 };
 
 
