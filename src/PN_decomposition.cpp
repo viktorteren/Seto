@@ -1234,23 +1234,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
         cout << "Checking if the set of PNs contains really " << (fcptnet ? "FCPNs..." : "ACPNs...") << endl;
 
-        for (auto rec_map: *region_ex_event_map) {
-            delete rec_map.second;
-        }
-        //completely deleting the pointer to the map we delete also empty records
-        delete region_ex_event_map;
-        region_ex_event_map = new map<Region *, set<int> *>();
-
         int pn_counter = 0;
         bool check_not_passed = false;
         for (auto pn: *fcpn_set) {
             for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
-                /*for (auto rec_map: *region_ex_event_map) {
-                    delete rec_map.second;
-                }
-                //completely deleting the pointer to the map we delete also empty records
-                delete region_ex_event_map;
-                region_ex_event_map = new map<Region *, set<int> *>();*/
                 auto ev = rec.first;
                 for (auto reg: *rec.second) {
                     if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
@@ -1301,12 +1288,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
         if (!check_not_passed)
             cout << "Check passed." << endl;
-
-
-        for(auto rec: *region_ex_event_map){
-            delete rec.second;
-        }
-        delete region_ex_event_map;
     }
 
     //TODO: not working with vme_read, isend instead is wrong
