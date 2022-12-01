@@ -3,7 +3,7 @@
 # dllimport/dllexport, so the library build is forced to be static.
 #########################
 cmake_minimum_required(VERSION 3.5)
-project(TS_splitter LANGUAGES CXX)
+project (TS_splitter LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
@@ -42,50 +42,26 @@ target_include_directories(libminisat
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs)
+
+# Grab the files
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} src/BDD_encoder.cpp include/BDD_encoder.h)
 # adding TS decomposition code
-add_executable(TS_splitter
-        src/main.cpp
-        src/Regions_generator.cpp
-        include/Regions_generator.h
-        include/Label_splitting_module.h
-        src/Label_splitting_module.cpp
-        include/TS_parser.h
-        src/TS_parser.cpp
-        src/Essential_region_search.cpp
-        include/Essential_region_search.h
-        src/Place_irredundant_pn_creation_module.cpp
-        include/Place_irredundant_pn_creation_module.h
-        src/Utilities.cpp include/Utilities.h
-        src/Pre_and_post_regions_generator.cpp
-        include/Pre_and_post_regions_generator.h
-        src/Merging_Minimal_Preregions_module.cpp
-        include/Merging_Minimal_Preregions_module.h
-        src/Merge.cpp
-        include/Merge.h
-        src/PN_decomposition.cpp
-        src/k_FCPN_decomposition.cpp
-        include/k_FCPN_decomposition.h
-        src/GreedyRemoval.cpp include/FCPN_Merge.h src/FCPN_Merge.cpp include/PN_composition.h src/PN_composition.cpp include/SM_composition.h src/SM_composition.cpp)
-target_link_libraries(TS_splitter libminisat)
-target_link_libraries(TS_splitter pblib)
-target_link_libraries(TS_splitter python2.7)
+
+target_link_libraries(${PROJECT_NAME} libminisat)
+target_link_libraries(${PROJECT_NAME} pblib)
+target_link_libraries(${PROJECT_NAME} python2.7)
+target_link_libraries(${PROJECT_NAME} cudd)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
+add_dependencies(${PROJECT_NAME} cudd)
+
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-    target_compile_options( TS_splitter PRIVATE  -Wall -Wextra  -I/usr/include/python2.7 )
+    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python2.7 )
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options( TS_splitter PRIVATE /W4 /wd4267 -I/usr/include/python2.7 )
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python2.7 )
 endif()
-
-
-
-
-
-
-
-
-
-
-
-
-

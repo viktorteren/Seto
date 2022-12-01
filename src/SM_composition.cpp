@@ -84,7 +84,7 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                             state_space.insert(next_state_map);
                             SM_edge arc;
                             arc.start = current_state;
-                            if(event < num_events)
+                            if(event < num_events_before_label_splitting)
                                 arc.event = (*aliases_map_number_name)[event];
                             else
                                 arc.event = (*aliases_map_number_name)[aliases->at(event)];

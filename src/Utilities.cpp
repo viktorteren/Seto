@@ -16,10 +16,10 @@ bool decomposition_output_sis;
 bool python_all;
 bool ts_output;
 bool ects_output;
-bool k_fcpn_decomposition;
 bool no_merge;
 bool dot_output;
 bool composition;
+bool bdd_usage;
 //bool log_file;
 bool info;
 bool fcptnet;
@@ -44,6 +44,7 @@ int places_after_greedy;
 double maxAlphabet;
 double avgAlphabet;
 bool greedy_exact;
+bool check_structure;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
@@ -574,7 +575,7 @@ namespace Utilities {
 
 
     template<typename T, typename T2>
-    bool contains(T bigger_set, T2 smaller_set) {
+    inline bool contains(T bigger_set, T2 smaller_set) {
         if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
             cerr << "wrong parameter type" << endl;
             exit(1);
@@ -591,7 +592,7 @@ namespace Utilities {
         return true;
     }
 
-    __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region) {
+    bool contains(const set<Region *>& set, const Region& region) {
         for (auto elem : set) {
             if (are_equal(elem, region)) {
                 return true;
@@ -617,6 +618,14 @@ namespace Utilities {
         return true;
     }
 
+    bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set){
+        for(auto elem: *set_of_sets){
+            if(elem == *reg_set)
+                return true;
+        }
+        return false;
+    }
+
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set) {
         for (auto elem : *smaller_set) {
             if(bigger_set->find(elem) == bigger_set->end())
@@ -625,7 +634,13 @@ namespace Utilities {
         return true;
     }
 
-    __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set){
+    bool contains(const set<Region *>& reg_set, Region * reg){
+        if(reg_set.find(reg) != reg_set.end())
+            return true;
+        return false;
+    }
+
+    bool contains(set<int> bigger_set, const set<int>& smaller_set){
         for (auto elem : smaller_set) {
             if(bigger_set.find(elem) == bigger_set.end())
                 return false;
@@ -1100,7 +1115,8 @@ namespace Utilities {
         return convert_to_dimacs(std::move(file_path), num_var, num_clauses, clauses, nullptr);
     }
 
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid){
+    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses,
+                             vector<set<int>>* new_results_to_avoid){
         if(decomposition_debug)
             cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = std::move(file_path);
@@ -1195,7 +1211,9 @@ namespace Utilities {
     void print_pn_dot_file(map<Region *, int> *regions_mapping,
                            map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, const string& file_name, int FCPN_number){
+                           map<int, int> *aliases,
+                           const string& file_name,
+                           int FCPN_number){
         auto initial_reg = initial_regions(pre_regions);
         /*
         if(initial_reg->empty()){
@@ -1321,7 +1339,7 @@ namespace Utilities {
         delete alias_counter;
         //transazioni (eventi) iniziali
         for (auto record : *pre_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 if(g_input){
                     fout << "\t" << record.first << " [label = \""
                          << (*aliases_map_number_name)[record.first];
@@ -1334,7 +1352,7 @@ namespace Utilities {
             }
         }
         for (auto record : *post_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 if(pre_regions->find(record.first) == pre_regions->end()) {
                     if (g_input) {
                         fout << "\t" << record.first << " [label = \""
@@ -1352,7 +1370,7 @@ namespace Utilities {
         //regione -> evento
         for (auto record : *pre_regions) {
             for (auto reg : *record.second) {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     //if (regions_mapping->find(reg) != regions_mapping->end()) {
                     fout << "\tr" << regions_mapping->at(reg) << " -> "
                          << record.first << ";\n";
@@ -1475,7 +1493,7 @@ namespace Utilities {
         set<string> used_labels;
         for(auto rec: *pre_regions){
             int ev = rec.first;
-            if(ev >= num_events){
+            if(ev >= num_events_before_label_splitting){
                 ev = (*aliases)[ev];
             }
             string eventString = (*aliases_map_number_name)[ev];
@@ -1528,7 +1546,7 @@ namespace Utilities {
         else{
             fout << ".internal ";
             for (auto record : *pre_regions) {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     fout << "e" << record.first << " ";
                 }
             }
@@ -1551,7 +1569,7 @@ namespace Utilities {
             fout << "r" << regions_mapping->at(reg);
             for(auto ev: *record.second){
                 if(g_input){
-                    if(ev >= num_events){
+                    if(ev >= num_events_before_label_splitting){
                         int original_label = (*aliases)[ev];
                         fout << " " << (*aliases_map_number_name)[original_label];
                         fout << "/" << alias_event_index_map[ev];
@@ -1561,7 +1579,7 @@ namespace Utilities {
                     }
                 }
                 else {
-                    if (ev < num_events) {
+                    if (ev < num_events_before_label_splitting) {
                         fout << " e" << ev;
                     } else {
                         int original_label = (*aliases)[ev];
@@ -1576,7 +1594,7 @@ namespace Utilities {
         for (auto record : *post_regions) {
             auto reg = record.second;
             if(g_input){
-                if(record.first >= num_events){
+                if(record.first >= num_events_before_label_splitting){
                     int original_label = (*aliases)[record.first];
                     fout << (*aliases_map_number_name)[original_label];
                     fout << "/" << alias_event_index_map[record.first];
@@ -1586,7 +1604,7 @@ namespace Utilities {
                 }
             }
             else {
-                if (record.first < num_events) {
+                if (record.first < num_events_before_label_splitting) {
                     fout << "e" << record.first;
                 } else {
                     int original_label = (*aliases)[record.first];
@@ -1716,7 +1734,7 @@ namespace Utilities {
         //initial transitions (events)
         auto initial_pre = new set<int>();
         for (auto record : *pre_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 initial_pre->insert(record.first);
                 if(g_input){
                     fout << "\t" << record.first << " [label = \""
@@ -1729,7 +1747,7 @@ namespace Utilities {
             }
         }
         for (auto record : *post_regions) {
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 //if the event takes part of initial_pre it has been already written on the file
                 if(initial_pre->find(record.first) == initial_pre->end()) {
                     if (g_input) {
@@ -1749,7 +1767,7 @@ namespace Utilities {
         //region -> event
         for (auto record : *pre_regions) {
             auto reg = record.second;
-            if (record.first < num_events) {
+            if (record.first < num_events_before_label_splitting) {
                 fout << "\tr" << regions_mapping->at(reg) << " -> "
                      << record.first << ";\n";
             } else {
@@ -1914,7 +1932,7 @@ namespace Utilities {
                         region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
             }
             counter++;
-            if (counter == num_events)
+            if (counter == num_events_before_label_splitting)
                 break;
         }
         for (auto rec : aliases) {
@@ -2313,20 +2331,20 @@ namespace Utilities {
                 if (!(are_equal(er, intersec))) {
                     // cout << "regione delle'evento:" << event;
                     if(print_step_by_step_debug || decomposition_debug){
-                        /*cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
+                        cout << "event " << event << " not satisfy ec because the intersection of regions is different from er" << endl;
                         cout << "the intersection is ";
                         if(intersec->empty()){
                             cout << "empty" << endl;
                         }
                         else{
                             println(*intersec);
-                        }*/
-                        /*cout << "the pre-regions of event are: " << endl;
+                        }
+                        cout << "the pre-regions of event are: " << endl;
                         for(auto val: *pre_regions->at(event)){
                             println(*val);
                         }
                         cout << "er: ";
-                        println(*er);*/
+                        println(*er);
                     }
                     for(auto rec: *regions_intersection_map){
                         delete rec.second;
@@ -2495,7 +2513,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }
@@ -2521,7 +2539,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }
@@ -2547,7 +2565,7 @@ namespace Utilities {
             set<int> used_labels;
             for(auto record: *SM_map){
                 auto label = record.first;
-                if(label < num_events){
+                if(label < num_events_before_label_splitting){
                     used_labels.insert(label);
                     counter++;
                 }
@@ -2919,6 +2937,13 @@ namespace Utilities {
         }
         //cout << "found two not connected sets" << endl;
         return false;
+    }
+
+    void println_simplified(set<Region *> *regions, map<Region *, int> *regions_alias_mapping) {
+        for (auto reg : *regions) {
+            cout << "r" << regions_alias_mapping->at(reg) << ": ";
+            println(*reg);
+        }
     }
 
 }

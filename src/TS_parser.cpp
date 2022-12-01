@@ -9,7 +9,7 @@ using namespace Utilities;
 
 My_Map *ts_map;
 unsigned int num_states;
-int initial_state, num_events, num_events_after_splitting;
+int initial_state, num_events_before_label_splitting, num_events_after_splitting;
 unsigned int num_transactions;
 map<int, string> *aliases_map_number_name;
 map<string, int> *aliases_map_name_number;
@@ -52,11 +52,11 @@ void TS_parser::parse(string file) {
         if (print_step_by_step) {
             cout << "Number of transitions: " << num_transactions << endl;
             cout << "Number of states: " << num_states << endl;
-            cout << "Number of events: " << num_events << endl;
+            cout << "Number of events: " << num_events_before_label_splitting << endl;
         }
 
     }
-        //file nel fromato SIS .g
+    //file nel formato SIS .g
     else if (file[file.size() - 1] == 'g') {
         parse_SIS(fin);
         if(ts_output){
@@ -96,7 +96,7 @@ void TS_parser::parse_TS(ifstream &fin) {
         auto pair_ptr = new pair<int, int>(src, dst);
         (*ts_map)[ev].insert(pair_ptr);
     }
-    num_events = static_cast<int>((*ts_map).size());
+    num_events_before_label_splitting = static_cast<int>((*ts_map).size());
     fin.close();
 
     /*cout<<"DEBUG TS_MAP"<<endl;
@@ -345,24 +345,24 @@ void TS_parser::parse_SIS(ifstream &fin) {
             break;
         }
     }
-    num_events = static_cast<int>(aliases_map_number_name->size());
+    num_events_before_label_splitting = static_cast<int>(aliases_map_number_name->size());
     num_states = static_cast<int>(aliases_map_state_number_name->size());
     if (print_step_by_step) {
         cout << "Number of transitions: " << num_transactions << endl;
         cout << "Number of states: " << num_states << endl;
-        cout << "Number of events: " << num_events << endl;
+        cout << "Number of events: " << num_events_before_label_splitting << endl;
     }
 }
 
 void TS_parser::add_new_label_with_alias(int num, const string& name) {
-    num_events++;
+    num_events_before_label_splitting++;
     (*aliases_map_number_name)[num] = name;
     (*aliases_map_name_number)[name] = num;
     if (print_step_by_step_debug) {
         cout << "new label's alias added: " << num << " " << name << endl;
     }
     if (print_step_by_step_debug) {
-        cout << "num events: " << num_events << endl;
+        cout << "num events: " << num_events_before_label_splitting << endl;
         for (const auto& record: *aliases_map_number_name) {
             cout << record.first << " -> " << record.second << endl;
         }

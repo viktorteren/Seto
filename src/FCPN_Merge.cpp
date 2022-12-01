@@ -369,7 +369,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         SM *current_FCPN = FCPNs_map_inverted[FCPN_counter];
         if (decomposition_debug) {
             cout << "in FCPN " << FCPN_counter << " removing event " << decoded_event << " ";// << endl;
-            if (decoded_event >= num_events) {
+            if (decoded_event >= num_events_before_label_splitting) {
                 cout << aliases_map_number_name->at(aliases->at(decoded_event)) << endl;
             } else {
                 cout << aliases_map_number_name->at(decoded_event) << endl;
@@ -572,6 +572,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                                     }
                                 }
                             }
+                            delete events_in_middle;
                         }
                     }
                 }
@@ -584,6 +585,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                     }
                 }
             }
+            delete avoided_sets;
 
             for(auto ev: *cancelled_events){
                 events_to_remove_per_FCPN->at(current_FCPN)->erase(ev);
@@ -608,15 +610,18 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 cout << "into" << endl;
                 println(*merge);
             }
-            set<set<int> *>::iterator it1;
-            set<set<int> *>::iterator it2;
-            for(it1 = working_set->begin();it1 != working_set->end();++it1){
-                for(it2 = next(it1);it2 != working_set->end();++it2){
-                    auto inters = regions_intersection(*it1,*it2);
-                    if(!inters->empty()){
-                        cerr << "NOT EMPTY MERGE INTERSECTION" << endl;
-                        /*if(is_a_region(inters))
-                            cerr << "THE INTERSECTION IS A REGION" << endl;*/
+            if(decomposition_debug) {
+                set<set<int> *>::iterator it1;
+                set<set<int> *>::iterator it2;
+                for (it1 = working_set->begin(); it1 != working_set->end(); ++it1) {
+                    for (it2 = next(it1); it2 != working_set->end(); ++it2) {
+                        auto inters = regions_intersection(*it1, *it2);
+                        if (!inters->empty()) {
+                            cerr << "NOT EMPTY MERGE INTERSECTION" << endl;
+                            /*if(is_a_region(inters))
+                                cerr << "THE INTERSECTION IS A REGION" << endl;*/
+                        }
+                        delete inters;
                     }
                 }
             }

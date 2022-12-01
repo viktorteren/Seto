@@ -89,7 +89,8 @@ void Region_generator::basic_delete(){
 }
 
 
-void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> *regions_vector) {
+bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> *regions_vector) {
+    bool removed_something = false;
     unsigned int cont;
     Region region;
 
@@ -105,24 +106,28 @@ void Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                 }
             }
             if (cont == new_region.size()  && !new_region.empty()) {
-                //cout << "eliminazione regione vecchia ";
-                //print(region);
-                //cout << " a causa di: ";
-                //println(new_region);
+                /*cout << "eliminazione regione vecchia " << endl;
+                println(region);
+                cout << "a causa di: " << endl;
+                println(new_region);*/
                 // remove old too big region
-                /*for (auto rec: *regions) {
+                /*
+                for (auto rec: *regions) {
                     vector<Region>::iterator it;
                     for (it = rec.second->begin(); it < rec.second->end(); ++it) {
                         if (are_equal(&region, &*it)) {
                             regions->at(rec.first)->erase(it);
+                            //cout << "erasing" << endl;
                         }
                     }
                 }*/
                 regions_vector->erase(regions_vector->begin() + i);
                 i--;
+                removed_something = true;
             }
         }
     }
+    return removed_something;
 }
 
 /**
@@ -759,6 +764,8 @@ map<int, vector<Region> *> *Region_generator::generate() {
 
 
     delete queue_event_index;
+
+
 
     return regions;
 };

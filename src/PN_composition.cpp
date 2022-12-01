@@ -32,7 +32,10 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
 
     set<map<set<Region *>*, set<Region *>>> completely_explored_states;
 
+    bool completely_explored_states_set_changed;
+
     do {
+        completely_explored_states_set_changed = false;
         //given an event check if it can fire
         for(auto current_state: state_space) {
             if(completely_explored_states.find(current_state) == completely_explored_states.end()) {
@@ -56,6 +59,9 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                 for (auto rec: firing) {
                     auto event = rec.first;
                     if (rec.second) {
+                        if(decomposition_debug){
+                            cout << "firing event " << event << endl;
+                        }
                         map<set<Region *> *, set<Region *>> next_state_map;
                         for (auto rec1: *map_FCPN_post_regions) {
                             auto FCPN = rec1.first;
@@ -88,7 +94,7 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                             state_space.insert(next_state_map);
                             edge arc;
                             arc.start = current_state;
-                            if(event < num_events)
+                            if(event < num_events_before_label_splitting)
                                 arc.event = (*aliases_map_number_name)[event];
                             else
                                 arc.event = (*aliases_map_number_name)[aliases->at(event)];
@@ -98,9 +104,21 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                     }
                 }
                 completely_explored_states.insert(current_state);
+                completely_explored_states_set_changed = true;
             }
         }
-    } while(state_space != completely_explored_states);
+        /*
+        if(c==10){
+            cout << endl;
+        }
+        if(c == 500){
+            cout << endl;
+        }*/
+    } while(state_space != completely_explored_states && completely_explored_states_set_changed);
+    if(state_space != completely_explored_states){
+        cerr << "LOOP" << endl;
+        exit(1);
+    }
 
     auto state_aliases = new map <map<set<Region *>*, set<Region *>>, int>();
     int cont = 0;

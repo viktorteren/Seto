@@ -63,9 +63,9 @@ extern bool fcptnet;
 extern bool acpn;
 extern bool no_merge;
 extern bool composition;
+extern bool bdd_usage;
 extern bool aut_output;
 extern bool ignore_correctness;
-extern bool k_fcpn_decomposition;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;
 __attribute__((unused)) extern bool fcpn_with_levels;
@@ -84,6 +84,7 @@ extern int places_after_greedy;
 extern double maxAlphabet;
 extern double avgAlphabet;
 extern bool greedy_exact;
+extern bool check_structure;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
@@ -114,6 +115,7 @@ namespace Utilities {
     void println(Region &region);
     void println(set<Region *> *regions);
     void println(set<Region *> &regions);
+    void println_simplified(set<Region *> *regions, map<Region*, int> *regions_alias_mapping);
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);
     bool are_equal(Region *r1, Region *r2);
@@ -122,6 +124,8 @@ namespace Utilities {
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
     /*template<typename T, typename T2>
     bool contains(T bigger_set, T2 smaller_set);*/
+    bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set);
+    bool contains(const set<Region *>& reg_set, Region * reg);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     template <typename T>
     bool contains(T, Region *);

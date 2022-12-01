@@ -30,6 +30,17 @@ sudo apt install python-pip
 pip install networkx
 ```
 
+- boost (necessary for the installation of mCRL2)
+```Bash
+sudo apt-get install libboost-all-dev
+```
+
+- mCRL2 (Optional): install in order to allow to check the decomposition correctness for FCPNs
+```Bash
+sudo apt-get update
+sudo apt-get install mcrl2
+```
+
 # Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
@@ -161,8 +172,9 @@ The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_di
 
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
 
-- decomposition type
+- decomposition type: FCPN, ACPN, FCPN_BDD, FCPN_DEBUG, ACPN_DEBUG, FCPN_BDD_DEBUG
 - file name
+- runtime
 - time region generation
 - time decomposition
 - time greedy/exact SM removal

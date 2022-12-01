@@ -28,7 +28,7 @@ public:
 
     map<int, vector<Region *> *> *get_middle_set_of_states();
     map<int, vector<int> *> *get_number_of_bad_events();
-    void remove_bigger_regions(Region &new_region,vector<Region>* regions);
+    bool remove_bigger_regions(Region &new_region,vector<Region>* regions);
     //il primo intero della mappa intern  id della regione corrispondente alla posizione nella struttura delle regioni intermedie
     map<int, map<int, int >*>* get_violations_event();
     map<int, map< int , vector<Edge*> *>* >* get_violations_trans();
