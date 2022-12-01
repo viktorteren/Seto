@@ -765,8 +765,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
     auto clauses = new vector<vector<int32_t> *>();
-    //auto clauses_pre = new vector<vector<int32_t> *>();
-    //auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int> *>();
@@ -851,7 +849,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             println(*rec.first);
         }
     }
-    ECClauses = be->get_set_of_EC_clauses(regions_alias_mapping);
+    auto ECTmpClauses = be->get_clauses();
     if (decomposition_debug) {
         cout << "STEP 1: EC clauses" << endl;
         for (auto reg: *ECClauses) {
@@ -860,11 +858,16 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cout << "---" << endl;
     }
 
-    for (const auto &reg_set: *ECClauses) {
+    for (auto reg_set: *ECTmpClauses) {
         clause = new vector<int32_t>();
-        for (auto reg: reg_set) {
+        for (auto reg: *reg_set) {
             //adding a symbolic region
-            clause->push_back(m + reg + 1);
+            if(reg >= 0) {
+                clause->push_back(m + reg + 1);
+            }
+            else{
+                clause->push_back(-m + reg - 1);
+            }
         }
 
         clauses_pre->push_back(clause);

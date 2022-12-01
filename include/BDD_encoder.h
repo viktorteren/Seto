@@ -23,7 +23,6 @@ public:
      * @param num_fcpns Number of FCPNs
      */
     void encode(set<Region *> *regions, map<Region *, int> *regions_alias_mapping, map<int, set<set<int> *> *> *pre_regions);
-    set<set<int>> * get_set_of_EC_clauses(map<Region *, int> *regions_alias_mapping);
     vector<vector<int32_t> *>* get_clauses();
 private:
     map<int, set<set<Region *>>*> *valid_sets;

@@ -187,6 +187,11 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         }
     }
 
+    DdManager* manager = Cudd_Init(0, 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
+    //the number assigned to the node is not the same of the region
+    vector<DdNode *> inodes;
+
+    map<Region *, DdNode *> region_inode_mapping;
     char const* inames[regions->size()];
     char const* onames[num_events_after_splitting];
     int k=0;
@@ -196,6 +201,9 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         tmp->append(to_string(regions_alias_mapping->at(reg)));
         inames[k] = tmp->c_str();
         k++;
+        auto tmpNode = Cudd_bddNewVar(manager);
+        inodes.push_back(tmpNode);
+        region_inode_mapping[reg] = tmpNode;
     }
 
     char const *inames_without_r[regions->size()];
@@ -217,15 +225,6 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         auto tmp = new string();
         tmp->append(to_string(i));
         onames[i] = tmp->c_str();
-    }
-
-    DdManager* manager = Cudd_Init(0, 0, CUDD_UNIQUE_SLOTS, CUDD_CACHE_SLOTS, 0);
-
-    //todo: the number assigned to the node is not the same of the region
-    vector<DdNode *> inodes;
-    for(int counter = 0; counter < regions->size();++counter){
-        auto tmp = Cudd_bddIthVar(manager, counter);
-        inodes.push_back(tmp);
     }
 
     auto t = event_bdd_encodings.at(0);
@@ -305,19 +304,27 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
             cout << endl;*/
 
             //todo: for each region of the vector encode the restriction and try the final result
-            //potrei usare la notazione BDD per creare il nodo restrict By e alla fine utilizzare getNode()
-            DdNode* restrictBy = Cudd_ReadOne(manager);
+            vector<DdNode*> restrictByVector(tmp_vec->size());
             for(int pos=0;pos < tmp_vec->size();++pos){
-                auto tmp_BDD = regions_bdd_map.at(regs_vector->at(pos));
-                DdNode *tmp_node = tmp_BDD.getNode();
-                if(tmp_vec->at(pos) == 1){
-                    restrictBy = Cudd_bddAnd(manager, restrictBy, tmp_node);
+                auto tmp_node = region_inode_mapping.at(regs_vector->at(pos));
+                if(pos == 0){
+                    if (tmp_vec->at(pos) == 1) {
+                        restrictByVector.at(pos) = tmp_node;
+                    } else {
+                        restrictByVector.at(pos) = Cudd_Not(tmp_node);
+                    }
                 }
-                else{
-                    restrictBy = Cudd_bddAnd(manager, restrictBy, Cudd_Not(tmp_node)); //here could be a problem: recursive assignment
+                else {
+                    if (tmp_vec->at(pos) == 1) {
+                        restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at(pos - 1), tmp_node);
+                    } else {
+                        restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at((pos - 1)),
+                                                               Cudd_Not(tmp_node));
+                    }
                 }
+                Cudd_Ref(restrictByVector.at(pos));
             }
-            DdNode *testEvent = Cudd_bddRestrict(manager, event_bdd_encodings[i].getNode(), restrictBy);
+            DdNode *testEvent = Cudd_bddRestrict(manager, event_bdd_encodings[i].getNode(), restrictByVector.at(tmp_vec->size()-1));
             int result = (1 - Cudd_IsComplement(testEvent));
 
             //if the result is 0 then create a clause with all values inverted
@@ -341,121 +348,6 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         print_clause(clause);
     }
 
-    exit(1);
-
-
-
-
-    /*
-    for(auto str: inames){
-        cout << str << endl;
-    }
-
-    for(auto str: onames){
-        cout << str << endl;
-    }*/
-
-    DdNode *Dds[num_events_after_splitting];
-    for(int i=0; i < num_events_after_splitting; ++i){
-        Dds[i] = event_bdd_encodings.at(i).getNode();
-    }
-    FILE* fp = fopen("graph.dot", "w");
-    Cudd_DumpDot(mgr.getManager(), num_events_after_splitting, Dds, (char**) inames, (char**) onames, fp);
-
-    fclose(fp);
-    //cout << "ok" << endl;
-
-
-
-    //code for clause creation and dump on file
-    string inFile = "BDD_clauses.txt";
-
-    FILE* fpb = fopen("BDD_clauses.txt", "w");
-    fclose(fpb);
-
-    for(int i = 0;i < event_bdd_encodings.size();++i) {
-        ofstream fon(inFile, std::ios_base::app);
-        fon << "-----" << i <<"------" << endl;
-        fon.close();
-        fpb = fopen("BDD_clauses.txt", "a");
-        event_bdd_encodings[i].PrintTwoLiteralClauses((char **) inames_without_r, fpb);
-        fclose(fpb);
-    }
-
-
-
-    //reading elements from file:
-    inFile = "BDD_clauses.txt";
-    ifstream fin(inFile);
-    //TODO: scrivere i file temporanei in memoria e non su disco
-    string tmp;
-    set<set<int>> *clause_set;
-    clause_set = new set<set<int>>();
-    set<int> tmp_set;
-    vector<string> data;
-    while(true){
-        if(fin.eof()!=0)
-            break;
-        fin >> tmp;
-        data.push_back(tmp);
-        //cout << tmp << endl;
-    }
-
-
-    for(int i=0;i < data.size();++i){
-        if(i == data.size()-1){
-            tmp_set.insert(stoi(data[i]));
-            clause_set->insert(tmp_set);
-            //cout << "adding entire clause" << endl;
-            break;
-        }
-        else if(i == 0){
-            tmp_set.insert(stoi(data[i]));
-            //cout << "adding" << endl;
-            //cout << "adding " << data[i] << endl;
-        }
-        else {
-            if(data[i] != "|"){
-                if(data[i-1] != "|"){
-                    clause_set->insert(tmp_set);
-                    tmp_set.clear();
-                    tmp_set.insert(stoi(data[i]));
-                }
-                else{
-                    tmp_set.insert(stoi(data[i]));
-                }
-            }
-            else{
-
-            }
-        }
-    }
-
-    /*
-    for(auto s: *clause_set){
-        println(s);
-    }*/
-
-    //set_of_EC_clauses = clause_set;
-
-    for(auto val: inames_without_r){
-        delete val;
-    }
-}
-
-set<set<int>> *BDD_encoder::get_set_of_EC_clauses(map<Region *, int> *regions_alias_mapping) {
-    auto tmp = new set<set<int>>();
-
-    for(auto rec: *map_of_EC_clauses){
-        for(auto clause: *rec.second){
-            set<int> current_clause;
-            for(auto reg: *clause){
-                current_clause.insert(regions_alias_mapping->at(reg));
-            }
-            tmp->insert(current_clause);
-        }
-    }
-    return tmp;
 }
 
 vector<vector<int32_t> *> *BDD_encoder::get_clauses() {
