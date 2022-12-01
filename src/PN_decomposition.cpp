@@ -850,23 +850,16 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
     auto ECTmpClauses = be->get_clauses();
-    if (decomposition_debug) {
-        cout << "STEP 1: EC clauses" << endl;
-        for (auto reg: *ECClauses) {
-            println(reg);
-        }
-        cout << "---" << endl;
-    }
 
     for (auto reg_set: *ECTmpClauses) {
         clause = new vector<int32_t>();
         for (auto reg: *reg_set) {
             //adding a symbolic region
             if(reg >= 0) {
-                clause->push_back(m + reg + 1);
+                clause->push_back(m + reg);
             }
             else{
-                clause->push_back(-m + reg - 1);
+                clause->push_back(-m + reg);
             }
         }
 

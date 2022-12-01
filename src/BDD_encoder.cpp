@@ -275,7 +275,23 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
       * sia nel restrict by che nella creazione delle clausole
       */
 
+     //todo: to fix: clock.g, the set of regions for the first event is wrong:
+     // (-1 v -2) A (-1 v 2) A (1 v -2)
+     // is:
+     // -1 -2  true
+     // -1  2  false
+     //  1 -2  false
+     //  1  2  false
+     // should be:
+     // -1 -2  false
+     // -1  2  false
+     //  1 -2  false
+     //  1  2  true
+
     for(int i=0; i < num_events_after_splitting; ++i){
+        if(decomposition_debug){
+            cout << "*event*: " << i << endl;
+        }
         auto regs = pre_regions->at(i); //regions's set
         auto regs_vector = new vector<Region *>(regs->begin(), regs->end());
         //here I have to create all binary combinations between these regions
@@ -307,19 +323,30 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
             vector<DdNode*> restrictByVector(tmp_vec->size());
             for(int pos=0;pos < tmp_vec->size();++pos){
                 auto tmp_node = region_inode_mapping.at(regs_vector->at(pos));
+                /*if(decomposition_debug){
+                    cout << "pos: " << pos << endl;
+                }*/
                 if(pos == 0){
                     if (tmp_vec->at(pos) == 1) {
                         restrictByVector.at(pos) = tmp_node;
+                        if(decomposition_debug)
+                            cout << "value: true" << endl;
                     } else {
                         restrictByVector.at(pos) = Cudd_Not(tmp_node);
+                        if(decomposition_debug)
+                            cout << "value: false" << endl;
                     }
                 }
                 else {
                     if (tmp_vec->at(pos) == 1) {
                         restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at(pos - 1), tmp_node);
+                        if(decomposition_debug)
+                            cout << "value: true" << endl;
                     } else {
                         restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at((pos - 1)),
                                                                Cudd_Not(tmp_node));
+                        if(decomposition_debug)
+                            cout << "value: false" << endl;
                     }
                 }
                 Cudd_Ref(restrictByVector.at(pos));
@@ -329,23 +356,28 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
 
             //if the result is 0 then create a clause with all values inverted
             if(result == 0){
+                if(decomposition_debug)
+                    cout << "result: 0" << endl;
                 auto clause = new vector<int32_t>();
                 for(int pos=0;pos < tmp_vec->size();++pos){
                     int current_encoded_region = regions_alias_mapping->at(regs_vector->at(pos));
+                    //creation of clauses from truth table where there result is 0
+                    //in order to create CNFF clauses each variable sign is inverted
+                    //example: vec[pos] == true -> encoded value will be negative (false)
                     if(tmp_vec->at(pos) == 1){
-                        clause->push_back(current_encoded_region);
+                        //1 is removed in this way region 0 can hae a negative value
+                        clause->push_back(-current_encoded_region-1);
                     }
                     else{
-                        clause->push_back(-current_encoded_region);
+                        //1 is added because ... see if branch
+                        clause->push_back(current_encoded_region+1);
                     }
                 }
                 clauses->push_back(clause);
+                if(decomposition_debug)
+                    print_clause(clause);
             }
         }
-    }
-
-    for(auto clause: *clauses){
-        print_clause(clause);
     }
 
 }
