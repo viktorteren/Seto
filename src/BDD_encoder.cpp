@@ -58,6 +58,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                     exit(1);
                 }
             }
+            delete temp;
         }
 
         auto to_add_later = new set<set<Region *>>();
@@ -102,6 +103,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
                                         //cout << "to add later: \n";
                                         //println(temp_set);
                                     }
+                                    delete temp_set;
                                 } else {
                                     delete temp_set;
                                 }
@@ -131,14 +133,19 @@ BDD_encoder::~BDD_encoder() {
         delete rec.second;
     }
     delete invalid_sets;
-    delete map_of_EC_clauses;
+    for(auto cl: *clauses){
+        delete cl;
+    }
+    delete clauses;
 }
 
 bool BDD_encoder::test_if_enough(ER er, set<Region *> *regions) {
     auto intersection = regions_intersection(regions);
     if(*er == *intersection){
+        delete intersection;
         return true;
     }
+    delete intersection;
     return false;
 }
 
@@ -171,9 +178,6 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         }
     }
 
-    FILE* fstdout = stdout;
-
-    //todo: rifare usando la notazione vecchia oppure scoprire l'uso di restrict con questa notazione
     //BDD creation
     for(int i=0; i < num_events_after_splitting; ++i){
         event_bdd_encodings[i] = mgr.bddZero();
@@ -192,47 +196,11 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     vector<DdNode *> inodes;
 
     map<Region *, DdNode *> region_inode_mapping;
-    char const* inames[regions->size()];
-    char const* onames[num_events_after_splitting];
-    int k=0;
     for(auto reg: *regions){
-        auto tmp = new string();
-        *tmp = "r";
-        tmp->append(to_string(regions_alias_mapping->at(reg)));
-        inames[k] = tmp->c_str();
-        k++;
         auto tmpNode = Cudd_bddNewVar(manager);
         inodes.push_back(tmpNode);
         region_inode_mapping[reg] = tmpNode;
     }
-
-    char const *inames_without_r[regions->size()];
-    int inames_int[regions->size()];
-
-    //removing from inames r, leaving only the index
-    for(int i=0;i < regions->size();++i){
-        string tmp = inames[i];
-        std::size_t pos = 1;
-        auto tmp2 = tmp.substr(pos);
-        char* tmp3=new char();
-        strcpy(tmp3,tmp2.c_str());
-        inames_without_r[i] = tmp3;
-        inames_int[i] = stoi(inames_without_r[i]);
-    }
-
-    //assign for each value of onames a char array with inside the integer of the position
-    for(int i=0; i < num_events_after_splitting; ++i){
-        auto tmp = new string();
-        tmp->append(to_string(i));
-        onames[i] = tmp->c_str();
-    }
-
-    auto t = event_bdd_encodings.at(0);
-    //DdNode *restrictBy;
-    //restrictBy = Cudd_bddAnd(manager, inodes.at(0));
-    //Cudd_Ref(restrictBy);
-
-    //todo: provare a fare un esempio con una tavola di verità completa con 2 variabili e poi estendere
 
     /*
       CODE EXAMPLE:
@@ -275,24 +243,13 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
       * sia nel restrict by che nella creazione delle clausole
       */
 
-     //todo: to fix: clock.g, the set of regions for the first event is wrong:
-     // (-1 v -2) A (-1 v 2) A (1 v -2)
-     // is:
-     // -1 -2  true
-     // -1  2  false
-     //  1 -2  false
-     //  1  2  false
-     // should be:
-     // -1 -2  false
-     // -1  2  false
-     //  1 -2  false
-     //  1  2  true
-
     for(int i=0; i < num_events_after_splitting; ++i){
+        /*
         if(decomposition_debug){
             cout << "*event*: " << i << endl;
         }
-        auto regs = pre_regions->at(i); //regions's set
+         */
+        auto regs = pre_regions->at(i); //regions' set
         auto regs_vector = new vector<Region *>(regs->begin(), regs->end());
         //here I have to create all binary combinations between these regions
         for(int counter = 0; counter < pow(2,regs->size());++counter){ //all possible combinations between [0, 2^(num event pre-regions) - 1]
@@ -319,7 +276,7 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
             }
             cout << endl;*/
 
-            //todo: for each region of the vector encode the restriction and try the final result
+            //for each region of the vector encode the restriction
             vector<DdNode*> restrictByVector(tmp_vec->size());
             for(int pos=0;pos < tmp_vec->size();++pos){
                 auto tmp_node = region_inode_mapping.at(regs_vector->at(pos));
@@ -329,24 +286,24 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
                 if(pos == 0){
                     if (tmp_vec->at(pos) == 1) {
                         restrictByVector.at(pos) = tmp_node;
-                        if(decomposition_debug)
-                            cout << "value: true" << endl;
+                        /*if(decomposition_debug)
+                            cout << "value: true" << endl;*/
                     } else {
                         restrictByVector.at(pos) = Cudd_Not(tmp_node);
-                        if(decomposition_debug)
-                            cout << "value: false" << endl;
+                        /*if(decomposition_debug)
+                            cout << "value: false" << endl;*/
                     }
                 }
                 else {
                     if (tmp_vec->at(pos) == 1) {
                         restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at(pos - 1), tmp_node);
-                        if(decomposition_debug)
-                            cout << "value: true" << endl;
+                        /*if(decomposition_debug)
+                            cout << "value: true" << endl;*/
                     } else {
                         restrictByVector.at(pos) = Cudd_bddAnd(manager, restrictByVector.at((pos - 1)),
                                                                Cudd_Not(tmp_node));
-                        if(decomposition_debug)
-                            cout << "value: false" << endl;
+                        /*if(decomposition_debug)
+                            cout << "value: false" << endl;*/
                     }
                 }
                 Cudd_Ref(restrictByVector.at(pos));
@@ -356,8 +313,8 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
 
             //if the result is 0 then create a clause with all values inverted
             if(result == 0){
-                if(decomposition_debug)
-                    cout << "result: 0" << endl;
+                /*if(decomposition_debug)
+                    cout << "result: 0" << endl;*/
                 auto clause = new vector<int32_t>();
                 for(int pos=0;pos < tmp_vec->size();++pos){
                     int current_encoded_region = regions_alias_mapping->at(regs_vector->at(pos));
@@ -377,7 +334,9 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
                 if(decomposition_debug)
                     print_clause(clause);
             }
+            delete tmp_vec;
         }
+        delete regs_vector;
     }
 
 }

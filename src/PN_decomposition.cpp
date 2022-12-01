@@ -1322,6 +1322,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete rec.second;
     }
     delete region_ent_event_map;
+    for(auto rec: *region_ex_event_map){
+        delete rec.second;
+    }
+    delete region_ex_event_map;
 
     for(auto rec: *map_of_FCPN_post_regions){
         for(auto rec1: *rec.second){
@@ -1336,9 +1340,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             delete rec1.second;
         }
         delete rec.second;
-        delete rec.first;
     }
     delete map_of_FCPN_pre_regions;
+
     for(auto val:*clauses_pre){
         delete val;
     }
@@ -1349,6 +1353,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     delete clauses;
     delete solution;
     delete regions_copy;
+    delete regions_alias_mapping_inverted;
 
     return fcpn_set;
 }
