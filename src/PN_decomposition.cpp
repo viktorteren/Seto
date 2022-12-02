@@ -7,6 +7,7 @@
 #include "../include/PN_decomposition.h"
 #include "../include/FCPN_Merge.h"
 #include "include/BDD_encoder.h"
+#include "include/Merge.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -461,7 +462,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 fcpn_set->insert(temp_PN);
                 if(decomposition_debug) {
-                    cout << "adding new fcpn to solutions (size: " << temp_PN->size() << ")" << endl;
+                    cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
                     println(temp_PN);
                 }
             }
@@ -527,7 +528,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         places_after_greedy += pn->size();
     }
 
-    cout << "Number of places after greedy: " << places_after_greedy << endl;
+    cout << "Number of places after greedy (before merge): " << places_after_greedy << endl;
 
     auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
     auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
@@ -1188,9 +1189,51 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 (*map_of_FCPN_pre_regions)[FCPN]);
     }
 
-    if (!no_merge) {
+    places_after_initial_decomp = 0;
+    for(auto pn: *fcpn_set){
+        places_after_initial_decomp += pn->size();
+    }
+
+    cout << "Number of places before merge: " << places_after_initial_decomp << endl;
+
+
+    if (!no_merge && !decomposition) {
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
+        delete merge;
+    }
+    else if(decomposition && !no_merge){
+        auto map_of_SM_pre_regions = new map<SM *, map<int, Region *> *>();
+        for(auto rec: *map_of_FCPN_pre_regions){
+            if(map_of_SM_pre_regions->find(rec.first) == map_of_SM_pre_regions->end()){
+                (*map_of_SM_pre_regions)[rec.first] = new map<int, Region *>();
+            }
+            for(auto rec1: *rec.second){
+                for(auto reg: *rec1.second) {
+                    (*(*map_of_SM_pre_regions)[rec.first])[rec1.first] = reg;
+                }
+            }
+        }
+
+        auto map_of_SM_post_regions = new map<SM *, map<int, Region *> *>();
+        for(auto rec: *map_of_FCPN_post_regions){
+            if(map_of_SM_post_regions->find(rec.first) == map_of_SM_post_regions->end()){
+                (*map_of_SM_post_regions)[rec.first] = new map<int, Region *>();
+            }
+            for(auto rec1: *rec.second){
+                for(auto reg: *rec1.second) {
+                    (*(*map_of_SM_post_regions)[rec.first])[rec1.first] = reg;
+                }
+            }
+        }
+
+        auto merge = new Merge(fcpn_set,
+                          clauses,
+                          number_of_events,
+                          map_of_SM_pre_regions,
+                          map_of_SM_post_regions,
+                          file,
+                          pprg);
         delete merge;
     }
     else if(output){

@@ -148,11 +148,9 @@ int main(int argc, char **argv) {
             cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
             exit(0);
         }
-        if(decomposition && no_merge){
-            if(!fcptnet) {
-                cerr << "SM decomposition cannot be performed with NOMERGE flag." << endl; //TODO
-                exit(0);
-            }
+        if(decomposition && no_merge && !bdd_usage){
+            cerr << "SM decomposition cannot be performed with NOMERGE flag if BDD flag is not used." << endl; //todo
+            exit(0);
         }
         if(pn_synthesis && fcptnet){
             cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
@@ -621,7 +619,6 @@ int main(int argc, char **argv) {
                              << endl;
                         tStart_partial = clock();
 
-
                         merge = new Merge(SMs,
                                           clauses,
                                           number_of_events,
@@ -712,9 +709,9 @@ int main(int argc, char **argv) {
                     printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
                     cout << "SIZE STATISTICS:" << endl;
                     cout << "Number of SMs: " << SMs->size() << endl;
-                    //cout << "States sum after the decomposition: " << states_sum << endl;
-                    //cout << "States sum after the removal of redundant SMs: " << states_after_sms_removal << endl;
-                    cout << "States sum after final optimization: " << final_sum << endl;
+                    cout << "Number of places after the initial decomposition: " << states_sum << endl;
+                    cout << "Number of places after the removal of redundant SMs: " << states_after_sms_removal << endl;
+                    cout << "Number of places after the final optimization: " << final_sum << endl;
                     cout << "Avg. states per SM: " << final_avg << endl;
                     cout << "Var. states per SM: " << final_var << endl;
                     cout << "Avg. alphabet size per SM: " << final_transitions_avg << endl;
@@ -763,7 +760,7 @@ int main(int argc, char **argv) {
                         region_mapping(reg);
                     }
                 }
-                set<set<Region *> *> *final_fcpn_set=nullptr;
+                set<set<Region *> *> *final_pn_set=nullptr;
                 if(bdd_usage){
                     int max_num_pre_regions = 0;
                     for(auto rec: *pre_regions){
@@ -777,12 +774,12 @@ int main(int argc, char **argv) {
                         auto be = new BDD_encoder(pre_regions, new_ER);
 
                         //search a solution with n FCPNs increasing n until the result becomes SAT
-                        final_fcpn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
+                        final_pn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
                                                                     pprg, new_ER, aliases, SMs, be);
                         delete be;
                     }
                     else{
-                        final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
+                        final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,
                                                                   pprg, new_ER, aliases, SMs);
                     }
                     /*
@@ -794,20 +791,30 @@ int main(int argc, char **argv) {
                     }*/
                 }
                 else{
-                    final_fcpn_set = PN_decomposition::search(number_of_events, *regions_set, file,
+                    final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,
                                                               pprg, new_ER, aliases, SMs);
                 }
 
                 if (decomposition_debug) {
-                    cout << "Final" << (fcptnet ? " FCPNs" : " ACPNs") << endl;
-                    for (auto FCPN: *final_fcpn_set) {
-                        cout << (fcptnet ? "FCPN:" : "ACPN:") << endl;
-                        println(*FCPN);
+                    if(fcptnet)
+                        cout << "Final FCPNs" << endl;
+                    else if(acpn)
+                        cout << "Final ACPNs" << endl;
+                    else if(decomposition && bdd_usage)
+                        cout << "Final SMs" << endl;
+                    for (auto PN: *final_pn_set) {
+                        if(fcptnet)
+                            cout << "FCPN:" << endl;
+                        else if(acpn)
+                            cout << "ACPN:" << endl;
+                        else if(decomposition && bdd_usage)
+                            cout << "SM:" << endl;
+                        println(*PN);
                     }
                 }
 
 
-                int pn_counter = final_fcpn_set->size();
+                int pn_counter = final_pn_set->size();
 
                 if (pn_counter == 1) {
                     if(fcptnet) {
@@ -825,7 +832,7 @@ int main(int argc, char **argv) {
                         cout << pn_counter << " SMs" << endl;
                 }
                 int num_places = 0;
-                for (auto FCPN: *final_fcpn_set) {
+                for (auto FCPN: *final_pn_set) {
                     num_places += FCPN->size();
                 }
 
@@ -833,7 +840,7 @@ int main(int argc, char **argv) {
 
                 //todo: remove if solving memory leak, why the internal code is a problem for isend?
                 if(!bdd_usage) {
-                    for (auto FCPN: *final_fcpn_set) {
+                    for (auto FCPN: *final_pn_set) {
                         for (auto reg: *FCPN) {
                             if (reg != nullptr) {
                                 if (regions_set->find(reg) == regions_set->end()) {
@@ -867,13 +874,13 @@ int main(int argc, char **argv) {
                         << setprecision(4) << t_region_gen << ","
                         << setprecision(4) << t_fcpn_decomposition << ","
                         << num_places << ","
-                        << final_fcpn_set->size() << ","
+                        << final_pn_set->size() << ","
                         << places_after_initial_decomp << ","
                         << places_after_greedy << ","
                         << maxAlphabet << ","
                         << avgAlphabet
                         << endl;
-                delete final_fcpn_set;
+                delete final_pn_set;
 
                 cout << "MAX alphabet: " << maxAlphabet << endl;
                 cout << "AVG alphabet: " << avgAlphabet << endl;

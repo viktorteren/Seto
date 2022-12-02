@@ -197,8 +197,9 @@ Merge::Merge(set<SM *> *SMs,
     for (auto rec: encoded_events_map) {
         auto encoded_event = rec.first;
         if (solver.model[encoded_event - 1] == l_False) {
+            /*
             if (decomposition_debug)
-                cout << "add encoding " << encoded_event << " to removal events" << endl;
+                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
             to_remove.push_back(encoded_event);
         }
     }
