@@ -300,7 +300,8 @@ Merge::Merge(set<SM *> *SMs,
                     delete r;
                 }*/
             } else {
-                cout << "Removed redundant label without merging regions" << endl;
+                if(decomposition_debug)
+                    cout << "Removed redundant label without merging regions" << endl;
             }
         }
 

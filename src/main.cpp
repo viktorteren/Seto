@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
             }*/
             else if(args[i] == "ECTS")
                 ects_output = true;
-            else if(args[i] == "M")
+            else if(args[i] == "SM")
                 decomposition = true;
             else if (args[i] == "S") {
                 if (decomposition) {
@@ -165,6 +165,10 @@ int main(int argc, char **argv) {
         if(bdd_usage && !no_fcpn_min){
             cerr << "BDD usage cannot be performed with PN minimization (yet)." << endl;
             exit(0);
+        }
+        if(decomposition && !bdd_usage && check_structure){
+            cerr << "Structure check not yet implemented on SM decomposition without BDD usage" << endl; //TODO
+            exit(1);
         }
         if(aut_output){
             if(!ts_output && !ects_output){
@@ -407,8 +411,12 @@ int main(int argc, char **argv) {
             auto regions_set = copy_map_to_set(pre_regions);
             aliases_region_pointer = new map<int, Region *>();
             aliases_region_pointer_inverted = new map<Region *, int>();
-            auto SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
-            if(decomposition) {
+            set<SM *> *SMs;
+            if(!bdd_usage && decomposition) {
+                SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
+            }
+            if(decomposition && !bdd_usage) {
+
                 cout << "============================[DECOMPOSITION]===================" << endl;
 
                 int numRegions = regions_set->size();
@@ -475,7 +483,7 @@ int main(int argc, char **argv) {
                     }
                     for (auto SM: *SMs) {
                         /*if (decomposition_debug) {
-                            cout << "check if can rermove the SM: " << endl;
+                            cout << "check if can remove the SM: " << endl;
                             println(*SM);
                         }*/
 
@@ -700,6 +708,7 @@ int main(int argc, char **argv) {
                     printf("Time decomposition: %.5fs\n", t_decomposition);
                     printf("Time greedy SM removal: %.5fs\n", t_greedy);
                     printf("Time labels removal / final SMs minimization: %.5fs\n", t_labels_removal);
+                    printf("Total decomposition time : %.5fs\n", t_decomposition+t_greedy+t_labels_removal);
                     printf("Total time: %.5fs\n", (double) (clock() - tStart) / CLOCKS_PER_SEC);
                     cout << "SIZE STATISTICS:" << endl;
                     cout << "Number of SMs: " << SMs->size() << endl;
@@ -742,8 +751,8 @@ int main(int argc, char **argv) {
                 }
             }
 
-            if(fcptnet || acpn){
-                if(!decomposition){
+            if(fcptnet || acpn || (decomposition & bdd_usage)){
+                if(!bdd_usage && decomposition){
                     delete SMs;
                 }
                 tStart_partial = clock();
@@ -801,9 +810,19 @@ int main(int argc, char **argv) {
                 int pn_counter = final_fcpn_set->size();
 
                 if (pn_counter == 1) {
-                    cout << (fcptnet ? "1 FCPN" : "1 ACPN") << endl;
+                    if(fcptnet) {
+                        cout << "1 FCPN" << endl;
+                    }else if(acpn) {
+                        cout << "1 ACPN" << endl;
+                    }else
+                        cout << "1 SM" << endl;
                 } else {
-                    cout << pn_counter << (fcptnet ? " FCPNs" : " ACPNs") << endl;
+                    if(fcptnet) {
+                        cout << pn_counter << " FCPNs" << endl;
+                    }else if(acpn) {
+                        cout << pn_counter << " ACPNs" << endl;
+                    }else
+                        cout << pn_counter << " SMs" << endl;
                 }
                 int num_places = 0;
                 for (auto FCPN: *final_fcpn_set) {
@@ -830,7 +849,10 @@ int main(int argc, char **argv) {
                 std::ofstream outfile;
                 outfile.open("stats.csv", std::ios_base::app);
                 if(bdd_usage)
-                    outfile << "FCPN_BDD_mixed_with_heuristics";
+                    if(decomposition)
+                        outfile << "SM_BDD";
+                    else
+                        outfile << "FCPN_BDD";
                 else if(acpn)
                     outfile << "ACPN";
                 else
@@ -858,8 +880,10 @@ int main(int argc, char **argv) {
                 printf("\nTime region gen: %.5fs\n", t_region_gen);
                 printf("Time splitting: %.5fs\n", t_splitting);
                 printf("Time pre region gen: %.5fs\n", t_pre_region_gen);
-                if(bdd_usage)
+                if(bdd_usage && !decomposition)
                     printf("Time k-FCPN decomposition: %.5fs\n", t_fcpn_decomposition);
+                else if(bdd_usage && decomposition)
+                    printf("Time k-SM decomposition: %.5fs\n", t_fcpn_decomposition);
                 else if (fcptnet)
                     printf("Time FCPN decomposition: %.5fs\n", t_fcpn_decomposition);
                 else

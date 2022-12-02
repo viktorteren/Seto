@@ -5,7 +5,7 @@ Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
 Tested only on Ubuntu 18.04 LTS
 
-# Required software:
+# Required software (and how install it):
 - g++
 ```Bash
 sudo apt install g++
@@ -15,14 +15,14 @@ sudo apt install g++
 sudo apt install cmake
 ```
 
-- python 2.7
+- python 3.10
 ```Bash
-sudo apt install python2-dev
+sudo apt install python3.10
 ```
 
 - pip
 ```Bash
-sudo apt install python-pip
+sudo apt install python3-pip
 ```
 
 - networkx
@@ -133,7 +133,7 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 **-ALL**: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
 
-**COMPOSE**: perform the composition of FCPNs and create an output file in .aut extension
+**COMPOSE**: perform the composition of PNs (actually FCPNs and SMs) and create an output file in .aut extension
 
 **DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
 
@@ -142,13 +142,13 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 
 ### Execution using a script
 
-In the root folder the following script can be executed, but firsly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
+In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
 
 ```Bash
 ./Benchmark.sh
 ```
 
-The script runs the decoposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder.
+The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
 
 ## c) TS to interacting FCPNs flows
 
@@ -206,8 +206,8 @@ algorithm
 
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
-**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search
-in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, provides worst results compared to greedy algorithm **(not recommended and not copatible with BDD flag)**
+**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
+in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, provides worst results compared to greedy algorithm **(not recommended and not compatible with BDD flag)**
 
 **BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs
 
@@ -270,6 +270,13 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 # PN visualization
 
 **Graphviz library is required!**
+
+Graphviz installation:
+```bash
+sudo apt install graphviz
+```
+
+Command for the creation of a PostScript PN/TS file.
 
 ```bash
 dot -Tps filename.dot -o outfile.ps

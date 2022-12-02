@@ -53,15 +53,15 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} src/BDD_encoder.cpp include
 
 target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
-target_link_libraries(${PROJECT_NAME} python2.7)
+target_link_libraries(${PROJECT_NAME} python3.10)
 target_link_libraries(${PROJECT_NAME} cudd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
 
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python2.7 )
+    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python3.10 )
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python2.7 )
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python3.10 )
 endif()

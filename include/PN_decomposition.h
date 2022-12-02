@@ -14,6 +14,12 @@ class PN_decomposition {
 private:
     static int k_search_event_offset(int num_events, int num_regions, int num_FCPNs);
     static int k_search_region_offset(int num_events, int num_regions, int num_FCPNs);
+    static void check_EC_and_structure(map<int, ER> *ER,
+                                       map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
+                                       map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_post_regions,
+                                       map<int, set<Region *>*> *pre_regions_map,
+                                       map<Region *, set<int> *>* region_ex_event_map,
+                                       set<set<Region *> *>* pn_set);
 
 public:
     static set<set<Region *> *> *search(int number_of_events,

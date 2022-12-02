@@ -140,7 +140,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             clauses_pre->push_back(clause);
                             //print_clause(clause);
                         }
-                            //ACPN case
+                        //ACPN case
                         else if((*region_ex_event_map)[r2]->size() > 1){
                             bool symmetric_choice = true;
                             for(auto event: *(*region_ex_event_map)[r2]){
@@ -585,78 +585,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     if(composition)
         PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
-
-    if(check_structure) {
-        cout << "Checking if the set of PNs contains really " << (fcptnet ? "FCPNs..." : "ACPNs...") << endl;
-
-        for (auto rec_map: *region_ex_event_map) {
-            delete rec_map.second;
-        }
-        //completely deleting the pointer to the map we delete also empty records
-        delete region_ex_event_map;
-        region_ex_event_map = new map<Region *, set<int> *>();
-
-        int pn_counter = 0;
-        bool check_not_passed = false;
-        for (auto pn: *fcpn_set) {
-            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
-                /*for (auto rec_map: *region_ex_event_map) {
-                    delete rec_map.second;
-                }
-                //completely deleting the pointer to the map we delete also empty records
-                delete region_ex_event_map;
-                region_ex_event_map = new map<Region *, set<int> *>();*/
-                auto ev = rec.first;
-                for (auto reg: *rec.second) {
-                    if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
-                        (*region_ex_event_map)[reg] = new set<int>();
-                    }
-                    (*region_ex_event_map)[reg]->insert(ev);
-                }
-
-                auto set_of_regions = rec.second;
-                for (auto r: *set_of_regions) {
-                    if ((*region_ex_event_map)[r]->size() > 1) {
-                        for (auto r2: *set_of_regions) {
-                            if (r != r2) {
-                                if (fcptnet) {
-                                    cerr << "PN " << pn_counter << " is not an FCPN!!!" << endl;
-                                    if (!ignore_correctness) {
-                                        exit(1);
-                                    }
-                                    check_not_passed = true;
-                                } else if (acpn) {
-                                    if ((*region_ex_event_map)[r2]->size() > 1) {
-                                        if ((*region_ex_event_map)[r2]->size() != (*region_ex_event_map)[r]->size()) {
-                                            cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                            if (!ignore_correctness) {
-                                                exit(1);
-                                            }
-                                            check_not_passed = true;
-                                        } else {
-                                            for (auto event_in_middle: *(*region_ex_event_map)[r]) {
-                                                if ((*region_ex_event_map)[r2]->find(event_in_middle) ==
-                                                    (*region_ex_event_map)[r2]->end()) {
-                                                    cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                                    if (!ignore_correctness) {
-                                                        exit(1);
-                                                    }
-                                                    check_not_passed = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            pn_counter++;
-        }
-        if (!check_not_passed)
-            cout << "Check passed." << endl;
-    }
+    if (check_structure)
+        check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map, region_ex_event_map, fcpn_set);
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
@@ -728,6 +658,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 0) I want to satisfy all events
      * 1) EC clauses
      * 2) FCPN constraint
+     * 2b) SM constraint
      * 3) binding between symbolic region and all it's representations in different FCPNs:
      *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
      *      it will become (!sr1 v r1 v r1')
@@ -741,7 +672,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 8) decoding
      */
 
-    cout << "=========[k-FCPN DECOMPOSITION MODULE]===============" << endl;
+    cout << "=========[k-PN DECOMPOSITION MODULE (WITH BDD)]===============" << endl;
 
     map<Region *, int> *regions_alias_mapping;
     auto regions_alias_mapping_inverted = new map<int,Region *>();
@@ -879,69 +810,113 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cache->clear();
 
 
-        if (decomposition_debug)
-            cout << "STEP 2: FCPN constraint" << endl;
-        //STEP 2: FCPN constraint
+        if (decomposition_debug) {
+            if (fcptnet)
+                cout << "STEP 2: FCPN constraint" << endl;
+            else
+                cout << "STEP 2b: SM constraint" << endl;
+        }
+        //SM constraint
         /*
-         * ALGORITHM:
-         *      for each ev
-         *          for each r=pre(ev) -> place/region
-         *              if r has multiple outgoing edges
-         *                  for each couple (r, pre(ev))
-         *                      if r != pre(ev)
-         *                          //in case of 2b check if pre(ev) has multiple outgoing edges
-         *                              for each FCPN
-         *                                  if not added previously
-         *                                      create clause (!r v !pre(ev))
-         */
-        //for each ev
-        for (auto rec: *pre_regions_map) {
-            //auto ev = rec.first;
-            auto set_of_regions = rec.second;
-            for (auto r: *set_of_regions) {
-                if ((*region_ex_event_map)[r]->size() > 1) {
-                    for (auto r2: *set_of_regions) {
-                        if (r != r2) {
-                            if (fcptnet) {
-                                auto check = new set<Region *>();
-                                check->insert(r);
-                                check->insert(r2);
-                                if (cache->find(*check) == cache->end()) {
-                                    cache->insert(*check);
-                                    clause = new vector<int32_t>();
-                                    int offset = k_search_region_offset(m, k, num_FCPNs_try);
-                                    clause->push_back(-(*regions_alias_mapping)[r] - offset);
-                                    clause->push_back(-(*regions_alias_mapping)[r2] - offset);
-                                    clauses_pre->push_back(clause);
-                                    if (decomposition_debug) {
-                                        print_clause(clause);
-                                        cout << "conflict" << endl;
-                                        println(*r);
-                                        println(*r2);
-                                    }
-                                }
-                                /*
-                                else{
-                                    cout << "cache hit" << endl;
-                                }*/
-                                delete check;
+        ALORITHM:
+        *          for each ev
+        *              if (|pre(ev) > 1|)
+        *                  for each (r1,r2) \in pre(ev) -> place/region
+        *                      create clause  (!r1 v ! r2)
+        *              if (|post(ev) > 1|)
+        *                  for each (r1,r2) \in post(ev) -> place/region
+        *                      create clause  (!r1 v ! r2)
+        */
+        if(!fcptnet && !acpn){
+            for (auto rec: *pre_regions_map) {
+                //auto ev = rec.first;
+                if(rec.second->size() > 1){
+                    auto reg_vec = new vector<Region *>(rec.second->begin(),rec.second->end());
+                    for(int i=0;i< reg_vec->size();++i){
+                        for(int s=i+1;s<reg_vec->size();++s){
+                            auto r1 = reg_vec->at(i);
+                            auto r2 = reg_vec->at(s);
+                            clause = new vector<int32_t>();
+                            int offset = k_search_region_offset(m, k, num_FCPNs_try);
+                            clause->push_back(-(*regions_alias_mapping)[r1] - offset);
+                            clause->push_back(-(*regions_alias_mapping)[r2] - offset);
+                            clauses_pre->push_back(clause);
+                            if (decomposition_debug) {
+                                print_clause(clause);
+                                cout << "conflict" << endl;
+                                println(*r1);
+                                println(*r2);
                             }
-                            //ACPN case
-                            /*else if((*region_ex_event_map)[r2]->size() > 1){
-                                bool symmetric_choice = true;
-                                for(auto event: *(*region_ex_event_map)[r2]){
-                                    if((*region_ex_event_map)[r]->find(event) == (*region_ex_event_map)[r]->end()){
-                                        symmetric_choice = false;
-                                        break;
+                        }
+                    }
+                    delete reg_vec;
+                }
+            }
+        }
+        else {
+            //STEP 2: FCPN constraint
+            /*
+             * ALGORITHM:
+             *      for each ev
+             *          for each r=pre(ev) -> place/region
+             *              if r has multiple outgoing edges
+             *                  for each couple (r, pre(ev))
+             *                      if r != pre(ev)
+             *                          //in case of 2b check if pre(ev) has multiple outgoing edges
+             *                              for each FCPN
+             *                                  if not added previously
+             *                                      create clause (!r v !pre(ev))
+             */
+            //for each ev
+            for (auto rec: *pre_regions_map) {
+                //auto ev = rec.first;
+                auto set_of_regions = rec.second;
+                for (auto r: *set_of_regions) {
+                    if ((*region_ex_event_map)[r]->size() > 1) {
+                        for (auto r2: *set_of_regions) {
+                            if (r != r2) {
+                                if (fcptnet) {
+                                    auto check = new set<Region *>();
+                                    check->insert(r);
+                                    check->insert(r2);
+                                    if (cache->find(*check) == cache->end()) {
+                                        cache->insert(*check);
+                                        clause = new vector<int32_t>();
+                                        int offset = k_search_region_offset(m, k, num_FCPNs_try);
+                                        clause->push_back(-(*regions_alias_mapping)[r] - offset);
+                                        clause->push_back(-(*regions_alias_mapping)[r2] - offset);
+                                        clauses_pre->push_back(clause);
+                                        if (decomposition_debug) {
+                                            print_clause(clause);
+                                            cout << "conflict" << endl;
+                                            println(*r);
+                                            println(*r2);
+                                        }
                                     }
+                                    /*
+                                    else{
+                                        cout << "cache hit" << endl;
+                                    }*/
+                                    delete check;
                                 }
-                                if(!symmetric_choice){
-                                    clause = new vector<int32_t>();
-                                    clause->push_back(-(*reg_map)[r] - 1);
-                                    clause->push_back(-(*reg_map)[r2] - 1);
-                                    clauses_pre->push_back(clause);
-                                }
-                            }*/
+                                //ACPN case
+                                /*else if((*region_ex_event_map)[r2]->size() > 1){
+                                    bool symmetric_choice = true;
+                                    for(auto event: *(*region_ex_event_map)[r2]){
+                                        if((*region_ex_event_map)[r]->find(event) == (*region_ex_event_map)[r]->end()){
+                                            symmetric_choice = false;
+                                            break;
+                                        }
+                                    }
+                                    if(!symmetric_choice){
+                                        clause = new vector<int32_t>();
+                                        clause->push_back(-(*reg_map)[r] - 1);
+                                        clause->push_back(-(*reg_map)[r2] - 1);
+                                        clauses_pre->push_back(clause);
+                                    }
+                                }*/
+                                //SM case
+                            }
                         }
                     }
                 }
@@ -1095,7 +1070,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         if (sat) {
             solution_found = true;
             if (decomposition_debug) {
-                cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
+                if(!fcptnet && !acpn){
+                    cout << "SAT with " << num_FCPNs_try << " SMs!!!!" << endl;
+                }
+                else {
+                    cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
+                }
 
                 cout << "solver n vars: " << solver.nVars() << endl;
             }
@@ -1160,6 +1140,28 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     delete cache;
 
+    auto to_add = vector<set<Region *>*>();
+    auto to_remove = vector<set<Region *>*>();
+    for(auto temp_PN: *fcpn_set){
+        auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
+        if(new_temp_set->size() > 1){
+            to_remove.push_back(temp_PN);
+            for(const auto& PN: *new_temp_set){
+                auto tmp_PN = new set<Region *>();
+                for(auto reg: PN){
+                    tmp_PN->insert(reg);
+                }
+                to_add.push_back(tmp_PN);
+            }
+        }
+    }
+    for(auto PN: to_remove){
+        fcpn_set->erase(PN);
+    }
+    for(auto PN: to_add){
+        fcpn_set->insert(PN);
+    }
+
     if (decomposition_debug) {
         for (auto FCPN: *fcpn_set) {
             cout << "FCPN:" << endl;
@@ -1186,7 +1188,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 (*map_of_FCPN_pre_regions)[FCPN]);
     }
 
-
     if (!no_merge) {
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
@@ -1205,92 +1206,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     delete regions_alias_mapping;
 
     if (check_structure){
-        cout << "EC check" << endl;
-
-        auto new_pre_regions_map = new map<int, set<Region *>*>();
-        for(auto rec: *pre_regions_map){
-            auto event = rec.first;
-            (*new_pre_regions_map)[event] = new set<Region *>();
-            for(auto reg: *rec.second){
-                bool found = false;
-                for(auto pn_rec: *map_of_FCPN_pre_regions){
-                    if((*pn_rec.second).find(event) != (*pn_rec.second).end()) {
-                        if ((*pn_rec.second)[event]->find(reg) != (*pn_rec.second)[event]->end()) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if(found){
-                    (*new_pre_regions_map)[event]->insert(reg);
-                }
-            }
-        }
-
-        bool ec = is_excitation_closed(new_pre_regions_map, ER);
-        if(!ec){
-            cerr << "EXCITATION CLOSURE NOT SATISFIED!!!" << endl;
-            exit(1);
-        }
-        cout << "Checking if the set of PNs contains really " << (fcptnet ? "FCPNs..." : "ACPNs...") << endl;
-
-        int pn_counter = 0;
-        bool check_not_passed = false;
-        for (auto pn: *fcpn_set) {
-            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
-                auto ev = rec.first;
-                for (auto reg: *rec.second) {
-                    if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
-                        (*region_ex_event_map)[reg] = new set<int>();
-                    }
-                    (*region_ex_event_map)[reg]->insert(ev);
-                }
-
-                auto set_of_regions = rec.second;
-                for (auto r: *set_of_regions) {
-                    if ((*region_ex_event_map)[r]->size() > 1) {
-                        for (auto r2: *set_of_regions) {
-                            if (r != r2) {
-                                if (fcptnet) {
-                                    cerr << "PN " << pn_counter << " is not an FCPN!!!" << endl;
-                                    if (!ignore_correctness) {
-                                        exit(1);
-                                    }
-                                    check_not_passed = true;
-                                } else if (acpn) {
-                                    if ((*region_ex_event_map)[r2]->size() > 1) {
-                                        if ((*region_ex_event_map)[r2]->size() != (*region_ex_event_map)[r]->size()) {
-                                            cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                            if (!ignore_correctness) {
-                                                exit(1);
-                                            }
-                                            check_not_passed = true;
-                                        } else {
-                                            for (auto event_in_middle: *(*region_ex_event_map)[r]) {
-                                                if ((*region_ex_event_map)[r2]->find(event_in_middle) ==
-                                                    (*region_ex_event_map)[r2]->end()) {
-                                                    cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
-                                                    if (!ignore_correctness) {
-                                                        exit(1);
-                                                    }
-                                                    check_not_passed = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            pn_counter++;
-        }
-        if (!check_not_passed)
-            cout << "Check passed." << endl;
+        check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map,
+                               region_ex_event_map, fcpn_set);
     }
 
-    //TODO: not working with vme_read, isend instead is wrong
     if (composition)
         PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
@@ -1303,10 +1222,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete rec.second;
     }
     delete region_ent_event_map;
+    /*
     for(auto rec: *region_ex_event_map){
         delete rec.second;
     }
-    delete region_ex_event_map;
+    delete region_ex_event_map;*/
 
     for(auto rec: *map_of_FCPN_post_regions){
         for(auto rec1: *rec.second){
@@ -1344,4 +1264,129 @@ int PN_decomposition::k_search_event_offset(int num_events, int num_regions, int
 }
 int PN_decomposition::k_search_region_offset(int num_events, int num_regions, int num_FCPNs){
     return num_events+1+num_FCPNs*(num_events+num_regions);
+}
+
+void PN_decomposition::check_EC_and_structure(map<int, ER> *ER,
+                                              map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
+                                              map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_post_regions,
+                                              map<int, set<Region *>*> *pre_regions_map,
+                                              map<Region *, set<int> *>* region_ex_event_map,
+                                              set<set<Region *> *>* pn_set) {
+    cout << "EC check" << endl;
+
+    auto new_pre_regions_map = new map<int, set<Region *>*>();
+    for(auto rec: *pre_regions_map){
+        auto event = rec.first;
+        (*new_pre_regions_map)[event] = new set<Region *>();
+        for(auto reg: *rec.second){
+            bool found = false;
+            for(auto pn_rec: *map_of_FCPN_pre_regions){
+                if((*pn_rec.second).find(event) != (*pn_rec.second).end()) {
+                    if ((*pn_rec.second)[event]->find(reg) != (*pn_rec.second)[event]->end()) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(found){
+                (*new_pre_regions_map)[event]->insert(reg);
+            }
+        }
+    }
+
+    bool ec = is_excitation_closed(new_pre_regions_map, ER);
+    if(!ec){
+        cerr << "EXCITATION CLOSURE NOT SATISFIED!!!" << endl;
+        exit(1);
+    }
+    if(decomposition){
+        cout << "Checking if the set of PNs contains really SMs..." << endl; //todo
+    }
+    else if(fcptnet){
+        cout << "Checking if the set of PNs contains really FCPNs..." << endl;
+    }
+    else{
+        cout << "Checking if the set of PNs contains really ACPNs..." << endl;
+    }
+
+    int pn_counter = 0;
+    bool check_not_passed = false;
+    if(decomposition){
+        for (auto pn: *pn_set) {
+            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
+                if(rec.second->size() > 1){
+                    cerr << "PN " << pn_counter << " is not an SM!!!" << endl;
+                    if (!ignore_correctness) {
+                        exit(1);
+                    }
+                    check_not_passed = true;
+                }
+            }
+            for (auto rec: *map_of_FCPN_post_regions->at(pn)) {
+                if(rec.second->size() > 1){
+                    cerr << "PN " << pn_counter << " is not an SM!!!" << endl;
+                    if (!ignore_correctness) {
+                        exit(1);
+                    }
+                    check_not_passed = true;
+                }
+            }
+            pn_counter++;
+        }
+    }
+    else {
+        for (auto pn: *pn_set) {
+            for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
+                auto ev = rec.first;
+                for (auto reg: *rec.second) {
+                    if (region_ex_event_map->find(reg) == region_ex_event_map->end()) {
+                        (*region_ex_event_map)[reg] = new set<int>();
+                    }
+                    (*region_ex_event_map)[reg]->insert(ev);
+                }
+
+                auto set_of_regions = rec.second;
+                for (auto r: *set_of_regions) {
+                    if ((*region_ex_event_map)[r]->size() > 1) {
+                        for (auto r2: *set_of_regions) {
+                            if (r != r2) {
+                                if (fcptnet) {
+                                    cerr << "PN " << pn_counter << " is not an FCPN!!!" << endl;
+                                    if (!ignore_correctness) {
+                                        exit(1);
+                                    }
+                                    check_not_passed = true;
+                                } else if (acpn) {
+                                    if ((*region_ex_event_map)[r2]->size() > 1) {
+                                        if ((*region_ex_event_map)[r2]->size() !=
+                                            (*region_ex_event_map)[r]->size()) {
+                                            cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
+                                            if (!ignore_correctness) {
+                                                exit(1);
+                                            }
+                                            check_not_passed = true;
+                                        } else {
+                                            for (auto event_in_middle: *(*region_ex_event_map)[r]) {
+                                                if ((*region_ex_event_map)[r2]->find(event_in_middle) ==
+                                                    (*region_ex_event_map)[r2]->end()) {
+                                                    cerr << "PN " << pn_counter << " is not an ACPN!!!" << endl;
+                                                    if (!ignore_correctness) {
+                                                        exit(1);
+                                                    }
+                                                    check_not_passed = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            pn_counter++;
+        }
+    }
+    if (!check_not_passed)
+        cout << "Check passed." << endl;
 }
