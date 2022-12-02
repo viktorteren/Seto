@@ -1170,6 +1170,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
 
+    //this part is used only for SMs, happens when a set of regions represents a lot of SMs, therefore also using SAT
+    // solver the result has redundant SMs
+    if(decomposition)
+        GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+
     auto map_of_FCPN_pre_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
     auto map_of_FCPN_post_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
 
@@ -1195,7 +1200,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     cout << "Number of places before merge: " << places_after_initial_decomp << endl;
-
 
     if (!no_merge && !decomposition) {
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
@@ -1236,10 +1240,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                           pprg);
         delete merge;
     }
-    else if(output){
+
+    if(output){
         int pn_counter = 0;
         for (auto pn: *fcpn_set) {
-            //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN
+            //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN/SM/ACPN
             print_pn_dot_file(regions_alias_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);
