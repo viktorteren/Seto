@@ -1248,11 +1248,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete merge;
     }
 
-    if (composition)
-        if(decomposition)
+    if (composition) {
+        if (decomposition)
             SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
         else
             PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
+    }
 
     if(output){
         int pn_counter = 0;
