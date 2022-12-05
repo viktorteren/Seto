@@ -1180,23 +1180,50 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     if(decomposition)
         GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
 
-    auto map_of_FCPN_pre_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
-    auto map_of_FCPN_post_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
+    map<set<Region *> *, map<int, set<Region *> *> *> *map_of_FCPN_pre_regions;
+    map<set<Region *> *, map<int, set<Region *> *> *> *map_of_FCPN_post_regions;
+    map<set<Region *> *, map<int, Region *> *> *map_of_SM_pre_regions;
+    map<set<Region *> *, map<int, Region *> *> *map_of_SM_post_regions;
+    if(fcptnet){
+        map_of_FCPN_pre_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
+        map_of_FCPN_post_regions = new map<set<Region *> *, map<int, set<Region *> *> *>();
+    }
+    else if(decomposition){
+        map_of_SM_pre_regions = new map<set<Region *> *, map<int, Region *> *>();
+        map_of_SM_post_regions = new map<set<Region *> *, map<int, Region *> *>();
+    }
 
-    for (auto FCPN: *fcpn_set) {
-        (*map_of_FCPN_pre_regions)[FCPN] = new map<int, set<Region *> *>();
-        for (auto rec: *pprg->get_pre_regions()) {
-            for (auto reg: *rec.second) {
-                if (FCPN->find(reg) != FCPN->end()) {
-                    if ((*map_of_FCPN_pre_regions)[FCPN]->find(rec.first) == (*map_of_FCPN_pre_regions)[FCPN]->end()) {
-                        (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first] = new set<Region *>();
+    if(fcptnet) {
+        for (auto FCPN: *fcpn_set) {
+            (*map_of_FCPN_pre_regions)[FCPN] = new map<int, set<Region *> *>();
+            for (auto rec: *pprg->get_pre_regions()) {
+                for (auto reg: *rec.second) {
+                    if (FCPN->find(reg) != FCPN->end()) {
+                        if ((*map_of_FCPN_pre_regions)[FCPN]->find(rec.first) ==
+                            (*map_of_FCPN_pre_regions)[FCPN]->end()) {
+                            (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first] = new set<Region *>();
+                        }
+                        (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first]->insert(reg);
                     }
-                    (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first]->insert(reg);
                 }
             }
+            (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN(
+                    (*map_of_FCPN_pre_regions)[FCPN]);
         }
-        (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN(
-                (*map_of_FCPN_pre_regions)[FCPN]);
+    }
+    else if(decomposition){
+        for (auto SM: *fcpn_set) {
+            (*map_of_SM_pre_regions)[SM] = new map<int, Region *>();
+            for (auto rec: *pprg->get_pre_regions()) {
+                for (auto reg: *rec.second) {
+                    if (SM->find(reg) != SM->end()) {
+                        (*(*map_of_SM_pre_regions)[SM])[rec.first]=reg;
+                    }
+                }
+            }
+            (*map_of_SM_post_regions)[SM] = Pre_and_post_regions_generator::create_post_regions_for_SM(
+                    (*map_of_SM_pre_regions)[SM]);
+        }
     }
 
     places_after_initial_decomp = 0;
@@ -1212,30 +1239,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete merge;
     }
     else if(decomposition && !no_merge){
-        auto map_of_SM_pre_regions = new map<SM *, map<int, Region *> *>();
-        for(auto rec: *map_of_FCPN_pre_regions){
-            if(map_of_SM_pre_regions->find(rec.first) == map_of_SM_pre_regions->end()){
-                (*map_of_SM_pre_regions)[rec.first] = new map<int, Region *>();
-            }
-            for(auto rec1: *rec.second){
-                for(auto reg: *rec1.second) {
-                    (*(*map_of_SM_pre_regions)[rec.first])[rec1.first] = reg;
-                }
-            }
-        }
-
-        auto map_of_SM_post_regions = new map<SM *, map<int, Region *> *>();
-        for(auto rec: *map_of_FCPN_post_regions){
-            if(map_of_SM_post_regions->find(rec.first) == map_of_SM_post_regions->end()){
-                (*map_of_SM_post_regions)[rec.first] = new map<int, Region *>();
-            }
-            for(auto rec1: *rec.second){
-                for(auto reg: *rec1.second) {
-                    (*(*map_of_SM_post_regions)[rec.first])[rec1.first] = reg;
-                }
-            }
-        }
-
         auto merge = new Merge(fcpn_set,
                           clauses,
                           number_of_events,
@@ -1244,17 +1247,22 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                           file,
                           pprg);
         delete merge;
-
-        if (composition)
-            SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
     }
+
+    if (composition)
+        SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
 
     if(output){
         int pn_counter = 0;
         for (auto pn: *fcpn_set) {
-            print_pn_dot_file(regions_alias_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
-                              aliases,
-                              file, pn_counter);
+            if(decomposition){
+                print_sm_dot_file(regions_alias_mapping, map_of_SM_pre_regions->at(pn),
+                                  map_of_SM_post_regions->at(pn), aliases, file, pn_counter);
+            }
+            else {
+                print_pn_dot_file(regions_alias_mapping, map_of_FCPN_pre_regions->at(pn),
+                                  map_of_FCPN_post_regions->at(pn), aliases, file, pn_counter);
+            }
             pn_counter++;
         }
     }
@@ -1265,36 +1273,54 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                region_ex_event_map, fcpn_set);
     }
 
-
-    maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
-    avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
+    if(fcptnet) {
+        maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
+        avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
+    }
+    else if(decomposition){
+        maxAlphabet = getMaxAlphabet(map_of_SM_pre_regions, aliases);
+        avgAlphabet = getAvgAlphabet(map_of_SM_pre_regions, aliases);
+    }
 
 
     for(auto rec: *region_ent_event_map){
         delete rec.second;
     }
     delete region_ent_event_map;
-    /*
+
     for(auto rec: *region_ex_event_map){
         delete rec.second;
     }
-    delete region_ex_event_map;*/
+    delete region_ex_event_map;
 
-    for(auto rec: *map_of_FCPN_post_regions){
-        for(auto rec1: *rec.second){
-            delete rec1.second;
+    if(!decomposition) {
+        for (auto rec: *map_of_FCPN_post_regions) {
+            for (auto rec1: *rec.second) {
+                delete rec1.second;
+            }
+            delete rec.second;
         }
-        delete rec.second;
-    }
-    delete map_of_FCPN_post_regions;
+        delete map_of_FCPN_post_regions;
 
-    for(auto rec: *map_of_FCPN_pre_regions){
-        for(auto rec1: *rec.second){
-            delete rec1.second;
+        for (auto rec: *map_of_FCPN_pre_regions) {
+            for (auto rec1: *rec.second) {
+                delete rec1.second;
+            }
+            delete rec.second;
         }
-        delete rec.second;
+        delete map_of_FCPN_pre_regions;
     }
-    delete map_of_FCPN_pre_regions;
+    else{
+        for (auto rec: *map_of_SM_post_regions) {
+            delete rec.second;
+        }
+        delete map_of_SM_post_regions;
+
+        for (auto rec: *map_of_SM_pre_regions) {
+            delete rec.second;
+        }
+        delete map_of_SM_pre_regions;
+    }
 
     for(auto val:*clauses_pre){
         delete val;

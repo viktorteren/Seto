@@ -314,64 +314,65 @@ Merge::Merge(set<SM *> *SMs,
 
     //UPDATING MAP OF SM-PRE/POST REGIONS
 
-    for (auto sm: *SMs) {
-        auto removed_events_SM = (*events_to_remove_per_SM)[sm];
-        if (removed_events_SM != nullptr) {
-            delete (*map_of_SM_pre_regions)[sm];
-            delete (*map_of_SM_post_regions)[sm];
-            //cout << "updating pre-regions map SM" << endl;
-            (*map_of_SM_pre_regions)[sm] = Pre_and_post_regions_generator::create_pre_regions_for_SM(sm, removed_events_SM);
-            //cout << "updating post-regions map SM" << endl;
-            (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM((*map_of_SM_pre_regions)[sm]);
-        }
+for (auto sm: *SMs) {
+    auto removed_events_SM = (*events_to_remove_per_SM)[sm];
+    if (removed_events_SM != nullptr) {
+        delete (*map_of_SM_pre_regions)[sm];
+        delete (*map_of_SM_post_regions)[sm];
+        //cout << "updating pre-regions map SM" << endl;
+        (*map_of_SM_pre_regions)[sm] = Pre_and_post_regions_generator::create_pre_regions_for_SM(sm,
+                                                                                                 removed_events_SM);
+        //cout << "updating post-regions map SM" << endl;
+        (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM(
+                (*map_of_SM_pre_regions)[sm]);
     }
-
-    //END NEW MERGE
+}
+//END NEW MERGE
 }
 
 void Merge::print_after_merge(set<SM *> *SMs,
-                            map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
-                            map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
-                            map<int, int> *aliases,
-                            const string& file) {
-    //CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
-    //cout << "pre-regions" << endl;
-    //print(*pprg->get_pre_regions());
+                          map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
+                          map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
+                          map<int, int> *aliases,
+                          const string& file) {
+//CREATION OF THE TRANSITIONS BETWEEN STATES OF THE SM
+//cout << "pre-regions" << endl;
+//print(*pprg->get_pre_regions());
 
-    if(!decomposition_output_sis){
-        //creation of aliases for each region
-        int reg_cont = 1;
-        sm_region_aliases = new map<Region *, int>();
-        for (SM *sm: *SMs) {
-            for(Region *reg: *sm){
-                if(sm_region_aliases->find(reg) == sm_region_aliases->end()) {
-                    (*sm_region_aliases)[reg] = reg_cont;
-                    reg_cont++;
-                }
+if(!decomposition_output_sis){
+    //creation of aliases for each region
+    int reg_cont = 1;
+    sm_region_aliases = new map<Region *, int>();
+    for (SM *sm: *SMs) {
+        for(Region *reg: *sm){
+            if(sm_region_aliases->find(reg) == sm_region_aliases->end()) {
+                (*sm_region_aliases)[reg] = reg_cont;
+                reg_cont++;
             }
         }
     }
+}
 
-    int SM_counter = 0;
-    for (SM *sm: *SMs) {
-        //counter = (SMs_map)[sm];
-        string SM_name = remove_extension(file);
-        SM_name += "_SM_" + to_string(SM_counter) + ".g";
-        if (decomposition_output_sis) {
-            print_sm_g_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
-        } else {
-            print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases,
-                              SM_name);
-        }
-        SM_counter++;
+int SM_counter = 0;
+for (SM *sm: *SMs) {
+    //counter = (SMs_map)[sm];
+    string SM_name = remove_extension(file);
+    SM_name += "_SM_" + to_string(SM_counter) + ".g";
+    if (decomposition_output_sis) {
+        print_sm_g_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases, SM_name);
+    } else {
+        print_sm_dot_file((*map_of_SM_pre_regions)[sm], (*map_of_SM_post_regions)[sm], aliases,
+                          SM_name);
     }
+    SM_counter++;
+}
 
-    delete sm_region_aliases;
+delete sm_region_aliases;
 }
 
 Merge::~Merge(){
-    for (auto rec: *events_to_remove_per_SM) {
-        delete rec.second;
-    }
-    delete events_to_remove_per_SM;
+for (auto rec: *events_to_remove_per_SM) {
+    delete rec.second;
+}
+delete events_to_remove_per_SM;
 }
