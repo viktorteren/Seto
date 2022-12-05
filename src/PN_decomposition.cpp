@@ -1155,6 +1155,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 to_add.push_back(tmp_PN);
             }
         }
+        delete new_temp_set;
     }
     for(auto PN: to_remove){
         fcpn_set->erase(PN);
@@ -1303,6 +1304,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     delete solution;
     delete regions_copy;
     delete regions_alias_mapping_inverted;
+    for (auto rec: *regions_connected_to_labels) {
+        delete rec.second;
+    }
+    delete regions_connected_to_labels;
 
     return fcpn_set;
 }
