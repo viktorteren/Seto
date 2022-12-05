@@ -8,6 +8,7 @@
 #include "../include/FCPN_Merge.h"
 #include "include/BDD_encoder.h"
 #include "include/Merge.h"
+#include "include/SM_composition.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -733,8 +734,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cout << "k: " << k << endl;
     }
 
+    /*
     if (decomposition_debug) {
-        //todo: da rimuovere in futuro
         cout << "Pre-regions" << endl;
         for (auto rec: *pre_regions_map) {
             auto ev = rec.first;
@@ -759,7 +760,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         cout << "-----" << endl;
-    }
+    }*/
 
     auto cache = new set<set<Region *>>();
 
@@ -774,13 +775,14 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     //STEP 1
     be->encode(regions, regions_alias_mapping, pre_regions_map);
+    /*
     if(decomposition_debug) {
         cout << "regions alias mapping:" << endl;
         for(auto rec: *regions_alias_mapping){
             cout << rec.second << ": ";
             println(*rec.first);
         }
-    }
+    }*/
     auto ECTmpClauses = be->get_clauses();
 
     for (auto reg_set: *ECTmpClauses) {
@@ -796,10 +798,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         clauses_pre->push_back(clause);
+        /*
         if (decomposition_debug) {
             cout << "-----------------------------" << endl;
             print_clause(clause);
-        }
+        }*/
     }
 
     do {
@@ -1121,10 +1124,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                     temp = temp - m;
                     //cout << "temp: " << temp << endl;
-                    if (temp > 0) {
-                        //todo: here wrong
+                    if (temp > 0) {\
                         temp_PN->insert(regions_alias_mapping_inverted->at(temp-1));
-                        //cout << "r" << regions_alias_mapping->at(regions_alias_mapping_inverted->at(temp-1)) << endl;
                     }
                 }
                 fcpn_set->insert(temp_PN);
@@ -1166,7 +1167,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     if (decomposition_debug) {
         for (auto FCPN: *fcpn_set) {
-            cout << "FCPN:" << endl;
+            if(!decomposition)
+                cout << "FCPN:" << endl;
+            else
+                cout << "SM:" << endl;
             println_simplified(FCPN, regions_alias_mapping);
         }
     }
@@ -1240,6 +1244,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                           file,
                           pprg);
         delete merge;
+
+        if (composition)
+            SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
     }
 
     if(output){
@@ -1258,9 +1265,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map,
                                region_ex_event_map, fcpn_set);
     }
-
-    if (composition)
-        PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);

@@ -1267,23 +1267,47 @@ namespace Utilities {
         // cout << "out name: " << in_dot_name << endl;
 
         if(FCPN_number >= 0){
-            output_name += (acpn ? "_ACPN_" : "_FCPN_");
+            if(acpn)
+                output_name += "_ACPN_";
+            else if(fcptnet)
+                output_name += "_FCPN_";
+            else if(decomposition)
+                output_name += "_SM_";
             output_name+=std::to_string(FCPN_number);
             output_name+=".dot";
         }
         else{
-            output_name += (acpn ? "_ACPN.dot" :"_FCPN.dot");
+            if(acpn)
+                output_name += "_ACPN.dot";
+            else if(fcptnet)
+                output_name += "_FCPN.dot";
+            else if(decomposition)
+                output_name += "_SM.dot";
         }
         //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
         if(FCPN_number >= 0){
-            fout << in_dot_name + (acpn ? "_ACPN_" : "_FCPN_");
+            if(acpn)
+                fout << in_dot_name + "_ACPN_";
+            else if(fcptnet)
+                fout << in_dot_name + "_FCPN_";
+            else if(decomposition)
+                fout << in_dot_name + "_SM_";
+            else
+                fout << in_dot_name + "_PN_";
             fout << std::to_string(FCPN_number);
         }
         else{
-            fout << in_dot_name + "_PN";
+            if(acpn)
+                fout << in_dot_name + "_ACPN";
+            else if(fcptnet)
+                fout << in_dot_name + "_FCPN";
+            else if(decomposition)
+                fout << in_dot_name + "_SM";
+            else
+                fout << in_dot_name + "_PN";
         }
 
         fout << "{\n";
