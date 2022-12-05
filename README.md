@@ -96,10 +96,12 @@ Independently by the used flags, after each execution the stats.csv file is upda
 ## b) TS to Synchronized SMs flow
 
 ```Bash
-./TS_splitter <file_path> M <optional_flags>
+./TS_splitter <file_path> SM <optional_flags>
 ```
 
-Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
+Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). 
+The file contains the following data if BDD flag was **not** selected:
+- decomposition type: SM
 - file name
 - time region generation
 - time decomposition
@@ -120,10 +122,26 @@ Statistics are stored into *'stats.csv'* file (in the folder from where the code
 - average number of transitions
 - variance of the number of transitions
 
+If BDD flag was selected the *'stats.csv'* will contain the following data:
+- decomposition type: SM_BDD/SM_BDD_DEBUG
+- file name
+- runtime
+- time region generation
+- time decomposition
+- time greedy/exact SM removal
+- time labels removal
+- number of final places
+- number of FCPNs
+- number of places after the initial step of decomposition (before greedy algorithm)
+- number of places after the greedy algorithm
+- maximum alphabet
+- average alphabet
 
 #### Optional flags:
 
 [//]: # "L: creation of a log file"
+
+**BDD**: usage of a BDD for the contemporary search of k SMs instead of sequentially search new SMs
 
 **D**: debug info mode
 
@@ -150,21 +168,10 @@ In the root folder the following script can be executed, but firstly it has to b
 
 The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
 
-## c) TS to interacting FCPNs flows
+## c) TS to interacting FCPNs flow
 
-### Exact algorithm:
 
-```Bash
-./TS_splitter <file_path> KFC <optional_flags>
-```
-
-#### Optional flags:
-
-**D**: debug info mode
-
-**O**: write output FCPNs on file in .dot extension
-
-### Approximated algorithm (recommended):
+### Approximated algorithm:
 
 ```Bash
 ./TS_splitter <file_path> FC <optional_flags>
@@ -172,7 +179,7 @@ The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_d
 
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
 
-- decomposition type: FCPN, ACPN, FCPN_BDD, FCPN_DEBUG, ACPN_DEBUG, FCPN_BDD_DEBUG
+- decomposition type: FCPN/ACPN/FCPN_BDD/FCPN_DEBUG/ACPN_DEBUG/FCPN_BDD_DEBUG
 - file name
 - runtime
 - time region generation
@@ -224,7 +231,7 @@ In the root folder the following script can be executed:
 The script runs the approximate algorithm for FCPN decomposition on all benchmarks of *'auto_benchmark_dir'* folder.
 
 
-## d) TS to interacting ACPNs flows
+## d) TS to interacting ACPNs flow
 
 ```Bash
 ./TS_splitter <file_path> AC <optional_flags>

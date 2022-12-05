@@ -722,7 +722,8 @@ int main(int argc, char **argv) {
                     cout << "Max alphabet of an SM: " << maxAlphabet << endl;
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
-                    outfile << fixed
+                    outfile << "SM,"
+                            << fixed
                             << get_file_name(file) << ","
                             << setprecision(4) << t_region_gen << ","
                             << setprecision(4) << t_decomposition << ","
