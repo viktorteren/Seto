@@ -1252,7 +1252,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     if(output){
         int pn_counter = 0;
         for (auto pn: *fcpn_set) {
-            //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN/SM/ACPN
             print_pn_dot_file(regions_alias_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);
