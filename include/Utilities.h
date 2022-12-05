@@ -88,8 +88,10 @@ extern bool check_structure;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2);
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2);
+    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*> *region_set1,
+                                                             const set<Region*> *region_set2);
+    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*>& region_set1,
+                                                             const set<Region*>& region_set2);
     Region *regions_union(vector<Region *> *vec);
     Region *regions_union(set<Region *> *vec);
     Region *regions_union(Region *first, Region *second);
@@ -122,16 +124,14 @@ namespace Utilities {
     bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
-    /*template<typename T, typename T2>
-    bool contains(T bigger_set, T2 smaller_set);*/
     bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set);
     bool contains(const set<Region *>& reg_set, Region * reg);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     template <typename T>
     bool contains(T, Region *);
     bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set);
-    __attribute__((unused)) bool contains(set<int> bigger_set, const set<int>& smaller_set);
-    __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set);
+    bool contains(set<int> bigger_set, const set<int>& smaller_set);
+    bool contains(set<int> *bigger_set, set<int> *smaller_set);
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     //todo: use template to merge the two versions of print_ts_dot_file
@@ -145,8 +145,14 @@ namespace Utilities {
                            const map<set<Region *>*, Region *>& initial_state_TS);
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
     //todo: use template to merge the two versions of print_ts_aut_file
-    void print_ts_aut_file(string file_path, map <map<set<Region *>*, set<Region *>>, int> *state_aliases, vector<edge> *arcs, const map<set<Region *>*, set<Region *>>& initial_state_TS);
-    void print_ts_aut_file(string file_path, map <map<set<Region *>*, Region *>, int> *state_aliases, vector<SM_edge> *arcs, const map<set<Region *>*, Region *>& initial_state_TS);
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
+                           vector<edge> *arcs,
+                           const map<set<Region *>*, set<Region *>>& initial_state_TS);
+    void print_ts_aut_file(string file_path,
+                           map <map<set<Region *>*, Region *>, int> *state_aliases,
+                           vector<SM_edge> *arcs,
+                           const map<set<Region *>*, Region *>& initial_state_TS);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,
@@ -185,8 +191,16 @@ namespace Utilities {
     __attribute__((unused)) map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, Region *> *second);
     map<int, set<Region *> *>* merge_2_maps(map<int, Region *> *first, map<int, Region *> *second);
 
-    __attribute__((unused)) string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid);
-    string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses, vector<set<int>>* new_results_to_avoid);
+    __attribute__((unused)) string convert_to_dimacs(string file_path,
+                                                     int num_var,
+                                                     int num_clauses,
+                                                     vector<vector<int>*>* clauses,
+                                                     set<set<int>*>* new_results_to_avoid);
+    string convert_to_dimacs(string file_path,
+                             int num_var,
+                             int num_clauses,
+                             const vector<vector<int32_t>>& clauses,
+                             vector<set<int>>* new_results_to_avoid);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
     string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
@@ -217,7 +231,6 @@ namespace Utilities {
     int getMaxTransitionsNumber(map<SM*, map<int, Region *>*>* pre_regions);
     int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions, map<int, int> *label_aliases);
     int getMaxAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases);
-    //todo use a template
     template<class T>
     double getAvgAlphabet(T *pre_regions, map<int, int> *label_aliases);
     __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
