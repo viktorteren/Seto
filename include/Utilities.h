@@ -218,8 +218,8 @@ namespace Utilities {
     int getMaxAlphabet(map<SM*, map<int, Region *>*>* pre_regions, map<int, int> *label_aliases);
     int getMaxAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases);
     //todo use a template
-    double getAvgAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases);
-    double getAvgAlphabet(map<SM*, map<int, Region*>*>* pre_regions, map<int, int> *label_aliases);
+    template<class T>
+    double getAvgAlphabet(T *pre_regions, map<int, int> *label_aliases);
     __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
     __attribute__((unused)) SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
     bool have_common_regions(set<Region *> *first, set<Region *> *second);

@@ -2808,7 +2808,8 @@ namespace Utilities {
         return max;
     }
 
-    double getAvgAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases){
+    template <typename T>
+    double getAvgAlphabet(T *pre_regions, map<int, int> *label_aliases){
         int sum = 0;
         for(auto rec: *pre_regions){
             auto SM_map = rec.second;
@@ -2832,31 +2833,8 @@ namespace Utilities {
         }
         return  (double)sum/(pre_regions->size());
     }
-
-    double getAvgAlphabet(map<SM*, map<int, Region*>*>* pre_regions, map<int, int> *label_aliases){
-        int sum = 0;
-        for(auto rec: *pre_regions){
-            auto SM_map = rec.second;
-            int counter = 0;
-            set<int> used_labels;
-            for(auto record: *SM_map){
-                auto label = record.first;
-                if(label < num_events_before_label_splitting){
-                    used_labels.insert(label);
-                    counter++;
-                }
-                else{
-                    auto original_label = (*label_aliases)[label];
-                    if(used_labels.find(original_label) == used_labels.end()){
-                        used_labels.insert(original_label);
-                        counter++;
-                    }
-                }
-            }
-            sum += counter;
-        }
-        return  (double)sum/(pre_regions->size());
-    }
+    template double getAvgAlphabet(map < set<Region *> *, map<int, Region *> * > *pre_regions, map<int, int> *label_aliases);
+    template double getAvgAlphabet(map < set<Region *> *, map<int, set<Region *>*> * > *pre_regions, map<int, int> *label_aliases);
 
 
     __attribute__((unused)) bool checkSMUnionForFCPTNet(set<SM*> *sm_set, map<int, set<Region*> *> *post_regions){
