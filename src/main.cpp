@@ -447,7 +447,7 @@ int main(int argc, char **argv) {
                         python_source = "../src/AllMISSolver.py";
                     }
                 }
-                    //faster aproximated solution
+                    //faster approximated solution
                 else {
                     if (benchmark_script) {
                         python_source = "src/MIS-Solver.py";
