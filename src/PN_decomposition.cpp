@@ -1244,8 +1244,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                           number_of_events,
                           map_of_SM_pre_regions,
                           map_of_SM_post_regions,
-                          file,
-                          pprg);
+                          file);
         delete merge;
     }
 

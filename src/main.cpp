@@ -611,7 +611,6 @@ int main(int argc, char **argv) {
                                 (*map_of_SM_pre_regions)[sm]);
                     }
 
-                    //if(decomposition_debug)
                     Merge *merge;
 
                     if (!no_merge) {
@@ -624,8 +623,7 @@ int main(int argc, char **argv) {
                                           number_of_events,
                                           map_of_SM_pre_regions,
                                           map_of_SM_post_regions,
-                                          file,
-                                          pprg);
+                                          file);
 
                     }
 

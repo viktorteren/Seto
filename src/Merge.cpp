@@ -14,8 +14,7 @@ Merge::Merge(set<SM *> *SMs,
              int number_of_events,
              map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
              map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
-             const string& file,
-             Pre_and_post_regions_generator *pprg){
+             const string& file){
 
     //STEPS OF THE ALGORITHM
     // 1. create the map between SMs and integers from 1 to K
