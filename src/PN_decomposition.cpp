@@ -1249,7 +1249,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     if (composition)
-        SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+        if(decomposition)
+            SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+        else
+            PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
     if(output){
         int pn_counter = 0;
