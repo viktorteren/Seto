@@ -99,7 +99,29 @@ Independently by the used flags, after each execution the stats.csv file is upda
 ./TS_splitter <file_path> SM <optional_flags>
 ```
 
-Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). 
+#### Optional flags:
+
+[//]: # "L: creation of a log file"
+
+**BDD**: usage of a BDD for the contemporary search of k SMs instead of sequentially search new SMs
+
+**D**: debug info mode
+
+**O**: write output SMs on file in .dot extension
+
+**G**: write output SMs on file in .g extension
+
+**-ALL**: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
+
+**COMPOSE**: perform the composition of PNs (actually FCPNs and SMs) and create an output file in .aut extension
+
+**DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
+
+**GE**: perform an exact algorithm instead of greedy one during the removal of redundant SMs
+
+**NOBOUNDS**: this flag can be used only with BDD flag and it allows the creation of unbounded SMs
+
+Statistics are stored into *'stats.csv'* file (in the folder from where the code is run).
 The file contains the following data if BDD flag was **not** selected:
 - decomposition type: SM
 - file name
@@ -136,27 +158,6 @@ If BDD flag was selected the *'stats.csv'* will contain the following data:
 - number of places after the greedy algorithm
 - maximum alphabet
 - average alphabet
-
-#### Optional flags:
-
-[//]: # "L: creation of a log file"
-
-**BDD**: usage of a BDD for the contemporary search of k SMs instead of sequentially search new SMs
-
-**D**: debug info mode
-
-**O**: write output SMs on file in .dot extension
-
-**G**: write output SMs on file in .g extension
-
-**-ALL**: execute the decomposition using an exact algorithm to find all minimal independent sets (not only the minimum required set to satisfy EC)
-
-**COMPOSE**: perform the composition of PNs (actually FCPNs and SMs) and create an output file in .aut extension
-
-**DOT**: combined with COMPOSE flag creates the output file in .dot extension instead of .aut
-
-**GE**: perform an exact algorithm instead of greedy one during the removal of redundant SMs
-
 
 ### Execution using a script
 

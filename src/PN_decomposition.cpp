@@ -661,6 +661,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 1) EC clauses
      * 2) FCPN constraint
      * 2b) SM constraint
+     * 2c) Safeness for SMs (in case of FCPNs I can have to initial regions in the same FCPN and still have a safe FCPN):
+     *      given an SM at most one region containing initial sate can take part of it: given the set of initial regions
+     *      create couples of clauses between these regions for each FCPN/SM (!r1 v !r2)
      * 3) binding between symbolic region and all it's representations in different FCPNs:
      *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
      *      it will become (!sr1 v r1 v r1')
@@ -697,6 +700,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     auto regions_connected_to_labels = merge_2_maps(pre_regions_map,
                                                     post_regions_map);
+    auto initial_regions = new vector<Region *>();
+    for(auto reg: *regions){
+        if(is_initial_region(reg))
+            initial_regions->push_back(reg);
+    }
     auto clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
     //create map (region, exiting events)
@@ -813,7 +821,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
         cache->clear();
 
-
         if (decomposition_debug) {
             if (fcptnet)
                 cout << "STEP 2: FCPN constraint" << endl;
@@ -926,6 +933,25 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
             }
         }
+
+        if(decomposition || (decomposition && no_bounds)) {
+            if (decomposition_debug)
+                cout << "STEP 2c: safeness" << endl;
+
+            //STEP 2c
+            for (int i = 0; i < initial_regions->size(); ++i) {
+                for (int s = i + 1; s < initial_regions->size(); ++s) {
+                    clause = new vector<int32_t>();
+                    int offset = k_search_region_offset(m, k, num_FCPNs_try);
+                    auto r1 = (*initial_regions)[i];
+                    auto r2 = (*initial_regions)[s];
+                    clause->push_back(-(*regions_alias_mapping)[r1] - offset);
+                    clause->push_back(-(*regions_alias_mapping)[r2] - offset);
+                    clauses_pre->push_back(clause);
+                }
+            }
+        }
+
 
         //STEP 3
         //ENCODING/BINDING symbolic regions and effective regions

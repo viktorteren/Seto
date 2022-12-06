@@ -26,6 +26,7 @@ bool fcptnet;
 bool acpn;
 bool aut_output;
 bool ignore_correctness;
+bool no_bounds;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;
 __attribute__((unused)) bool fcpn_with_levels;

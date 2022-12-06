@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
         bdd_usage = false;
         ignore_correctness = false;
         check_structure = false;
+        no_bounds = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -73,6 +74,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "CHECK"){
                 check_structure = true;
+            }
+            else if(args[i] == "NOBOUNDS"){
+                no_bounds = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -138,6 +142,10 @@ int main(int argc, char **argv) {
         }
         if(fcptnet && decomposition_output_sis){
             cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
+            exit(0);
+        }
+        if(no_bounds && !bdd_usage){
+            cerr << "NOBOUNDS flag can be used only with BDD flag." << endl;
             exit(0);
         }
         if(acpn && decomposition_output_sis){
