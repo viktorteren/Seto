@@ -1067,8 +1067,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             formula.printFormula(cout);
         }
 
-        //cout << m + k * num_FCPNs_try << endl;
-        dimacs_file = convert_to_dimacs(file, m + (k + m) * num_FCPNs_try, num_clauses_formula,
+        dimacs_file = convert_to_dimacs(file, (k + m) * (num_FCPNs_try+1), num_clauses_formula,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
