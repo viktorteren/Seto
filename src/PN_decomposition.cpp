@@ -1062,10 +1062,11 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //iteration in the search of a correct assignment decreasing the total weight
 
         int num_clauses_formula = formula.getClauses().size();
+        /*
         if (decomposition_debug) {
             cout << "formula:" << endl;
             formula.printFormula(cout);
-        }
+        }*/
 
         dimacs_file = convert_to_dimacs(file, (k + m) * (num_FCPNs_try+1), num_clauses_formula,
                                         formula.getClauses());
