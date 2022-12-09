@@ -192,6 +192,14 @@ int main(int argc, char **argv) {
             cerr << "FCPN decomposition and ACPN decomposition cannot be performed on the same run." << endl;
             exit(0);
         }
+        if(check_structure && decomposition){
+            cerr << "CHECK flag cannot be used with SM decomposition (including SMMM decomposition with BDD." << endl;
+            exit(0);
+        }
+        if(check_structure && pn_synthesis){
+            cerr << "CHECK flag cannot be used with PN synthesis." << endl;
+            exit(0);
+        }
     }
     else{
         cerr << "Wrong number of arguments." << endl;

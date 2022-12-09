@@ -91,8 +91,6 @@ make TS_splitter
 
 **--INFO**: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
-Independently by the used flags, after each execution the stats.csv file is updated.
-
 ## b) TS to Synchronized SMs flow
 
 ```Bash

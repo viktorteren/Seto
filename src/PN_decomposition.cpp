@@ -1313,9 +1313,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
     delete regions_alias_mapping;
 
-    if (check_structure){
+    if (check_structure && !decomposition){
         check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map,
-                               region_ex_event_map, fcpn_set);
+                                   region_ex_event_map, fcpn_set);
     }
 
     if(fcptnet) {
@@ -1392,6 +1392,7 @@ int PN_decomposition::k_search_event_offset(int num_events, int num_regions, int
 int PN_decomposition::k_search_region_offset(int num_events, int num_regions, int num_FCPNs){
     return num_events+1+num_FCPNs*(num_events+num_regions);
 }
+
 
 void PN_decomposition::check_EC_and_structure(map<int, ER> *ER,
                                               map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
