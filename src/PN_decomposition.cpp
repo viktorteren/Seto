@@ -646,7 +646,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                                Pre_and_post_regions_generator *pprg,
                                                map<int, ER> *ER,
                                                map<int, int> *aliases,
-                                               set<set<Region *>*>* SMs,
                                                BDD_encoder *be) {
 
     //encoding: [1, m] symbolic events range: m events
@@ -662,8 +661,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 2) FCPN constraint
      * 2b) SM constraint
      * 2c) Safeness for SMs (in case of FCPNs I can have to initial regions in the same FCPN and still have a safe FCPN):
-     *      given an SM at most one region containing initial sate can take part of it: given the set of initial regions
-     *      create couples of clauses between these regions for each FCPN/SM (!r1 v !r2)
+     *      given an SM at most one region containing initial sate can take part of it: given the set of regions
+     *      create couples of clauses between regions with non epty intersection for each SM (!r1 v !r2)
      * 3) binding between symbolic region and all it's representations in different FCPNs:
      *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
      *      it will become (!sr1 v r1 v r1')
@@ -692,8 +691,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     bool solution_found = false;
     int num_FCPNs_try = 1;
     auto regions_copy = new set<Region *>();
+    auto regions_vector = new vector<Region *>();
     for (auto reg: *regions) {
         regions_copy->insert(reg);
+        regions_vector->push_back(reg);
     }
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
@@ -812,6 +813,20 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             print_clause(clause);
         }*/
     }
+
+    //step 2c pair search
+    auto intersecting_pairs = new vector<pair<Region *, Region *>*>();
+    for (int i = 0; i < regions_vector->size(); ++i) {
+        for (int s = i + 1; s < regions_vector->size(); ++s) {
+            auto r1 = (*regions_vector)[i];
+            auto r2 = (*regions_vector)[s];
+            if(!empty_regions_intersection(r1,r2)){
+                intersecting_pairs->push_back(new pair(r1,r2));
+            }
+
+        }
+    }
+
 
     do {
         for (auto cl: *clauses) {
@@ -938,15 +953,16 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             if (decomposition_debug)
                 cout << "STEP 2c: safeness" << endl;
 
-            //STEP 2c
-            for (int i = 0; i < initial_regions->size(); ++i) {
-                for (int s = i + 1; s < initial_regions->size(); ++s) {
+            //STEP 2c clause creation
+            for(auto reg_pair: *intersecting_pairs){
+                auto r1 = reg_pair->first;
+                auto r2 = reg_pair->second;
+                if(!empty_regions_intersection(r1,r2)){
                     clause = new vector<int32_t>();
                     int offset = k_search_region_offset(m, k, num_FCPNs_try);
-                    auto r1 = (*initial_regions)[i];
-                    auto r2 = (*initial_regions)[s];
                     clause->push_back(-(*regions_alias_mapping)[r1] - offset);
                     clause->push_back(-(*regions_alias_mapping)[r2] - offset);
+                    //cout << "clause: " << -(*regions_alias_mapping)[r1] - offset << " " << -(*regions_alias_mapping)[r2] - offset << endl;
                     clauses_pre->push_back(clause);
                 }
             }

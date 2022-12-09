@@ -35,6 +35,5 @@ public:
                                           Pre_and_post_regions_generator *pprg,
                                           map<int, ER> *ER,
                                           map<int, int> *aliases,
-                                          set<set<Region *>*>* SMs,
                                           BDD_encoder *be);
 };

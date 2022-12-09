@@ -2466,8 +2466,9 @@ namespace Utilities {
         //True return value
         if (ret == Minisat::lbool((uint8_t)0)) {
             return true;
-            //false return value
-        } else if (ret == Minisat::lbool((uint8_t)1))
+        }
+        //false return value
+        else if (ret == Minisat::lbool((uint8_t)1))
             return false;
         else {
             cerr << "NO RESULT" << endl;

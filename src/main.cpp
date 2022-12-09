@@ -782,7 +782,7 @@ int main(int argc, char **argv) {
 
                         //search a solution with n FCPNs increasing n until the result becomes SAT
                         final_pn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
-                                                                    pprg, new_ER, aliases, SMs, be);
+                                                                    pprg, new_ER, aliases, be);
                         delete be;
                     }
                     else{
