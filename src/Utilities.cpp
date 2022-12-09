@@ -1278,12 +1278,7 @@ namespace Utilities {
             output_name+=".dot";
         }
         else{
-            if(acpn)
-                output_name += "_ACPN.dot";
-            else if(fcptnet)
-                output_name += "_FCPN.dot";
-            else if(decomposition)
-                output_name += "_SM.dot";
+            output_name += "_PN.dot";
         }
         //cout << "file output PN: " << output_name << endl;
 
@@ -1296,19 +1291,10 @@ namespace Utilities {
                 fout << in_dot_name + "_FCPN_";
             else if(decomposition)
                 fout << in_dot_name + "_SM_";
-            else
-                fout << in_dot_name + "_PN_";
             fout << std::to_string(PN_number);
         }
         else{
-            if(acpn)
-                fout << in_dot_name + "_ACPN";
-            else if(fcptnet)
-                fout << in_dot_name + "_FCPN";
-            else if(decomposition)
-                fout << in_dot_name + "_SM";
-            else
-                fout << in_dot_name + "_PN";
+            fout << in_dot_name + "_PN";
         }
 
         fout << "{\n";

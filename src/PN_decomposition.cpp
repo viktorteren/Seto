@@ -949,7 +949,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             }
         }
 
-        if(decomposition || (decomposition && no_bounds)) {
+        if(decomposition && !no_bounds) {
             if (decomposition_debug)
                 cout << "STEP 2c: safeness" << endl;
 
