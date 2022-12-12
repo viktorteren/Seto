@@ -891,7 +891,13 @@ namespace Utilities {
         std::replace( in_name.begin(), in_name.end(), '-', '_');
 
 
-        output_name = output_name + "_composed.aut";
+        if(decomposition){
+            output_name = output_name + "_composed_SM.aut";
+        }
+        else{
+            output_name = output_name + "_composed.aut";
+        }
+
 
 
         ofstream fout(output_name);
@@ -916,7 +922,7 @@ namespace Utilities {
         fout.close();
     }
 
-    void print_ts_aut_file(string file_path,
+    void pprint_ts_aut_file(string file_path,
                            map <map<set<Region *>*, Region *>, int> *state_aliases,
                            vector<SM_edge> *arcs,
                            const map<set<Region *>*, Region *>& initial_state_TS){

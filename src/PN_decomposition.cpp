@@ -1290,8 +1290,18 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     if (composition) {
-        if (decomposition)
+        if (decomposition) {
+            for(auto SM: *fcpn_set){
+                int count = 0;
+                for(auto reg: *SM){
+                    if(is_initial_region(reg))
+                        count++;
+                }
+                if(count > 1)
+                    cerr << "SM with multiple initial places" << endl;
+            }
             SM_composition::compose(fcpn_set, map_of_SM_pre_regions, map_of_SM_post_regions, aliases, file);
+        }
         else
             PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
     }

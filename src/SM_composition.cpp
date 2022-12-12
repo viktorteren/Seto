@@ -9,30 +9,33 @@
 
 using namespace Utilities;
 
-void SM_composition::compose(set<set<Region *>*> *sm_set,
-                               map < set<Region *> *, map<int, Region*> * > *map_SM_pre_regions,
-                               map < set<Region *> *, map<int, Region*> * > *map_SM_post_regions,
-                               map<int, int> *aliases, string file_path){
+void SM_composition::compose(set<set<Region *>*> *fcpn_set,
+                        map < set<Region *> *, map<int, Region*> * > *map_SM_pre_regions,
+                        map < set<Region *> *, map<int, Region*> * > *map_SM_post_regions,
+                        map<int, int> *aliases,
+                        string file_path){
     cout << "============ [ COMPOSITION ] ===========" << endl;
-    set<map<set<Region *>*, Region *>> state_space; //set of maps where for each FCPN there is a set of current regions
-    auto arcs = new vector<SM_edge>();
-    map<set<Region *>*, Region *> current_map;
-    for(auto SM: *sm_set){
-        Region *initial_region;
-        for(auto reg: *SM){
+    set<map<set<Region *>*, set<Region *>>> state_space; //set of maps where for each FCPN there is a set of current regions
+    auto arcs = new vector<edge>();
+    map<set<Region *>*, set<Region *>> current_map;
+    for(auto FCPN: *fcpn_set){
+        set<Region *> initial_regions;
+        for(auto reg: *FCPN){
             if(reg->find(initial_state) != reg->end()){
-                initial_region = reg;
-                break;
+                initial_regions.insert(reg);
             }
         }
-        (current_map)[SM] = initial_region;
+        (current_map)[FCPN] = initial_regions;
     }
     auto initial_state_TS = current_map;
     state_space.insert(current_map);
 
-    set<map<set<Region *>*, Region *>> completely_explored_states;
+    set<map<set<Region *>*, set<Region *>>> completely_explored_states;
+
+    bool completely_explored_states_set_changed;
 
     do {
+        completely_explored_states_set_changed = false;
         //given an event check if it can fire
         for(auto current_state: state_space) {
             if(completely_explored_states.find(current_state) == completely_explored_states.end()) {
@@ -47,7 +50,7 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                     for (auto rec1: *rec.second) {
                         auto event = rec1.first;
                         if(firing.at(event)) {
-                            if (current_state.at(FCPN) != rec1.second) {
+                            if (!contains(current_state.at(FCPN), *rec1.second)) {
                                 firing.at(event) = false;
                             }
                         }
@@ -56,7 +59,10 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                 for (auto rec: firing) {
                     auto event = rec.first;
                     if (rec.second) {
-                        map<set<Region *> *, Region *> next_state_map;
+                        if(decomposition_debug){
+                            cout << "firing event " << event << endl;
+                        }
+                        map<set<Region *> *, set<Region *>> next_state_map;
                         for (auto rec1: *map_SM_post_regions) {
                             auto FCPN = rec1.first;
                             //event take part of the FCPN
@@ -64,9 +70,10 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                                 //insert into the next state the regions which were unchanged
                                 // (didn't took part of the event firing)
                                 if(map_SM_pre_regions->at(FCPN)->find(event) != map_SM_pre_regions->at(FCPN)->end()) {
-                                    auto reg = current_state.at(FCPN);
-                                    if (map_SM_pre_regions->at(FCPN)->at(event) != reg) {
-                                        next_state_map[FCPN]=reg;
+                                    for(auto reg: current_state.at(FCPN)) {
+                                        if (map_SM_pre_regions->at(FCPN)->at(event) != reg) {
+                                            next_state_map[FCPN].insert(reg);
+                                        }
                                     }
                                 }
                                 else{
@@ -74,15 +81,16 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                                     //exit(1);
                                 }
 
-                                //region activated after the event firing
-                                next_state_map[FCPN] = rec1.second->at(event);
+                                //regions activated after the event firing
+                                auto reg = rec1.second->at(event);
+                                next_state_map[FCPN].insert(reg);
                             } else {
                                 next_state_map[FCPN] = current_state.at(FCPN);
                             }
                         }
                         if(current_state != next_state_map){
                             state_space.insert(next_state_map);
-                            SM_edge arc;
+                            edge arc;
                             arc.start = current_state;
                             if(event < num_events_before_label_splitting)
                                 arc.event = (*aliases_map_number_name)[event];
@@ -94,11 +102,23 @@ void SM_composition::compose(set<set<Region *>*> *sm_set,
                     }
                 }
                 completely_explored_states.insert(current_state);
+                completely_explored_states_set_changed = true;
             }
         }
-    } while(state_space != completely_explored_states);
+        /*
+        if(c==10){
+            cout << endl;
+        }
+        if(c == 500){
+            cout << endl;
+        }*/
+    } while(state_space != completely_explored_states && completely_explored_states_set_changed);
+    if(state_space != completely_explored_states){
+        cerr << "LOOP" << endl;
+        exit(1);
+    }
 
-    auto state_aliases = new map <map<set<Region *>*, Region *>, int>();
+    auto state_aliases = new map <map<set<Region *>*, set<Region *>>, int>();
     int cont = 0;
     for(const auto& state: state_space){
         (*state_aliases)[state] = cont;
