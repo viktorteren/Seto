@@ -193,7 +193,7 @@ int main(int argc, char **argv) {
             exit(0);
         }
         if(check_structure && decomposition){
-            cerr << "CHECK flag cannot be used with SM decomposition (including SMMM decomposition with BDD." << endl;
+            cerr << "CHECK flag cannot be used with SM decomposition (including SM decomposition with BDD." << endl;
             exit(0);
         }
         if(check_structure && pn_synthesis){
@@ -635,11 +635,11 @@ int main(int argc, char **argv) {
                         tStart_partial = clock();
 
                         merge = new Merge(SMs,
-                                          clauses,
                                           number_of_events,
                                           map_of_SM_pre_regions,
                                           map_of_SM_post_regions,
-                                          file);
+                                          file,
+                                          nullptr);
 
                     }
 

@@ -10,11 +10,11 @@ using namespace Minisat;
 using namespace Utilities;
 
 Merge::Merge(set<SM *> *SMs,
-             vector<vector<int32_t> *> *clauses,
              int number_of_events,
              map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
              map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
-             const string& file){
+             const string& file,
+             map<Region *, int> *regions_alias_mapping){
 
     //STEPS OF THE ALGORITHM
     // 1. create the map between SMs and integers from 1 to K
@@ -56,10 +56,7 @@ Merge::Merge(set<SM *> *SMs,
     int K = SMs->size();
     int N = counter;
     int M = number_of_events;
-    for (auto vec: *clauses) {
-        delete vec;
-    }
-    clauses->clear();
+    clauses = new vector<vector<int32_t>*>();
     vector<int32_t> *clause;
     for (auto rec: regions_map_for_sat) {
         auto region = rec.first;
@@ -277,8 +274,10 @@ Merge::Merge(set<SM *> *SMs,
                 }
 
                 for (auto reg: to_erase) {
-                    //cout << "Removing region ";
-                    //println(*reg);
+                    if(decomposition_debug) {
+                        cout << "Removing region ";
+                        println(*reg);
+                    }
                     current_SM->erase(reg);
                 }
 
@@ -286,9 +285,19 @@ Merge::Merge(set<SM *> *SMs,
                 //cout << "adding merged regions" << endl;
                 for (Region *mergedReg: merged_regions) {
                     if (!mergedReg->empty()) {
-                        //cout << "adding a merged region to an SM" << endl;
-                        //println(*mergedReg);
+                        if(decomposition_debug) {
+                            cout << "adding a merged region to an SM" << endl;
+                            println(*mergedReg);
+                        }
                         current_SM->insert(mergedReg);
+                        if(regions_alias_mapping != nullptr) {
+                            int m = -1;
+                            for (auto r: *regions_alias_mapping) {
+                                if (r.second > m)
+                                    m = r.second;
+                            }
+                            (*regions_alias_mapping)[mergedReg] = m + 1;
+                        }
                     } else {
                         delete mergedReg;
                     }
@@ -313,19 +322,19 @@ Merge::Merge(set<SM *> *SMs,
 
     //UPDATING MAP OF SM-PRE/POST REGIONS
 
-for (auto sm: *SMs) {
-    auto removed_events_SM = (*events_to_remove_per_SM)[sm];
-    if (removed_events_SM != nullptr) {
-        delete (*map_of_SM_pre_regions)[sm];
-        delete (*map_of_SM_post_regions)[sm];
-        //cout << "updating pre-regions map SM" << endl;
-        (*map_of_SM_pre_regions)[sm] = Pre_and_post_regions_generator::create_pre_regions_for_SM(sm,
-                                                                                                 removed_events_SM);
-        //cout << "updating post-regions map SM" << endl;
-        (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM(
-                (*map_of_SM_pre_regions)[sm]);
+    for (auto sm: *SMs) {
+        auto removed_events_SM = (*events_to_remove_per_SM)[sm];
+        if (removed_events_SM != nullptr) {
+            delete (*map_of_SM_pre_regions)[sm];
+            delete (*map_of_SM_post_regions)[sm];
+            //cout << "updating pre-regions map SM" << endl;
+            (*map_of_SM_pre_regions)[sm] = Pre_and_post_regions_generator::create_pre_regions_for_SM(sm,
+                                                                                                     removed_events_SM);
+            //cout << "updating post-regions map SM" << endl;
+            (*map_of_SM_post_regions)[sm] = Pre_and_post_regions_generator::create_post_regions_for_SM(
+                    (*map_of_SM_pre_regions)[sm]);
+        }
     }
-}
 //END NEW MERGE
 }
 
@@ -370,8 +379,12 @@ delete sm_region_aliases;
 }
 
 Merge::~Merge(){
-for (auto rec: *events_to_remove_per_SM) {
-    delete rec.second;
-}
-delete events_to_remove_per_SM;
+    for (auto rec: *events_to_remove_per_SM) {
+        delete rec.second;
+    }
+    delete events_to_remove_per_SM;
+    for (auto vec: *clauses) {
+        delete vec;
+    }
+    delete clauses;
 }

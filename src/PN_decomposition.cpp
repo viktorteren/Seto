@@ -1282,11 +1282,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
     else if(decomposition && !no_merge){
         auto merge = new Merge(fcpn_set,
-                          clauses,
                           number_of_events,
                           map_of_SM_pre_regions,
                           map_of_SM_post_regions,
-                          file);
+                          file, regions_alias_mapping);
         delete merge;
     }
 

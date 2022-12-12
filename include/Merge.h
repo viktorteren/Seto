@@ -11,14 +11,15 @@ class Merge {
 
 private:
     map < SM * , set<int> * > *events_to_remove_per_SM;
+    vector<vector<int32_t> *> *clauses;
 
 public:
     Merge(set<SM *> *SMs,
-          vector<vector<int32_t> *> *clauses,
           int number_of_events,
           map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
           map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
-          const string& file);
+          const string& file,
+          map<Region *, int> *regions_alias_mapping);
 
     static void print_after_merge(set<SM *> *SMs,
                         map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
