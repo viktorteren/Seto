@@ -1,7 +1,7 @@
 Software for PN creation based on Regions theory (TStoPN)
 ========================
 
-Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
+Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD package.
 
 Tested on Ubuntu 22.04.1 LTS
 
