@@ -3,7 +3,7 @@ Software for PN creation based on Regions theory (TStoPN)
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2) and NetworkX.
 
-Tested only on Ubuntu 18.04 LTS
+Tested on Ubuntu 22.04.1 LTS
 
 # Required software (and how install it):
 - g++
