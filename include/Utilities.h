@@ -82,7 +82,7 @@ extern bool benchmark_script;
 extern map<set<Region*>, set<int>*> *intersection_cache;
 extern int places_after_initial_decomp;
 extern int places_after_greedy;
-extern double maxAlphabet;
+extern int maxAlphabet;
 extern double avgAlphabet;
 extern bool greedy_exact;
 extern bool check_structure;

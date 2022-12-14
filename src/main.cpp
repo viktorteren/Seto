@@ -745,6 +745,7 @@ int main(int argc, char **argv) {
                             << setprecision(4) << t_decomposition << ","
                             << setprecision(4) << setw(4) << t_greedy << ","
                             << setprecision(4) << t_labels_removal << ","
+                            << setprecision(4) << t_decomposition+t_greedy+t_labels_removal << ","
                             << states_sum << ","
                             << states_after_sms_removal << ","
                             << final_sum << ","

@@ -124,9 +124,10 @@ The file contains the following data if BDD flag was **not** selected:
 - decomposition type: SM
 - file name
 - time region generation
-- time decomposition
+- time initial SM decomposition (without optimizations)
 - time greedy algorithm
 - time merge
+- time entire decomposition (including greedy algorithm and merge)
 - number of places after the initial creation of the set of SMs
 - number of places after the execution of greedy algorithm
 - final number of places
