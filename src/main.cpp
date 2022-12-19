@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
         ignore_correctness = false;
         check_structure = false;
         no_bounds = false;
+        mixed_strategy = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -135,6 +136,9 @@ int main(int argc, char **argv) {
             else if(args[i] == "I"){
                 ignore_correctness = true;
             }
+            else if(args[i] == "MS"){
+                mixed_strategy = true;
+            }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
                 exit(1);
@@ -154,6 +158,14 @@ int main(int argc, char **argv) {
         }
         if(pn_synthesis && decomposition){
             cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
+            exit(0);
+        }
+        if(mixed_strategy && bdd_usage){
+            cerr << "Mixed strategy cannot be performed with BDD flag" << endl;
+            exit(0);
+        }
+        if(mixed_strategy && greedy_exact){
+            cerr << "Mixed strategy cannot be performed with GE flag" << endl;
             exit(0);
         }
         if(decomposition && no_merge && !bdd_usage){
@@ -570,9 +582,15 @@ int main(int argc, char **argv) {
                             exit(1);
                         }
                     else{
-                        cout << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
-                                << endl;
-                        GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
+                        if(mixed_strategy && SMs->size() < 20){
+                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                        }
+                        else {
+                            cout
+                                    << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
+                                    << endl;
+                            GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
+                        }
                     }
 
 
@@ -738,8 +756,16 @@ int main(int argc, char **argv) {
                     cout << "Max alphabet of an SM: " << maxAlphabet << endl;
                     std::ofstream outfile;
                     outfile.open("stats.csv", std::ios_base::app);
-                    outfile << "SM,"
-                            << fixed
+                    if(greedy_exact){
+                        outfile << "SM_exact_removal,";
+                    }
+                    else if(mixed_strategy){
+                        outfile << "SM_mixed_strategy,";
+                    }
+                    else {
+                        outfile << "SM,";
+                    }
+                    outfile << fixed
                             << get_file_name(file) << ","
                             << setprecision(4) << t_region_gen << ","
                             << setprecision(4) << t_decomposition << ","

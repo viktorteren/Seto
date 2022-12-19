@@ -86,6 +86,7 @@ extern int maxAlphabet;
 extern double avgAlphabet;
 extern bool greedy_exact;
 extern bool check_structure;
+extern bool mixed_strategy;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);

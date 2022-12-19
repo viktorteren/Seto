@@ -46,6 +46,7 @@ int maxAlphabet;
 double avgAlphabet;
 bool greedy_exact;
 bool check_structure;
+bool mixed_strategy;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){

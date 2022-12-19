@@ -119,9 +119,11 @@ make TS_splitter
 
 **NOBOUNDS**: this flag can be used only with BDD flag and it allows the creation of unbounded SMs
 
+**MS**: usage of a mixed strategy which chooses if use the exact algorithm or approximate one for the removal of redundant SMs
+
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run).
 The file contains the following data if BDD flag was **not** selected:
-- decomposition type: SM
+- decomposition type: SM/SM_exact_removal/SM_mixed_strategy
 - file name
 - time region generation
 - time initial SM decomposition (without optimizations)
