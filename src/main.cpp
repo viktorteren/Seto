@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
         no_bounds = false;
         mixed_strategy = false;
         only_safeness_check = false;
+        safe_components = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -82,6 +83,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "SC"){
                 only_safeness_check = true;
+            }
+            else if(args[i] == "SAFE"){
+                safe_components = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -218,6 +222,10 @@ int main(int argc, char **argv) {
         }
         if(only_safeness_check && !fcptnet){
             cerr << "Safeness check can be done only on FCPNs." << endl;
+            exit(0);
+        }
+        if(safe_components && (!fcptnet || !bdd_usage)){
+            cerr << "Safeness check can be done only on FCPNs with BDD flag." << endl;
             exit(0);
         }
     }

@@ -672,9 +672,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 1) EC clauses
      * 2) FCPN constraint
      * 2b) SM constraint
-     * 2c) Safeness for SMs (in case of FCPNs I can have to initial regions in the same FCPN and still have a safe FCPN):
-     *      given an SM at most one region containing initial sate can take part of it: given the set of regions
-     *      create couples of clauses between regions with non epty intersection for each SM (!r1 v !r2)
+     * 2c) Safeness for SMs (in case of FCPNs I can have two initial regions in the same FCPN and still have a safe FCPN
+     *      but the FCPN could be also unsafe): given an SM at most one region containing initial sate can take part of it:
+     *      given the set of regions create couples of clauses between regions with non epty intersection for each SM
+     *      (!r1 v !r2)
      * 3) binding between symbolic region and all it's representations in different FCPNs:
      *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
      *      it will become (!sr1 v r1 v r1')
@@ -686,6 +687,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      *      EC constraint???]
      * 7) TODO: (optional) minimization function: number of used regions
      * 8) decoding
+     * 9) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
+     * a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
+     * we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
      */
 
     cout << "=========[k-PN DECOMPOSITION MODULE (WITH BDD)]===============" << endl;
@@ -787,6 +791,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     auto clauses_pre = new vector<vector<int32_t> *>();
 
+    auto forbidden_pns = new set<set<Region *>*>();
+
     //STEP 0
     for (int i = 0; i < num_events_after_splitting; ++i) {
         clause = new vector<int32_t>();
@@ -841,6 +847,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
 
     do {
+        bool safe = true;
         for (auto cl: *clauses) {
             delete cl;
         }
@@ -1093,6 +1100,31 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             clauses->push_back(clause);
         }
 
+        //STEP 9
+        //I have to add to clauses the encoding of the forbidden pns for each of k pns
+        for(auto pn: *forbidden_pns){
+            for(int i=1; i <= num_FCPNs_try;++i){
+                clause = new vector<int32_t>();
+                int reg_offset = k_search_region_offset(m, k, i);
+                for(auto reg: *regions){
+                    int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
+                    if(pn->find(reg) != pn->end()){
+                        //add literal with !p
+                        clause->push_back(-region_encoding);
+                    }
+                    else{
+                        //add literal with q
+                        clause->push_back(region_encoding);
+                    }
+                }
+                if (decomposition_debug) {
+                    cout << "forbidden PN" << endl;
+                    print_clause(clause);
+                }
+                clauses->push_back(clause);
+            }
+        }
+
         //SAT computation
         PBConfig config = make_shared<PBConfigClass>();
         VectorClauseDatabase formula(config);
@@ -1183,15 +1215,27 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                 }
                 fcpn_set->insert(temp_PN);
+                if(safe_components) {
+                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
+                    if (!safe) {
+                        solution_found = false;
+                        if(decomposition_debug){
+                            cout << "not safe PN" << endl;
+                        }
+                        forbidden_pns->insert(temp_PN);
+                        fcpn_set->clear();
+                        break;
+                    }
+                }
             }
-
-            break;
+            if(!safe_components)
+                break;
         } else {
             if (decomposition_debug)
                 cout << "UNSAT" << endl;
         }
-
-        num_FCPNs_try++;
+        if(safe)
+            num_FCPNs_try++;
     } while (!solution_found);
 
     delete cache;

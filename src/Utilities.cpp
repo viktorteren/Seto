@@ -48,6 +48,7 @@ bool greedy_exact;
 bool check_structure;
 bool mixed_strategy;
 bool only_safeness_check;
+bool safe_components;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
