@@ -1252,6 +1252,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             if (decomposition_debug)
                 cout << "UNSAT" << endl;
             cout << "UNSAT with " << num_FCPNs_try << " FCPNs" << endl;
+            if(num_FCPNs_try == regions->size()){
+                cout << "probably there is no solution" << endl;
+                exit(0);
+            }
         }
         if(safe)
             num_FCPNs_try++;
