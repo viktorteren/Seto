@@ -553,6 +553,18 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         no_merge = true;
     }
 
+    if(only_safeness_check){
+        for(auto pn: *fcpn_set){
+            bool safe = safeness_check(pn, pre_regions_map, post_regions_map/*, region_ent_event_map*/);
+            if(safe){
+                cout << "SAFENESS CHECK PASSED!!!" << endl;
+            }
+            else{
+                cerr << "SAFENESS CHECK NOT PASSED!!!" << endl;
+            }
+        }
+    }
+
     if(!no_merge) {
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
@@ -592,18 +604,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
-
-    if(only_safeness_check){
-        for(auto pn: *fcpn_set){
-            bool safe = safeness_check(pn, pre_regions_map, post_regions_map, region_ex_event_map);
-            if(safe){
-                cout << "SAFENESS CHECK PASSED!!!" << endl;
-            }
-            else{
-                cerr << "SAFENESS CHECK NOT PASSED!!!" << endl;
-            }
-        }
-    }
 
     delete regions_vector;
 
@@ -1285,6 +1285,23 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         places_after_initial_decomp += pn->size();
     }
 
+    if(only_safeness_check){
+        bool safe_set = true;
+        for(auto pn: *fcpn_set){
+            bool safe = safeness_check(pn, pre_regions_map, post_regions_map/*, region_ent_event_map*/);
+            if(!safe){
+                safe_set = false;
+                break;
+            }
+        }
+        if(safe_set){
+            cout << "SAFENESS CHECK PASSED!!!" << endl;
+        }
+        else{
+            cerr << "SAFENESS CHECK NOT PASSED!!!" << endl;
+        }
+    }
+
     cout << "Number of places before merge: " << places_after_initial_decomp << endl;
 
     if (!no_merge && !decomposition) {
@@ -1338,6 +1355,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map,
                                    region_ex_event_map, fcpn_set);
     }
+
+
 
     if(fcptnet) {
         maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);

@@ -3197,7 +3197,10 @@ namespace Utilities {
         }
     }
 
-    bool safeness_check(set<Region *> *pn, map<int, set<Region*> *> *map_of_pre_regions, map<int, set<Region*> *> *map_of_post_regions, map<Region *, set<int> *> *post_events) {
+    bool safeness_check(set<Region *> *pn,
+                        map<int, set<Region*> *> *map_of_pre_regions,
+                        map<int, set<Region*> *> *map_of_post_regions/*,
+                        map<Region *, set<int> *> *post_events*/) {
         set<Region *> *current_marking;
         auto initial_regions=new set<Region *>();
         for(auto reg: *pn){
@@ -3208,6 +3211,18 @@ namespace Utilities {
         current_marking = initial_regions;
         vector<set<Region *>*> to_visit;
         set<set<Region *>> completely_explored_states;
+
+
+        auto post_events = new map<Region *, set<int> *>();
+        for(auto rec: *map_of_pre_regions){
+            auto ev = rec.first;
+            for(auto reg: *rec.second){
+                if(post_events->find(reg) == post_events->end()){
+                    (*post_events)[reg] = new set<int>();
+                }
+                (*post_events)[reg]->insert(ev);
+            }
+        }
 
         do{
             set<int> checked_events;

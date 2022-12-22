@@ -216,8 +216,8 @@ int main(int argc, char **argv) {
             cerr << "CHECK flag cannot be used with PN synthesis." << endl;
             exit(0);
         }
-        if(only_safeness_check && (!bdd_usage || !fcptnet)){
-            cerr << "Safeness check can be done only with BDD usage on FCPNs." << endl;
+        if(only_safeness_check && !fcptnet){
+            cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
         }
     }
