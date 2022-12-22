@@ -49,6 +49,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
      *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
      *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
+     *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
+     *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
+     *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
      *      5) maximization function: number of new regions used in the result -> max covering
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
@@ -433,12 +436,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             if (new_temp_set->size() > 1) {
                 int min_size = (*new_temp_set)[0].size();
                 int pos = 0;
+                //searching the smallest PN
                 for (int i = 1; i < new_temp_set->size(); i++) {
                     if ((*new_temp_set)[i].size() < min_size) {
                         min_size = (*new_temp_set)[i].size();
                         pos = i;
                     }
                 }
+                //add clause which avoids this PN as a solution
                 clause = new vector<int32_t>();
                 for (auto reg: (*new_temp_set)[pos]) {
                     //cout << "added a new constraint" << endl;
@@ -448,23 +453,29 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 delete temp_PN;
                 splitting_constraints_added = true;
             } else {
-                for (auto val: *last_solution) {
-                    if (val > 0) {
-                        /*if(decomposition_debug) {
-                            cout << val << ": ";
-                            println(*regions_vector->at(val - 1));
-                        }*/
-                        if (val <= k) {
-                            if(temp_PN->find(regions_vector->at(val - 1)) != temp_PN->end())
-                                if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
-                                    not_used_regions->erase(regions_vector->at(val - 1));
+                bool safe = true;
+                if(safe_components){
+                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
+                }
+                if(!safe_components || (safe_components && safe)) {
+                    for (auto val: *last_solution) {
+                        if (val > 0) {
+                            /*if(decomposition_debug) {
+                                cout << val << ": ";
+                                println(*regions_vector->at(val - 1));
+                            }*/
+                            if (val <= k) {
+                                if (temp_PN->find(regions_vector->at(val - 1)) != temp_PN->end())
+                                    if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
+                                        not_used_regions->erase(regions_vector->at(val - 1));
+                            }
                         }
                     }
-                }
-                fcpn_set->insert(temp_PN);
-                if(decomposition_debug) {
-                    cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
-                    println(temp_PN);
+                    fcpn_set->insert(temp_PN);
+                    if (decomposition_debug) {
+                        cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
+                        println(temp_PN);
+                    }
                 }
             }
             delete new_temp_set;
@@ -888,12 +899,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                             clause->push_back(-(*regions_alias_mapping)[r1] - offset);
                             clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                             clauses_pre->push_back(clause);
+                            /*
                             if (decomposition_debug) {
                                 print_clause(clause);
                                 cout << "conflict" << endl;
                                 println(*r1);
                                 println(*r2);
-                            }
+                            }*/
                         }
                     }
                     delete reg_vec;
@@ -933,12 +945,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                         clause->push_back(-(*regions_alias_mapping)[r] - offset);
                                         clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                                         clauses_pre->push_back(clause);
+                                        /*
                                         if (decomposition_debug) {
                                             print_clause(clause);
                                             cout << "conflict" << endl;
                                             println(*r);
                                             println(*r2);
-                                        }
+                                        }*/
                                     }
                                     /*
                                     else{
@@ -1004,8 +1017,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             for (int index = 0; index < num_FCPNs_try; ++index) {
                 clause->push_back(i + k_search_region_offset(m, k, index + 1));
             }
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
             clauses->push_back(clause);
         }
 
@@ -1027,8 +1041,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
                     clauses->push_back(clause);
+                    /*
                     if (decomposition_debug)
-                        print_clause(clause);
+                        print_clause(clause);*/
                 }
             }
             for (auto rec: *region_ent_event_map) {
@@ -1043,8 +1058,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
                     clauses->push_back(clause);
+                    /*
                     if (decomposition_debug)
-                        print_clause(clause);
+                        print_clause(clause);*/
                 }
             }
         }
@@ -1079,8 +1095,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 clause->push_back(region_encoding);
             }
             clauses_pre->push_back(clause);
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
         }
 
         //STEP 6
@@ -1097,12 +1114,15 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 int ev_offset = k_search_event_offset(m, k, index + 1);
                 clause->push_back(i + ev_offset);
             }
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
             clauses->push_back(clause);
         }
 
         //STEP 9
+        if(decomposition_debug)
+            cout << "STEP 9: FORBIDDEN FCPNS" << endl;
         //I have to add to clauses the encoding of the forbidden pns for each of k pns
         for(auto pn: *forbidden_pns){
             if(decomposition_debug)

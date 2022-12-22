@@ -224,8 +224,8 @@ int main(int argc, char **argv) {
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
         }
-        if(safe_components && (!fcptnet || !bdd_usage)){
-            cerr << "Safeness check can be done only on FCPNs with BDD flag." << endl;
+        if(safe_components && !fcptnet){
+            cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
         }
     }
