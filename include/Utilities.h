@@ -87,6 +87,7 @@ extern double avgAlphabet;
 extern bool greedy_exact;
 extern bool check_structure;
 extern bool mixed_strategy;
+extern bool only_safeness_check;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
@@ -251,4 +252,8 @@ namespace Utilities {
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
     bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections);
     bool is_a_region(set<int> *set_of_states);
+    bool safeness_check(set<Region *> *pn,
+                        map<int, set<Region*> *> *map_of_pre_regions,
+                        map<int, set<Region*> *> *map_of_post_regions,
+                        map<Region *, set<int> *> *region_ent_event_map);
 };

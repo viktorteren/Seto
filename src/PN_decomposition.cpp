@@ -593,6 +593,18 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
 
+    if(only_safeness_check){
+        for(auto pn: *fcpn_set){
+            bool safe = safeness_check(pn, pre_regions_map, post_regions_map, region_ex_event_map);
+            if(safe){
+                cout << "SAFENESS CHECK PASSED!!!" << endl;
+            }
+            else{
+                cerr << "SAFENESS CHECK NOT PASSED!!!" << endl;
+            }
+        }
+    }
+
     delete regions_vector;
 
     for (auto rec: *region_ex_event_map) {

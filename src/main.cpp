@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
         check_structure = false;
         no_bounds = false;
         mixed_strategy = false;
+        only_safeness_check = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -78,6 +79,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "NOBOUNDS"){
                 no_bounds = true;
+            }
+            else if(args[i] == "SC"){
+                only_safeness_check = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -210,6 +214,10 @@ int main(int argc, char **argv) {
         }
         if(check_structure && pn_synthesis){
             cerr << "CHECK flag cannot be used with PN synthesis." << endl;
+            exit(0);
+        }
+        if(only_safeness_check && (!bdd_usage || !fcptnet)){
+            cerr << "Safeness check can be done only with BDD usage on FCPNs." << endl;
             exit(0);
         }
     }

@@ -47,6 +47,7 @@ double avgAlphabet;
 bool greedy_exact;
 bool check_structure;
 bool mixed_strategy;
+bool only_safeness_check;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
@@ -3196,4 +3197,59 @@ namespace Utilities {
         }
     }
 
+    bool safeness_check(set<Region *> *pn, map<int, set<Region*> *> *map_of_pre_regions, map<int, set<Region*> *> *map_of_post_regions, map<Region *, set<int> *> *post_events) {
+        set<Region *> *current_marking;
+        auto initial_regions=new set<Region *>();
+        for(auto reg: *pn){
+            if(reg->find(initial_state) != reg->end()){
+                initial_regions->insert(reg);
+            }
+        }
+        current_marking = initial_regions;
+        vector<set<Region *>*> to_visit;
+        set<set<Region *>> completely_explored_states;
+
+        do{
+            set<int> checked_events;
+            for(auto reg: *current_marking){
+                for(auto ev: *post_events->at(reg)){
+                    bool can_fire = true;
+                    if(checked_events.find(ev) == checked_events.end()){
+                        checked_events.insert(ev);
+                        for(auto pre_reg: *map_of_pre_regions->at(ev)){
+                            if(pn->find(pre_reg) != pn->end()){
+                                if(current_marking->find(pre_reg) == current_marking->end()){
+                                    can_fire = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(can_fire){
+                            auto new_set = new set<Region *>();
+                            for(auto reg1: *current_marking){
+                                //region don't have to be moved after firing
+                                if(map_of_pre_regions->at(ev)->find(reg1) == map_of_pre_regions->at(ev)->end()){
+                                    new_set->insert(reg1);
+                                }
+                            }
+                            for(auto reg2: *map_of_post_regions->at(ev)){
+                                if(new_set->find(reg2) == new_set->end()){
+                                    new_set->insert(reg2);
+                                }
+                                //unsafe marking
+                                else{
+                                    return false;
+                                }
+                            }
+                            to_visit.push_back(new_set);
+                        }
+                    }
+                }
+            }
+            completely_explored_states.insert(*current_marking);
+            current_marking = to_visit.at(to_visit.size()-1);
+            to_visit.pop_back();
+        }while(!to_visit.empty());
+        return true;
+    }
 }

@@ -222,6 +222,8 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **CHECK**: check if each derived FCPN/ACPN has a correct FCPN/ACPN structure, also in case of BDD usage check if excitation closure is satisfied
 
+**SC**: check if the separate FCPNs are safe (for now works only combined with BDD flag)
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:
