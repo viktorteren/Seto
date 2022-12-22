@@ -665,6 +665,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     // FCPNs
     //encoding: [k+m+1, k+2m] first FCPN range: m events
     //encoding: [k+2m+1, 2k+2m] first FCPN regions range: k regions
+    //encoding: [2k+2m+1, 2k+3m] first FCPN range: m events
+    //encoding: [2k+3m+1, 3k+3m] first FCPN regions range: k regions
     // ... and so on, regions+events for each FCPN
 
     /*
@@ -791,7 +793,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     auto clauses_pre = new vector<vector<int32_t> *>();
 
-    auto forbidden_pns = new set<set<Region *>*>();
+    auto forbidden_pns = new set<set<Region *>>();
 
     //STEP 0
     for (int i = 0; i < num_events_after_splitting; ++i) {
@@ -1103,22 +1105,30 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         //STEP 9
         //I have to add to clauses the encoding of the forbidden pns for each of k pns
         for(auto pn: *forbidden_pns){
+            if(decomposition_debug)
+                cout << "m = " << m << "; k = " << k << endl;
             for(int i=1; i <= num_FCPNs_try;++i){
                 clause = new vector<int32_t>();
                 int reg_offset = k_search_region_offset(m, k, i);
+                if(decomposition_debug)
+                    cout << "reg offset: " << reg_offset << endl;
                 for(auto reg: *regions){
+                    //cout << "region:";
+                    //println(*reg);
                     int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
-                    if(pn->find(reg) != pn->end()){
+                    if(pn.find(reg) != pn.end()){
                         //add literal with !p
                         clause->push_back(-region_encoding);
+                        //cout << "encoding: " << -region_encoding << endl;
                     }
                     else{
                         //add literal with q
                         clause->push_back(region_encoding);
+                        //cout << "encoding: " << region_encoding << endl;
                     }
                 }
                 if (decomposition_debug) {
-                    cout << "forbidden PN" << endl;
+                    cout << "forbidden PN encoding num " << i << endl;
                     print_clause(clause);
                 }
                 clauses->push_back(clause);
@@ -1158,6 +1168,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
+            solution->clear();
             solution_found = true;
             if (decomposition_debug) {
                 if(!fcptnet && !acpn){
@@ -1187,7 +1198,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
 
             }
-            cout << endl;
+            if(decomposition_debug)
+                cout << endl;
 
             //STEP 8
             if(decomposition_debug)
@@ -1205,13 +1217,16 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                     //cout << temp1 << endl;
                     auto temp = solution->at(temp1-1);
+                    //cout << temp << endl;
                     while (temp > m + k) {
                         temp = temp - (m + k);
                     }
                     temp = temp - m;
                     //cout << "temp: " << temp << endl;
-                    if (temp > 0) {\
+                    if (temp > 0) {
                         temp_PN->insert(regions_alias_mapping_inverted->at(temp-1));
+                        //cout << "decoded region" << endl;
+                        //println(*regions_alias_mapping_inverted->at(temp-1));
                     }
                 }
                 fcpn_set->insert(temp_PN);
@@ -1222,7 +1237,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                         if(decomposition_debug){
                             cout << "not safe PN" << endl;
                         }
-                        forbidden_pns->insert(temp_PN);
+                        if(forbidden_pns->find(*temp_PN) != forbidden_pns->end()){
+                            cerr << "adding already forbidden PN" << endl;
+                        }
+                        forbidden_pns->insert(*temp_PN);
                         fcpn_set->clear();
                         break;
                     }
@@ -1233,6 +1251,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         } else {
             if (decomposition_debug)
                 cout << "UNSAT" << endl;
+            cout << "UNSAT with " << num_FCPNs_try << " FCPNs" << endl;
         }
         if(safe)
             num_FCPNs_try++;
