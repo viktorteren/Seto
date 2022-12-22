@@ -478,8 +478,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                 }
                 else{
-                    cout << "avoiding the following solution:" << endl;
-                    println(*last_solution);
+                    cout << "avoiding the following PN:" << endl;
+                    println(temp_PN);
                 }
             }
             delete new_temp_set;
