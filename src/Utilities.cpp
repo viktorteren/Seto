@@ -3200,8 +3200,7 @@ namespace Utilities {
 
     bool safeness_check(set<Region *> *pn,
                         map<int, set<Region*> *> *map_of_pre_regions,
-                        map<int, set<Region*> *> *map_of_post_regions/*,
-                        map<Region *, set<int> *> *post_events*/) {
+                        map<int, set<Region*> *> *map_of_post_regions) {
         set<Region *> *current_marking;
         auto initial_regions=new set<Region *>();
         for(auto reg: *pn){
@@ -3274,12 +3273,16 @@ namespace Utilities {
                                     break;
                                 }
                             }
-                            if(!exists)
-                                to_visit.push_back(new_set);
+                            if(!exists) {
+                                if(completely_explored_states.find(*new_set) == completely_explored_states.end())
+                                    to_visit.push_back(new_set);
+                            }
                             else {
-                                delete new_set;
-                                if(decomposition_debug)
+                                if(decomposition_debug){
                                     cout << "cache hit!!!" << endl;
+                                    println(new_set);
+                                }
+                                delete new_set;
                             }
                         }
                     }

@@ -478,6 +478,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                 }
                 else{
+                    cout << "NOT SAFE PN" << endl;
                     if(decomposition_debug) {
                         cout << "avoiding the following PN:" << endl;
                         println(temp_PN);
@@ -1260,9 +1261,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                     if (!safe) {
                         solution_found = false;
-                        if(decomposition_debug){
+                        //if(decomposition_debug){
                             cout << "not safe PN" << endl;
-                        }
+                        //}
                         if(forbidden_pns->find(*temp_PN) != forbidden_pns->end()){
                             cerr << "adding already forbidden PN" << endl;
                         }
