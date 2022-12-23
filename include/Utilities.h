@@ -88,6 +88,7 @@ extern bool greedy_exact;
 extern bool check_structure;
 extern bool mixed_strategy;
 extern bool only_safeness_check;
+extern bool safe_components;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);

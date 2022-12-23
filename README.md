@@ -224,6 +224,8 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **SC**: check if the separate FCPNs are safe
 
+**SAFE**: decompose allowing only standalone safe FCPNs
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:

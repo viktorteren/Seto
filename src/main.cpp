@@ -46,6 +46,7 @@ int main(int argc, char **argv) {
         no_bounds = false;
         mixed_strategy = false;
         only_safeness_check = false;
+        safe_components = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -82,6 +83,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "SC"){
                 only_safeness_check = true;
+            }
+            else if(args[i] == "SAFE"){
+                safe_components = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -217,6 +221,10 @@ int main(int argc, char **argv) {
             exit(0);
         }
         if(only_safeness_check && !fcptnet){
+            cerr << "Safeness check can be done only on FCPNs." << endl;
+            exit(0);
+        }
+        if(safe_components && !fcptnet){
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
         }
@@ -905,15 +913,18 @@ int main(int argc, char **argv) {
                 t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 std::ofstream outfile;
                 outfile.open("stats.csv", std::ios_base::app);
-                if(bdd_usage)
-                    if(decomposition)
+                if(bdd_usage) {
+                    if (decomposition)
                         outfile << "SM_BDD";
                     else
                         outfile << "FCPN_BDD";
+                }
                 else if(acpn)
                     outfile << "ACPN";
                 else
                     outfile << "FCPN";
+                if(safe_components)
+                    outfile << "_SAFE";
                 if(decomposition_debug)
                     outfile << "_DEBUG,";
                 else

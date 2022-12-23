@@ -49,6 +49,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
      *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
      *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
+     *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
+     *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
+     *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
      *      5) maximization function: number of new regions used in the result -> max covering
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
@@ -433,12 +436,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             if (new_temp_set->size() > 1) {
                 int min_size = (*new_temp_set)[0].size();
                 int pos = 0;
+                //searching the smallest PN
                 for (int i = 1; i < new_temp_set->size(); i++) {
                     if ((*new_temp_set)[i].size() < min_size) {
                         min_size = (*new_temp_set)[i].size();
                         pos = i;
                     }
                 }
+                //add clause which avoids this PN as a solution
                 clause = new vector<int32_t>();
                 for (auto reg: (*new_temp_set)[pos]) {
                     //cout << "added a new constraint" << endl;
@@ -448,23 +453,36 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 delete temp_PN;
                 splitting_constraints_added = true;
             } else {
-                for (auto val: *last_solution) {
-                    if (val > 0) {
-                        /*if(decomposition_debug) {
-                            cout << val << ": ";
-                            println(*regions_vector->at(val - 1));
-                        }*/
-                        if (val <= k) {
-                            if(temp_PN->find(regions_vector->at(val - 1)) != temp_PN->end())
-                                if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
-                                    not_used_regions->erase(regions_vector->at(val - 1));
+                bool safe = true;
+                if(safe_components){
+                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
+                }
+                if(!safe_components || (safe_components && safe)) {
+                    for (auto val: *last_solution) {
+                        if (val > 0) {
+                            /*if(decomposition_debug) {
+                                cout << val << ": ";
+                                println(*regions_vector->at(val - 1));
+                            }*/
+                            if (val <= k) {
+                                if (temp_PN->find(regions_vector->at(val - 1)) != temp_PN->end())
+                                    if (not_used_regions->find(regions_vector->at(val - 1)) != not_used_regions->end())
+                                        not_used_regions->erase(regions_vector->at(val - 1));
+                            }
                         }
                     }
+                    fcpn_set->insert(temp_PN);
+                    if (decomposition_debug) {
+                        cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
+                        println(temp_PN);
+                    }
                 }
-                fcpn_set->insert(temp_PN);
-                if(decomposition_debug) {
-                    cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
-                    println(temp_PN);
+                else{
+                    //cout << "NOT SAFE PN" << endl;
+                    if(decomposition_debug) {
+                        cout << "avoiding the following PN:" << endl;
+                        println(temp_PN);
+                    }
                 }
             }
             delete new_temp_set;
@@ -665,6 +683,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     // FCPNs
     //encoding: [k+m+1, k+2m] first FCPN range: m events
     //encoding: [k+2m+1, 2k+2m] first FCPN regions range: k regions
+    //encoding: [2k+2m+1, 2k+3m] first FCPN range: m events
+    //encoding: [2k+3m+1, 3k+3m] first FCPN regions range: k regions
     // ... and so on, regions+events for each FCPN
 
     /*
@@ -672,9 +692,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 1) EC clauses
      * 2) FCPN constraint
      * 2b) SM constraint
-     * 2c) Safeness for SMs (in case of FCPNs I can have two initial regions in the same FCPN and still have a safe FCPN):
-     *      given an SM at most one region containing initial sate can take part of it: given the set of regions
-     *      create couples of clauses between regions with non empty intersection for each SM (!r1 v !r2)
+     * 2c) Safeness for SMs (in case of FCPNs I can have two initial regions in the same FCPN and still have a safe FCPN
+     *      but the FCPN could be also unsafe): given an SM at most one region containing initial sate can take part of it:
+     *      given the set of regions create couples of clauses between regions with non empty intersection for each SM
+     *      (!r1 v !r2)
      * 3) binding between symbolic region and all it's representations in different FCPNs:
      *      I can have a symbolic region sr1 and two FCPNs, if I want to satisfy sr1 I will have sr1 -> r1 v r1'
      *      it will become (!sr1 v r1 v r1')
@@ -686,6 +707,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      *      EC constraint???]
      * 7) TODO: (optional) minimization function: number of used regions
      * 8) decoding
+     * 9) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
+     * a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
+     * we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
      */
 
     cout << "=========[k-PN DECOMPOSITION MODULE (WITH BDD)]===============" << endl;
@@ -787,6 +811,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     auto clauses_pre = new vector<vector<int32_t> *>();
 
+    auto forbidden_pns = new set<set<Region *>>();
+
     //STEP 0
     for (int i = 0; i < num_events_after_splitting; ++i) {
         clause = new vector<int32_t>();
@@ -837,13 +863,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 if (!empty_regions_intersection(r1, r2)) {
                     intersecting_pairs->push_back(new pair(r1, r2));
                 }
-
             }
         }
     }
 
 
     do {
+        bool safe = true;
         for (auto cl: *clauses) {
             delete cl;
         }
@@ -882,12 +908,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                             clause->push_back(-(*regions_alias_mapping)[r1] - offset);
                             clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                             clauses_pre->push_back(clause);
+                            /*
                             if (decomposition_debug) {
                                 print_clause(clause);
                                 cout << "conflict" << endl;
                                 println(*r1);
                                 println(*r2);
-                            }
+                            }*/
                         }
                     }
                     delete reg_vec;
@@ -927,12 +954,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                         clause->push_back(-(*regions_alias_mapping)[r] - offset);
                                         clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                                         clauses_pre->push_back(clause);
+                                        /*
                                         if (decomposition_debug) {
                                             print_clause(clause);
                                             cout << "conflict" << endl;
                                             println(*r);
                                             println(*r2);
-                                        }
+                                        }*/
                                     }
                                     /*
                                     else{
@@ -1000,8 +1028,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             for (int index = 0; index < num_FCPNs_try; ++index) {
                 clause->push_back(i + k_search_region_offset(m, k, index + 1));
             }
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
             clauses->push_back(clause);
         }
 
@@ -1023,8 +1052,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
                     clauses->push_back(clause);
+                    /*
                     if (decomposition_debug)
-                        print_clause(clause);
+                        print_clause(clause);*/
                 }
             }
             for (auto rec: *region_ent_event_map) {
@@ -1039,8 +1069,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
                     clauses->push_back(clause);
+                    /*
                     if (decomposition_debug)
-                        print_clause(clause);
+                        print_clause(clause);*/
                 }
             }
         }
@@ -1075,8 +1106,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 clause->push_back(region_encoding);
             }
             clauses_pre->push_back(clause);
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
         }
 
         //STEP 6
@@ -1093,9 +1125,45 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 int ev_offset = k_search_event_offset(m, k, index + 1);
                 clause->push_back(i + ev_offset);
             }
+            /*
             if (decomposition_debug)
-                print_clause(clause);
+                print_clause(clause);*/
             clauses->push_back(clause);
+        }
+
+        //STEP 9
+        if(decomposition_debug && safe_components)
+            cout << "STEP 9: FORBIDDEN FCPNS" << endl;
+        //I have to add to clauses the encoding of the forbidden pns for each of k pns
+        for(auto pn: *forbidden_pns){
+            if(decomposition_debug)
+                cout << "m = " << m << "; k = " << k << endl;
+            for(int i=1; i <= num_FCPNs_try;++i){
+                clause = new vector<int32_t>();
+                int reg_offset = k_search_region_offset(m, k, i);
+                if(decomposition_debug)
+                    cout << "reg offset: " << reg_offset << endl;
+                for(auto reg: *regions){
+                    //cout << "region:";
+                    //println(*reg);
+                    int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
+                    if(pn.find(reg) != pn.end()){
+                        //add literal with !p
+                        clause->push_back(-region_encoding);
+                        //cout << "encoding: " << -region_encoding << endl;
+                    }
+                    else{
+                        //add literal with q
+                        clause->push_back(region_encoding);
+                        //cout << "encoding: " << region_encoding << endl;
+                    }
+                }
+                if (decomposition_debug) {
+                    cout << "forbidden PN encoding num " << i << endl;
+                    print_clause(clause);
+                }
+                clauses->push_back(clause);
+            }
         }
 
         //SAT computation
@@ -1131,6 +1199,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                         formula.getClauses());
         sat = check_sat_formula_from_dimacs(solver, dimacs_file);
         if (sat) {
+            solution->clear();
             solution_found = true;
             if (decomposition_debug) {
                 if(!fcptnet && !acpn){
@@ -1160,7 +1229,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
 
             }
-            cout << endl;
+            if(decomposition_debug)
+                cout << endl;
 
             //STEP 8
             if(decomposition_debug)
@@ -1178,25 +1248,64 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                     //cout << temp1 << endl;
                     auto temp = solution->at(temp1-1);
+                    //cout << temp << endl;
                     while (temp > m + k) {
                         temp = temp - (m + k);
                     }
                     temp = temp - m;
                     //cout << "temp: " << temp << endl;
-                    if (temp > 0) {\
+                    if (temp > 0) {
                         temp_PN->insert(regions_alias_mapping_inverted->at(temp-1));
+                        //cout << "decoded region" << endl;
+                        //println(*regions_alias_mapping_inverted->at(temp-1));
                     }
                 }
                 fcpn_set->insert(temp_PN);
+                //I don't have to check safeness if I have only one FCPN since in this case EC is enough for safeness
+                if(safe_components && (num_FCPNs_try > 1)) {
+                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
+                    if (!safe) {
+                        solution_found = false;
+                        if(decomposition_debug){
+                            cout << "not safe PN" << endl;
+                            cout << endl;
+                            println(temp_PN);
+                            /*
+                            cout << "BYE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                            exit(1);*/
+                        }
+                        if(forbidden_pns->find(*temp_PN) != forbidden_pns->end()){
+                            cerr << "adding already forbidden PN" << endl;
+                        }
+                        forbidden_pns->insert(*temp_PN);
+                        /*
+                        for(auto pn: *fcpn_set){
+                            delete pn;
+                        }*/
+                        fcpn_set->clear();
+                        delete temp_PN;
+                        break;
+                    }
+                }
             }
-
-            break;
+            //at this point I can exit from do-while cycle
+            if(!safe_components || (safe_components && num_FCPNs_try == 1))
+                break;
         } else {
-            if (decomposition_debug)
-                cout << "UNSAT" << endl;
+            if (decomposition_debug) {
+                if (num_FCPNs_try == 1) {
+                    cout << "UNSAT with 1 FCPN" << endl;
+                } else {
+                    cout << "UNSAT with " << num_FCPNs_try << " FCPNs" << endl;
+                }
+            }
+            if(num_FCPNs_try == regions->size()){
+                cout << "probably there is no solution" << endl;
+                exit(0);
+            }
         }
-
-        num_FCPNs_try++;
+        if(safe)
+            num_FCPNs_try++;
     } while (!solution_found);
 
     delete cache;
@@ -1427,6 +1536,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete rec.second;
     }
     delete regions_connected_to_labels;
+    delete regions_vector;
 
     return fcpn_set;
 }
