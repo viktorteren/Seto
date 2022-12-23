@@ -913,15 +913,18 @@ int main(int argc, char **argv) {
                 t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
                 std::ofstream outfile;
                 outfile.open("stats.csv", std::ios_base::app);
-                if(bdd_usage)
-                    if(decomposition)
+                if(bdd_usage) {
+                    if (decomposition)
                         outfile << "SM_BDD";
                     else
                         outfile << "FCPN_BDD";
+                }
                 else if(acpn)
                     outfile << "ACPN";
                 else
                     outfile << "FCPN";
+                if(safe_components)
+                    outfile << "_SAFE";
                 if(decomposition_debug)
                     outfile << "_DEBUG,";
                 else

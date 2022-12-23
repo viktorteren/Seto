@@ -478,7 +478,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                 }
                 else{
-                    cout << "NOT SAFE PN" << endl;
+                    //cout << "NOT SAFE PN" << endl;
                     if(decomposition_debug) {
                         cout << "avoiding the following PN:" << endl;
                         println(temp_PN);
@@ -1128,7 +1128,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         //STEP 9
-        if(decomposition_debug)
+        if(decomposition_debug && safe_components)
             cout << "STEP 9: FORBIDDEN FCPNS" << endl;
         //I have to add to clauses the encoding of the forbidden pns for each of k pns
         for(auto pn: *forbidden_pns){
@@ -1262,9 +1262,14 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                     if (!safe) {
                         solution_found = false;
-                        //if(decomposition_debug){
+                        if(decomposition_debug){
                             cout << "not safe PN" << endl;
-                        //}
+                            cout << endl;
+                            println(temp_PN);
+                            /*
+                            cout << "BYE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+                            exit(1);*/
+                        }
                         if(forbidden_pns->find(*temp_PN) != forbidden_pns->end()){
                             cerr << "adding already forbidden PN" << endl;
                         }
