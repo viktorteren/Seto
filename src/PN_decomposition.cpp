@@ -478,8 +478,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                 }
                 else{
-                    cout << "avoiding the following PN:" << endl;
-                    println(temp_PN);
+                    if(decomposition_debug) {
+                        cout << "avoiding the following PN:" << endl;
+                        println(temp_PN);
+                    }
                 }
             }
             delete new_temp_set;
@@ -1265,7 +1267,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                             cerr << "adding already forbidden PN" << endl;
                         }
                         forbidden_pns->insert(*temp_PN);
+                        /*
+                        for(auto pn: *fcpn_set){
+                            delete pn;
+                        }*/
                         fcpn_set->clear();
+                        delete temp_PN;
                         break;
                     }
                 }
@@ -1273,9 +1280,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             if(!safe_components)
                 break;
         } else {
-            if (decomposition_debug)
-                cout << "UNSAT" << endl;
-            cout << "UNSAT with " << num_FCPNs_try << " FCPNs" << endl;
+            if (decomposition_debug) {
+                if (num_FCPNs_try == 1) {
+                    cout << "UNSAT with 1 FCPN" << endl;
+                } else {
+                    cout << "UNSAT with " << num_FCPNs_try << " FCPNs" << endl;
+                }
+            }
             if(num_FCPNs_try == regions->size()){
                 cout << "probably there is no solution" << endl;
                 exit(0);
@@ -1513,6 +1524,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         delete rec.second;
     }
     delete regions_connected_to_labels;
+    delete regions_vector;
 
     return fcpn_set;
 }

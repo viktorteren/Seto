@@ -3249,15 +3249,38 @@ namespace Utilities {
                                 }
                             }
                             for(auto reg2: *map_of_post_regions->at(ev)){
-                                if(new_set->find(reg2) == new_set->end()){
-                                    new_set->insert(reg2);
-                                }
-                                //unsafe marking
-                                else{
-                                    return false;
+                                if(pn->find(reg2) != pn->end()) {
+                                    if (current_marking->find(reg2) == current_marking->end()) {
+                                        new_set->insert(reg2);
+                                    }
+                                    //unsafe marking
+                                    else {
+                                        for(auto rec: *post_events){
+                                            delete rec.second;
+                                        }
+                                        delete post_events;
+                                        delete initial_regions;
+                                        delete new_set;
+                                        return false;
+                                    }
                                 }
                             }
-                            to_visit.push_back(new_set);
+                            //cout << "adding new set" << endl;
+                            //println(new_set);
+                            bool exists = false;
+                            for(auto & i : to_visit){
+                                if(*i == *new_set) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                            if(!exists)
+                                to_visit.push_back(new_set);
+                            else {
+                                delete new_set;
+                                if(decomposition_debug)
+                                    cout << "cache hit!!!" << endl;
+                            }
                         }
                     }
                 }
@@ -3266,6 +3289,11 @@ namespace Utilities {
             current_marking = to_visit.at(to_visit.size()-1);
             to_visit.pop_back();
         }while(!to_visit.empty());
+        for(auto rec: *post_events){
+            delete rec.second;
+        }
+        delete post_events;
+        delete initial_regions;
         return true;
     }
 }
