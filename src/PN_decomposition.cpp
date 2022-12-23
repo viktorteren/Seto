@@ -1257,7 +1257,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                 }
                 fcpn_set->insert(temp_PN);
-                if(safe_components) {
+                //I don't have to check safeness if I have only one FCPN since in this case EC is enough for safeness
+                if(safe_components && (num_FCPNs_try > 1)) {
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                     if (!safe) {
                         solution_found = false;
@@ -1278,7 +1279,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                 }
             }
-            if(!safe_components)
+            //at this point I can exit from do-while cycle
+            if(!safe_components || (safe_components && num_FCPNs_try == 1))
                 break;
         } else {
             if (decomposition_debug) {
