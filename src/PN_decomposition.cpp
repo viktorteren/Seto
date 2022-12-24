@@ -321,7 +321,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         if(safe_components_SM) {
             //the check on splitting constraints is right but in some cases with this constraint hte result is reached
             // a way slower because without it, we directly search for SMs improving the search speed
-            if (last_result_unsafe && !splitting_constraints_added) {
+            if (last_result_unsafe /*&& !splitting_constraints_added*/) {
                 for (auto cl: *SM_clauses) {
                     formula.addClause(*cl);
                 }
@@ -526,7 +526,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 splitting_constraint_clauses->push_back(clause);
                 delete temp_PN;
                 splitting_constraints_added = true;
-                last_result_unsafe = false;
+                //without adding the following line the search of an SM continues until it finds one valid
+                //last_result_unsafe = false;
             } else {
                 bool safe = true;
                 if(safe_components || safe_components_SM){
@@ -566,7 +567,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
             delete new_temp_set;
 
-            //fortnatelly this case never occurs
+            //fortunately this case never occurs
             /*if(contains(results_to_avoid, *last_solution)){
                 cout << "adding an already existing PN" << endl;
             }*/
@@ -1224,34 +1225,36 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         if(decomposition_debug && safe_components)
             cout << "STEP 9: FORBIDDEN FCPNS" << endl;
         //I have to add to clauses the encoding of the forbidden pns for each of k pns
-        for(auto pn: *forbidden_pns){
-            if(decomposition_debug)
-                cout << "m = " << m << "; k = " << k << endl;
-            for(int i=1; i <= num_FCPNs_try;++i){
-                clause = new vector<int32_t>();
-                int reg_offset = k_search_region_offset(m, k, i);
+        if(safe_components){
+            for(auto pn: *forbidden_pns){
                 if(decomposition_debug)
-                    cout << "reg offset: " << reg_offset << endl;
-                for(auto reg: *regions){
-                    //cout << "region:";
-                    //println(*reg);
-                    int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
-                    if(pn.find(reg) != pn.end()){
-                        //add literal with !p
-                        clause->push_back(-region_encoding);
-                        //cout << "encoding: " << -region_encoding << endl;
+                    cout << "m = " << m << "; k = " << k << endl;
+                for(int i=1; i <= num_FCPNs_try;++i){
+                    clause = new vector<int32_t>();
+                    int reg_offset = k_search_region_offset(m, k, i);
+                    if(decomposition_debug)
+                        cout << "reg offset: " << reg_offset << endl;
+                    for(auto reg: *regions){
+                        //cout << "region:";
+                        //println(*reg);
+                        int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
+                        if(pn.find(reg) != pn.end()){
+                            //add literal with !p
+                            clause->push_back(-region_encoding);
+                            //cout << "encoding: " << -region_encoding << endl;
+                        }
+                        else{
+                            //add literal with q
+                            clause->push_back(region_encoding);
+                            //cout << "encoding: " << region_encoding << endl;
+                        }
                     }
-                    else{
-                        //add literal with q
-                        clause->push_back(region_encoding);
-                        //cout << "encoding: " << region_encoding << endl;
+                    if (decomposition_debug) {
+                        cout << "forbidden PN encoding num " << i << endl;
+                        print_clause(clause);
                     }
+                    clauses->push_back(clause);
                 }
-                if (decomposition_debug) {
-                    cout << "forbidden PN encoding num " << i << endl;
-                    print_clause(clause);
-                }
-                clauses->push_back(clause);
             }
         }
 
