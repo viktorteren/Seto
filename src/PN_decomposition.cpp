@@ -285,7 +285,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         if (!splitting_constraints_added) {
             if (!splitting_constraint_clauses->empty()) {
                 splitting_constraint_clauses->clear();
-                cout << "removing splitting constraints" << endl;
+                //cout << "removing splitting constraints" << endl;
             }
         }
 
@@ -318,10 +318,19 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         for (auto cl: *splitting_constraint_clauses) {
             formula.addClause(*cl);
         }
-        if(last_result_unsafe){
-            for (auto cl: *SM_clauses) {
-                formula.addClause(*cl);
+        if(safe_components_SM) {
+            //the check on splitting constraints is right but in some cases with this constraint hte result is reached
+            // a way slower because without it, we directly search for SMs improving the search speed
+            if (last_result_unsafe && !splitting_constraints_added) {
+                for (auto cl: *SM_clauses) {
+                    formula.addClause(*cl);
+                }
+                //cout << "next search is an SM" << endl;
             }
+            /*
+            else{
+                cout << "next FCPN" << endl;
+            }*/
         }
         Minisat::Solver solver;
 
@@ -517,6 +526,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 splitting_constraint_clauses->push_back(clause);
                 delete temp_PN;
                 splitting_constraints_added = true;
+                last_result_unsafe = false;
             } else {
                 bool safe = true;
                 if(safe_components || safe_components_SM){
@@ -551,9 +561,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         cout << "avoiding the following PN:" << endl;
                         println(temp_PN);
                     }
-                    if(safe_components_SM){
-                        last_result_unsafe = true;
-                    }
+                    last_result_unsafe = true;
                 }
             }
             delete new_temp_set;
@@ -566,7 +574,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             results_to_avoid->push_back(*last_solution);
             //cout << "results to avoid size: " << results_to_avoid->size() << endl;
 
-            if (!splitting_constraints_added) {
+            if (!splitting_constraints_added &&
+                (!safe_components || (safe_components && !last_result_unsafe)) &&
+                (!safe_components_SM || (safe_components_SM && !last_result_unsafe))) {
                 auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
                 excitation_closure = is_excitation_closed(used_regions_map, ER);
                 for (auto rec: *used_regions_map) {
