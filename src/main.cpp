@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
         mixed_strategy = false;
         only_safeness_check = false;
         safe_components = false;
+        safe_components_SM = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -86,6 +87,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "SAFE"){
                 safe_components = true;
+            }
+            else if(args[i] == "SS"){
+                safe_components_SM = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;
@@ -218,6 +222,14 @@ int main(int argc, char **argv) {
         }
         if(check_structure && pn_synthesis){
             cerr << "CHECK flag cannot be used with PN synthesis." << endl;
+            exit(0);
+        }
+        if(safe_components_SM && decomposition){
+            cerr << "SS flag cannot be used on SMs." << endl;
+            exit(0);
+        }
+        if(safe_components_SM && bdd_usage){
+            cerr << "SS flag cannot be combined with BDD flag." << endl;
             exit(0);
         }
         if(only_safeness_check && !fcptnet){

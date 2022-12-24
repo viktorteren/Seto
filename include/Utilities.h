@@ -89,6 +89,7 @@ extern bool check_structure;
 extern bool mixed_strategy;
 extern bool only_safeness_check;
 extern bool safe_components;
+extern bool safe_components_SM;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
@@ -136,6 +137,7 @@ namespace Utilities {
     bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set);
     bool contains(set<int> bigger_set, const set<int>& smaller_set);
     bool contains(set<int> *bigger_set, set<int> *smaller_set);
+    bool contains(vector<set<int>> *container, const set<int>& result_to_check);
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
     //todo: use template to merge the two versions of print_ts_dot_file

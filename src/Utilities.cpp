@@ -49,6 +49,7 @@ bool check_structure;
 bool mixed_strategy;
 bool only_safeness_check;
 bool safe_components;
+bool safe_components_SM;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
@@ -563,6 +564,15 @@ namespace Utilities {
         return true;
     }
 
+    bool contains(vector<set<int>> *container, const set<int>& result_to_check){
+        for (const auto& elem : *container) {
+            if (are_equal(elem, result_to_check)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     template<typename T>
     bool contains(T container, Region *region) {
         if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
@@ -576,7 +586,6 @@ namespace Utilities {
         }
         return false;
     }
-
 
     template<typename T, typename T2>
     inline bool contains(T bigger_set, T2 smaller_set) {

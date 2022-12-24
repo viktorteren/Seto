@@ -52,6 +52,17 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
      *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
      *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
+     *      4d) safeness using SMs: once we find an unsafe FCPN we search for an SM, in this way the component is surely
+     *          safe. The SM should have also only one token. The constraint for SM structure is:
+     *              given an event e
+     *                  for each couple of pre-regions/post-regions r1 and r2
+     *                      create clause (!r1 v !r2)
+     *          The constraint for the initial paces is the following:
+     *              Given the set of initial places
+     *                  for each couple of initial places r1 and r2
+     *                      create clause (!r1 v !r2)
+     *          In this way we cannot have a couple of initial places in the same SM but e also have to create a clause
+     *          which forces the usage o one initial place: the clauses containing all initial places
      *      5) maximization function: number of new regions used in the result -> max covering
      *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
      *      7) decode result
@@ -216,6 +227,55 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         clauses_pre->push_back(clause);
     }
 
+    //STEP 4d
+    vector<vector<int32_t> *> *SM_clauses;
+    if(safe_components_SM){
+        SM_clauses = new vector<vector<int32_t> *>();
+        set<Region*> initial_regions;
+        for(auto reg: regions){
+            if(is_initial_region(reg)){
+                initial_regions.insert(reg);
+            }
+        }
+        clause = new vector<int32_t>();
+        //at least one initial place
+        for(auto reg: initial_regions){
+            int region_encoding = 1 + reg_map->at(reg);
+            clause->push_back(region_encoding);
+        }
+        SM_clauses->push_back(clause);
+        for(auto rec: *pre_regions_map){
+            for(auto reg1: *rec.second){
+                for(auto  reg2: *rec.second){
+                    if(reg1 != reg2) {
+                        clause = new vector<int32_t>();
+                        int region_encoding = 1 + reg_map->at(reg1);
+                        clause->push_back(-region_encoding);
+                        region_encoding = 1 + reg_map->at(reg2);
+                        clause->push_back(-region_encoding);
+                        SM_clauses->push_back(clause);
+                    }
+                }
+            }
+        }
+        for(auto rec: *post_regions_map){
+            for(auto reg1: *rec.second){
+                for(auto  reg2: *rec.second){
+                    if(reg1 != reg2) {
+                        clause = new vector<int32_t>();
+                        int region_encoding = 1 + reg_map->at(reg1);
+                        clause->push_back(-region_encoding);
+                        region_encoding = 1 + reg_map->at(reg2);
+                        clause->push_back(-region_encoding);
+                        SM_clauses->push_back(clause);
+                    }
+                }
+            }
+        }
+    }
+
+    bool last_result_unsafe = false;
+
     do {
         for (auto cl: *clauses) {
             delete cl;
@@ -257,6 +317,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
         for (auto cl: *splitting_constraint_clauses) {
             formula.addClause(*cl);
+        }
+        if(last_result_unsafe){
+            for (auto cl: *SM_clauses) {
+                formula.addClause(*cl);
+            }
         }
         Minisat::Solver solver;
 
@@ -454,10 +519,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 splitting_constraints_added = true;
             } else {
                 bool safe = true;
-                if(safe_components){
+                if(safe_components || safe_components_SM){
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                 }
-                if(!safe_components || (safe_components && safe)) {
+                if((!safe_components && !safe_components_SM) || (safe_components && safe) || (safe_components_SM && safe)) {
                     for (auto val: *last_solution) {
                         if (val > 0) {
                             /*if(decomposition_debug) {
@@ -476,17 +541,30 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
                         println(temp_PN);
                     }
+                    last_result_unsafe = false;
                 }
                 else{
-                    //cout << "NOT SAFE PN" << endl;
+                    /*
+                    cout << "NOT SAFE PN" << endl;
+                    println(temp_PN);*/
                     if(decomposition_debug) {
                         cout << "avoiding the following PN:" << endl;
                         println(temp_PN);
                     }
+                    if(safe_components_SM){
+                        last_result_unsafe = true;
+                    }
                 }
             }
             delete new_temp_set;
+
+            //fortnatelly this case never occurs
+            /*if(contains(results_to_avoid, *last_solution)){
+                cout << "adding an already existing PN" << endl;
+            }*/
+
             results_to_avoid->push_back(*last_solution);
+            //cout << "results to avoid size: " << results_to_avoid->size() << endl;
 
             if (!splitting_constraints_added) {
                 auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
@@ -710,6 +788,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 9) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
      * a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
      * we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
+     * //todo: core dump with safeness on vme_write
      */
 
     cout << "=========[k-PN DECOMPOSITION MODULE (WITH BDD)]===============" << endl;
@@ -1266,6 +1345,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                     if (!safe) {
                         solution_found = false;
+                        //cout << "not safe PN" << endl;
                         if(decomposition_debug){
                             cout << "not safe PN" << endl;
                             cout << endl;
