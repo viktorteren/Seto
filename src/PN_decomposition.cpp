@@ -1453,9 +1453,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             else{
                 fcpn_set->clear();
             }
-            if(!dont_increase_counter)
-                num_FCPNs_try++;
         }
+        if(!dont_increase_counter)
+            num_FCPNs_try++;
     } while (!solution_found);
 
     delete cache;
