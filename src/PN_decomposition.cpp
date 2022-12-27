@@ -959,11 +959,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
 
-    //todo fix this
     auto results_to_avoid = new vector<set<Region *>>();
+
+    bool dont_increase_counter;
 
     do {
         bool safe = true;
+        dont_increase_counter = false;
         for (auto cl: *clauses) {
             delete cl;
         }
@@ -1379,6 +1381,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
                     if (!safe) {
                         solution_found = false;
+                        dont_increase_counter = true;
                         //cout << "not safe PN" << endl;
                         if(decomposition_debug){
                             cout << "not safe PN" << endl;
@@ -1401,10 +1404,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     }
                 }
             }
-            //at this point I can exit from do-while cycle
-            if(!safe_components || (safe_components && num_FCPNs_try == 1)) {
-                break;
-            }
         } else {
             if (decomposition_debug) {
                 if (num_FCPNs_try == 1) {
@@ -1418,8 +1417,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 exit(0);
             }
         }
-        if(safe)
-            num_FCPNs_try++;
         if(solution_found){
             auto to_add = vector<set<Region *>*>();
             auto to_remove = vector<set<Region *>*>();
@@ -1430,9 +1427,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     if(optimal){
                         solution_found = false;
                         results_to_avoid->push_back(*temp_PN);
+                        dont_increase_counter = true;
                     }
-
-                    //todo: add a flag with which the search continues if e have a suboptimal result
                     if(solution_found) {
                         to_remove.push_back(temp_PN);
                         for (const auto &PN: *new_temp_set) {
@@ -1457,6 +1453,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             else{
                 fcpn_set->clear();
             }
+            if(!dont_increase_counter)
+                num_FCPNs_try++;
         }
     } while (!solution_found);
 
