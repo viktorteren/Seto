@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
         only_safeness_check = false;
         safe_components = false;
         safe_components_SM = false;
+        optimal = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -151,6 +152,9 @@ int main(int argc, char **argv) {
             else if(args[i] == "MS"){
                 mixed_strategy = true;
             }
+            else if(args[i] == "OPTIMAL"){
+                optimal = true;
+            }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
                 exit(1);
@@ -158,6 +162,10 @@ int main(int argc, char **argv) {
         }
         if(fcptnet && decomposition_output_sis){
             cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
+            exit(0);
+        }
+        if(optimal && !bdd_usage){
+            cerr << "OPTIAL flag can be used only with BDD flag."<< endl;
             exit(0);
         }
         if(no_bounds && !bdd_usage){
@@ -908,18 +916,7 @@ int main(int argc, char **argv) {
 
                 cout << "Total number of places: " << num_places << endl;
 
-                //todo: remove if solving memory leak, why the internal code is a problem for isend?
-                if(!bdd_usage) {
-                    for (auto FCPN: *final_pn_set) {
-                        for (auto reg: *FCPN) {
-                            if (reg != nullptr) {
-                                if (regions_set->find(reg) == regions_set->end()) {
-                                    delete reg;
-                                }
-                            }
-                        }
-                    }
-                }
+
 
                 t_runtime = (double) (clock() - tStart) / CLOCKS_PER_SEC;
                 t_fcpn_decomposition = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
@@ -953,7 +950,20 @@ int main(int argc, char **argv) {
                         << maxAlphabet << ","
                         << avgAlphabet
                         << endl;
+                //todo: remove if solving memory leak, why the internal code is a problem for isend?
+                //if(!bdd_usage) {
+                for (auto FCPN: *final_pn_set) {
+                    for (auto reg: *FCPN) {
+                        if (reg != nullptr) {
+                            if (regions_set->find(reg) == regions_set->end()) {
+                                delete reg;
+                            }
+                        }
+                    }
+                    delete FCPN;
+                }
                 delete final_pn_set;
+                //}
 
                 cout << "MAX alphabet: " << maxAlphabet << endl;
                 cout << "AVG alphabet: " << avgAlphabet << endl;

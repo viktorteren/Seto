@@ -799,6 +799,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
      * 9) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
      * a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
      * we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
+     * 10) OPTIMAL RESULT SEARCH: if we find a suboptimal result with a set of regions which corresponds to two
+     *          FCPNs add this set as forbidden one
      * //todo: core dump with safeness on vme_write
      */
 
@@ -957,6 +959,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
     }
 
+    //todo fix this
+    auto results_to_avoid = new vector<set<Region *>>();
 
     do {
         bool safe = true;
@@ -1257,6 +1261,23 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
             }
         }
+        //STEP 10
+        if(optimal){
+            if(results_to_avoid != nullptr){
+                for (const auto &res: *results_to_avoid) {
+                    for (int i = 0; i < num_FCPNs_try; ++i) {
+                        clause = new vector<int32_t>();
+                        int reg_offset = k_search_region_offset(m, k, i);
+                        for (auto reg: res) {
+                            int region_encoding = regions_alias_mapping->at(reg) + reg_offset;
+                            clause->push_back(-region_encoding);
+                        }
+                        clauses->push_back(clause);
+                    }
+                }
+            }
+        }
+
 
         //SAT computation
         PBConfig config = make_shared<PBConfigClass>();
@@ -1371,19 +1392,19 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                             cerr << "adding already forbidden PN" << endl;
                         }
                         forbidden_pns->insert(*temp_PN);
-                        /*
+
                         for(auto pn: *fcpn_set){
                             delete pn;
-                        }*/
-                        fcpn_set->clear();
+                        }
                         delete temp_PN;
                         break;
                     }
                 }
             }
             //at this point I can exit from do-while cycle
-            if(!safe_components || (safe_components && num_FCPNs_try == 1))
+            if(!safe_components || (safe_components && num_FCPNs_try == 1)) {
                 break;
+            }
         } else {
             if (decomposition_debug) {
                 if (num_FCPNs_try == 1) {
@@ -1399,32 +1420,51 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
         if(safe)
             num_FCPNs_try++;
+        if(solution_found){
+            auto to_add = vector<set<Region *>*>();
+            auto to_remove = vector<set<Region *>*>();
+            for(auto temp_PN: *fcpn_set){
+                auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
+                if(new_temp_set->size() > 1){
+                    cout << "Suboptimal result found." << endl;
+                    if(optimal){
+                        solution_found = false;
+                        results_to_avoid->push_back(*temp_PN);
+                    }
+
+                    //todo: add a flag with which the search continues if e have a suboptimal result
+                    if(solution_found) {
+                        to_remove.push_back(temp_PN);
+                        for (const auto &PN: *new_temp_set) {
+                            auto tmp_PN = new set<Region *>();
+                            for (auto reg: PN) {
+                                tmp_PN->insert(reg);
+                            }
+                            to_add.push_back(tmp_PN);
+                        }
+                    }
+                }
+                delete new_temp_set;
+            }
+            if(solution_found) {
+                for (auto PN: to_remove) {
+                    fcpn_set->erase(PN);
+                }
+                for (auto PN: to_add) {
+                    fcpn_set->insert(PN);
+                }
+            }
+            else{
+                fcpn_set->clear();
+            }
+        }
     } while (!solution_found);
 
     delete cache;
 
-    auto to_add = vector<set<Region *>*>();
-    auto to_remove = vector<set<Region *>*>();
-    for(auto temp_PN: *fcpn_set){
-        auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
-        if(new_temp_set->size() > 1){
-            to_remove.push_back(temp_PN);
-            for(const auto& PN: *new_temp_set){
-                auto tmp_PN = new set<Region *>();
-                for(auto reg: PN){
-                    tmp_PN->insert(reg);
-                }
-                to_add.push_back(tmp_PN);
-            }
-        }
-        delete new_temp_set;
-    }
-    for(auto PN: to_remove){
-        fcpn_set->erase(PN);
-    }
-    for(auto PN: to_add){
-        fcpn_set->insert(PN);
-    }
+    delete  results_to_avoid;
+
+
 
     if (decomposition_debug) {
         for (auto FCPN: *fcpn_set) {
@@ -1630,6 +1670,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
     delete regions_connected_to_labels;
     delete regions_vector;
+    delete forbidden_pns;
+    delete initial_regions;
 
     return fcpn_set;
 }

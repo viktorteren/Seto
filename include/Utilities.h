@@ -90,6 +90,7 @@ extern bool mixed_strategy;
 extern bool only_safeness_check;
 extern bool safe_components;
 extern bool safe_components_SM;
+extern bool optimal;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);

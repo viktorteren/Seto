@@ -338,6 +338,9 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
         }
         delete regs_vector;
     }
+    for(auto node: inodes){
+        Cudd_RecursiveDeref(manager, node);
+    }
 }
 
 vector<vector<int32_t> *> *BDD_encoder::get_clauses() {
