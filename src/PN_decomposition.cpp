@@ -962,6 +962,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     auto results_to_avoid = new vector<set<Region *>>();
 
     bool dont_increase_counter;
+    bool suboptimal_result_found = false;
 
     do {
         bool safe = true;
@@ -1423,7 +1424,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             for(auto temp_PN: *fcpn_set){
                 auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
                 if(new_temp_set->size() > 1){
-                    cout << "Suboptimal result found." << endl;
+                    suboptimal_result_found = true;
                     if(optimal){
                         solution_found = false;
                         results_to_avoid->push_back(*temp_PN);
@@ -1462,7 +1463,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     delete  results_to_avoid;
 
-
+    if(!optimal && suboptimal_result_found){
+        cout << "Suboptimal result found." << endl;
+    }
 
     if (decomposition_debug) {
         for (auto FCPN: *fcpn_set) {
