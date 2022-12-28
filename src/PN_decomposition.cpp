@@ -673,6 +673,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     }
 
     if(!no_merge) {
+        //todo: bug with pparb_2_3 -> creates a PN with an event without pre-regions, even if this UNSAFE pn combined
+        // with others is still in bisimulation with original LTS
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
         delete merge;
