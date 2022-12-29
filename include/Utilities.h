@@ -121,8 +121,11 @@ namespace Utilities {
     map<Region *, int> *get_regions_map(map<int, Region *> *net);
     void print(Region &region);
     void println(Region &region);
+    void println(Region &region, std::ofstream *st);
+    void print(Region &region, std::ofstream *st);
     void println(set<Region *> *regions);
     void println(set<Region *> &regions);
+    void print_SM_on_file(set<Region *> &regions, const string& filename);
     void println_simplified(set<Region *> *regions, map<Region*, int> *regions_alias_mapping);
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);

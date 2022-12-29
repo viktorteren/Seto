@@ -345,9 +345,26 @@ namespace Utilities {
         }
     }
 
+    void print(Region &region, std::ofstream *st) {
+        int pos = 0;
+        auto size = static_cast<int>(region.size());
+        for (auto state : region) {
+            pos++;
+            *st << state;
+            if (pos != size) {
+                *st << ",";
+            }
+        }
+    }
+
     void println(Region &region) {
         print(region);
         cout << endl;
+    }
+
+    void println(Region &region, std::ofstream *st) {
+        print(region, st);
+        *st << endl;
     }
 
     void print_place(int pos, Region &region) {
@@ -2149,6 +2166,17 @@ namespace Utilities {
         }
     }
 
+    void print_SM_on_file(set<Region *> &regions, const string& filename) {
+        auto outfile = new ofstream();
+        outfile->open(filename, std::ios_base::app);
+        *outfile << "SM:" << endl;
+        for (auto reg : regions) {
+            println(*reg, outfile);
+        }
+        outfile->close();
+        delete outfile;
+    }
+
     void println(set<Region *> *regions) {
         for (auto reg : *regions) {
             println(*reg);
@@ -2180,10 +2208,10 @@ namespace Utilities {
     }
 
     __attribute__((unused)) void restore_default_labels(map<int, set<Region *> *> *net,
-                                map<int, int> &aliases) {
+                                                        map<int, int> &aliases) {
         int counter = 0;
         for (auto rec : *net) {
-            // thhe label rec.first was splitted
+            // the label rec.first was splitted
             if (aliases.find(rec.first) != aliases.end()) {
                 net->at(rec.first) =
                         region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
