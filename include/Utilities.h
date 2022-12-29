@@ -133,6 +133,7 @@ namespace Utilities {
     bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
     __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
+    bool contains(vector<int32_t> *bigger_clause, vector<int32_t> *smaller_clause);
     bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set);
     bool contains(const set<Region *>& reg_set, Region * reg);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
@@ -263,4 +264,5 @@ namespace Utilities {
                         map<int, set<Region*> *> *map_of_pre_regions,
                         map<int, set<Region*> *> *map_of_post_regions/*,
                         map<Region *, set<int> *> *post_events*/);
+
 };

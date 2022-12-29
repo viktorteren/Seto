@@ -3337,4 +3337,18 @@ namespace Utilities {
         delete initial_regions;
         return true;
     }
+
+    bool contains(vector<int32_t> *bigger_clause, vector<int32_t> *smaller_clause){
+        for(auto lit: *smaller_clause){
+            bool found = false;
+            for(int i : *bigger_clause){
+                if(i == lit){
+                    found = true;
+                }
+            }
+            if(!found)
+                return false;
+        }
+        return true;
+    }
 }
