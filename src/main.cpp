@@ -952,6 +952,8 @@ int main(int argc, char **argv) {
                     outfile << "_SS";
                 if(safe_components)
                     outfile << "_SAFE(TRIVIAL)";
+                if(no_reset)
+                    outfile << "_NORESET";
                 if(decomposition_debug)
                     outfile << "_DEBUG,";
                 else
