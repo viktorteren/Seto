@@ -942,8 +942,10 @@ int main(int argc, char **argv) {
                     outfile << "ACPN";
                 else
                     outfile << "FCPN";
+                if(safe_components_SM)
+                    outfile << "_SS";
                 if(safe_components)
-                    outfile << "_SAFE";
+                    outfile << "_SAFE(TRIVIAL)";
                 if(decomposition_debug)
                     outfile << "_DEBUG,";
                 else
