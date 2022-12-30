@@ -117,6 +117,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         temp++;
     }
 
+    //creation of clauses used to check if the new constraints can avoid the creation of previously fuond SMs
+    /*
+    vector<vector<int32_t> *> *clauses_avoiding_created_SMs;
+    if(decomposition) {
+        clauses_avoiding_created_SMs = new vector<vector<int32_t> *>();
+        for (auto SM: *SMs) {
+            auto clause = new vector<int32_t>();
+            for (auto reg: *SM) {
+                clause->push_back(-(*reg_map)[reg] - 1);
+            }
+            clauses_avoiding_created_SMs->push_back(clause);
+        }
+    }*/
+
     for (auto reg: *minimal_regions) {
         not_used_regions->insert(reg);
     }
@@ -154,6 +168,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             clause = new vector<int32_t>();
                             clause->push_back(-(*reg_map)[r] - 1);
                             clause->push_back(-(*reg_map)[r2] - 1);
+                            /*
+                            if(decomposition){
+                                for(auto cl: *clauses_avoiding_created_SMs){
+                                    if(contains(clause, cl)){
+                                        cerr << "PROBLEM STEP 2" << endl;
+                                    }
+                                }
+                            }*/
                             structure_clauses->push_back(clause);
                             //print_clause(clause);
                         }
@@ -188,6 +210,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             clause = new vector<int32_t>();
             clause->push_back(-region_encoding);
             clause->push_back(ev_encoding);
+            /*
+            if(decomposition){
+                for(auto cl: *clauses_avoiding_created_SMs){
+                    if(contains(clause, cl)){
+                        cerr << "PROBLEM STEP 4" << endl;
+                    }
+                }
+            }*/
             clauses_pre->push_back(clause);
         }
     }
@@ -200,6 +230,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             clause = new vector<int32_t>();
             clause->push_back(-region_encoding);
             clause->push_back(ev_encoding);
+            /*
+            if(decomposition){
+                for(auto cl: *clauses_avoiding_created_SMs){
+                    if(contains(clause, cl)){
+                        cerr << "PROBLEM STEP 4" << endl;
+                    }
+                }
+            }*/
             clauses_pre->push_back(clause);
         }
     }
@@ -214,6 +252,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             int region_encoding = 1 + reg_map->at(reg);
             clause->push_back(region_encoding);
         }
+        /*
+        if(decomposition){
+            for(auto cl: *clauses_avoiding_created_SMs){
+                if(contains(clause, cl)){
+                    cerr << "PROBLEM STEP 4b" << endl;
+                }
+            }
+        }*/
         clauses_pre->push_back(clause);
     }
     for (auto rec: *post_regions_map) {
@@ -225,6 +271,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             int region_encoding = 1 + reg_map->at(reg);
             clause->push_back(region_encoding);
         }
+        /*
+        if(decomposition){
+            for(auto cl: *clauses_avoiding_created_SMs){
+                if(contains(clause, cl)){
+                    cerr << "PROBLEM STEP 4b" << endl;
+                }
+            }
+        }*/
         clauses_pre->push_back(clause);
     }
 
@@ -244,6 +298,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             int region_encoding = 1 + reg_map->at(reg);
             clause->push_back(region_encoding);
         }
+        /*
+        if(decomposition){
+            for(auto cl: *clauses_avoiding_created_SMs){
+                if(contains(clause, cl)){
+                    cerr << "PROBLEM STEP 4d" << endl;
+                }
+            }
+        }*/
         SM_clauses->push_back(clause);
         for(auto rec: *pre_regions_map){
             for(auto reg1: *rec.second){
@@ -254,6 +316,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         clause->push_back(-region_encoding);
                         region_encoding = 1 + reg_map->at(reg2);
                         clause->push_back(-region_encoding);
+                        /*
+                        if(decomposition){
+                            for(auto cl: *clauses_avoiding_created_SMs){
+                                if(contains(clause, cl)){
+                                    cerr << "PROBLEM STEP 4d" << endl;
+                                }
+                            }
+                        }*/
                         SM_clauses->push_back(clause);
                     }
                 }
@@ -268,6 +338,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         clause->push_back(-region_encoding);
                         region_encoding = 1 + reg_map->at(reg2);
                         clause->push_back(-region_encoding);
+                        /*
+                        if(decomposition){
+                            for(auto cl: *clauses_avoiding_created_SMs){
+                                if(contains(clause, cl)){
+                                    cerr << "PROBLEM STEP 4d" << endl;
+                                }
+                            }
+                        }*/
                         SM_clauses->push_back(clause);
                     }
                 }
@@ -277,6 +355,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     bool last_result_unsafe = false;
     splitting_constraints_added = false;
+    bool deadlock_achieved = false;
+    int dd_counter = 0;
 
     do {
         for (auto cl: *clauses) {
@@ -284,7 +364,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
         clauses->clear();
 
-        if (!splitting_constraints_added) {
+        if (!splitting_constraints_added || deadlock_achieved) {
             if (!splitting_constraint_clauses->empty()) {
                 splitting_constraint_clauses->clear();
                 //cout << "removing splitting constraints" << endl;
@@ -327,10 +407,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 for (auto cl: *SM_clauses) {
                     formula.addClause(*cl);
                 }
-                cout << "next search is an SM" << endl;
+                //cout << "next search is an SM" << endl;
             }
             else{
-                cout << "next FCPN" << endl;
+                //cout << "next FCPN" << endl;
                 for (auto cl: *structure_clauses) {
                     formula.addClause(*cl);
                 }
@@ -518,28 +598,68 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             //todo: don't forget the memory leaks -> have to check with valgrind
             auto new_temp_set = split_not_connected_regions(temp_PN, regions_connected_to_labels);
             if (new_temp_set->size() > 1) {
-                cout << "set of regions containing more PNs" << endl;
-                int min_size = (*new_temp_set)[0].size();
-                int pos = 0;
-                //searching the smallest PN
-                for (int i = 1; i < new_temp_set->size(); i++) {
-                    if ((*new_temp_set)[i].size() < min_size) {
-                        min_size = (*new_temp_set)[i].size();
-                        pos = i;
+                //change of strategy: take the biggest PN as candidate, iff there is the safeness check this PN will
+                // be used
+                if(deadlock_achieved){
+                    //todo probably here it's better to take as candidate the PN with the best coverage of unused regions
+                    int max_size = (*new_temp_set)[0].size();
+                    int pos = 0;
+                    //searching the smallest PN
+                    for (int i = 1; i < new_temp_set->size(); i++) {
+                        if ((*new_temp_set)[i].size() > max_size) {
+                            max_size = (*new_temp_set)[i].size();
+                            pos = i;
+                        }
                     }
+                    delete temp_PN;
+                    temp_PN = new set<Region *>();
+                    for(auto reg: (*new_temp_set)[pos]){
+                        temp_PN->insert(reg);
+                    }
+                    splitting_constraints_added = false;
+                    //cout << "temp big PN" << endl;
                 }
-                //add clause which avoids this PN as a solution
-                clause = new vector<int32_t>();
-                for (auto reg: (*new_temp_set)[pos]) {
-                    //cout << "added a new constraint" << endl;
-                    clause->push_back(-1 - reg_map->at(reg));
+                else {
+                    //cout << "set of regions containing more PNs" << endl;
+                    int min_size = (*new_temp_set)[0].size();
+                    int pos = 0;
+                    //searching the smallest PN
+                    for (int i = 1; i < new_temp_set->size(); i++) {
+                        if ((*new_temp_set)[i].size() < min_size) {
+                            min_size = (*new_temp_set)[i].size();
+                            pos = i;
+                        }
+                    }
+                    //cout << "avoiding small PN:" << endl;
+                    //println((*new_temp_set)[pos]);
+                    //print_SM_on_file((*new_temp_set)[pos], "DEBUG_small.txt");
+                    /*
+                    if (decomposition) {
+                        for (auto SM: *SMs) {
+                            if (*SM == (*new_temp_set)[pos]) {
+                                cout << "small forbidden PN is actually a good SM:" << endl;
+                                //todo cambiare i vincoli, se nego le piccole SM poi non arrivo ad avere una soluzione forse
+                                println((*new_temp_set)[pos]);
+                                break;
+                            }
+                        }
+                    }*/
+                    //add clause which avoids this PN as a solution
+                    clause = new vector<int32_t>();
+                    for (auto reg: (*new_temp_set)[pos]) {
+                        //cout << "added a new constraint" << endl;
+                        clause->push_back(-1 - reg_map->at(reg));
+                    }
+                    splitting_constraint_clauses->push_back(clause);
+                    delete temp_PN;
+                    splitting_constraints_added = true;
+                    //without adding the following line the search of an SM continues until it finds one valid
+                    // bigger chance to find an FCPN but slows down the computation being a BFS respect to the DFS
+                    //last_result_unsafe = false;
                 }
-                splitting_constraint_clauses->push_back(clause);
-                delete temp_PN;
-                splitting_constraints_added = true;
-                //without adding the following line the search of an SM continues until it finds one valid
-                //last_result_unsafe = false;
-            } else {
+            }
+            if(!splitting_constraints_added){
+                //cout << "set with one PN" << endl;
                 bool safe = true;
                 if(safe_components || safe_components_SM){
                     safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
@@ -564,18 +684,35 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         println(temp_PN);
                     }
                     last_result_unsafe = false;
-                    cout <<"SAFE" << endl;
+                    //cout <<"SAFE or SAFENESS NOT CHECKED" << endl;
+                    deadlock_achieved = false;
                 }
                 else{
                     /*
                     cout << "NOT SAFE PN" << endl;
                     println(temp_PN);*/
-                    if(decomposition_debug) {
-                        cout << "avoiding the following PN:" << endl;
-                        println(temp_PN);
-                    }
+                    //if(decomposition_debug) {
+                    //cout << "avoiding the following UNSAFE PN permanently:" << endl;
+                    //println(temp_PN);
+                    //print_SM_on_file(*temp_PN, "DEBUG_unsafe.txt");
+                    /*
+                    if(decomposition) {
+                        for (auto SM: *SMs) {
+                            if(*SM == *temp_PN){
+                                cout << "unsafe forbidden PN is actually a good SM:" << endl;
+                                println(*temp_PN);
+                                break;
+                            }
+                        }
+                    }*/
+                    //}
                     last_result_unsafe = true;
-                    cout << "UNSAFE" << endl;
+                    //cout << "UNSAFE (adding constraint)" << endl;
+                    clause = new vector<int32_t>();
+                    for(auto reg: *temp_PN){
+                        clause->push_back(-1 - reg_map->at(reg));
+                    }
+                    clauses_pre->push_back(clause);
                 }
             }
             delete new_temp_set;
@@ -593,6 +730,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 (!safe_components_SM || (safe_components_SM && !last_result_unsafe))) {
                 auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
                 excitation_closure = is_excitation_closed(used_regions_map, ER);
+                //cout << "EC checked" << endl;
                 for (auto rec: *used_regions_map) {
                     delete rec.second;
                 }
@@ -604,8 +742,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
             formula.clearDatabase();
         } else {
-            cout << "no solution found" << endl;
-            exit(0);
+            if(deadlock_achieved) {
+                cout << "no solution found" << endl;
+                exit(0);
+            }
+            deadlock_achieved = true;
+            dd_counter++;
+            cout << "deadlock, changing method (" << dd_counter << ")" << endl;
+
         }
         delete last_solution;
     } while (!excitation_closure);
@@ -623,6 +767,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     }
 
     cout << "PNs before greedy: " << fcpn_set->size() << endl;
+    /*
+    for(auto pn: *fcpn_set){
+        cout << "FCPN:" << endl;
+        println(pn);
+    }*/
 
     places_after_initial_decomp = 0;
     for(auto pn: *fcpn_set){
@@ -752,6 +901,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         delete cl;
     }
     delete clauses;
+    for (auto cl: *clauses_pre) {
+        delete cl;
+    }
+    delete clauses_pre;
+    for (auto cl: *structure_clauses) {
+        delete cl;
+    }
+    delete structure_clauses;
+    if(SM_clauses){
+        for(auto cl: *SM_clauses){
+            delete cl;
+        }
+        delete SM_clauses;
+    }
 
     delete minimal_regions;
 
@@ -1295,7 +1458,6 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 }
             }
         }
-
 
         //SAT computation
         PBConfig config = make_shared<PBConfigClass>();

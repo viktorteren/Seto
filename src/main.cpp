@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
             cerr << "CHECK flag cannot be used with PN synthesis." << endl;
             exit(0);
         }
-        if(safe_components_SM && decomposition){
+        if(safe_components_SM && decomposition && !fcptnet && !acpn){
             cerr << "SS flag cannot be used on SMs." << endl;
             exit(0);
         }
@@ -580,6 +580,7 @@ int main(int argc, char **argv) {
                     for (auto SM: *SMs) {
                         cout << "SM:" << endl;
                         println(*SM);
+                        //print_SM_on_file(*SM, "DEBUG.txt");
                     }
                 }
 
@@ -657,6 +658,13 @@ int main(int argc, char **argv) {
                             println(*sm);
                         }
                     }
+
+                    /*
+                    for (auto SM: *SMs) {
+                        //cout << "SM:" << endl;
+                        //println(*SM);
+                        print_SM_on_file(*SM, "DEBUG.txt");
+                    }*/
 
                     //if(decomposition_debug)
                     cout << "=======================[ CREATION OF PRE/POST-REGIONS FOR EACH SM ]================"
@@ -739,10 +747,12 @@ int main(int argc, char **argv) {
                     if (!no_merge)
                         delete merge;
                     //delete SMs_sum;
-                    for (auto SM: *SMs) {
-                        delete SM;
+                    if(!fcptnet) {
+                        for (auto SM: *SMs) {
+                            delete SM;
+                        }
+                        delete SMs;
                     }
-                    delete SMs;
 
                     for (auto vec: *clauses) {
                         delete vec;
@@ -827,7 +837,7 @@ int main(int argc, char **argv) {
             }
 
             if(fcptnet || acpn || (decomposition & bdd_usage)){
-                if(!bdd_usage && decomposition){
+                if(!bdd_usage && decomposition && !fcptnet){
                     delete SMs;
                 }
                 tStart_partial = clock();
