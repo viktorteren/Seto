@@ -48,7 +48,7 @@ sudo apt-get install mcrl2
 
 # Supported extensions
 
-Input extensions: .g .ts
+Input extensions: .g .sg .ts
 
 Output extensions: .dot .g .aut
 
