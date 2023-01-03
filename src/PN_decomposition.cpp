@@ -10,6 +10,8 @@
 #include "include/Merge.h"
 #include "include/SM_composition.h"
 
+bool no_reset;
+
 using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
