@@ -364,7 +364,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
         clauses->clear();
 
-        if ((no_reset && deadlock_achieved) || (!no_reset && (deadlock_achieved || splitting_constraints_added))) {
+        if ((!no_reset && deadlock_achieved) || (!no_reset && (deadlock_achieved || splitting_constraints_added))) {
             if (!splitting_constraint_clauses->empty()) {
                 splitting_constraint_clauses->clear();
                 //cout << "removing splitting constraints" << endl;
