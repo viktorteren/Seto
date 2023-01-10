@@ -226,7 +226,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **SAFE**: decompose allowing only standalone safe FCPNs
 
-**SS**: SAFE SMs: if the heuristics finds an unsafe FCPN the next iteration an SM is added (which is also an FCPN) and the iteration after the usual FCPN search is performed. In this way we don't have slow computations ith pretty good results. being based on sequential search cannot be performed with BDD flag.
+**SS**: SAFE SMs: if the heuristics finds an unsafe FCPN the next iteration an SM is added (which is also an FCPN) and the iteration after the usual FCPN search is performed. In this way we don't have slow computations with pretty good results. Being based on sequential search cannot be performed with BDD flag.
 
 **OPTIMAL**: when using BDD flag ensures the minimum number of FCPNs
 
