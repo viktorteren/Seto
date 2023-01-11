@@ -252,6 +252,10 @@ int main(int argc, char **argv) {
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
         }
+        if(safe_components && safe_components_SM){
+            cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
+            exit(0);
+        }
     }
     else{
         cerr << "Wrong number of arguments." << endl;
