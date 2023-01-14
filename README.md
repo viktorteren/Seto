@@ -121,6 +121,8 @@ make TS_splitter
 
 **MS**: usage of a mixed strategy which chooses if use the exact algorithm or approximate one for the removal of redundant SMs
 
+**SC**: check if the separate SMs are safe (can be used only with BDD and NOBOUNDS flags)
+
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run).
 The file contains the following data if BDD flag was **not** selected:
 - decomposition type: SM/SM_exact_removal/SM_mixed_strategy

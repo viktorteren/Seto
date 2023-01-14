@@ -176,6 +176,14 @@ int main(int argc, char **argv) {
             cerr << "NOBOUNDS flag can be used only with BDD flag." << endl;
             exit(0);
         }
+        if(decomposition && !no_bounds && only_safeness_check){
+            cerr << "SC cannot be used without NOBOUNDS flag if SM decomposition is performed." << endl;
+            exit(0);
+        }
+        if(decomposition && only_safeness_check && !bdd_usage){
+            cerr << "SC cannot be used without BDD flag if SM decomposition is performed." << endl;
+            exit(0);
+        }
         if(acpn && decomposition_output_sis){
             cerr << "SIS output not implemented for ACPNs, remove G flag."<< endl;
             exit(0);
@@ -244,10 +252,11 @@ int main(int argc, char **argv) {
             cerr << "SS flag cannot be combined with BDD flag." << endl;
             exit(0);
         }
+        /*
         if(only_safeness_check && !fcptnet){
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
-        }
+        }*/
         if(safe_components && !fcptnet){
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
@@ -821,11 +830,11 @@ int main(int argc, char **argv) {
                     }
                     outfile << fixed
                             << get_file_name(file) << ","
-                            << setprecision(4) << t_region_gen << ","
-                            << setprecision(4) << t_decomposition << ","
-                            << setprecision(4) << setw(4) << t_greedy << ","
-                            << setprecision(4) << t_labels_removal << ","
-                            << setprecision(4) << t_decomposition+t_greedy+t_labels_removal << ","
+                            << setprecision(2) << t_region_gen << ","
+                            << setprecision(2) << t_decomposition << ","
+                            << setprecision(2) << setw(4) << t_greedy << ","
+                            << setprecision(2) << t_labels_removal << ","
+                            << setprecision(2) << t_decomposition+t_greedy+t_labels_removal << ","
                             << states_sum << ","
                             << states_after_sms_removal << ","
                             << final_sum << ","
@@ -964,9 +973,9 @@ int main(int argc, char **argv) {
                     outfile << ",";
                 outfile << fixed
                         << get_file_name(file) << ","
-                        << setprecision(4) << t_runtime << ","
-                        << setprecision(4) << t_region_gen << ","
-                        << setprecision(4) << t_fcpn_decomposition << ","
+                        << setprecision(2) << t_runtime << ","
+                        << setprecision(2) << t_region_gen << ","
+                        << setprecision(2) << t_fcpn_decomposition << ","
                         << num_places << ","
                         << final_pn_set->size() << ","
                         << places_after_initial_decomp << ","
