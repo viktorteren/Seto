@@ -284,6 +284,9 @@ Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 #### Optional flags:
 
+**--INFO**: if TS option is selected only the numbers of transitions, states and events are shown; if ECTS option is 
+selected in addition also the number of regions and event splits is shown
+
 **AUT**: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
 # PN visualization
