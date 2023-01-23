@@ -230,7 +230,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **OPTIMAL**: when using BDD flag ensures the minimum number of FCPNs
 
-**NORESET**: used only with sequential FCPN search, deny the reset o learned clauses brining faster to a possible deadlock but with the new changes after a deadlock there is a change of heuristics
+**NORESET**: used only with sequential FCPN search, deny the reset of learned clauses brining faster to a possible deadlock but with the new changes after a deadlock there is a change of heuristics
 
 ### Approximate algorithm using a script
 
@@ -255,7 +255,7 @@ See FCPN flow (approximated algorithm).
 
 ## Combined flows
 
-The flags M and AC/FC/KFC can be used together.
+The flags SM and AC/FC/KFC can be used together.
 
 
 [//]: # "#### Benchmarks on a set of files (still present some issues, better avoid it):"
