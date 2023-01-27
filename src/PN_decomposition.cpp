@@ -956,7 +956,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     // ... and so on, regions+events for each FCPN
 
     /*
-     * 0) I want to satisfy all events
+     * 0) I want to satisfy all events: not necessary but speed-up the computation
      * 1) EC clauses
      * 2) FCPN constraint
      * 2b) SM constraint
