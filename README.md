@@ -152,9 +152,7 @@ If BDD flag was selected the *'stats.csv'* will contain the following data:
 - file name
 - runtime
 - time region generation
-- time decomposition
-- time greedy/exact SM removal
-- time labels removal
+- time decomposition (including reedy algorithm if BDD flag is not used and merge algorithm)
 - number of final places
 - number of FCPNs
 - number of places after the initial step of decomposition (before greedy algorithm)
