@@ -10,9 +10,6 @@ using namespace Utilities;
 
 //complexity (worst case): num_events*num_regions!
 BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map) {
-    //TODO: implement a mechanism which stops without having explored all possible EC combinations
-    // a possible result could be a normal computation for n cycles and at this point a search for only events without
-    // any set of regions for their EC
     cout << "==============[BDD ENCODER]===============" << endl;
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
@@ -242,13 +239,14 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
       * o forse mi sto sbagliando, basterebbe limitarsi alle pre-regioni di quel evento quindi gli altri sono DC
       * sia nel restrict by che nella creazione delle clausole
       */
-
+    //todo: here a possible improvement could be done: if for an event there is only one set of regions that satisfies EC
+    // it is possible to create directly the set of clauses without inverting the set of clauses
     for(int i=0; i < num_events_after_splitting; ++i){
-        /*
+
         if(decomposition_debug){
             cout << "*event*: " << i << endl;
         }
-         */
+
         auto regs = pre_regions->at(i); //regions' set
         auto regs_vector = new vector<Region *>(regs->begin(), regs->end());
         //here I have to create all binary combinations between these regions
@@ -318,16 +316,25 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
                 auto clause = new vector<int32_t>();
                 for(int pos=0;pos < tmp_vec->size();++pos){
                     int current_encoded_region = regions_alias_mapping->at(regs_vector->at(pos));
-                    //creation of clauses from truth table where there result is 0
-                    //in order to create CNFF clauses each variable sign is inverted
+                    //creation of clauses from truth table where the result is 0
+                    //in order to create CNF clauses each variable sign is inverted
                     //example: vec[pos] == true -> encoded value will be negative (false)
                     if(tmp_vec->at(pos) == 1){
-                        //1 is removed in this way region 0 can hae a negative value
+                        //1 is removed in this way region 0 can have a negative value
                         clause->push_back(-current_encoded_region-1);
+                        if(decomposition_debug) {
+                            cout << "-r: ";
+                            println(*regs_vector->at(pos));
+                        }
+
                     }
                     else{
                         //1 is added because ... see if branch
                         clause->push_back(current_encoded_region+1);
+                        if(decomposition_debug) {
+                            cout << "r: ";
+                            println(*regs_vector->at(pos));
+                        }
                     }
                 }
                 clauses->push_back(clause);
