@@ -20,6 +20,9 @@ private:
                                        map<int, set<Region *>*> *pre_regions_map,
                                        map<Region *, set<int> *>* region_ex_event_map,
                                        set<set<Region *> *>* pn_set);
+    static int count_number_SMs(map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
+                                map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_post_regions,
+                                set<set<Region *> *>* pn_set);
 
 public:
     static set<set<Region *> *> *search(int number_of_events,

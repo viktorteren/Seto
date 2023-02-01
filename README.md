@@ -230,6 +230,8 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **NORESET**: used only with sequential FCPN search, deny the reset of learned clauses brining faster to a possible deadlock but with the new changes after a deadlock there is a change of heuristics
 
+**CS**: count the number of derived SMs if SAFE or (BDD+SS) flags were used
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:

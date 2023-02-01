@@ -52,6 +52,7 @@ bool safe_components;
 bool safe_components_SM;
 bool optimal;
 bool no_reset;
+bool count_SMs;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){

@@ -50,6 +50,7 @@ int main(int argc, char **argv) {
         safe_components_SM = false;
         optimal = false;
         no_reset = false;
+        count_SMs = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -95,6 +96,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "NORESET"){
                 no_reset = true;
+            }
+            else if(args[i] == "CS"){
+                count_SMs = true;
             }
             /*else if(args[i]=="KFCB") {
                 fcptnet = true;

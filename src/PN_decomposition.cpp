@@ -679,6 +679,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             }
                         }
                     }
+                    if(count_SMs && safe_components_SM){
+                        if(last_result_unsafe)
+                            cout << "found SM" << endl;
+                        else
+                            cout << "found FCPN" << endl;
+                    }
                     fcpn_set->insert(temp_PN);
                     if (decomposition_debug) {
                         cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
@@ -689,9 +695,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     deadlock_achieved = false;
                 }
                 else{
-                    /*
-                    cout << "NOT SAFE PN" << endl;
-                    println(temp_PN);*/
+                    //cout << "NOT SAFE PN" << endl;
+                    //println(temp_PN);
                     //if(decomposition_debug) {
                     //cout << "avoiding the following UNSAFE PN permanently:" << endl;
                     //println(temp_PN);
@@ -794,6 +799,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     cout << (fcptnet ? "FCPN" : "ACPN") << " set size: " << fcpn_set->size() << endl;
 
+
+
     places_after_greedy = 0;
     for(auto pn: *fcpn_set){
         places_after_greedy += pn->size();
@@ -817,6 +824,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             }
         }
         (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
+    }
+
+    if(count_SMs && safe_components_SM){
+        int num_SMs = count_number_SMs(map_of_FCPN_pre_regions, map_of_FCPN_post_regions, fcpn_set);
+        cout << "number of SMs: " << num_SMs << endl;
     }
 
     if(fcpn_set->size() == 1){
@@ -1050,7 +1062,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         cout << "k: " << k << endl;
     }
 
-    /*
+
     if (decomposition_debug) {
         cout << "Pre-regions" << endl;
         for (auto rec: *pre_regions_map) {
@@ -1076,7 +1088,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         }
 
         cout << "-----" << endl;
-    }*/
+    }
 
     auto cache = new set<set<Region *>>();
 
@@ -1092,15 +1104,17 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
     }
 
     //STEP 1
+    if(decomposition_debug)
+        cout << "STEP 1" << endl;
     be->encode(regions, regions_alias_mapping, pre_regions_map);
-    /*
+
     if(decomposition_debug) {
         cout << "regions alias mapping:" << endl;
         for(auto rec: *regions_alias_mapping){
             cout << rec.second << ": ";
             println(*rec.first);
         }
-    }*/
+    }
     auto ECTmpClauses = be->get_clauses();
 
     for (auto reg_set: *ECTmpClauses) {
@@ -1184,13 +1198,13 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                             clause->push_back(-(*regions_alias_mapping)[r1] - offset);
                             clause->push_back(-(*regions_alias_mapping)[r2] - offset);
                             clauses_pre->push_back(clause);
-                            /*
+
                             if (decomposition_debug) {
                                 print_clause(clause);
                                 cout << "conflict" << endl;
                                 println(*r1);
                                 println(*r2);
-                            }*/
+                            }
                         }
                     }
                     delete reg_vec;
@@ -1328,9 +1342,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     clause->push_back(-region_encoding);
                     clause->push_back(ev_encoding);
                     clauses->push_back(clause);
-                    /*
+
                     if (decomposition_debug)
-                        print_clause(clause);*/
+                        print_clause(clause);
                 }
             }
             for (auto rec: *region_ent_event_map) {
@@ -1382,9 +1396,8 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                 clause->push_back(region_encoding);
             }
             clauses_pre->push_back(clause);
-            /*
             if (decomposition_debug)
-                print_clause(clause);*/
+                print_clause(clause);
         }
 
         //STEP 6
@@ -1641,6 +1654,10 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
 
     if(!optimal && suboptimal_result_found){
         cout << "Suboptimal result found." << endl;
+    }
+
+    if(safe_components){
+        cout << "Forbidden " << (forbidden_pns->size()-fcpn_set->size()) << " FCPNs." << endl;
     }
 
     if (decomposition_debug) {
@@ -1984,4 +2001,36 @@ void PN_decomposition::check_EC_and_structure(map<int, ER> *ER,
     }
     if (!check_not_passed)
         cout << "Check passed." << endl;
+}
+
+int PN_decomposition::count_number_SMs(map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
+                                       map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_post_regions,
+                                       set<set<Region *> *>* pn_set) {
+
+    int num_SMs = 0;
+
+    //int pn_counter = 0;
+    for (auto pn: *pn_set) {
+        bool check_not_passed = false;
+        for (auto rec: *map_of_FCPN_pre_regions->at(pn)) {
+            if(rec.second->size() > 1){
+                //cerr << "PN " << pn_counter << " is not an SM!!!" << endl;
+                check_not_passed = true;
+                break;
+            }
+        }
+        if(!check_not_passed) {
+            for (auto rec: *map_of_FCPN_post_regions->at(pn)) {
+                if (rec.second->size() > 1) {
+                    //cerr << "PN " << pn_counter << " is not an SM!!!" << endl;
+                    check_not_passed = true;
+                    break;
+                }
+            }
+        }
+        if(!check_not_passed)
+            num_SMs++;
+        //pn_counter++;
+    }
+    return num_SMs;
 }

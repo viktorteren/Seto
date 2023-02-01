@@ -92,6 +92,7 @@ extern bool safe_components;
 extern bool safe_components_SM;
 extern bool optimal;
 extern bool no_reset;
+extern bool count_SMs;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
