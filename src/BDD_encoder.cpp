@@ -322,19 +322,21 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
                     if(tmp_vec->at(pos) == 1){
                         //1 is removed in this way region 0 can have a negative value
                         clause->push_back(-current_encoded_region-1);
+                        /*
                         if(decomposition_debug) {
                             cout << "-r: ";
                             println(*regs_vector->at(pos));
-                        }
+                        }*/
 
                     }
                     else{
                         //1 is added because ... see if branch
                         clause->push_back(current_encoded_region+1);
+                        /*
                         if(decomposition_debug) {
                             cout << "r: ";
                             println(*regs_vector->at(pos));
-                        }
+                        }*/
                     }
                 }
                 clauses->push_back(clause);
