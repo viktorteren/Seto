@@ -780,6 +780,31 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             counter++;
             println(*fcpn);
         }
+        auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
+        auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
+
+        for (auto FCPN: *fcpn_set) {
+            (*map_of_FCPN_pre_regions)[FCPN] = new map < int, set<Region*> * > ();
+            for (auto rec: *pprg->get_pre_regions()) {
+                for (auto reg: *rec.second) {
+                    if (FCPN->find(reg) != FCPN->end()) {
+                        if((*map_of_FCPN_pre_regions)[FCPN]->find(rec.first) == (*map_of_FCPN_pre_regions)[FCPN]->end()){
+                            (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first] = new set<Region *>();
+                        }
+                        (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first]->insert(reg);
+                    }
+                }
+            }
+            (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
+        }
+        int pn_counter = 0;
+        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
+        for (auto pn: *fcpn_set) {
+            print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
+                              aliases,
+                              file, pn_counter);
+            pn_counter++;
+        }
         exit(0);
     }
 
@@ -895,7 +920,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         int pn_counter = 0;
         auto regions_mapping = get_regions_map(pprg->get_pre_regions());
         for (auto pn: *fcpn_set) {
-            //todo: fare dei controlli, mi viene il nome con FCPN quando dovrebbe essere PN
             print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);
