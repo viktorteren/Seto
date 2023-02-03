@@ -70,7 +70,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      * 8) while !EC: previous results clauses are added as results to avoid in future
      * 9) greedy FCPN removal
      */
-
+    auto tStart_partial = clock();
     cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
@@ -358,8 +358,16 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     splitting_constraints_added = false;
     bool deadlock_achieved = false;
     int dd_counter = 0;
+    int unsafe_components_counter = 0;
+    double t_now;
+    bool time_out = false;
 
     do {
+        t_now = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
+        if(t_now > 3600){
+            time_out = true;
+            break;
+        }
         for (auto cl: *clauses) {
             delete cl;
         }
@@ -695,6 +703,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     deadlock_achieved = false;
                 }
                 else{
+                    unsafe_components_counter++;
                     //cout << "NOT SAFE PN" << endl;
                     //println(temp_PN);
                     //if(decomposition_debug) {
@@ -759,6 +768,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         }
         delete last_solution;
     } while (!excitation_closure);
+
+
+    if(time_out){
+        cout << "TIME OUT !!!" << endl;
+        cout << "Found " << unsafe_components_counter << " unsafe FCPNs" << endl;
+        cout << "Found " << fcpn_set->size() << " safe FCPNs" << endl;
+        int counter = 0;
+        for(auto fcpn: *fcpn_set){
+            cout << "FCPN " << counter << endl;
+            counter++;
+            println(*fcpn);
+        }
+        exit(0);
+    }
 
     for(auto cl: *splitting_constraint_clauses){
         delete cl;

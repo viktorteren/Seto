@@ -222,7 +222,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **SC**: check if the separate FCPNs are safe
 
-**SAFE**: decompose allowing only standalone safe FCPNs
+**SAFE**: decompose allowing only standalone safe FCPNs, it has a timeout off 3600 seconds after the start of the decomposition
 
 **SS**: SAFE SMs: if the heuristics finds an unsafe FCPN the next iteration an SM is added (which is also an FCPN) and the iteration after the usual FCPN search is performed. In this way we don't have slow computations with pretty good results. Being based on sequential search cannot be performed with BDD flag.
 
