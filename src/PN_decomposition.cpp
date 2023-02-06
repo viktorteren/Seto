@@ -72,6 +72,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      */
     auto tStart_partial = clock();
     cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;
+    map<Region *, int> *regions_alias_mapping;
+    regions_alias_mapping = get_regions_map(pprg->get_pre_regions());
     auto pre_regions_map = pprg->get_pre_regions();
     auto post_regions_map = pprg->get_post_regions();
     auto minimal_regions = new set<Region *>();
@@ -672,7 +674,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 //cout << "set with one PN" << endl;
                 bool safe = true;
                 if(safe_components || safe_components_SM){
-                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map);
+                    safe = safeness_check(temp_PN, pre_regions_map, post_regions_map, regions_alias_mapping);
                 }
                 if((!safe_components && !safe_components_SM) || (safe_components && safe) || (safe_components_SM && safe)) {
                     for (auto val: *last_solution) {
@@ -850,7 +852,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                               file, pn_counter, true);
             pn_counter++;
         }
-        exit(0);
+        //exit(0);
     }
 
     for(auto cl: *splitting_constraint_clauses){

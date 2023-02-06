@@ -1252,7 +1252,8 @@ namespace Utilities {
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases,
                            const string& file_name,
-                           int PN_number, bool unsafe){
+                           int PN_number,
+                           bool unsafe){
         auto initial_reg = initial_regions(pre_regions);
         /*
         if(initial_reg->empty()){
@@ -3242,8 +3243,10 @@ namespace Utilities {
 
     bool safeness_check(set<Region *> *pn,
                         map<int, set<Region*> *> *map_of_pre_regions,
-                        map<int, set<Region*> *> *map_of_post_regions) {
+                        map<int, set<Region*> *> *map_of_post_regions,
+                        map<Region *, int> *regions_alias_mapping) {
         set<Region *> *current_marking;
+        map<set<Region *> *, vector<set<Region *>*>*> path;
         auto initial_regions=new set<Region *>();
         for(auto reg: *pn){
             if(reg->find(initial_state) != reg->end()){
@@ -3253,6 +3256,8 @@ namespace Utilities {
         current_marking = initial_regions;
         vector<set<Region *>*> to_visit;
         set<set<Region *>> completely_explored_states;
+
+        path[initial_regions] = new vector<set<Region *>*>();
 
 
         auto post_events = new map<Region *, set<int> *>();
@@ -3296,6 +3301,19 @@ namespace Utilities {
                                     }
                                     //unsafe marking
                                     else {
+                                        if(regions_alias_mapping != nullptr && decomposition_debug) {
+                                            cout << "unsafe place: r" << regions_alias_mapping->at(reg2) << endl;
+                                            cout << "path to arrive to it:"<< endl;
+                                            auto reg_set_vec = path.at(current_marking);
+                                            for(auto reg_set: *reg_set_vec){
+                                                for(auto reg: *reg_set){
+                                                    cout << "r" << regions_alias_mapping->at(reg) << ",";
+                                                }
+                                                cout << endl;
+                                                //println(*reg_set);
+                                            }
+                                            exit(0);
+                                        }
                                         for(auto rec: *post_events){
                                             delete rec.second;
                                         }
@@ -3316,8 +3334,15 @@ namespace Utilities {
                                 }
                             }
                             if(!exists) {
-                                if(completely_explored_states.find(*new_set) == completely_explored_states.end())
+                                if(completely_explored_states.find(*new_set) == completely_explored_states.end()) {
                                     to_visit.push_back(new_set);
+                                    path[new_set] = new vector<set<Region *>*>();
+                                    auto reg_set_vector = path.at(current_marking);
+                                    for(auto reg_set: *reg_set_vector){
+                                        path.at(new_set)->push_back(reg_set);
+                                    }
+                                    path.at(new_set)->push_back(current_marking);
+                                }
                             }
                             else {
                                 if(decomposition_debug){

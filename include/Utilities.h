@@ -265,7 +265,8 @@ namespace Utilities {
     bool is_a_region(set<int> *set_of_states);
     bool safeness_check(set<Region *> *pn,
                         map<int, set<Region*> *> *map_of_pre_regions,
-                        map<int, set<Region*> *> *map_of_post_regions/*,
+                        map<int, set<Region*> *> *map_of_post_regions,
+                        map<Region *, int> *regions_alias_mapping = nullptr/*,
                         map<Region *, set<int> *> *post_events*/);
 
 };
