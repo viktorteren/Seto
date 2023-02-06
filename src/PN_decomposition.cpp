@@ -85,6 +85,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     auto structure_clauses = new vector<vector<int32_t> *>();
     auto splitting_constraint_clauses = new vector<vector<int32_t> *>();
     auto fcpn_set = new set<set<Region *> *>(); //todo: transform into a vector
+    auto unsafe_fcpns = new set<set<Region *> *>();
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
     auto region_ex_event_map = new map<Region *, set<int> *>();
@@ -704,6 +705,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 else{
                     unsafe_components_counter++;
+                    /*
+                    bool equal = false;
+                    for(auto fcpn: *unsafe_fcpns){
+                        if(contains(fcpn, temp_PN)){
+                            if(contains(temp_PN, fcpn)){
+                                equal = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(equal){
+                        cout << "adding an FCPN added previously" << endl;
+                    }*/
+                    unsafe_fcpns->insert(temp_PN);
                     //cout << "NOT SAFE PN" << endl;
                     //println(temp_PN);
                     //if(decomposition_debug) {
@@ -727,6 +742,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     for(auto reg: *temp_PN){
                         clause->push_back(-1 - reg_map->at(reg));
                     }
+                    //print_clause(clause);
                     clauses_pre->push_back(clause);
                 }
             }
@@ -803,6 +819,35 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
                               aliases,
                               file, pn_counter);
+            pn_counter++;
+        }
+        exit(0);
+    }
+    else{
+        cout << "Found " << unsafe_components_counter << " unsafe FCPNs" << endl;
+        auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
+        auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
+
+        for (auto FCPN: *unsafe_fcpns) {
+            (*map_of_FCPN_pre_regions)[FCPN] = new map < int, set<Region*> * > ();
+            for (auto rec: *pprg->get_pre_regions()) {
+                for (auto reg: *rec.second) {
+                    if (FCPN->find(reg) != FCPN->end()) {
+                        if((*map_of_FCPN_pre_regions)[FCPN]->find(rec.first) == (*map_of_FCPN_pre_regions)[FCPN]->end()){
+                            (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first] = new set<Region *>();
+                        }
+                        (*(*map_of_FCPN_pre_regions)[FCPN])[rec.first]->insert(reg);
+                    }
+                }
+            }
+            (*map_of_FCPN_post_regions)[FCPN] = Pre_and_post_regions_generator::create_post_regions_for_FCPN((*map_of_FCPN_pre_regions)[FCPN]);
+        }
+        int pn_counter = 0;
+        auto regions_mapping = get_regions_map(pprg->get_pre_regions());
+        for (auto pn: *unsafe_fcpns) {
+            print_pn_dot_file(regions_mapping, map_of_FCPN_pre_regions->at(pn), map_of_FCPN_post_regions->at(pn),
+                              aliases,
+                              file, pn_counter, true);
             pn_counter++;
         }
         exit(0);

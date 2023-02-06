@@ -192,7 +192,8 @@ namespace Utilities {
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases,
                            const string&  file_name,
-                           int PN_number);
+                           int PN_number,
+                           bool unsafe = false);
     void print_sm_dot_file(map<Region *, int> *regions_mapping,
                            map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,

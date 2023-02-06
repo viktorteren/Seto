@@ -1252,7 +1252,7 @@ namespace Utilities {
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases,
                            const string& file_name,
-                           int PN_number){
+                           int PN_number, bool unsafe){
         auto initial_reg = initial_regions(pre_regions);
         /*
         if(initial_reg->empty()){
@@ -1304,7 +1304,9 @@ namespace Utilities {
         in_dot_name = output_name.substr(lower + 1, output_name.size());
         std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
         // cout << "out name: " << in_dot_name << endl;
-
+        if(unsafe){
+            output_name += "_UNSAFE";
+        }
         if(PN_number >= 0){
             if(acpn)
                 output_name += "_ACPN_";
