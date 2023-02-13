@@ -51,6 +51,8 @@ int main(int argc, char **argv) {
         optimal = false;
         no_reset = false;
         count_SMs = false;
+        region_counter = false;
+        unsafe_path = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -163,6 +165,12 @@ int main(int argc, char **argv) {
             else if(args[i] == "OPTIMAL"){
                 optimal = true;
             }
+            else if(args[i] == "COUNTER"){
+                region_counter = true;
+            }
+            else if(args[i] == "UNSAFE_PATH"){
+                unsafe_path = true;
+            }
             else{
                 cerr << "INVALID FLAG " << args[i] << endl;
                 exit(1);
@@ -174,6 +182,10 @@ int main(int argc, char **argv) {
         }
         if(optimal && !bdd_usage){
             cerr << "OPTIAL flag can be used only with BDD flag."<< endl;
+            exit(0);
+        }
+        if(region_counter && !safe_components){
+            cerr << "COUNTER flag can be used only with SAFE flag."<< endl;
             exit(0);
         }
         if(no_bounds && !bdd_usage){

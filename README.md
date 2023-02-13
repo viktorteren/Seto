@@ -232,6 +232,10 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **CS**: count the number of derived SMs if SAFE or (BDD+SS) flags were used
 
+**COUNTER**: used only with FC SAFE flag combination, changes the approach for the search of new FCPNs; i an FCPN takes part of an unsafe FCPN the counter for this region is increased, higher is the counter for a region less is the probability to take it
+
+**UNSAFE_PATH**: print the path to arrive to the unsafe marking
+
 ### Approximate algorithm using a script
 
 In the root folder the following script can be executed:

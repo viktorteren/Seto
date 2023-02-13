@@ -53,6 +53,8 @@ bool safe_components_SM;
 bool optimal;
 bool no_reset;
 bool count_SMs;
+bool region_counter;
+bool unsafe_path;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
@@ -3301,7 +3303,7 @@ namespace Utilities {
                                     }
                                     //unsafe marking
                                     else {
-                                        if(regions_alias_mapping != nullptr && decomposition_debug) {
+                                        if(regions_alias_mapping != nullptr && unsafe_path) {
                                             cout << "unsafe place: r" << regions_alias_mapping->at(reg2) << endl;
                                             cout << "path to arrive to it:"<< endl;
                                             auto reg_set_vec = path.at(current_marking);

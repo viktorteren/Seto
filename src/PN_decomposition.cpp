@@ -121,6 +121,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         temp++;
     }
 
+    auto region_counter_map = new map<Region *, int>();
+    for(auto reg: regions){
+        (*region_counter_map)[reg] = 0;
+    }
+
     //creation of clauses used to check if the new constraints can avoid the creation of previously fuond SMs
     /*
     vector<vector<int32_t> *> *clauses_avoiding_created_SMs;
@@ -388,10 +393,24 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         vector<WeightedLit> literals_from_regions = {};
         literals_from_regions.reserve(k); //improves the speed
         for (int i = 0; i < k; i++) {
-            if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
-                literals_from_regions.emplace_back(1 + i, 1);
-            } else {
-                literals_from_regions.emplace_back(1 + i, 0);
+            if(!region_counter) {
+                if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
+                    literals_from_regions.emplace_back(1 + i, 1);
+                } else {
+                    literals_from_regions.emplace_back(1 + i, 0);
+                }
+            }
+            else{
+                if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
+                    if(region_counter_map->at((*regions_vector)[i]) > 5){
+                        literals_from_regions.emplace_back(1 + i, 0);
+                    }
+                    else{
+                        literals_from_regions.emplace_back(1 + i, 1);
+                    }
+                } else {
+                    literals_from_regions.emplace_back(1 + i, 0);
+                }
             }
         }
 
@@ -459,7 +478,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 if (decomposition_debug) {
                     cout << "SAT with value " << current_value << ": representing the number of new covered regions"
                          << endl;
-                    cout << "Model: ";
+                    //cout << "Model: ";
                 }
                 last_solution->clear();
                 for (int i = 0; i < solver.nVars(); ++i) {
@@ -697,8 +716,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             cout << "found FCPN" << endl;
                     }
                     fcpn_set->insert(temp_PN);
+                    cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
                     if (decomposition_debug) {
-                        cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
                         println(temp_PN);
                     }
                     last_result_unsafe = false;
@@ -707,6 +726,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 else{
                     unsafe_components_counter++;
+                    if(region_counter){
+                        for(auto reg: *temp_PN){
+                            region_counter_map->at(reg)++;
+                        }
+                    }
                     /*
                     bool equal = false;
                     for(auto fcpn: *unsafe_fcpns){
@@ -772,6 +796,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 if (excitation_closure) {
                     cout << "ec ok" << endl;
                 }*/
+                if(region_counter){
+                    for(auto rec: *region_counter_map){
+                        rec.second = 0;
+                    }
+                }
             }
             formula.clearDatabase();
         } else {
@@ -1040,6 +1069,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         delete rec.second;
     }
     delete map_of_FCPN_post_regions;
+
+    delete region_counter_map;
 
     return fcpn_set;
 }
