@@ -70,6 +70,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      * 8) while !EC: previous results clauses are added as results to avoid in future
      * 9) greedy FCPN removal
      */
+    bool deadlock_touched = false;
     auto tStart_partial = clock();
     cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;
     map<Region *, int> *regions_alias_mapping;
@@ -461,7 +462,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         auto last_solution = new set<int>();
 
         IncPBConstraint constraint(literals_from_regions, GEQ,
-                                   current_value); //the sum have to be greater or equal to current_value
+                                   current_value); //the sum has to be greater or equal to current_value
         pb2cnf.encodeIncInital(constraint, formula, auxvars);
         //iteration in the search of a correct assignment decreasing the total weight
         do {
@@ -519,6 +520,87 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             current_value = (min + max) / 2;
         } while ((max - min) > 1);
 
+        if(region_counter && exists_solution){
+
+            vector<WeightedLit> regions_used_in_unsafe_results = {};
+            regions_used_in_unsafe_results.reserve(k); //improves the speed
+            for (int i = 0; i < k; i++) {
+                literals_from_regions.emplace_back(1 + i, region_counter_map->at((*regions_vector)[i]));
+            }
+            int min2 = 0;
+            int max2 = 0;
+            for(auto rec: *region_counter_map){
+                max2+=rec.second;
+            }
+            cout << "MAX2: " << max2 << endl;
+            int current_value2 = (max2+min2)/2;
+
+            PBConstraint constraint2(literals_from_regions, BOTH,
+                                       current_value, current_value); //the sum have to be equal to current_value
+            pb2cnf.encode(constraint2, formula, auxvars);
+            PBConstraint constraint3(regions_used_in_unsafe_results, LEQ,
+                                       current_value2); //the sum has to be greater or equal to current_value
+            pb2cnf.encode(constraint3, formula, auxvars);
+            //pb2cnf.encodeIncInital(constraint2, constraint3, formula, auxvars);
+            //iteration in the search of a correct assignment decreasing the total weight
+            do {
+                int num_clauses_formula = formula.getClauses().size();
+                //cout << "formula 1" << endl;
+                //formula.printFormula(cout);
+                dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
+                                                formula.getClauses(), results_to_avoid);
+                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+                if (sat) {
+                    //cout << "SAT" << endl;
+                    //exists_solution = true;
+
+                    if (decomposition_debug) {
+                        cout << "optimization SAT with value " << current_value2 << ": representing the sum of regions used in UNSAFE FCPNs"
+                             << endl;
+                        //cout << "Model: ";
+                    }
+                    last_solution->clear();
+                    for (int i = 0; i < solver.nVars(); ++i) {
+                        if (solver.model[i] != l_Undef) {
+                            /*
+                            if (decomposition_debug) {
+                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                        i + 1);
+                            }*/
+                            if (i < k) {
+                                if (solver.model[i] == l_True) {
+                                    last_solution->insert(i + 1);
+                                } else {
+                                    last_solution->insert(-i - 1);
+                                }
+                            }
+                        }
+                    }
+                    max2 = current_value;
+                } else {
+                    if (decomposition_debug) {
+                        //cout << "----------" << endl;
+
+                        cout << "UNSAT with value " << current_value << endl;
+                        /*
+                    if (exists_solution) {
+                        cout << "Model: ";
+                        for (int i = 0; i < solver.nVars(); ++i) {
+                            if (solver.model[i] != l_Undef) {
+                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                                        i + 1);
+                            }
+                        }
+                        cout << endl;
+                    }*/
+                    }
+                    min2 = current_value;
+                }
+                current_value = (min2 + max2) / 2;
+            } while ((max2 - min2) > 1);
+        }
+
+        /*
         if (!no_fcpn_min) {
             //STEP 6
             if (decomposition_debug)
@@ -555,7 +637,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             AuxVarManager auxvars2(k + m + 2);
             PBConstraint constraint3(literals_from_regions, BOTH,
                                      current_value, current_value);
-            /*
+
             do {
                 solver2 = new Minisat::Solver();
                 auxvars2.resetAuxVarsTo(k + m + 2);
@@ -614,8 +696,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 current_value2 = (min2 + max2) / 2;
                 delete solver2;
             } while ((max2 - min2) > 1);
-            */
         }
+        */
 
         if (exists_solution) {
             //STEP 7
@@ -723,6 +805,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     last_result_unsafe = false;
                     //cout <<"SAFE or SAFENESS NOT CHECKED" << endl;
                     deadlock_achieved = false;
+                    //todo: maybe the next reset of counters is not necessary
+                    for(auto rec: *region_counter_map){
+                        //rec.second = 0;
+                        (*region_counter_map)[rec.first] = 0;
+                    }
                 }
                 else{
                     unsafe_components_counter++;
@@ -806,7 +893,22 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         } else {
             if(deadlock_achieved) {
                 cout << "no solution found" << endl;
-                exit(0);
+                cout << "not used regions size: " << not_used_regions->size()  << endl;
+                /*
+                if(region_counter)
+                    break;*/
+                if(!deadlock_touched){
+                    deadlock_touched = true;
+                    results_to_avoid->clear();
+                    for(auto rec: *region_counter_map){
+                        //rec.second = 0;
+                        (*region_counter_map)[rec.first] = 0;
+                    }
+                    formula.clearDatabase();
+                }
+                else {
+                    exit(0);
+                }
             }
             deadlock_achieved = true;
             dd_counter++;

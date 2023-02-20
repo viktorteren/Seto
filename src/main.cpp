@@ -150,9 +150,10 @@ int main(int argc, char **argv) {
                 info = true;
                 print_step_by_step = true;
             }
+            /*
             else if(args[i] == "MIN"){
                 no_fcpn_min = false;
-            }
+            }*/
             else if(args[i] == "AUT"){
                 aut_output = true;
             }
