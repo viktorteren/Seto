@@ -50,7 +50,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
      *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
      *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
      *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
-     *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN ww add
+     *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN we add
      *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
      *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
      *      4d) safeness using SMs: once we find an unsafe FCPN we search for an SM, in this way the component is surely
@@ -851,9 +851,18 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     //}
                     last_result_unsafe = true;
                     //cout << "UNSAFE (adding constraint)" << endl;
+                    //STEP 3c
                     clause = new vector<int32_t>();
                     for(auto reg: *temp_PN){
                         clause->push_back(-1 - reg_map->at(reg));
+                    }
+                    for(auto rec: *reg_map){
+                        if(temp_PN->find(rec.first) != temp_PN->end()){
+                            clause->push_back(-1 - reg_map->at(rec.first));
+                        }
+                        else{
+                            clause->push_back(1 + reg_map->at(rec.first));
+                        }
                     }
                     //print_clause(clause);
                     clauses_pre->push_back(clause);
