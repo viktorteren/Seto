@@ -371,6 +371,14 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     double t_now;
     bool time_out = false;
 
+    vector<vector<int32_t>*> *clauses_pre_backup;
+    if(region_counter){
+        clauses_pre_backup = new vector<vector<int32_t> *>();
+        for(auto vec: *clauses_pre){
+            clauses_pre_backup->push_back(vec);
+        }
+    }
+
     do {
         t_now = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
         if(t_now > 3600){
@@ -394,24 +402,10 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         vector<WeightedLit> literals_from_regions = {};
         literals_from_regions.reserve(k); //improves the speed
         for (int i = 0; i < k; i++) {
-            if(!region_counter) {
-                if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
-                    literals_from_regions.emplace_back(1 + i, 1);
-                } else {
-                    literals_from_regions.emplace_back(1 + i, 0);
-                }
-            }
-            else{
-                if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
-                    if(region_counter_map->at((*regions_vector)[i]) > 5){
-                        literals_from_regions.emplace_back(1 + i, 0);
-                    }
-                    else{
-                        literals_from_regions.emplace_back(1 + i, 1);
-                    }
-                } else {
-                    literals_from_regions.emplace_back(1 + i, 0);
-                }
+            if (not_used_regions->find((*regions_vector)[i]) != not_used_regions->end()) {
+                literals_from_regions.emplace_back(1 + i, 1);
+            } else {
+                literals_from_regions.emplace_back(1 + i, 0);
             }
         }
 
@@ -460,6 +454,13 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         bool exists_solution = false;
 
         auto last_solution = new set<int>();
+
+        if(decomposition_debug){
+            cout << "not used regions size: " << not_used_regions->size() << endl;
+            for(auto val: literals_from_regions){
+                cout << "val: " << val.weight << endl;
+            }
+        }
 
         IncPBConstraint constraint(literals_from_regions, GEQ,
                                    current_value); //the sum has to be greater or equal to current_value
@@ -532,7 +533,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             for(auto rec: *region_counter_map){
                 max2+=rec.second;
             }
-            cout << "MAX2: " << max2 << endl;
+            //cout << "MAX2: " << max2 << endl;
             int current_value2 = (max2+min2)/2;
 
             PBConstraint constraint2(literals_from_regions, BOTH,
@@ -806,10 +807,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     //cout <<"SAFE or SAFENESS NOT CHECKED" << endl;
                     deadlock_achieved = false;
                     //todo: maybe the next reset of counters is not necessary
+                    /*
                     for(auto rec: *region_counter_map){
                         //rec.second = 0;
                         (*region_counter_map)[rec.first] = 0;
-                    }
+                    }*/
                 }
                 else{
                     unsafe_components_counter++;
@@ -914,6 +916,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                         (*region_counter_map)[rec.first] = 0;
                     }
                     formula.clearDatabase();
+                    clauses_pre = clauses_pre_backup;
+                    splitting_constraint_clauses->clear();
+                    decomposition_debug = true;
                 }
                 else {
                     exit(0);
