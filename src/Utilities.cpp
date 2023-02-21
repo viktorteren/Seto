@@ -56,7 +56,7 @@ bool count_SMs;
 bool region_counter;
 bool unsafe_path;
 bool no_timeout;
-bool counter_optimized
+bool counter_optimized;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
