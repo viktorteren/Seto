@@ -389,7 +389,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             delete cl;
         }
         clauses->clear();
-
         if ((no_reset && deadlock_achieved) || (!no_reset && (deadlock_achieved || !splitting_constraints_added))) {
             if (!splitting_constraint_clauses->empty()) {
                 splitting_constraint_clauses->clear();
@@ -455,12 +454,13 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
         auto last_solution = new set<int>();
 
+        /*
         if(decomposition_debug){
             cout << "not used regions size: " << not_used_regions->size() << endl;
             for(auto val: literals_from_regions){
                 cout << "val: " << val.weight << endl;
             }
-        }
+        }*/
 
         IncPBConstraint constraint(literals_from_regions, GEQ,
                                    current_value); //the sum has to be greater or equal to current_value
@@ -522,7 +522,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         } while ((max - min) > 1);
 
         if(region_counter && exists_solution){
-
             vector<WeightedLit> regions_used_in_unsafe_results = {};
             regions_used_in_unsafe_results.reserve(k); //improves the speed
             for (int i = 0; i < k; i++) {
@@ -800,6 +799,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                     fcpn_set->insert(temp_PN);
                     cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
+                    //cout << "not used regions size: " << not_used_regions->size() << endl;
                     if (decomposition_debug) {
                         println(temp_PN);
                     }
@@ -807,17 +807,29 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     //cout <<"SAFE or SAFENESS NOT CHECKED" << endl;
                     deadlock_achieved = false;
                     //todo: maybe the next reset of counters is not necessary
-                    /*
                     for(auto rec: *region_counter_map){
                         //rec.second = 0;
                         (*region_counter_map)[rec.first] = 0;
-                    }*/
+                    }
                 }
                 else{
                     unsafe_components_counter++;
-                    if(region_counter){
-                        for(auto reg: *temp_PN){
-                            region_counter_map->at(reg)++;
+                    // new way to change the counters of used regions: only the counters of used regions which are after
+                    // a fork are increased and not all used regions as previously
+                    for(auto rec: *post_regions_map){
+                        //the event rec.first is a fork
+                        if(rec.second->size() > 1){
+                            int occurrences_counter = 0;
+                            for(auto reg: *rec.second){
+                                if(contains(temp_PN, reg)){
+                                    occurrences_counter++;
+                                }
+                            }
+                            if(occurrences_counter >= 2){
+                                for(auto reg: *rec.second){
+                                    region_counter_map->at(reg)++;
+                                }
+                            }
                         }
                     }
                     /*
@@ -873,9 +885,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             delete new_temp_set;
 
             //fortunately this case never occurs
-            /*if(contains(results_to_avoid, *last_solution)){
+            if(contains(results_to_avoid, *last_solution)){
                 cout << "adding an already existing PN" << endl;
-            }*/
+            }
 
             results_to_avoid->push_back(*last_solution);
             //cout << "results to avoid size: " << results_to_avoid->size() << endl;
@@ -908,6 +920,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 /*
                 if(region_counter)
                     break;*/
+                /*
                 if(!deadlock_touched){
                     deadlock_touched = true;
                     results_to_avoid->clear();
@@ -922,7 +935,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 else {
                     exit(0);
-                }
+                }*/
+                exit(0);
             }
             deadlock_achieved = true;
             dd_counter++;
