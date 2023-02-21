@@ -91,8 +91,8 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     auto unsafe_fcpns = new set<set<Region *> *>();
     auto not_used_regions = new set<Region *>();
     //create map (region, exiting events)
-    auto region_ex_event_map = new map<Region *, set<int> *>();
-    auto region_ent_event_map = new map<Region *, set<int> *>();
+    auto region_ex_event_map = new map<Region *, set<int> *>(); //region->event
+    auto region_ent_event_map = new map<Region *, set<int> *>(); //event->region
     for (auto rec: *pre_regions_map) {
         auto ev = rec.first;
         for (auto reg: *rec.second) {
@@ -801,7 +801,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     }
                     fcpn_set->insert(temp_PN);
                     cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
-                    //cout << "not used regions size: " << not_used_regions->size() << endl;
+                    cout << "not used regions size: " << not_used_regions->size() << endl;
                     if (decomposition_debug) {
                         println(temp_PN);
                     }
@@ -832,6 +832,26 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                     for (auto reg: *rec.second) {
                                         region_counter_map->at(reg)++;
                                     }
+                                }
+                            }
+                        }
+                        //addition of the counter for regions being return-from-choice places
+                        for(auto reg: *temp_PN){
+                            if(region_ent_event_map->at(reg)->size() > 1){
+                                int counter_ev_ok = 0;
+                                for(auto ev: *region_ent_event_map->at(reg)){
+                                    if(counter_ev_ok >= 2)
+                                        break;
+                                    for(auto pre_reg: *pre_regions_map->at(ev)){
+                                        //found
+                                        if(temp_PN->find(pre_reg) != temp_PN->end()){
+                                            counter_ev_ok++;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(counter_ev_ok >= 2){
+                                    region_counter_map->at(reg)++;
                                 }
                             }
                         }
