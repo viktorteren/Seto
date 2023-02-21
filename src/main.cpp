@@ -53,6 +53,8 @@ int main(int argc, char **argv) {
         count_SMs = false;
         region_counter = false;
         unsafe_path = false;
+        no_timeout = false;
+        counter_optimized = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -89,6 +91,9 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "SC"){
                 only_safeness_check = true;
+            }
+            else if(args[i] == "NOTIMEOUT"){
+                no_timeout = true;
             }
             else if(args[i] == "SAFE"){
                 safe_components = true;
@@ -168,6 +173,10 @@ int main(int argc, char **argv) {
             }
             else if(args[i] == "COUNTER"){
                 region_counter = true;
+            }
+            else if(args[i] == "COUNTER_OPTIMIZED"){
+                region_counter = true;
+                counter_optimized = true;
             }
             else if(args[i] == "UNSAFE_PATH"){
                 unsafe_path = true;

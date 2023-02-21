@@ -381,9 +381,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
 
     do {
         t_now = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
-        if(t_now > 3600){
-            time_out = true;
-            break;
+        if(!no_timeout) {
+            if (t_now > 3600) {
+                time_out = true;
+                break;
+            }
         }
         for (auto cl: *clauses) {
             delete cl;
@@ -814,21 +816,30 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 }
                 else{
                     unsafe_components_counter++;
-                    // new way to change the counters of used regions: only the counters of used regions which are after
-                    // a fork are increased and not all used regions as previously
-                    for(auto rec: *post_regions_map){
-                        //the event rec.first is a fork
-                        if(rec.second->size() > 1){
-                            int occurrences_counter = 0;
-                            for(auto reg: *rec.second){
-                                if(contains(temp_PN, reg)){
-                                    occurrences_counter++;
+                    if(counter_optimized) {
+                        // new way to change the counters of used regions: only the counters of used regions which are after
+                        // a fork are increased and not all used regions as previously
+                        for (auto rec: *post_regions_map) {
+                            //the event rec.first is a fork
+                            if (rec.second->size() > 1) {
+                                int occurrences_counter = 0;
+                                for (auto reg: *rec.second) {
+                                    if (contains(temp_PN, reg)) {
+                                        occurrences_counter++;
+                                    }
+                                }
+                                if (occurrences_counter >= 2) {
+                                    for (auto reg: *rec.second) {
+                                        region_counter_map->at(reg)++;
+                                    }
                                 }
                             }
-                            if(occurrences_counter >= 2){
-                                for(auto reg: *rec.second){
-                                    region_counter_map->at(reg)++;
-                                }
+                        }
+                    }
+                    else{
+                        if(region_counter){
+                            for(auto reg: *temp_PN){
+                                region_counter_map->at(reg)++;
                             }
                         }
                     }
@@ -952,11 +963,12 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         cout << "Found " << unsafe_components_counter << " unsafe FCPNs" << endl;
         cout << "Found " << fcpn_set->size() << " safe FCPNs" << endl;
         int counter = 0;
+        /*
         for(auto fcpn: *fcpn_set){
             cout << "FCPN " << counter << endl;
             counter++;
             println(*fcpn);
-        }
+        }*/
         auto map_of_FCPN_pre_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
         auto map_of_FCPN_post_regions = new map < set<Region *> *, map<int, set<Region*> *> * > ();
 
