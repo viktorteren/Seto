@@ -809,10 +809,11 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                     //cout <<"SAFE or SAFENESS NOT CHECKED" << endl;
                     deadlock_achieved = false;
                     //todo: maybe the next reset of counters is not necessary
+                    /*
                     for(auto rec: *region_counter_map){
                         //rec.second = 0;
                         (*region_counter_map)[rec.first] = 0;
-                    }
+                    }*/
                 }
                 else{
                     unsafe_components_counter++;
@@ -832,26 +833,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                     for (auto reg: *rec.second) {
                                         region_counter_map->at(reg)++;
                                     }
-                                }
-                            }
-                        }
-                        //addition of the counter for regions being return-from-choice places
-                        for(auto reg: *temp_PN){
-                            if(region_ent_event_map->at(reg)->size() > 1){
-                                int counter_ev_ok = 0;
-                                for(auto ev: *region_ent_event_map->at(reg)){
-                                    if(counter_ev_ok >= 2)
-                                        break;
-                                    for(auto pre_reg: *pre_regions_map->at(ev)){
-                                        //found
-                                        if(temp_PN->find(pre_reg) != temp_PN->end()){
-                                            counter_ev_ok++;
-                                            break;
-                                        }
-                                    }
-                                }
-                                if(counter_ev_ok >= 2){
-                                    region_counter_map->at(reg)++;
                                 }
                             }
                         }
