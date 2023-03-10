@@ -3310,8 +3310,8 @@ namespace Utilities {
                                             cout << "path to arrive to it:"<< endl;
                                             auto reg_set_vec = path.at(current_marking);
                                             for(auto reg_set: *reg_set_vec){
-                                                for(auto reg: *reg_set){
-                                                    cout << "r" << regions_alias_mapping->at(reg) << ",";
+                                                for(auto r: *reg_set){
+                                                    cout << "r" << regions_alias_mapping->at(r) << ",";
                                                 }
                                                 cout << endl;
                                                 //println(*reg_set);
@@ -3322,6 +3322,9 @@ namespace Utilities {
                                             delete rec.second;
                                         }
                                         delete post_events;
+                                        for(auto rec: path){
+                                            delete rec. second;
+                                        }
                                         delete initial_regions;
                                         delete new_set;
                                         return false;
@@ -3367,6 +3370,9 @@ namespace Utilities {
             delete rec.second;
         }
         delete post_events;
+        for(auto rec: path){
+            delete rec. second;
+        }
         delete initial_regions;
         return true;
     }

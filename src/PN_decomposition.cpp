@@ -1115,8 +1115,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
     }
 
     if(!no_merge) {
-        //todo: bug with pparb_2_3 -> creates a PN with an event without pre-regions, even if this UNSAFE pn combined
-        // with others is still in bisimulation with original LTS
         auto merge = new FCPN_Merge(fcpn_set, number_of_events, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, file,
                                     aliases);
         delete merge;
@@ -1188,7 +1186,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         delete cl;
     }
     delete structure_clauses;
-    if(SM_clauses){
+    if(SM_clauses != nullptr){
         for(auto cl: *SM_clauses){
             delete cl;
         }
@@ -2269,6 +2267,10 @@ void PN_decomposition::check_EC_and_structure(map<int, ER> *ER,
     }
     if (!check_not_passed)
         cout << "Check passed." << endl;
+    for(auto rec: *new_pre_regions_map){
+        delete rec.second;
+    }
+    delete new_pre_regions_map;
 }
 
 int PN_decomposition::count_number_SMs(map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,

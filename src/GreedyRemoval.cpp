@@ -178,7 +178,6 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
     if(SMs_ascending->size() > SMs_descending->size()){
         for(set<Region *> *SM: *SMs){
             if(SMs_descending->find(SM) == SMs_descending->end()){
-                delete *SMs->find(SM);
                 SMs->erase(SM);
             }
         }
@@ -186,7 +185,6 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
     else{
         for(auto SM: *SMs){
             if(SMs_ascending->find(SM) == SMs_ascending->end()){
-                delete *SMs->find(SM);
                 SMs->erase(SM);
             }
         }

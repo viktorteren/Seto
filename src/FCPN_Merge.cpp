@@ -79,12 +79,12 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
     vector<int32_t> *clause;
     for (auto rec: regions_map_for_sat) {
         auto region = rec.first;
-        auto region_counter = rec.second;
+        auto reg_counter = rec.second;
         clause = new vector<int32_t>();
         for (auto FCPN: *FCPNs) {
             int SM_counter = FCPNs_map[FCPN];
             if (FCPN->find(region) != FCPN->end()) {
-                clause->push_back((M * K) + N * (SM_counter - 1) + region_counter);
+                clause->push_back((M * K) + N * (SM_counter - 1) + reg_counter);
             }
         }
         clauses->push_back(clause);
@@ -98,7 +98,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         int FCPN_counter = FCPNs_map[FCPN];
         auto regions_connected_to_labels = merge_2_maps((*map_of_FCPN_pre_regions)[FCPN],
                                                         (*map_of_FCPN_post_regions)[FCPN]);
-
         //conversion into clauses
         for (auto rec: *regions_connected_to_labels) {
             auto ev = rec.first;
@@ -129,8 +128,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                             if(rec.second->size() > 2)
                                 cerr << "passed a merge with more than 2 regions and not empty intersection" << endl;
                         }
-                        int region_counter = regions_map_for_sat[reg];
-                        int region_encoding = (M * K) + N * (FCPN_counter - 1) + region_counter;
+                        int reg_counter = regions_map_for_sat[reg];
+                        int region_encoding = (M * K) + N * (FCPN_counter - 1) + reg_counter;
                         encoded_regions_set.insert(region_encoding);
                         clause = new vector<int32_t>();
                         clause->push_back(-region_encoding);
@@ -151,8 +150,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                         if(rec.second->size() > 2)
                             cerr << "passed a merge with more than 2 regions" << endl;
                     }
-                    int region_counter = regions_map_for_sat[reg];
-                    int region_encoding = (M * K) + N * (FCPN_counter - 1) + region_counter;
+                    int reg_counter = regions_map_for_sat[reg];
+                    int region_encoding = (M * K) + N * (FCPN_counter - 1) + reg_counter;
                     encoded_regions_set.insert(region_encoding);
                     clause = new vector<int32_t>();
                     clause->push_back(-region_encoding);
@@ -427,7 +426,25 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
         }
 
         set<int> *cancelled_events = nullptr;
+        auto old_cancelled_events = new set<int>();
         do {
+            bool out = false;
+            if(!old_cancelled_events->empty()){
+                if(contains(*old_cancelled_events, *cancelled_events)){
+                    if(contains(*cancelled_events, *old_cancelled_events)){
+                        out = true;
+                    }
+                }
+            }
+            if(out){
+                break;
+            }
+            old_cancelled_events->clear();
+            if(cancelled_events != nullptr) {
+                for (auto elem: *cancelled_events) {
+                    old_cancelled_events->insert(elem);
+                }
+            }
             delete cancelled_events;
             cancelled_events = new set<int>();
             for (auto reg_set : *regions_to_merge) {
@@ -536,52 +553,52 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 }
             }
 
-
-            //(CURRENTLY NOT USED) additional check of current merges: merging regions the PN will still be an ACPN?
             auto avoided_sets = new set<set<Region *>*>();
             for(auto reg_set: *regions_to_merge){
-                bool counterexample_found = false;
-                for(auto reg1: *reg_set){
-                    if(counterexample_found)
-                        break;
-                    for(auto reg2: *reg_set){
-                        if(counterexample_found)
+                //auto new_region = new Region();
+                auto ingoing_events = new set<int>();
+                auto outgoing_events = new set<int>();
+                auto internal_events = new set<int>();
+                for(auto reg: *reg_set){
+                    auto events_before_reg = postregion_for->at(current_FCPN)->at(reg);
+                    for(auto e: *events_before_reg){
+                        ingoing_events->insert(e);
+                    }
+                    auto events_after_reg = preregion_for->at(current_FCPN)->at(reg);
+                    for(auto e: *events_after_reg){
+                        outgoing_events->insert(e);
+                    }
+                }
+                for(auto ev: *ingoing_events){
+                    if(outgoing_events->find(ev) != outgoing_events->end()){
+                        internal_events->insert(ev);
+                    }
+                }
+                for(auto ev: *internal_events){
+                    ingoing_events->erase(ev);
+                    outgoing_events->erase(ev);
+                    cancelled_events->insert(ev);
+                }
+                if(outgoing_events->size() > 1){
+                    for(auto ev: *outgoing_events) {
+                        int number_of_pre_regions_of_ev = map_of_FCPN_pre_regions->at(current_FCPN)->at(ev)->size();
+                        if(number_of_pre_regions_of_ev > 1){
+                            if(decomposition_debug)
+                                cerr << "FOUND incompatible set of regions, a merge was avoided: risk of losing FCPN property" << endl;
+                            avoided_sets->insert(reg_set);
                             break;
-                        if(reg1 != reg2){
-                            auto events_after_reg1 = preregion_for->at(current_FCPN)->at(reg1);
-                            auto events_before_reg2 = postregion_for->at(current_FCPN)->at(reg2);
-                            auto events_in_middle = new set<int>();
-                            for(auto ev: *events_after_reg1){
-                                if(events_before_reg2->find(ev) != events_before_reg2->end()){
-                                    events_in_middle->insert(ev);
-                                }
-                            }
-                            for(auto ev: *events_in_middle){
-                                if(counterexample_found)
-                                    break;
-                                if(map_fundamental_events_PN->find(current_FCPN) != map_fundamental_events_PN->end()) {
-                                    if (map_fundamental_events_PN->at(current_FCPN)->find(ev) !=
-                                        map_fundamental_events_PN->at(current_FCPN)->end()) {
-                                        avoided_sets->insert(reg_set);
-                                        counterexample_found = true;
-                                        if (decomposition_debug) {
-                                            //todo: this kind of error not always is found, need further investigation
-                                            cerr << "FOUND incompatible set of regions, a merge was avoided: " << ev << " in " << (acpn ? "ACPN " : "FCPN ")
-                                            << FCPNs_map[current_FCPN] << endl;
-                                        }
-                                    }
-                                }
-                            }
-                            delete events_in_middle;
                         }
                     }
                 }
             }
-            if(!avoided_sets->empty()) {
-                for (int i = 0; i < regions_to_merge->size(); ++i) {
-                    if (avoided_sets->find(regions_to_merge->at(i)) != avoided_sets->end()) {
-                        regions_to_merge->erase(regions_to_merge->begin() + i);
-                        i--;
+
+            //todo: in the current version "avoided sets" are avoided but an optimization could be done
+            // checking if a part of the merge is possible in order to improve the final FCPN size
+            for(auto reg_set: *avoided_sets){
+                for(int i=0;i<regions_to_merge->size();++i){
+                    if(reg_set == (*regions_to_merge)[i]){
+                        regions_to_merge->erase(regions_to_merge->begin()+i);
+                        break;
                     }
                 }
             }
@@ -603,12 +620,13 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                         cerr << "merging on choice place" << endl;
                     }
                 }*/
+                /*
                 cout << "merging regions: " << endl;
                 for (auto reg: *working_set) {
                     println(*reg);
                 }
                 cout << "into" << endl;
-                println(*merge);
+                println(*merge);*/
             }
             if(decomposition_debug) {
                 set<set<int> *>::iterator it1;
