@@ -202,8 +202,7 @@ algorithm
 
 **O**: write output FCPNs on file in .dot extension
 
-[//]: # "**MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions
-**(not recommended, not compatible with BDD flag)**"
+[//]: # "**MIN**: once found a minimum number of FCPNs perform a minimization on the set of regions**(not recommended, not compatible with BDD flag)**"
 
 **NOMERGE**: avoids the Merge step
 
