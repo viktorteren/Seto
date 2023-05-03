@@ -1,0 +1,11 @@
+pipelines:
+  default:
+    - step:
+        name: Sync GitHub Mirror
+        image: alpine/git:latest
+        clone:
+          enabled: false
+        script:
+          - git clone --bare git@bitbucket.org:pennyleonard/tstopn.git
+          - cd tstopn.git
+          - git push --mirror git@github.com:Viktor5061/Seto.git
