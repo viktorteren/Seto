@@ -339,10 +339,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             true_model.clear(true);
 
 
-            auto tmp = solver.model;
-            for(int i=0;i<tmp.size();i++){
-                auto var = tmp[i];
-                true_model.push(var);
+            for(auto val: solver.model){
+                true_model.push(val);
             }
             current_value--;
         } else {

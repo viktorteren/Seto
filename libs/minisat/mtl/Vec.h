@@ -70,7 +70,7 @@ public:
 
    // Don't allow copying (error prone):
    vec<T>&  operator = (vec<T> const&) = delete;
-   vec(vec<T> const&) = default;
+   vec(vec<T> const&) = delete;
 
     // Pointer to first element:
     operator T*() { return m_data; }
