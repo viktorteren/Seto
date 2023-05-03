@@ -22,7 +22,6 @@ private:
     bool generic=false;
 
     map<int, set<Region *> *> *merging_preregions(map<int, ER> *);
-    //void merge_2_maps(map<int, set<Region *> *> *, map<int, set<Region *> *> *);
 
 public:
     map<int, set<Region *> *> *get_merged_preregions_map();

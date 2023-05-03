@@ -68,7 +68,7 @@ void SM_composition::compose(set<set<Region *>*> *fcpn_set,
                             //event take part of the FCPN
                             if (rec1.second->find(event) != rec1.second->end()) {
                                 //insert into the next state the regions which were unchanged
-                                // (didn't took part of the event firing)
+                                // (didn't take part of the event firing)
                                 if(map_SM_pre_regions->at(FCPN)->find(event) != map_SM_pre_regions->at(FCPN)->end()) {
                                     for(auto reg: current_state.at(FCPN)) {
                                         if (map_SM_pre_regions->at(FCPN)->at(event) != reg) {
@@ -105,13 +105,6 @@ void SM_composition::compose(set<set<Region *>*> *fcpn_set,
                 completely_explored_states_set_changed = true;
             }
         }
-        /*
-        if(c==10){
-            cout << endl;
-        }
-        if(c == 500){
-            cout << endl;
-        }*/
     } while(state_space != completely_explored_states && completely_explored_states_set_changed);
     if(state_space != completely_explored_states){
         cerr << "LOOP" << endl;

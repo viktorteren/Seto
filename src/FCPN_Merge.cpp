@@ -9,6 +9,42 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
+/**
+ *
+ * @param FCPNs
+ * @param number_of_events
+ * @param map_of_FCPN_pre_regions
+ * @param map_of_FCPN_post_regions
+ * @param file
+ * @param aliases
+ * @brief
+ * STEPS OF THE ALGORITHM
+ *  1. create the map between SMs and integers from 1 to K
+ * 2. create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
+ *      instances of the same region
+ * 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
+ *      has to be true
+ * 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
+ *      connected to more than 2 regions
+ * 5. translate the map into clauses
+ * 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
+ *      intersection is not empty there is a check if the resultant set of states is a region
+ * 5c. constraint which deny the loss of AC/FC property: given a couple of regions r1 and r2 connected by e and r1
+ *      is a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event
+ *      having r2 as pre-region which has more than one pre-region then create a clause (e): denying the merge of
+ *      these two regions
+ * 6. create clauses for the events with pbLib
+ * 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
+ *      instances
+ * 8. decode the result leaving only the states corresponding to regions of the model
+ *
+ * ENCODINGS:
+ * N regions, K FCPNs, M labels
+ * ENCODING FOR LABEL i OF FCPN j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
+ * it's an invalid variable value
+ * ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N =
+ * K*(N+M)]
+ */
 FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              int number_of_events,
              map<SM *, map<int, set<Region*> *> *> *map_of_FCPN_pre_regions,
@@ -17,32 +53,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
              map<int, int> *aliases) {
     cout << "MERGE MODULE" << endl;
 
-    //STEPS OF THE ALGORITHM
-    // 1. create the map between SMs and integers from 1 to K
-    // 2. create the map between regions used in the FCPNs and integers from 1 to N -> one index for all different
-    //      instances of the same region
-    // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1
-    //      has to be true
-    // 4. create the map between event and linked regions for each FCPN, avoiding constraints where one label is
-    //      connected to more than 2 regions
-    // 5. translate the map into clauses
-    // 5b: constraint on the empty intersection between regions which are going to be merged in other case if the
-    //      intersection is not empty there is a check if the resultant set of states is a region
-    // 5c. constraint which deny the loss of AC/FC property: given a couple of regions r1 and r2 connected by e and r1
-    //      is a pre-region for e, r2 is a post-region for e, if r1 has more than one outgoing edges and exists an event
-    //      having r2 as pre-region which has more than one pre-region then create a clause (e): denying the merge of
-    //      these two regions
-    // 6. create clauses for the events with pbLib
-    // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events'
-    //      instances
-    // 8. decode the result leaving only the states corresponding to regions of the model
-    //
-    // ENCODINGS:
-    // N regions, K FCPNs, M labels
-    // ENCODING FOR LABEL i OF FCPN j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1
-    // it's an invalid variable value
-    // ENCODING FOR REGION i OF FCPN j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N =
-    // K*(N+M)]
+
 
     auto clauses = new vector<vector<int32_t> *>();
 
@@ -505,8 +516,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                             }
                         }
                     }
-                    //regions_to_merge->erase(regions_to_merge->begin()+i);
-                    //i--;
                 }
                 delete involved_regions;
             }
@@ -555,7 +564,6 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
             auto avoided_sets = new set<set<Region *>*>();
             for(auto reg_set: *regions_to_merge){
-                //auto new_region = new Region();
                 auto ingoing_events = new set<int>();
                 auto outgoing_events = new set<int>();
                 auto internal_events = new set<int>();
@@ -716,7 +724,11 @@ void FCPN_Merge::print_after_merge(set<set<Region *> *> *FCPNs,
 
     int FCPN_counter = 0;
     for (auto FCPN: *FCPNs) {
-        print_fcpn_dot_file((*map_of_FCPN_pre_regions)[FCPN], (*map_of_FCPN_post_regions)[FCPN], aliases, file, FCPN_counter);
+        print_fcpn_dot_file((*map_of_FCPN_pre_regions)[FCPN],
+                            (*map_of_FCPN_post_regions)[FCPN],
+                            aliases,
+                            file,
+                            FCPN_counter);
         FCPN_counter++;
     }
 }

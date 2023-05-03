@@ -15,6 +15,56 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
+/**
+ *
+ * Possible algorithm for the creation of one FCPN with SAT:
+ * ALGORITHM STEPS:
+ * do
+ *      1) (REMOVED) at least one region which covers each state: for each covered state by r1, r2, r3 create a
+ *      clause (r1 v r2 v r3)
+ *      2) FCPN constraint -> given the regions of a PN these cannot violate the constraint
+ *      ALGORITHM:
+ *          for each ev
+ *              for each r=pre(ev) -> place/region
+ *                  if r have more than one exiting event
+ *                      for each couple (r, pre(ev))
+ *                          if r != pre(ev)
+ *                              create clause (!r v !pre(ev))
+ *      2b) ACPN constraint:
+ *      ALGORITHM:
+ *          for each ev
+ *              for each r=pre(ev) -> place/region
+ *                  if r have more than one exiting event
+ *                      for each couple (r, pre(ev))
+ *                          if r != pre(ev)
+ *                              if pre(ev) have more than one exiting event and these events are not all in common with another place
+ *                                  create clause (!r v !pre(ev))
+ *      3) (REMOVED -> automatic given a set of regions the events are added later) complete PN structure:
+ *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
+ *      4) for the next constraint I have to add also constraint related to all connected events of a region
+ *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
+ *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
+ *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
+ *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN we add
+ *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
+ *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
+ *      4d) safeness using SMs: once we find an unsafe FCPN we search for an SM, in this way the component is surely
+ *          safe. The SM should have also only one token. The constraint for SM structure is:
+ *              given an event e
+ *                  for each couple of pre-regions/post-regions r1 and r2
+ *                      create clause (!r1 v !r2)
+ *          The constraint for the initial paces is the following:
+ *              Given the set of initial places
+ *                  for each couple of initial places r1 and r2
+ *                      create clause (!r1 v !r2)
+ *          In this way we cannot have a couple of initial places in the same SM but e also have to create a clause
+ *          which forces the usage o one initial place: the clauses containing all initial places
+ *      5) maximization function: number of new regions used in the result -> max covering
+ *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
+ *      7) decode result
+ * 8) while !EC: previous results clauses are added as results to avoid in future
+ * 9) greedy FCPN removal
+ */
 set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
@@ -22,54 +72,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  map<int, ER> *ER,
                                                  map<int, int> *aliases,
                                                  set<set<Region *>*>* SMs){
-    /* Possible algorithm for the creation of one FCPN with SAT:
-     * ALGORITHM STEPS:
-     * do
-     *      1) (REMOVED) at least one region which covers each state: for each covered state by r1, r2, r3 create a
-     *      clause (r1 v r2 v r3)
-     *      2) FCPN constraint -> given the regions of a PN these cannot violate the constraint
-     *      ALGORITHM:
-     *          for each ev
-     *              for each r=pre(ev) -> place/region
-     *                  if r have more than one exiting event
-     *                      for each couple (r, pre(ev))
-     *                          if r != pre(ev)
-     *                              create clause (!r v !pre(ev))
-     *      2b) ACPN constraint:
-     *      ALGORITHM:
-     *          for each ev
-     *              for each r=pre(ev) -> place/region
-     *                  if r have more than one exiting event
-     *                      for each couple (r, pre(ev))
-     *                          if r != pre(ev)
-     *                              if pre(ev) have more than one exiting event and these events are not all in common with another place
-     *                                  create clause (!r v !pre(ev))
-     *      3) (REMOVED -> automatic given a set of regions the events are added later) complete PN structure:
-     *          given a sequence r1 -> a -> r2 we have the clause with the bound (r1 and r2 => a) that is (!r1 v !r2 v a)
-     *      4) for the next constraint I have to add also constraint related to all connected events of a region
-     *          if r is connected to e and e' then r -> (e and e')   becomes !r v (r and e') and then (!r v e) and (!r v e')
-     *      4b) really hard new constraint if e has as pre-regions r1 and r2  and as post-regions r3 and r4
-     *          e -> (r1 v r2) and e -> (r3 v r4)   we will have clauses (!e v r1 v r2) and (!e v r3 v r4)
-     *      4c) safeness: once we have found a set of FCPNs we can check if these are safe, if we find an unsafe FCPN we add
-     *          a new constraint: given an unsafe FCPN containing places p1, ..., pn and not containing places q1, ..., qm
-     *          we create a constraint (!p1 or ... or !pn or q1 or ... or qm)
-     *      4d) safeness using SMs: once we find an unsafe FCPN we search for an SM, in this way the component is surely
-     *          safe. The SM should have also only one token. The constraint for SM structure is:
-     *              given an event e
-     *                  for each couple of pre-regions/post-regions r1 and r2
-     *                      create clause (!r1 v !r2)
-     *          The constraint for the initial paces is the following:
-     *              Given the set of initial places
-     *                  for each couple of initial places r1 and r2
-     *                      create clause (!r1 v !r2)
-     *          In this way we cannot have a couple of initial places in the same SM but e also have to create a clause
-     *          which forces the usage o one initial place: the clauses containing all initial places
-     *      5) maximization function: number of new regions used in the result -> max covering
-     *      6) OPTIONAL: solve the SAT problem decreasing the value of the region sum -> starting value is the sum of all regions
-     *      7) decode result
-     * 8) while !EC: previous results clauses are added as results to avoid in future
-     * 9) greedy FCPN removal
-     */
     bool deadlock_touched = false;
     auto tStart_partial = clock();
     cout << "=========[FCPN/ACPN DECOMPOSITION MODULE]===============" << endl;

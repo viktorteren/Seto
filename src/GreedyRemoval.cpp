@@ -29,7 +29,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
             println(*SM);
         }*/
         auto tmp_SMs = new set<set<Region *> *>();
-        //tmp_SM prende tutto tranne SM
+        //tmp_SM takes everything apart SM
         for (auto set: *SMs_ascending) {
             if (set != SM)
                 tmp_SMs->insert(set);

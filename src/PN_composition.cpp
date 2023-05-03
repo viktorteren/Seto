@@ -9,7 +9,14 @@
 
 using namespace Utilities;
 
-//Composition of PNs into one TS for the check of the behaviour
+/**
+ * @param fcpn_set
+ * @param map_FCPN_pre_regions
+ * @param map_FCPN_post_regions
+ * @param aliases
+ * @param file_path
+ * @brief Composition of PNs into one TS for the check of the behaviour
+ */
 void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_pre_regions,
                                map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
@@ -68,7 +75,7 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                             //event take part of the FCPN
                             if (rec1.second->find(event) != rec1.second->end()) {
                                 //insert into the next state the regions which were unchanged
-                                // (didn't took part of the event firing)
+                                // (didn't take part of the event firing)
                                 if(map_FCPN_pre_regions->at(FCPN)->find(event) != map_FCPN_pre_regions->at(FCPN)->end()) {
                                     for(auto reg: current_state.at(FCPN)) {
                                         if (map_FCPN_pre_regions->at(FCPN)->at(event)->find(reg) ==
@@ -107,13 +114,6 @@ void PN_composition::compose(set<set<Region *>*> *fcpn_set,
                 completely_explored_states_set_changed = true;
             }
         }
-        /*
-        if(c==10){
-            cout << endl;
-        }
-        if(c == 500){
-            cout << endl;
-        }*/
     } while(state_space != completely_explored_states && completely_explored_states_set_changed);
     if(state_space != completely_explored_states){
         cerr << "LOOP" << endl;

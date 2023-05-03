@@ -15,9 +15,4 @@ public:
                         map < set<Region *> *, map<int, set<Region*> *> * > *map_FCPN_post_regions,
                         map <int, int> *aliases,
                         string file_path);
-    static void compose(set<set<Region *>*> *fcpn_set,
-                        map < set<Region *> *, map<int, Region*> * > *map_FCPN_pre_regions,
-                        map < set<Region *> *, map<int, Region*> * > *map_FCPN_post_regions,
-                        map <int, int> *aliases,
-                        string file_path);
 };

@@ -9,26 +9,37 @@ using namespace PBLib;
 using namespace Minisat;
 using namespace Utilities;
 
+/**
+ * @param SMs
+ * @param number_of_events
+ * @param map_of_SM_pre_regions
+ * @param map_of_SM_post_regions
+ * @param file
+ * @param regions_alias_mapping
+ * @brief
+ * Steps of the algorithm:
+ * 1. create the map between SMs and integers from 1 to K
+ * 2. create the map between regions used in the SMs and integers from 1 to N -> one index for all different instances
+ * of the same region
+ * 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have
+ * to be true
+ * 4. create the map between event and linked regions for each SM
+ * 5. translate the map into clauses
+ * 6. create clauses for the events with pbLib
+ * 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
+ * 8. decode the result leaving only the states corresponding to regions of the model
+ * ENCODINGS:
+ * N regions, K FSMs, M labels
+ * ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1 it's
+ * an invalid variable value
+ * ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
+ */
 Merge::Merge(set<SM *> *SMs,
              int number_of_events,
              map<SM *, map<int, Region *> *> *map_of_SM_pre_regions,
              map<SM *, map<int, Region *> *> *map_of_SM_post_regions,
              const string& file,
              map<Region *, int> *regions_alias_mapping){
-
-    //STEPS OF THE ALGORITHM
-    // 1. create the map between SMs and integers from 1 to K
-    // 2. create the map between regions used in the SMs and integers from 1 to N -> one index for all different instances of the same region
-    // 3. create clauses to satisfy at least one instance of each region: (r1i -v -v - r1k) at least one instance of r1 have to be true
-    // 4. create the map between event and linked regions for each SM
-    // 5. translate the map into clauses
-    // 6. create clauses for the events with pbLib
-    // 7. solve the SAT problem decreasing the value of the event sum -> starting value is the sum of all events' instances
-    // 8. decode the result leaving only the states corresponding to regions of the model
-    // ENCODINGS:
-    // N regions, K FSMs, M labels
-    // ENCODING FOR LABEL i OF FSM j; M*(j-1)+i , 1 <= i <= M, 1 <= j <= K      Values range [1, M*K], i cannot use 1 it's an invalid variable value
-    // ENCODING FOR REGION i OF FSM j: (M*K)+N*(j-1)+i, 1 <= i <= N, 1 <= j <= K Values range [M*K+1, M*K+N*(K-1)+N = K*(N+M)]
 
     //STEP 1:
     map < SM * , int > SMs_map;
@@ -302,7 +313,7 @@ Merge::Merge(set<SM *> *SMs,
                         delete mergedReg;
                     }
                 }
-                //todo: nel caso dell'input clock.g e alloc-outbound.g ci sono memory leak
+                //todo: in case of clock.g and alloc-outbound there are memory leaks
                 /*for(Region * r: merged_regions){
                     cout << "removing a region" << endl;
                     println(*r);

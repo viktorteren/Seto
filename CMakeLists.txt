@@ -3,7 +3,7 @@
 # dllimport/dllexport, so the library build is forced to be static.
 #########################
 cmake_minimum_required(VERSION 3.5)
-project (TS_splitter LANGUAGES CXX C)
+project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 

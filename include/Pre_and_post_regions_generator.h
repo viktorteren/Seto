@@ -21,11 +21,11 @@ public:
     static map<int, Region *> *create_pre_regions_for_SM(SM *sm, set<int> *removed_events);
     static map<int, set<Region *>* >* create_post_regions_for_FCPN(map<int, set<Region *> *> *pre_regions_FCPN);
     static map<int, set<Region*> *> * create_pre_regions_for_FCPN(SM *sm, set<int> *removed_events);
-    static map<int, set<Region*> *> * create_pre_regions_for_FCPN(SM *FCPN, set<int> considered_events);
+    __attribute__((unused)) static map<int, set<Region*> *> * create_pre_regions_for_FCPN(SM *FCPN, set<int> considered_events);
 
 private:
     vector<Region> *regions;
-    map<int, set<Region *> *> *pre_regions; //the map contain <event e, regions which covers the event e>
+    map<int, set<Region *> *> *pre_regions; //the map contains <event e, regions which covers the event e>
     map<int, set<Region *> *> *post_regions = nullptr;
     void create_pre_regions();
     static bool is_post_region(Edges_list *list, Region *region);

@@ -4,26 +4,23 @@
  */
 
 #include "include/BDD_encoder.h"
-#include "libs/cudd-3.0.0/st/st.h"
 
 using namespace Utilities;
 
 //complexity (worst case): num_events*num_regions!
+/**
+ *
+ * @brief
+ * Algorithm divided in the following steps:
+ * 1) take the events one by one
+ * 2) given an event takes all its pre-regions and the ES
+ * 3) search all (minimal) combinations of pre-regions in order to satisfy excitation-closure for the given event
+ * 4)
+ */
 BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map) {
     cout << "==============[BDD ENCODER]===============" << endl;
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
-    // [IN ITALIAN]
-    // qui dovrei scrivere un algoritmo che:
-    // 1) prende gli eventi uno ad uno
-    // 2) per questo evento prende tutte le pre-regioni e l'ER
-    // 3) cerca tutte le combinazioni (minimali) di pre-regioni per soddisfare l'EC per tale evento
-    // 4) potrei usare un codice ricorsivo: partendo da ogni regione, l'ordine ottimale sarebbe però
-    // quello che segue una BFS e non DFS: prima controllo le singole regioni, poi coppie ...
-    // Quindi scorro per ogni regione e faccio il controllo, salvando i vincitori nella cache
-    // una volto scorso per tutti aggiungo solo quelli che sono maggiori dei precedenti e non sono nella
-    // cache come vincenti e non contengono un vincente (significa che sono minimali)
-    int approx_counter = 0;
     for(auto rec: *pre_regions){
         auto event = rec.first;
         //cout << "event: " << event << endl;
@@ -31,7 +28,7 @@ BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> 
         (*invalid_sets)[event] = new set<set<Region *>>();
         auto pre_region_set_for_event = rec.second;
         auto event_ER = ER_map->at(event);
-        auto secondary_regions = new vector<Region *>(); //regions that cannot satisfy EC alone
+        auto secondary_regions = new vector<Region *>(); //regions that alone cannot satisfy EC
         for(auto pre_region: *pre_region_set_for_event){
             bool enough = test_if_enough(event_ER,pre_region);
             auto temp = new set<Region *>();

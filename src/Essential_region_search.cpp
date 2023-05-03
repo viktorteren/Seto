@@ -16,17 +16,20 @@ Essential_regions_search::~Essential_regions_search() {
     delete essential_map;
 }
 
+/**
+    * @brief
+    * Algorithm:
+    * for each even
+    *      union of pre-regions of the given event to create a set with all states
+    *      for each state
+    *          check the pre-regions of the event not containing the given state
+    *          if exists at least one region which does not have the given state then the region is essential
+    * @return A vector of pointers to essential pre-regions
+    */
 set<Region *> *Essential_regions_search::search() {
 
     if(print_step_by_step)
         cout << "--------------------------------------------------- ESSENTIAL REGION SEARCH --------------------------------------------" << endl;
-    //ALGORITMO:
-    /*Per ogni evento
-     *  unione delle pre regioni di quel evento per creare un insieme di tutti gli stati
-     *  per ogni stato
-     *      controllo le pre-regioni dell'evento che non hanno tale stato
-     *      se c'è una sola regione che non ha tale stato allora la regione è essenziale
-     */
 
 
     set<int> *temp_union;
@@ -37,14 +40,13 @@ set<Region *> *Essential_regions_search::search() {
     Region *last_essential_candidate;
     int counter;
 
-    //per ogni evento
-    //cout << "num eventi: " << pre_regions->size() << endl;
+    //cout << "num events: " << pre_regions->size() << endl;
     for (auto record: *pre_regions) {
-        //cout <<  "evento: " << record.first << endl;
+        //cout <<  "event: " << record.first << endl;
 
         Region::iterator it2;
 
-        //se ho una sola regione, tale regione è per forza essenziale
+        //if I have only one region the region is surely essential
         if (record.second->size() == 1) {
             auto it = record.second->begin();
             essential_regions->insert(*it);
@@ -53,15 +55,14 @@ set<Region *> *Essential_regions_search::search() {
                 println(**it);
             }
         } else {
-            //unisco tutte le pre-regioni
+            //union of all pre-regions
             temp_union = regions_union(record.second);
             //cout << "union: ";
             //println(temp_union);
 
-            //per ogni stato dell'unione
+            //for each state of the union
             for (auto state: *temp_union) {
                 counter = 0;
-                //per ogni regione dell'evento
                 for (auto region: *record.second) {
                     if (region->find(state) == region->end()) {
                         if (counter == 0) {
@@ -74,7 +75,7 @@ set<Region *> *Essential_regions_search::search() {
                     }
 
                 }
-                //se ho avuto un solo stato candidato per essere essenziale allora è davvero essenziale
+                //if I had only one candidate state to be essential then it is really essential
                 if (counter == 1) {
                     if(print_step_by_step_debug){
                         cout << "found essential region for event "<< record.first  <<": ";
@@ -86,7 +87,7 @@ set<Region *> *Essential_regions_search::search() {
             delete temp_union;
         }
 
-        //una volta trovato tutte le regioni essenziali le salvo nella mappa
+        //once all essential regions are found, the regions are saved in a map
         for (auto record2: *pre_regions) {
             for (auto region: *essential_regions) {
                 auto set_of_event = record2.second;
@@ -102,17 +103,6 @@ set<Region *> *Essential_regions_search::search() {
 
     }
 
-    //print per debug
-
-    /*cout << "prove essential regions:" << endl;
-    for(auto rec: *essential_map){
-    	cout << "set di regioni dell'evento: " << rec.first << endl;
-    	for(auto reg: *rec.second){
-    		print(*reg);
-    		cout << " indirizzo: " << reg << endl;
-    	}
-    }*/
-
     if(print_step_by_step) {
         cout << "Essential regions: " << endl;
         for (auto reg: *essential_regions) {
@@ -122,7 +112,7 @@ set<Region *> *Essential_regions_search::search() {
     }
 
 
-    //ritornerò un vettore di puntatori a pre-regioni essenziali
+
     if(print_step_by_step)
         cout << "num. essential regions: " << essential_regions->size() << endl;
     return essential_regions;

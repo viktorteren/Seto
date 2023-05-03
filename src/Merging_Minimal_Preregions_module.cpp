@@ -63,10 +63,10 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
        println(*el);
      }*/
 
-    // per ogni coppia di preregioni
-    // per ogni evento
-    // controlla che valga EC con la nuova regione
-    // se vale
+    // for each pair of pre-regions
+    // for each event
+    // check EC with the new region
+    // if it is valid
 
     auto tmp_map = new map<int, set<Region *> *>();
     for (auto record : *total_pre_regions_map) {
@@ -86,7 +86,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
             println(*reg1);
             cout << "r2: ";
             println(*reg2);*/
-            // le regioni sono disgiunte!!!
+            // the regions are disjointed!!!
             auto inter = regions_intersection(reg1, reg2);
             if (inter->empty()) {
                 delete inter;
@@ -109,7 +109,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                 cont_preregions++;
                             }*/
 
-                            // cout << "evento: " << event;
+                            // cout << "event: " << event;
                             // auto tmp_set = new set<Region
                             // *>(total_pre_regions_map->at(event)->begin(),
                             //  total_pre_regions_map->at(event)->end());
@@ -123,7 +123,7 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                 else
                                     event_contains_reg = true;
                             }
-                            // inserisco l'unione se l'evento conteneva almeno una delle 2 regioni da unire
+                            // insert the union if the event contains at least one of the two regions to merge
                             if (event_contains_reg) {
                                 if (Pre_and_post_regions_generator::is_pre_region(&ts_map->at(event), reg_union)) {
                                     tmp_set->insert(reg_union);
@@ -136,15 +136,15 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                                     // cout << "er:" << endl;
                                     //println(*er);
 
-                                    // controlla ec ER(ev)==intersec(prereg(ev))
+                                    // check ec ER(ev)==intersec(prereg(ev))
                                     ec_and_pre_region = are_equal(intersection, new_er);
                                     //cout << "ec and pre region = " << ec_and_pre_region << endl;
 
                                     delete intersection;
 
-                                    // provo altre 2 regioni perchè per un evento non vale la EC
+                                    // try other two regions because for an event EC is not satisfied
                                     if (!ec_and_pre_region) {
-                                        // cout << "BREAK l'evento non soddisfa EC-provo altre regioni"
+                                        // cout << "BREAK the event does not satisfy EC, try other regions"
                                         //<< endl;
                                         delete tmp_set;
                                         delete reg_union;
@@ -163,13 +163,12 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                             } else {
                                 delete tmp_set;
                                 // cout << "event:" << event << endl;
-                                // cout << "l'evento è ok perchè non ha cambiato le sue preregioni "
-                                //   "con questa unione"
+                                // cout <<  the event is ok because its pre-regions were not modified with this union"
                                 //  << endl;
                             }
                         }
 
-                        // se per tutti gli eventi la coppia è ok faccio il merge effettivo
+                        // if for all events the pair is ok, the merge is actually done
                         if (ec_and_pre_region) {
                             delete preregions_set;
                             if (print_step_by_step || decomposition_debug)
@@ -196,12 +195,12 @@ map<int, set<Region *> *> *Merging_Minimal_Preregions_module::merging_preregions
                 }
             } else {
                 delete inter;
-                // cout << "le regioni non sono disgiunte" << endl;
+                // cout << "the regions are disjointed" << endl;
             }
         }
     }
 
-    // non ho fatto il merge
+    //the merge was not performed
     if(print_step_by_step || decomposition_debug){
         cout << "Any fusion done" << endl;
         cout << "" << endl;

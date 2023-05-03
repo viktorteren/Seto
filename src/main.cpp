@@ -456,7 +456,6 @@ int main(int argc, char **argv) {
             delete events;
             delete events_not_satify_EC;
             rg->basic_delete();
-            //NON so se commentare o no i seguenti 2 delete, con pulse non si hanno memory leak, con altri non si può rimuovere
             rg->delete_ER_set();
             delete rg;
 
@@ -913,13 +912,6 @@ int main(int argc, char **argv) {
                         final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,
                                                                   pprg, new_ER, aliases, SMs);
                     }
-                    /*
-                    int counter = 1;
-                    for(auto reg: *pprg->get_pre_regions()->at(10)){
-                        cout << counter << ": ";
-                        println(*reg);
-                        counter++;
-                    }*/
                 }
                 else{
                     final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,

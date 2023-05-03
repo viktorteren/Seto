@@ -83,13 +83,11 @@ void TS_parser::parse_TS(ifstream &fin) {
     fin >> initial_state;
     int src, dst, ev;
 
-    // aggiungo gli archi al grafo
+    // add the arcs to the graph
     for (unsigned int i = 0; i < num_transactions; ++i) {
         fin >> src;
         fin >> dst;
         fin >> ev;
-        // add_edge(vertex_array[src], vertex_array[dst], event(ev), g);
-        // non c'è l'entry relativa all'evento ev
         if (ts_map->find(ev) == ts_map->end()) {
             (*ts_map)[ev] = Edges_list();
         }
@@ -98,14 +96,6 @@ void TS_parser::parse_TS(ifstream &fin) {
     }
     num_events_before_label_splitting = static_cast<int>((*ts_map).size());
     fin.close();
-
-    /*cout<<"DEBUG TS_MAP"<<endl;
-    for(auto record:*ts_map){
-            cout<<"evento:" <<record.first;
-            for(auto tr:record.second){
-                    cout<<"trans: "<< tr.first << ", " << tr.second <<endl;
-            }
-    }*/
 }
 
 void TS_parser::parse_SIS(ifstream &fin) {
@@ -207,7 +197,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if (temp == ".dummy") {
                     exit_cycle = true;
                 }
-                //si tratta di un'etichetta
+                //it's a label
                 if (!exit_cycle) {
                     outputs.insert(temp);
                     // add_new_label_with_alias(max, temp);
@@ -231,7 +221,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if (temp == ".state") {
                     exit_cycle = true;
                 }
-                //si tratta di un'etichetta
+                //it's a label
                 if (!exit_cycle) {
                     internals.insert(temp);
                     //add_new_label_with_alias(max, temp);
@@ -252,7 +242,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                 if (temp == ".state") {
                     exit_cycle = true;
                 }
-                //si tratta di un'etichetta
+                //it's a label
                 if (!exit_cycle) {
                     dummies.insert(temp);
                     //add_new_label_with_alias(max, temp);
@@ -288,7 +278,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
                         }
 
                         fin >> finish;
-                        //lo stato start non è presente nella mappa
+                        //the start state is not available in the map
                         if (aliases_map_state_name_number->find(start) == aliases_map_state_name_number->end()) {
                             add_new_state_with_alias(max_state, start);
                             max_state++;
@@ -334,7 +324,7 @@ void TS_parser::parse_SIS(ifstream &fin) {
             check_wrong_end(previous_temp,temp);
             if (print_step_by_step_debug)
                 cout << "time after marking: " << temp << endl;
-            //stato iniziale dentrro le parentesi graffe: {s0}
+            //initial state inside brackets: {s0}
             //cout << "substring: " << temp.substr(1, temp.size()-2) << endl;
             initial_state = (*aliases_map_state_name_number)[temp.substr(1, temp.size() - 2)];
             if (print_step_by_step_debug) {

@@ -1,11 +1,11 @@
-Software for PN creation based on Regions theory (TStoPN)
+Seto: a software for Transition System decomposition based on theory of regions
 ========================
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD package.
 
 Tested on Ubuntu 22.04.1 LTS
 
-# Required software (and how install it):
+## Required software (and how install it):
 - g++
 ```Bash
 sudo apt install g++
@@ -41,18 +41,18 @@ sudo apt-get update
 sudo apt-get install mcrl2
 ```
 
-# Key principles:
+## Key principles:
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
 - Decomposition of Transition Systems into sets of interacting FCPNs
 
-# Supported extensions
+## Supported extensions
 
 Input extensions: .g .sg .ts
 
 Output extensions: .dot .g .aut
 
-# Building
+## Building
 
 Enter to the project folder and execute the following instructions:
 
@@ -60,14 +60,14 @@ Enter to the project folder and execute the following instructions:
 mkdir cmake-build-debug
 cd cmake-build-debug
 cmake ..
-make TS_splitter
+make Seto
 ```
 
-# Execution
+## Execution
 
 
 
-## a) TS to PN flow
+### a) TS to PN flow
 
 [//]: # "Quick way (requirese graphviz library) with .ps file creation"
 
@@ -78,7 +78,7 @@ make TS_splitter
 [//]: # "### Simple way"
 
 ```Bash
-./TS_splitter <file_path> PN <optional_flags>
+./Seto <file_path> PN <optional_flags>
 ```
 
 #### Optional flags:
@@ -91,10 +91,10 @@ make TS_splitter
 
 **--INFO**: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
-## b) TS to Synchronized SMs flow
+### b) TS to Synchronized SMs flow
 
 ```Bash
-./TS_splitter <file_path> SM <optional_flags>
+./Seto <file_path> SM <optional_flags>
 ```
 
 #### Optional flags:
@@ -160,7 +160,7 @@ If BDD flag was selected the *'stats.csv'* will contain the following data:
 - maximum alphabet
 - average alphabet
 
-### Execution using a script
+#### Execution using a script
 
 In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
 
@@ -168,15 +168,15 @@ In the root folder the following script can be executed, but firstly it has to b
 ./Benchmark.sh
 ```
 
-The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder. 
+The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder.
 
-## c) TS to interacting FCPNs flow
+### c) TS to interacting FCPNs flow
 
 
-### Approximated algorithm:
+#### Approximated algorithm:
 
 ```Bash
-./TS_splitter <file_path> FC <optional_flags>
+./Seto <file_path> FC <optional_flags>
 ```
 
 Statistics are stored into *'stats.csv'* file (in the folder from where the code is run). The file contains the following data:
@@ -213,7 +213,7 @@ algorithm
 
 **I**: ignore incorrect decomposition in order to allow to produce the output PNs
 
-**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search 
+**GE**: this flag is experimental and could not work: instead of executing greedy search perform a Pseudo-Boolean search
 in order to find the minimal number of FCPNs, indeed this search has very restricted constraints: at least one occurrence of each region in at least one FCPN, provides worst results compared to greedy algorithm **(not recommended and not compatible with BDD flag)**
 
 **BDD**:  use a BDD to encode excitation closure constraint, enabling the direct decomposition into a set of FCPNs instead of iteratively search new FCPNs
@@ -239,7 +239,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 
 **UNSAFE_PATH**: print the path to arrive to the unsafe marking
 
-### Approximate algorithm using a script
+#### Approximate algorithm using a script
 
 In the root folder the following script can be executed:
 
@@ -250,17 +250,17 @@ In the root folder the following script can be executed:
 The script runs the approximate algorithm for FCPN decomposition on all benchmarks of *'auto_benchmark_dir'* folder.
 
 
-## d) TS to interacting ACPNs flow
+### d) TS to interacting ACPNs flow
 
 ```Bash
-./TS_splitter <file_path> AC <optional_flags>
+./Seto <file_path> AC <optional_flags>
 ```
 
 #### Optional flags:
 
 See FCPN flow (approximated algorithm).
 
-## Combined flows
+### Combined flows
 
 The flags SM and AC/FC/KFC can be used together.
 
@@ -281,22 +281,22 @@ The flags SM and AC/FC/KFC can be used together.
 [//]: # "```"
 
 
-## Additional tools
+### Additional tools
 
 Creation of .dot extension TS/ECTS file starting from .g or .ts extension TS.
 
 ```Bash
-./TS_splitter <file_path> (TS | ECTS) <optional_flag>
+./Seto <file_path> (TS | ECTS) <optional_flag>
 ```
 
 #### Optional flags:
 
-**--INFO**: if TS option is selected only the numbers of transitions, states and events are shown; if ECTS option is 
+**--INFO**: if TS option is selected only the numbers of transitions, states and events are shown; if ECTS option is
 selected in addition also the number of regions and event splits is shown
 
 **AUT**: instead of .dot extension export the resultant TS/ECTS in Aldebaran extension (.aut)
 
-# PN visualization
+## PN visualization
 
 **Graphviz library is required!**
 
@@ -311,7 +311,7 @@ Command for the creation of a PostScript PN/TS file.
 dot -Tps filename.dot -o outfile.ps
 ```
 
-# Decomposition check
+## Decomposition check
 
 In order to check the correctness of the decomposition mCLR2 tool can be used (https://www.mcrl2.org/web/user_manual/index.html).
 
@@ -320,13 +320,13 @@ Steps for the verification:
 1) Generate the TS with AUT extension
 
 ```Bash
-./TS_splitter <file_path> (TS | ECTS) AUT
+./Seto <file_path> (TS | ECTS) AUT
 ```
 
 2) Generate the FCPN/ACPN with COMPOSE flag:
 
 ```Bash
-./TS_splitter <file_path> (FC | AC) COMPOSE
+./Seto <file_path> (FC | AC) COMPOSE
 ```
 
 3) Verify the bisimulation between the initial TS (suppose example_TS.aut) and the composition of the PNs (suppose example_FCPN_composed.aut)
@@ -334,7 +334,7 @@ Steps for the verification:
 ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file> 
 ```
 
-# Known restrictions
+## Known restrictions
 
 
 1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
