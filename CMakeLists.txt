@@ -51,7 +51,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
-target_link_libraries(${PROJECT_NAME} python3.10)
+target_link_libraries(${PROJECT_NAME} python3.10)   #needed for networkx usage
 target_link_libraries(${PROJECT_NAME} cudd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
