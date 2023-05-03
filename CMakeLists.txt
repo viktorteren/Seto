@@ -7,37 +7,36 @@ project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
-add_subdirectory(pblib)
+add_subdirectory(libs/pblib)
 
 add_library(libminisat STATIC
         # Impl files
-        minisat/core/Solver.cc
-        minisat/core/SolverTypes.cc
-        minisat/utils/Options.cc
-        minisat/utils/System.cc
-        minisat/simp/SimpSolver.cc
+        libs/minisat/core/Solver.cc
+        libs/minisat/core/SolverTypes.cc
+        libs/minisat/utils/Options.cc
+        libs/minisat/utils/System.cc
+        libs/minisat/simp/SimpSolver.cc
         # Header files for IDEs
-        minisat/core/Dimacs.h
-        minisat/core/Solver.h
-        minisat/core/SolverTypes.h
-        minisat/mtl/Alg.h
-        minisat/mtl/Alloc.h
-        minisat/mtl/Heap.h
-        minisat/mtl/IntTypes.h
-        minisat/mtl/Map.h
-        minisat/mtl/Queue.h
-        minisat/mtl/Sort.h
-        minisat/mtl/Vec.h
-        minisat/mtl/XAlloc.h
-        minisat/utils/Options.h
-        minisat/utils/ParseUtils.h
-        minisat/utils/System.h
-        minisat/simp/SimpSolver.h)
+        libs/minisat/core/Dimacs.h
+        libs/minisat/core/Solver.h
+        libs/minisat/core/SolverTypes.h
+        libs/minisat/mtl/Alg.h
+        libs/minisat/mtl/Alloc.h
+        libs/minisat/mtl/Heap.h
+        libs/minisat/mtl/IntTypes.h
+        libs/minisat/mtl/Map.h
+        libs/minisat/mtl/Queue.h
+        libs/minisat/mtl/Sort.h
+        libs/minisat/mtl/Vec.h
+        libs/minisat/mtl/XAlloc.h
+        libs/minisat/utils/Options.h
+        libs/minisat/utils/ParseUtils.h
+        libs/minisat/utils/System.h
+        libs/minisat/simp/SimpSolver.h)
 
 target_include_directories(libminisat
         PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
         )
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs)
@@ -47,7 +46,6 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-# adding TS decomposition code
 
 target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
