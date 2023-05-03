@@ -46,7 +46,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} src/BDD_encoder.cpp include/BDD_encoder.h)
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 # adding TS decomposition code
 
 target_link_libraries(${PROJECT_NAME} libminisat)
