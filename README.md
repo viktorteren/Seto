@@ -69,14 +69,6 @@ make Seto
 
 ### a) TS to PN flow
 
-[//]: # "Quick way (requirese graphviz library) with .ps file creation"
-
-[//]: # "```Bash"
-[//]: # "./execute.sh"
-[//]: # "```"
-
-[//]: # "### Simple way"
-
 ```Bash
 ./Seto <file_path> PN <optional_flags>
 ```
