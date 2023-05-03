@@ -336,9 +336,9 @@ ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file>
 ## Known restrictions
 
 
-1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value have to corrspond to the number of places/labels - 1 (any index can be skipped).
+1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value has to corrspond to the number of places/labels - 1 (any index can be skipped).
 
-2) There is any check on .ts inputs.
+2) There is no check on .ts inputs.
 
 3) It is not possible to run two parallel instances of the program on the same input file since there is a file dependency used by the SAT solver therefore the results could result wrong.
 
