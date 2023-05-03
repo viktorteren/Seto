@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include "include/BDD_encoder.h"
+#include "../include/BDD_encoder.h"
 
 using namespace Utilities;
 

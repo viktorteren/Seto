@@ -3,12 +3,12 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include <include/GreedyRemoval.h>
+#include "../include/GreedyRemoval.h"
 #include "../include/PN_decomposition.h"
 #include "../include/FCPN_Merge.h"
-#include "include/BDD_encoder.h"
-#include "include/Merge.h"
-#include "include/SM_composition.h"
+#include "../include/BDD_encoder.h"
+#include "../include/Merge.h"
+#include "../include/SM_composition.h"
 
 
 using namespace PBLib;

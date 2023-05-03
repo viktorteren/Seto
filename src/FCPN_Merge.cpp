@@ -337,8 +337,12 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
                 cout << endl;*/
             }
             true_model.clear(true);
-            for (auto val: solver.model) {
-                true_model.push(val);
+
+
+            auto tmp = solver.model;
+            for(int i=0;i<tmp.size();i++){
+                auto var = tmp[i];
+                true_model.push(var);
             }
             current_value--;
         } else {

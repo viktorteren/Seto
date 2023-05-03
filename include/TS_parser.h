@@ -8,6 +8,7 @@
 #include "Utilities.h"
 #include <map>
 #include <set>
+#include <string>
 
 using namespace std;
 

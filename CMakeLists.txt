@@ -32,9 +32,7 @@ add_library(libminisat STATIC
         minisat/utils/Options.h
         minisat/utils/ParseUtils.h
         minisat/utils/System.h
-        minisat/simp/SimpSolver.h
-        include/PN_decomposition.h
-        include/GreedyRemoval.h)
+        minisat/simp/SimpSolver.h)
 
 target_include_directories(libminisat
         PUBLIC

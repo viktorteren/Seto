@@ -2385,7 +2385,7 @@ namespace Utilities {
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path){
         FILE* f;
         f = fopen(file_path.c_str(), "r");
-        Minisat::parse_DIMACS(f, solver);
+        parse_DIMACS(f, solver);
         fclose(f);
 
         if(decomposition_debug)

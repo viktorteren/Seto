@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include <include/Pre_and_post_regions_generator.h>
+#include "../include/Pre_and_post_regions_generator.h"
 #include "../include/GreedyRemoval.h"
 
 using namespace Utilities;
