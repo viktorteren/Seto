@@ -2,7 +2,7 @@
 bench_dir=large_stgs/*
 for file in $bench_dir
 do
-    if [ ${file: -2} == ".g" ]
+    if [ ${file: -2} == ".g" ] || [ ${file: -3} == ".sg" ]
     then
         if [[ $file != *"art"* ]]; then
             echo "File corrente:"
@@ -15,5 +15,3 @@ do
         fi
     fi
 done
-
-#find ./benchmark_dir/ -iname '*.g' -exec ./cmake-build-debug/TS_splitter "{} M" \;

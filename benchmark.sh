@@ -8,4 +8,3 @@ do
     fi
 done
 
-#find ./benchmark_dir/ -iname '*.g' -exec ./cmake-build-debug/TS_splitter "{} M" \;
