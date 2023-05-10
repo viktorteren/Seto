@@ -139,12 +139,7 @@ map<int, ER> *Region_generator::get_ER_set() { return ER_set; }
 int Region_generator::branch_selection(Edges_list *list, Region *region,
                                        int event,int region_id_position) {
     // which branch has to be taken between ok, nocross or 2 branches? (for an event)
-    vector<int> *trans = new vector<int>(4, 0);
-
-    //    struct_states_to_add= new Branches_states_to_add();
-
-    //cout<<"debug: region"<<endl;
-    //println(*region);
+    auto trans = new vector<int>(4, 0);
 
     states_to_add_enter = new set<int>;
     states_to_add_exit = new set<int>;
@@ -164,6 +159,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
     bool exit_add=false;
     bool enter_add=false;
 
+    //todo: maybe can be parallelized
     for (auto t : *list) {
         if (region->find(t->first) !=
             region->end()) { // the state belongs to the region
@@ -178,8 +174,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
                  //cout << t->first << "->" << t->second << " EXIT" << endl;
                 // for exit is ok
                 // for no cross:
-                (*states_to_add_nocross)
-                        .insert(states_to_add_nocross->begin(), t->second);
+                states_to_add_nocross->insert(states_to_add_nocross->begin(), t->second);
             }
         } else { // the first does not belong to the region
             if (region->find(t->second) !=
@@ -189,8 +184,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
                 //cout << t->first << "->" << t->second << " ENTER" << endl;
                 // for the no cross the source of each arc entering into the region has to be added (enter becomes in)
                 // map of int(event) and vector of pointers to the set of states to add
-                (*states_to_add_nocross)
-                        .insert(states_to_add_nocross->begin(), t->first);
+                states_to_add_nocross->insert(states_to_add_nocross->begin(), t->first);
                 // for enter is already ok
                 // exit: cannot be done
             } else {
@@ -198,10 +192,10 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
                 out_tr->push_back(t);
                 //cout << t->first << "->" << t->second << " OUT" << endl;
                 // for enter the destination of out arcs (respect to the region) has to be added
-                (*states_to_add_enter).insert(states_to_add_enter->begin(), t->second);
+                states_to_add_enter->insert(states_to_add_enter->begin(), t->second);
                 // for no cross is already ok
                 // for exit:
-                (*states_to_add_exit).insert(states_to_add_exit->begin(), t->first);
+                states_to_add_exit->insert(states_to_add_exit->begin(), t->first);
             }
         }
     }
@@ -213,6 +207,8 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
       it++;
     }*/
 
+    //the next variable is used in both branches of the next if-else structure
+    bool map_states_to_add_contains_event = (*map_states_to_add).find(event) != map_states_to_add->end();
 
     // the Enter+in and Exit_in surely becomes in(nocross)
     if (((*trans)[in] > 0 && (*trans)[enter] > 0) ||
@@ -255,13 +251,13 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
 
 
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_nocross != nullptr)
             delete (*map_states_to_add)[event]->states_to_add_nocross;
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_exit_or_enter)
             delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
-        if ((*map_states_to_add).find(event) != map_states_to_add->end())
+        if (map_states_to_add_contains_event)
             delete (*map_states_to_add)[event];
         (*map_states_to_add)[event] = new Branches_states_to_add();
         // struct_states_to_add->states_to_add_nocross=states_to_add_nocross;
@@ -289,15 +285,16 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
         delete exit_tr;
         delete enter_tr;
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_nocross != nullptr)
             delete (*map_states_to_add)[event]->states_to_add_nocross;
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_exit_or_enter)
             delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end())
+        if (map_states_to_add_contains_event)
             delete (*map_states_to_add)[event];
         (*map_states_to_add)[event] = new Branches_states_to_add();
         map_states_to_add->at(event)->states_to_add_exit_or_enter =
@@ -327,15 +324,15 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
 
         // add the states to add for entry and no cross (but these are added to the queue by expand in order to check that
         // the branch is the correct one to take)
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_nocross != nullptr)
             delete (*map_states_to_add)[event]->states_to_add_nocross;
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end() &&
+        if (map_states_to_add_contains_event &&
             (*map_states_to_add)[event]->states_to_add_exit_or_enter)
             delete (*map_states_to_add)[event]->states_to_add_exit_or_enter;
 
-        if ((*map_states_to_add).find(event) != map_states_to_add->end())
+        if (map_states_to_add_contains_event)
             delete (*map_states_to_add)[event];
         (*map_states_to_add)[event] = new Branches_states_to_add();
         map_states_to_add->at(event)->states_to_add_exit_or_enter =
@@ -437,7 +434,6 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
         else if (e.first == event) {
             //cout << "is an ES of " << event << endl;
             event_types[event] = OK;
-            // event_types[e.first] = branch_selection(&e.second,region, e.first);
         }
     }
     int branch = OK;
