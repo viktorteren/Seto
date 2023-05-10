@@ -69,7 +69,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                                                  const set<Region *>& regions,
                                                  const string& file,
                                                  Pre_and_post_regions_generator *pprg,
-                                                 map<int, ER> *ER,
+                                                 map<int, ES> *ES,
                                                  map<int, int> *aliases,
                                                  set<set<Region *>*>* SMs){
     bool deadlock_touched = false;
@@ -910,7 +910,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 (!safe_components || (safe_components && !last_result_unsafe)) &&
                 (!safe_components_SM || (safe_components_SM && !last_result_unsafe))) {
                 auto used_regions_map = get_map_of_used_regions(fcpn_set, pprg->get_pre_regions());
-                excitation_closure = is_excitation_closed(used_regions_map, ER);
+                excitation_closure = is_excitation_closed(used_regions_map, ES);
                 //cout << "EC checked" << endl;
                 for (auto rec: *used_regions_map) {
                     delete rec.second;
@@ -1061,9 +1061,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             cout << "PNs before greedy (with the addition of SMs): " << fcpn_set->size() << endl;
         }
         if(greedy_exact)
-            GreedyRemoval::minimize_sat(fcpn_set, SMs, ER, pre_regions_map, file);
+            GreedyRemoval::minimize_sat(fcpn_set, SMs, ES, pre_regions_map, file);
         else
-            GreedyRemoval::minimize(fcpn_set, pprg, ER, pre_regions_map);
+            GreedyRemoval::minimize(fcpn_set, pprg, ES, pre_regions_map);
     }
 
     cout << (fcptnet ? "FCPN" : "ACPN") << " set size: " << fcpn_set->size() << endl;
@@ -1150,7 +1150,7 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         PN_composition::compose(fcpn_set, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, aliases, file);
 
     if (check_structure)
-        check_EC_and_structure(ER, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map, region_ex_event_map, fcpn_set);
+        check_EC_and_structure(ES, map_of_FCPN_pre_regions, map_of_FCPN_post_regions, pre_regions_map, region_ex_event_map, fcpn_set);
 
     maxAlphabet = getMaxAlphabet(map_of_FCPN_pre_regions, aliases);
     avgAlphabet = getAvgAlphabet(map_of_FCPN_pre_regions, aliases);
@@ -1222,7 +1222,7 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                                                set<Region *> *regions,
                                                const string& file,
                                                Pre_and_post_regions_generator *pprg,
-                                               map<int, ER> *ER,
+                                               map<int, ES> *ER,
                                                map<int, int> *aliases,
                                                BDD_encoder *be) {
 
@@ -2146,7 +2146,7 @@ int PN_decomposition::k_search_region_offset(int num_events, int num_regions, in
 }
 
 
-void PN_decomposition::check_EC_and_structure(map<int, ER> *ER,
+void PN_decomposition::check_EC_and_structure(map<int, ES> *ER,
                                               map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_pre_regions,
                                               map<set<Region *> *, map<int, set<Region *> *> *>* map_of_FCPN_post_regions,
                                               map<int, set<Region *>*> *pre_regions_map,

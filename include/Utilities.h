@@ -27,7 +27,7 @@ using namespace std;
 typedef set<int> Region;
 typedef set<Region *> SM;
 typedef std::pair<int, int> Edge;
-typedef set<int> *ER;
+typedef set<int> *ES;
 typedef set<Edge *> Edges_list;
 
 struct edge{
@@ -233,16 +233,16 @@ namespace Utilities {
     __attribute__((unused)) void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
     __attribute__((unused)) bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path);
-    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set);
+    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set);
     __attribute__((unused)) bool check_ER_intersection_with_mem(int event,
                                                                 set<Region*> *pre_regions_set,
-                                                                map<int, ER> *ER_set);
+                                                                map<int, ES> *ER_set);
     __attribute__((unused)) bool check_ER_intersection_with_mem(int event,
                                                                 const set<Region*>& pre_regions_set,
-                                                                map<int, ER> *ER_set);
+                                                                map<int, ES> *ER_set);
     __attribute__((unused)) void clear_ER_intersection_cache();
     __attribute__((unused)) bool check_ER_intersection_cache(set<Region*> *pre_regions_set);
-    bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set );
+    bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ES> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);
     int getStatesSum(set<SM*>* SMs);

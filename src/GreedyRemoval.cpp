@@ -12,7 +12,7 @@ using namespace PBLib;
 
 void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
                              Pre_and_post_regions_generator *pprg,
-                             map<int, ER> *new_ER,
+                             map<int, ES> *new_ES,
                              map<int, set<Region *> *> *pre_regions){
     vector<set<Region *> *> SMs_to_remove;
     bool excitation_closure;
@@ -37,7 +37,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
 
         auto used_regions_map = get_map_of_used_regions(tmp_SMs, pprg->get_pre_regions());
 
-        excitation_closure = is_excitation_closed(used_regions_map, new_ER);
+        excitation_closure = is_excitation_closed(used_regions_map, new_ES);
         for (auto rec: *used_regions_map) {
             delete rec.second;
         }
@@ -96,7 +96,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
             }
         }
 
-        excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+        excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ES);
         for (auto rec: *new_used_regions_map_tmp) {
             delete rec.second;
         }
@@ -152,7 +152,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
             }
         }
 
-        excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ER);
+        excitation_closure = is_excitation_closed(new_used_regions_map_tmp, new_ES);
         for (auto rec: *new_used_regions_map_tmp) {
             delete rec.second;
         }
@@ -214,7 +214,7 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
 
 void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
                                  set<set<Region *>*> *SMs,
-                                 map<int, ER> *ER,
+                                 map<int, ES> *ER,
                                  map<int, set<Region *> *> *pre_regions,
                              const string& file){
     cout << "[EXACT SEARCH]=====================" << endl;
@@ -483,7 +483,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
 }
 
 void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
-                                    map<int, ER> *ER,
+                                    map<int, ES> *ER,
                                     map<int, set<Region *> *> *pre_regions){
     cout << "[EXACT SEARCH]=====================" << endl;
     auto SM_vector = new vector<set<Region*>*>();
@@ -570,7 +570,7 @@ void GreedyRemoval::minimize_sat_SM_exact(set<set<Region *>*> *SMs,
 bool GreedyRemoval::check_EC(vector<int>* vec,
                              vector<set<Region*>*> *SM_vector,
                              map<int, set<Region *> *> *pre_regions,
-                             map<int, ER> *ER ){
+                             map<int, ES> *ER ){
     /*
     cout << "checking" << endl;
     for(auto v: *vec){
@@ -642,7 +642,7 @@ vector<int>* GreedyRemoval::next_set(vector<int>* vec, int max){
 }
 
 void GreedyRemoval::minimize_sat_SM(set<set<Region *>*> *SMs,
-                                 map<int, ER> *ER,
+                                 map<int, ES> *ER,
                                  map<int, set<Region *> *> *pre_regions,
                                  const string& file){
     cout << "[NEAR EXACT HEURISTIC SEARCH]=====================" << endl;

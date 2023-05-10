@@ -17,7 +17,7 @@ using namespace Utilities;
  * 3) search all (minimal) combinations of pre-regions in order to satisfy excitation-closure for the given event
  * 4)
  */
-BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map) {
+BDD_encoder::BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ES> *ER_map) {
     cout << "==============[BDD ENCODER]===============" << endl;
     valid_sets = new map<int, set<set<Region *>>*>();
     invalid_sets = new map<int, set<set<Region *>>*>();
@@ -133,9 +133,9 @@ BDD_encoder::~BDD_encoder() {
     delete clauses;
 }
 
-bool BDD_encoder::test_if_enough(ER er, set<Region *> *regions) {
+bool BDD_encoder::test_if_enough(ES es, set<Region *> *regions) {
     auto intersection = regions_intersection(regions);
-    if(*er == *intersection){
+    if(*es == *intersection){
         delete intersection;
         return true;
     }
@@ -143,8 +143,8 @@ bool BDD_encoder::test_if_enough(ER er, set<Region *> *regions) {
     return false;
 }
 
-bool BDD_encoder::test_if_enough(ER er, Region *region) {
-    if(*region == *er)
+bool BDD_encoder::test_if_enough(ES es, Region *region) {
+    if(*region == *es)
         return true;
     return false;
 }

@@ -316,7 +316,7 @@ int main(int argc, char **argv) {
         map<int, set<Region *> *> *pre_regions;
         Label_splitting_module *ls;
         Pre_and_post_regions_generator *pprg = nullptr;
-        map<int, ER> *new_ER;
+        map<int, ES> *new_ES;
         vector<Region> *vector_regions;
         map<int, vector<Region> *> *regions;
 
@@ -422,7 +422,7 @@ int main(int argc, char **argv) {
 
             tStart_partial = clock();
 
-            ls = new Label_splitting_module(pre_regions, rg->get_ER_set(), rg->get_middle_set_of_states());
+            ls = new Label_splitting_module(pre_regions, rg->get_ES_set(), rg->get_middle_set_of_states());
 
             set<int> *events = ls->is_excitation_closed();
 
@@ -465,7 +465,7 @@ int main(int argc, char **argv) {
 
         auto rg = new Region_generator(number_of_events);
         rg->generate();
-        new_ER = rg->get_ER_set();
+        new_ES = rg->get_ES_set();
 
 
 
@@ -654,7 +654,7 @@ int main(int argc, char **argv) {
 
                     if(greedy_exact)
                         if(SMs->size() < 20)
-                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ES, pre_regions);
                         else{
                             cerr << "Remove GE flag: 20 or more SM were generated in the first computation step" << endl;
                             cerr << "Exact algorithm cannot be performed O(2^n)" << endl;
@@ -662,13 +662,13 @@ int main(int argc, char **argv) {
                         }
                     else{
                         if(mixed_strategy && SMs->size() < 20){
-                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ER, pre_regions);
+                            GreedyRemoval::minimize_sat_SM_exact(SMs, new_ES, pre_regions);
                         }
                         else {
                             cout
                                     << "=======[ GREEDY REMOVAL OF SMs CHECKING EC USING HEURISTIC WHICH REMOVES BIGGEST SMs FIRST ]======"
                                     << endl;
-                            GreedyRemoval::minimize(SMs, pprg, new_ER, pre_regions);
+                            GreedyRemoval::minimize(SMs, pprg, new_ES, pre_regions);
                         }
                     }
 
@@ -901,21 +901,21 @@ int main(int argc, char **argv) {
 
                     cout << "MAX NUMBER OF EVENT PRE-REGIONS: " << max_num_pre_regions << endl;
                     if(max_num_pre_regions <= 10) {
-                        auto be = new BDD_encoder(pre_regions, new_ER);
+                        auto be = new BDD_encoder(pre_regions, new_ES);
 
                         //search a solution with n FCPNs increasing n until the result becomes SAT
                         final_pn_set = PN_decomposition::search_k(number_of_events, regions_set, file,
-                                                                    pprg, new_ER, aliases, be);
+                                                                  pprg, new_ES, aliases, be);
                         delete be;
                     }
                     else{
                         final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,
-                                                                  pprg, new_ER, aliases, SMs);
+                                                                pprg, new_ES, aliases, SMs);
                     }
                 }
                 else{
                     final_pn_set = PN_decomposition::search(number_of_events, *regions_set, file,
-                                                              pprg, new_ER, aliases, SMs);
+                                                            pprg, new_ES, aliases, SMs);
                 }
 
                 if (decomposition_debug) {
@@ -1039,7 +1039,7 @@ int main(int argc, char **argv) {
         else if (pn_synthesis){
             tStart_partial = clock();
             // Start of module: search of the irredundant set of regions
-            auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ER);
+            auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ES);
             t_irred = (double) (clock() - tStart_partial) / CLOCKS_PER_SEC;
             auto essential_regions = pn_module->get_essential_regions();
             map<int, set<Region *> *> *irredundant_regions =
@@ -1057,11 +1057,11 @@ int main(int argc, char **argv) {
                     //cout << "pre-regioni irridondanti" << endl;
                     //print(*irredundant_regions);
                     merging_module = new Merging_Minimal_Preregions_module(essential_regions, irredundant_regions,
-                                                                           new_ER);
+                                                                           new_ES);
                     // print_PN(essential_regions,irredundant_regions);
                 } else {
                     merging_module = new Merging_Minimal_Preregions_module(essential_regions,
-                                                                           nullptr, new_ER);
+                                                                           nullptr, new_ES);
                     // print_PN(essential_regions, nullptr);
                 }
 

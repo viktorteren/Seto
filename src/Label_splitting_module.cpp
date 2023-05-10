@@ -6,9 +6,9 @@
 #include "../include/Label_splitting_module.h"
 
 Label_splitting_module::Label_splitting_module(
-        map<int, set<Region*> *> *pre_regions, map<int, ER> *er_set,map<int, vector<Region *> *> *middle_set_of_states) {
+        map<int, set<Region*> *> *pre_regions, map<int, ES> *es_set, map<int, vector<Region *> *> *middle_set_of_states) {
     this->pre_regions = pre_regions;
-    this->ER_set = er_set;
+    this->ES_set = es_set;
     this->middle_set_of_states=middle_set_of_states;
 };
 
@@ -40,9 +40,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
     for(int event=0;event<num_events_after_splitting;++event){
         //cout << "event: " << item.first;
         //auto event = item.first;
-        auto er = ER_set->at((event));
-        //cout << "ER at" << event << " : " << endl;
-        //println(*er);
+        auto es = ES_set->at((event));
         //the event does not have pre-regions therefore EC is not satisfied
         if(pre_regions->find(event)==pre_regions->end()){
             events_not_satisfy_EC->insert(event);
@@ -52,7 +50,7 @@ set<int> *Label_splitting_module::is_excitation_closed() {
             (*regions_intersection_map)[event] = intersec;
             //cout << "Intersec at" << event << " :" << endl;
             //println(*intersec);
-            if (!(are_equal(er, intersec))) {
+            if (!(are_equal(es, intersec))) {
                 // cout << "region of event:" << event;
                 events_not_satisfy_EC->insert(event);
                 // res=false;

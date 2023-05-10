@@ -14,7 +14,7 @@ using namespace std;
 
 typedef set<int> Region;
 typedef std::pair<int, int> Edge;
-typedef set<int> *ER;
+typedef set<int> *ES;
 typedef set<Edge *> Edges_list;
 
 typedef std::map<int, Edges_list> My_Map;

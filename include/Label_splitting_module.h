@@ -13,7 +13,7 @@ using namespace Utilities;
 class Label_splitting_module {
 public:
     Label_splitting_module(map<int, set<Region*> *> *pre_regions,
-                         map<int, ER> *er_set, map<int, vector<Region *> *> *middle_set_of_states);
+                           map<int, ES> *es_set, map<int, vector<Region *> *> *middle_set_of_states);
 
     ~Label_splitting_module();
 
@@ -30,7 +30,7 @@ public:
 
 private:
   map<int, set<Region*> *> *pre_regions;
-  map<int, ER> *ER_set;
+  map<int, ES> *ES_set;
   map<int, set<int> *> *regions_intersection_map{};
   map<int, vector<Region *> *> *middle_set_of_states;
   My_Map* ts{};

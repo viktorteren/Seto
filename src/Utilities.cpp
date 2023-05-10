@@ -2428,7 +2428,7 @@ namespace Utilities {
         return ret;
     }
 
-    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set){
         auto er = ER_set->at(event);
         auto intersection = regions_intersection(pre_regions_set);
         bool res = are_equal(er, intersection);
@@ -2436,7 +2436,7 @@ namespace Utilities {
         return res;
     }
 
-    __attribute__((unused)) bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ER> *ER_set){
+    __attribute__((unused)) bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set){
         if(intersection_cache == nullptr)
             intersection_cache = new map<set<Region *>, set<int>*>();
         auto er = ER_set->at(event);
@@ -2453,7 +2453,7 @@ namespace Utilities {
         return res;
     }
 
-    bool check_ER_intersection_with_mem(int event, const set<Region*>& pre_regions_set, map<int, ER> *ER_set){
+    bool check_ER_intersection_with_mem(int event, const set<Region*>& pre_regions_set, map<int, ES> *ER_set){
         if(intersection_cache == nullptr)
             intersection_cache = new map<set<Region *>, set<int>*>();
         auto er = ER_set->at(event);
@@ -2483,7 +2483,7 @@ namespace Utilities {
         delete intersection_cache;
     }
 
-    bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ER> *ER_set ) {
+    bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ES> *ER_set ) {
 
         auto regions_intersection_map = new map<int, set<int> *>() ;
 

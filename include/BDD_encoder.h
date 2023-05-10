@@ -15,7 +15,7 @@ using namespace std;
 
 class BDD_encoder {
 public:
-    BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ER> *ER_map);
+    BDD_encoder(map<int, set<set<int> *> *> *pre_regions, map<int, ES> *ER_map);
     ~BDD_encoder();
     /**
      * @brief This method should take valid region combinations for each event and encode these in boolean formulas, for
@@ -27,8 +27,8 @@ public:
 private:
     map<int, set<set<Region *>>*> *valid_sets;
     map<int, set<set<Region *>>*> *invalid_sets;
-    static bool test_if_enough(ER er, set<Region *>* regions);
-    static bool test_if_enough(ER er, Region * region);
+    static bool test_if_enough(ES es, set<Region *>* regions);
+    static bool test_if_enough(ES es, Region * region);
     vector<vector<int32_t> *> *clauses;
 };
 

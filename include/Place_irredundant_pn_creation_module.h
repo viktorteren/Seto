@@ -13,7 +13,7 @@ using namespace std;
 //minimum implies irredundant but not vice versa
 class Place_irredundant_pn_creation_module {
 public:
-    explicit Place_irredundant_pn_creation_module(map<int, set<Region *> *> *pre_reg, map<int, ER> *er_map);
+    explicit Place_irredundant_pn_creation_module(map<int, set<Region *> *> *pre_reg, map<int, ES> *er_map);
     ~Place_irredundant_pn_creation_module();
 
     map<int, set<Region *> *> *get_irredundant_regions();
@@ -25,7 +25,7 @@ private:
     set<Region *> *essential_regions = nullptr;
     set<Region *> *not_essential_regions = nullptr;
     set<int> *uncovered_states = nullptr;
-    map<int, ER> *er = nullptr;
+    map<int, ES> *es = nullptr;
     set<int>* all_events = nullptr;
     map<int, set<Region *> *> *not_essential_regions_map; // maps: event -> sety of not essential regions for that event
     set<int> *search_not_covered_states_per_event();

@@ -7,21 +7,21 @@
 
 Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
         map<int, set<Region *> *> *essential_preregions,
-        map<int, set<Region *> *> *irredundant_preregions, map<int, ER> *ER) {
-    er = ER;
+        map<int, set<Region *> *> *irredundant_preregions, map<int, ES> *ES) {
+    es = ES;
 
     total_pre_regions_map = merge_2_maps(essential_preregions, irredundant_preregions);
-    merged_pre_regions_map = merging_preregions(ER);
+    merged_pre_regions_map = merging_preregions(ES);
 }
 
 __attribute__((unused)) Merging_Minimal_Preregions_module::Merging_Minimal_Preregions_module(
                                                                     map<int, set<Region *> *> *preregions,
-                                                                    map<int, ER> *ER,
+                                                                    map<int, ES> *ES,
                                                                     bool gen) {
-    er = ER;
+    es = ES;
     generic = gen;
     total_pre_regions_map = preregions;
-    merged_pre_regions_map = merging_preregions(ER);
+    merged_pre_regions_map = merging_preregions(ES);
 }
 
 Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
@@ -36,9 +36,9 @@ Merging_Minimal_Preregions_module::~Merging_Minimal_Preregions_module() {
         delete union_ptr;
     }
 
-    for (auto el : *er)
+    for (auto el : *es)
         delete el.second;
-    delete er;
+    delete es;
 }
 
 

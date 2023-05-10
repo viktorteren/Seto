@@ -15,11 +15,11 @@ public:
     explicit Region_generator(int n);
     ~Region_generator();
     void delete_ER_set();
-    __attribute__((unused)) void delete_ER_set_not_in(map<int, ER> *er);
+    __attribute__((unused)) void delete_ES_set_not_in(map<int, ES> *es);
     void delete_regions_map();
     void basic_delete();
     map<int, vector<Region> *> *generate();
-    map<int, ER> *get_ER_set();
+    map<int, ES> *get_ES_set();
     int number_of_events;
     struct Branches_states_to_add {
         set<int> *states_to_add_exit_or_enter = nullptr;
@@ -33,7 +33,7 @@ public:
     map<int, map< int , vector<Edge*> *>* >* get_violations_trans();
 
 private:
-    map<int, ER> *ER_set=nullptr;
+    map<int, ES> *ES_set=nullptr;
     map<int, vector<Region> *> *regions;
     vector<Region> *queue_temp_regions;
 

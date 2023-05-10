@@ -8,7 +8,7 @@
 #include <climits>
 
 Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
-        map<int, set<Region *> *> *pre_reg, map<int, ER> *er_map) {
+        map<int, set<Region *> *> *pre_reg, map<int, ES> *er_map) {
 
     pre_regions = pre_reg;
 
@@ -24,7 +24,7 @@ Place_irredundant_pn_creation_module::Place_irredundant_pn_creation_module(
     events_without_essential_regions = calculate_events_without_essential_regions();
     search_not_essential_regions();
     irredundant_regions = new set<Region *>();
-    er = er_map;
+    es = er_map;
     if (!not_essential_regions->empty()) {
         cost_map_filling();
         if (print_step_by_step) {
@@ -189,12 +189,12 @@ bool Place_irredundant_pn_creation_module::all_events_have_ec_satisfied(set<Regi
 
 bool Place_irredundant_pn_creation_module::ec_satisfied(int event, set<Region *> *events_regions) {
     auto intersection = regions_intersection(events_regions);
-    if (intersection->size() != er->at(event)->size()) {
+    if (intersection->size() != es->at(event)->size()) {
         delete intersection;
         //cout << "return false ec satisfied" << endl;
         return false;
     } else {
-        for (auto reg: *er->at(event)) {
+        for (auto reg: *es->at(event)) {
             if (intersection->find(reg) == intersection->end()) {
                 delete intersection;
                 //cout << "return false ec satisfied" << endl;
