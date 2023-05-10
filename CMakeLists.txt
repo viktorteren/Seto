@@ -1,7 +1,3 @@
-#########################
-# Important note: Minisat does not properly annotate its API with
-# dllimport/dllexport, so the library build is forced to be static.
-#########################
 cmake_minimum_required(VERSION 3.5)
 project (Seto LANGUAGES CXX C)
 
