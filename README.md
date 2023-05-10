@@ -1,9 +1,20 @@
 Seto: a software for Transition System decomposition based on theory of regions
 ========================
 
-Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD package.
+Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD packages.
 
-Tested on Ubuntu 22.04.1 LTS
+
+## Key principles:
+- Creation of Petri Nets from Transition Systems
+- Decomposition of Transition Systems into sets of  interacting State Machines
+- Decomposition of Transition Systems into sets of interacting FCPNs
+- - Decomposition of Transition Systems into sets of interacting ACPNs (under developing, may present bugs)
+
+## Supported extensions
+
+Input extensions: .g .sg .ts
+
+Output extensions: .dot .g .aut
 
 ## Required software (and how install it):
 - g++
@@ -41,16 +52,8 @@ sudo apt-get update
 sudo apt-get install mcrl2
 ```
 
-## Key principles:
-- Creation of Petri Nets from Transition Systems
-- Decomposition of Transition Systems into sets of  interacting State Machines
-- Decomposition of Transition Systems into sets of interacting FCPNs
 
-## Supported extensions
 
-Input extensions: .g .sg .ts
-
-Output extensions: .dot .g .aut
 
 ## Building
 
