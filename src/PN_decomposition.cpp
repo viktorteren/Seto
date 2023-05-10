@@ -802,8 +802,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                             cout << "found FCPN" << endl;
                     }
                     fcpn_set->insert(temp_PN);
-                    cout << "adding new FCPN to solution (size: " << temp_PN->size() << ")" << endl;
-                    cout << "not used regions size: " << not_used_regions->size() << endl;
                     if (decomposition_debug) {
                         println(temp_PN);
                     }
