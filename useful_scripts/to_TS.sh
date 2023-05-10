@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-bench_dir=large_stgs/*
+bench_dir=../benchmark_dir/*
 for file in $bench_dir
 do
     if [ ${file: -2} == ".g" ] || [ ${file: -3} == ".sg" ]
@@ -11,7 +11,7 @@ do
 	        OUTPUT="${file/.g/.sg}"
 	        echo "Output:"
 	        echo $OUTPUT
-            ./write_sg $file -o $OUTPUT -huge
+            ../write_sg $file -o $OUTPUT -huge
         fi
     fi
 done
