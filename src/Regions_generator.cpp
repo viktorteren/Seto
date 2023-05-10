@@ -93,6 +93,7 @@ bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
     unsigned int cont;
     Region region;
 
+    #pragma omp parallel
     for (unsigned int i = 0; i < regions_vector->size(); i++) {
         region = regions_vector->at(i);
         cont = 0;
@@ -105,21 +106,6 @@ bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
                 }
             }
             if (cont == new_region.size()  && !new_region.empty()) {
-                /*cout << "removing the old region " << endl;
-                println(region);
-                cout << "because of: " << endl;
-                println(new_region);*/
-                // remove old too big region
-                /*
-                for (auto rec: *regions) {
-                    vector<Region>::iterator it;
-                    for (it = rec.second->begin(); it < rec.second->end(); ++it) {
-                        if (are_equal(&region, &*it)) {
-                            regions->at(rec.first)->erase(it);
-                            //cout << "erasing" << endl;
-                        }
-                    }
-                }*/
                 regions_vector->erase(regions_vector->begin() + i);
                 i--;
                 removed_something = true;

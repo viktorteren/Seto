@@ -52,8 +52,8 @@ add_dependencies(${PROJECT_NAME} cudd)
 
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python3.10 )
+    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python3.10)
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python3.10 )
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python3.10)
 endif()
