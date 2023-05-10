@@ -8,7 +8,7 @@ Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD packag
 - Creation of Petri Nets from Transition Systems
 - Decomposition of Transition Systems into sets of  interacting State Machines
 - Decomposition of Transition Systems into sets of interacting FCPNs
-- - Decomposition of Transition Systems into sets of interacting ACPNs (under developing, may present bugs)
+- Decomposition of Transition Systems into sets of interacting ACPNs (under developing, may present bugs)
 
 ## Supported extensions
 
