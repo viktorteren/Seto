@@ -14,7 +14,6 @@ Region_generator::Region_generator(int n) {
     map_states_to_add = new map<int, Branches_states_to_add *>();
     middle_set_of_states = new map<int, vector<Region *> *>;
     number_of_bad_events = new map<int, vector<int> *>();
-    //trees_init = new map<int, int>();
     number_of_events = n;
     event_violations = new map<int, map<int , int >*>();
     trans_violations = new map<int, map<int, vector<Edge*>* >*>();
@@ -58,7 +57,6 @@ void Region_generator::basic_delete(){
     }
     delete map_states_to_add;
     delete queue_temp_regions;
-    // delete regions;
 
     for (auto el : *middle_set_of_states) {
         delete el.second;
@@ -69,10 +67,6 @@ void Region_generator::basic_delete(){
         delete elem.second;
     }
     delete number_of_bad_events;
-    //delete trees_init;
-
-    //map<int, map<int, int >*>* event_violations;
-    //map<int, map<int, vector<Edge*> *>* >* trans_violations;
     for (auto elem : *trans_violations) {
         for(auto elem2: *elem.second){
             delete elem2.second;
@@ -146,10 +140,8 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
 
     //todo: maybe can be parallelized
     for (auto t : *list) {
-        if (region->find(t->first) !=
-            region->end()) { // the state belongs to the region
-            if (region->find(t->second) !=
-                region->end()) { // also the second state belongs to the region
+        if (region->find(t->first) != region->end()) { // the state belongs to the region
+            if (region->find(t->second) != region->end()) { // also the second state belongs to the region
                 (*trans)[in]++;
                 //cout << t->first << "->" << t->second << " IN " << endl;
                 // for no cross is ok, the others cannot be done
