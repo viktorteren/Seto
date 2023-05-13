@@ -1,1 +1,0 @@
-g++  -O3 -std=c++11 -O3 -DNDEBUG  -rdynamic CMakeFiles/pbencoder.dir/pbencoder.cpp.o  -o pbencoder  -L/home/viktor/pblib/BasicPBSolver/minisat -Wl,-rpath,/home/viktor/pblib/BasicPBSolver/minisat libpblib.a 

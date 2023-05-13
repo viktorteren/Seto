@@ -3,37 +3,7 @@ project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
-add_subdirectory(libs/pblib)
-
-add_library(libminisat STATIC
-        # Impl files
-        libs/minisat/core/Solver.cc
-        libs/minisat/core/SolverTypes.cc
-        libs/minisat/utils/Options.cc
-        libs/minisat/utils/System.cc
-        libs/minisat/simp/SimpSolver.cc
-        # Header files for IDEs
-        libs/minisat/core/Dimacs.h
-        libs/minisat/core/Solver.h
-        libs/minisat/core/SolverTypes.h
-        libs/minisat/mtl/Alg.h
-        libs/minisat/mtl/Alloc.h
-        libs/minisat/mtl/Heap.h
-        libs/minisat/mtl/IntTypes.h
-        libs/minisat/mtl/Map.h
-        libs/minisat/mtl/Queue.h
-        libs/minisat/mtl/Sort.h
-        libs/minisat/mtl/Vec.h
-        libs/minisat/mtl/XAlloc.h
-        libs/minisat/utils/Options.h
-        libs/minisat/utils/ParseUtils.h
-        libs/minisat/utils/System.h
-        libs/minisat/simp/SimpSolver.h)
-
-target_include_directories(libminisat
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/libs>
-        )
+add_subdirectory(libs/pblib/pblib)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/libs)
 
@@ -43,7 +13,7 @@ file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${PROJECT_NAME} libminisat)
+#target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
 target_link_libraries(${PROJECT_NAME} python3.10)   #needed for networkx usage
 target_link_libraries(${PROJECT_NAME} cudd)

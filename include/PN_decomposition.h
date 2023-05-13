@@ -4,7 +4,7 @@
  */
 
 #include "Utilities.h"
-#include "../libs/pblib/pb2cnf.h"
+#include <pblib/pb2cnf.h>
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/PN_composition.h"
 #include "BDD_encoder.h"

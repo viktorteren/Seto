@@ -338,8 +338,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             }
             true_model.clear(true);
 
-
-            for(auto val: solver.model){
+            for(int i=0;i<solver.model.size();++i){
+                auto val = solver.model[i];
                 true_model.push(val);
             }
             current_value--;

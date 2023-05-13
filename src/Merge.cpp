@@ -177,7 +177,8 @@ Merge::Merge(set<SM *> *SMs,
                 cout << endl;
             }
             true_model.clear(true);
-            for(auto val: solver.model){
+            for(int i=0;i<solver.model.size();++i){
+                auto val = solver.model[i];
                 true_model.push(val);
             }
             //maxValueToCheck--;
