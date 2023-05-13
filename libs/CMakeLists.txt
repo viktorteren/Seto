@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
-set(CUDD_DIR ${CMAKE_SOURCE_DIR}/libs/cudd-3.0.0)
+set(CUDD_DIR ${CMAKE_SOURCE_DIR}/libs/cudd)
 if(MSVC OR MINGW)
   if (CMAKE_CL_64)
     set(CUDD_CONFIG_DIR ${CMAKE_SOURCE_DIR}/libs/cudd-config/windows)
@@ -13,11 +13,6 @@ else()
 endif()
 set(UNISTD_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/unistd)
 set(GETOPT_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/getopt)
-
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/libs/cudd)
-  file(DOWNLOAD http://davidkebo.com/source/cudd_versions/cudd-3.0.0.tar.gz ${CMAKE_SOURCE_DIR}/libs/cudd-3.0.0.tar.gz)
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_SOURCE_DIR}/libs/cudd-3.0.0.tar.gz WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/libs)
-endif()
 
 set(SOURCES
     ${CUDD_DIR}/cudd/cuddAddAbs.c
