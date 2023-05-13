@@ -9,3 +9,4 @@ cmake-build-debug
 /Graph.dimacs
 /petrify.log
 /libs/minisat/tests/
+/libs/cudd-3.0.0/
