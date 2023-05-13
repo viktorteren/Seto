@@ -57,11 +57,17 @@ sudo apt-get install mcrl2
 
 ## Building
 
-Enter to the project folder and execute the following instructions:
+Before building the project all dependencies have to be downloaded executing the following command from the project's root folder:
 
 ```bash
-mkdir cmake-build-debug
-cd cmake-build-debug
+git submodule update --init --recursive
+```
+
+Once all dependencies are downloaded, the project can be built:
+
+```bash
+mkdir build
+cd build
 cmake ..
 make Seto
 ```
