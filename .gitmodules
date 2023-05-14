@@ -1,3 +1,6 @@
 [submodule "libs/cudd"]
 	path = libs/cudd
 	url = https://github.com/ivmai/cudd.git
+[submodule "libs/pblib"]
+	path = libs/pblib
+	url = https://github.com/master-keying/pblib.git
