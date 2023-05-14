@@ -4,7 +4,7 @@
  */
 
 #include "Utilities.h"
-#include <pblib/pb2cnf.h>
+#include "../libs/pblib/pblib/pb2cnf.h"
 #include "../include/Pre_and_post_regions_generator.h"
 
 class GreedyRemoval {

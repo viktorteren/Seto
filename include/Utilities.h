@@ -4,9 +4,9 @@
  */
 
 #pragma once
-#include "minisat/core/Solver.h"
-#include "minisat/mtl/Vec.h"
-#include "minisat/core/Dimacs.h"
+#include "../libs/minisat/core/Solver.h"
+#include "../libs/minisat/mtl/Vec.h"
+#include "../libs/minisat/core/Dimacs.h"
 #include "../include/TS_parser.h"
 #include "numeric"
 #include <algorithm>

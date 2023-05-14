@@ -2383,10 +2383,10 @@ namespace Utilities {
     }
 
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path){
-        gzFile f;
-        f = gzopen(file_path.c_str(), "r");
+        FILE *f;
+        f = fopen(file_path.c_str(), "r");
         parse_DIMACS(f, solver);
-        gzclose(f);
+        fclose(f);
 
         if(decomposition_debug)
             cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
@@ -2411,10 +2411,10 @@ namespace Utilities {
     }
 
     __attribute__((unused)) bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path){
-        gzFile f;
-        f = gzopen(file_path.c_str(), "r");
+        FILE *f;
+        f = fopen(file_path.c_str(), "r");
         Minisat::parse_DIMACS(f, solver);
-        gzclose(f);
+        fclose(f);
 
         if(decomposition_debug)
             cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;

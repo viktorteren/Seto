@@ -106,3 +106,40 @@ if (MSVC)
 else()
   set(CUDD_INCLUDE_DIR ${CUDD_DIR}/cplusplus ${CUDD_DIR}/cudd ${CUDD_DIR}/util ${CUDD_CONFIG_DIR} PARENT_SCOPE)
 endif()
+
+set(PBLIB_DIR ${CMAKE_SOURCE_DIR}/libs/pblib/pblib)
+
+set(PBLIB_SOURCE_FILES
+        ${PBLIB_DIR}/auxvarmanager.cpp
+        ${PBLIB_DIR}/clausedatabase.cpp
+        ${PBLIB_DIR}/formula.cpp
+        ${PBLIB_DIR}/helper.cpp
+        ${PBLIB_DIR}/incpbconstraint.cpp
+        ${PBLIB_DIR}/IncrementalData.cpp
+        ${PBLIB_DIR}/IncSimplePBConstraint.cpp
+        ${PBLIB_DIR}/pb2cnf.cpp
+        ${PBLIB_DIR}/PBConfig.cpp
+        ${PBLIB_DIR}/pbconstraint.cpp
+        ${PBLIB_DIR}/PBFuzzer.cpp
+        ${PBLIB_DIR}/PBParser.cpp
+        ${PBLIB_DIR}/preencoder.cpp
+        ${PBLIB_DIR}/SimplePBConstraint.cpp
+        ${PBLIB_DIR}/VectorClauseDatabase.cpp
+        ${PBLIB_DIR}/encoder/adderencoding.cpp
+        ${PBLIB_DIR}/encoder/amo.cpp
+        ${PBLIB_DIR}/encoder/bdd.cpp
+        ${PBLIB_DIR}/encoder/BDD_Seq_Amo.cpp
+        ${PBLIB_DIR}/encoder/bimander_amo_encoding.cpp
+        ${PBLIB_DIR}/encoder/binary_amo.cpp
+        ${PBLIB_DIR}/encoder/BinaryMerge.cpp
+        ${PBLIB_DIR}/encoder/cardencoding.cpp
+        ${PBLIB_DIR}/encoder/commander_encoding.cpp
+        ${PBLIB_DIR}/encoder/Encoder.cpp
+        ${PBLIB_DIR}/encoder/k-product.cpp
+        ${PBLIB_DIR}/encoder/naive_amo_encoder.cpp
+        ${PBLIB_DIR}/encoder/sorting_merging.cpp
+        ${PBLIB_DIR}/encoder/SortingNetworks.cpp
+        ${PBLIB_DIR}/encoder/SWC.cpp
+ )
+ 
+ add_library(pblib STATIC ${PBLIB_SOURCE_FILES})
