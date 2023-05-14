@@ -10,8 +10,6 @@ add_library(libminisat STATIC
         libs/minisat/core/Solver.cc
         libs/minisat/core/SolverTypes.cc
         libs/minisat/utils/Options.cc
-        libs/minisat/utils/System.cc
-        libs/minisat/simp/SimpSolver.cc
         # Header files for IDEs
         libs/minisat/core/Dimacs.h
         libs/minisat/core/Solver.h
@@ -25,10 +23,7 @@ add_library(libminisat STATIC
         libs/minisat/mtl/Sort.h
         libs/minisat/mtl/Vec.h
         libs/minisat/mtl/XAlloc.h
-        libs/minisat/utils/Options.h
-        libs/minisat/utils/ParseUtils.h
-        libs/minisat/utils/System.h
-        libs/minisat/simp/SimpSolver.h)
+        libs/minisat/utils/Options.h)
 
 target_include_directories(libminisat
         PUBLIC
