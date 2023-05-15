@@ -1,0 +1,2 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
