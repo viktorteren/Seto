@@ -70,7 +70,7 @@ git clone --recursive https://github.com/viktorteren/Seto.git
 Second method: download the repository "as is" and update the dependencies:
 
 ```bash
-git submodule update --init
+git submodule update --init --recursive
 ```
 
 Once all dependencies are downloaded, the project can be built:
