@@ -4,6 +4,3 @@
 [submodule "libs/pblib"]
 	path = libs/pblib
 	url = https://github.com/master-keying/pblib.git
-[submodule "libs/minisat"]
-	path = libs/minisat
-	url = https://github.com/master-keying/minisat.git
