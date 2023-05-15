@@ -57,7 +57,17 @@ sudo apt-get install mcrl2
 
 ## Building
 
-Before building the project all dependencies have to be downloaded executing the following command from the project's root folder:
+## Building
+
+Before building the project all dependencies (submodules) have to be downloaded, it can be done in two different  ways:
+
+First method: download the current repository recursively:
+
+```bash
+git clone --recursive https://github.com/viktorteren/Seto.git
+```
+
+Second method: download the repository "as is" and update the dependencies:
 
 ```bash
 git submodule update --init --recursive
