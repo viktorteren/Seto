@@ -175,6 +175,13 @@ void GreedyRemoval::minimize(set<set<Region *>*> *SMs,
         cout << "DESCENDING: " << SMs_descending->size() << endl;
     }
 
+    cout << "PNs descending: " << SMs_descending->size() << endl;
+    cout << "PNs ascending: " << SMs_ascending->size() << endl;
+
+
+
+    exit(1);
+
     if(SMs_ascending->size() > SMs_descending->size()){
         for(set<Region *> *SM: *SMs){
             if(SMs_descending->find(SM) == SMs_descending->end()){
@@ -618,8 +625,8 @@ bool GreedyRemoval::exists_next(vector<int> *vec,int max){
     return false;
 }
 
-//TODO: algoritmo sbagliato, si saltanto diverse combinazioni
-// vme_read e vme_write ancora buggati
+//TODO: wrong algorithm, some combinations are not covered
+// vme_read and vme_write still bugged
 vector<int>* GreedyRemoval::next_set(vector<int>* vec, int max){
     for(int i=vec->size()-1;i>=0;i--){
         if(vec->at(i) <= max - (vec->size()-i)){
