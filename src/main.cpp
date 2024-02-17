@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
         unsafe_path = false;
         no_timeout = false;
         counter_optimized = false;
+        conformance_checking = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -64,6 +65,9 @@ int main(int argc, char **argv) {
                 fcptnet = true;
             else if(args[i]=="AC")
                 acpn = true;
+            else if(args[i]=="CC") {
+                conformance_checking = true;
+            }
             else if(args[i] == "NOMERGE"){
                 no_merge = true;
             }
@@ -1036,7 +1040,7 @@ int main(int argc, char **argv) {
             rg->delete_ER_set();
             delete regions_set;
         }
-        else if (pn_synthesis){
+        else if (pn_synthesis || conformance_checking){
             tStart_partial = clock();
             // Start of module: search of the irredundant set of regions
             auto pn_module = new Place_irredundant_pn_creation_module(pre_regions, new_ES);
@@ -1046,10 +1050,8 @@ int main(int argc, char **argv) {
                     pn_module->get_irredundant_regions();
 
             Merging_Minimal_Preregions_module *merging_module = nullptr;
-            map<int, set<Region *>*> *merged_map;
+            map<int, set<Region *>*> *merged_map; //map of pre-regions for an event
             if(!no_merge) {
-
-
                 //cout << "pre-regioni essenziali" << endl;
                 //print(*essential_regions);
 
@@ -1105,7 +1107,6 @@ int main(int argc, char **argv) {
 
             cout << "Number of places: " << number_of_places << endl;
 
-            delete regions_set;
 
             if(output) {
                 pprg->create_post_regions(merged_map);
@@ -1132,8 +1133,24 @@ int main(int argc, char **argv) {
                 //cout<<"pre regions merged map"<<endl;
                 //print(*merged_map);
 
-                print_pn_dot_file(merged_map, post_regions, aliases, file);
+
+
+                if(conformance_checking){
+                    //print_for_conformance_checking(merged_map, post_regions, aliases, file);
+                    if(output){
+                        int pn_counter = 0;
+                        for (Region *region: *regions_set) {
+                            print_cc_component_dot_file(region, merged_map, post_regions, aliases, file, pn_counter);
+                            pn_counter++;
+                        }
+                    }
+                }
+                else {
+                    print_pn_dot_file(merged_map, post_regions, aliases, file);
+                }
             }
+
+            delete regions_set;
 
             // cout << "fine ricerca " << endl;
 

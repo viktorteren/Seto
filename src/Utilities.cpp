@@ -27,6 +27,7 @@ bool acpn;
 bool aut_output;
 bool ignore_correctness;
 bool no_bounds;
+bool conformance_checking;
 __attribute__((unused)) bool fcpn_modified;
 __attribute__((unused)) bool blind_fcpn;
 __attribute__((unused)) bool fcpn_with_levels;
@@ -1599,6 +1600,13 @@ namespace Utilities {
             delete regions_mapping;
     }
 
+    void print_for_conformance_checking(map<int, set<Region *> *> *pre_regions,
+                           map<int, set<Region *> *> *post_regions,
+                           map<int, int> *aliases, const string& file_name) {
+
+        print_fcpn_dot_file(pre_regions, post_regions, aliases, file_name, -1);
+    }
+
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases, const string& file_name) {
@@ -1818,6 +1826,182 @@ namespace Utilities {
         delete regions_set;
         delete initial_reg;
         delete regions_mapping;
+    }
+
+    //TODO: check for memory leaks
+    void print_cc_component_dot_file(Region *region,
+                                     map<int, set<Region  *> *> *pre_regions,
+                                     map<int, set<Region *> *> *post_regions,
+                                     map<int, int> *aliases,
+                                     string file_name,
+                                     int component_counter){
+        bool initial = is_initial_region(region);
+
+        set<int> *incoming_events = new set<int>();
+        for(auto rec: *post_regions){
+            if(rec.second->find(region) != rec.second->end()){
+                incoming_events->insert(rec.first);
+            }
+        }
+
+        set<int> *outgoing_events = new set<int>();
+        for(auto rec: *pre_regions){
+            if(rec.second->find(region) != rec.second->end()){
+                outgoing_events->insert(rec.first);
+            }
+        }
+
+
+        //auto initial_reg = initial_regions(pre_regions);
+        /*
+        if(initial_reg->empty()){
+            cerr << "any initial region found" << endl;
+            exit(1);
+        }*/
+        string output_name = file_name;
+        string in_dot_name;
+        string output;
+
+        map<Region *,int> *regions_mapping = get_regions_map(pre_regions);
+        bool delete_regions_mapping = true;
+
+
+        /*cout << "preregions before print" << endl;
+        print(*pre_regions);*/
+        //auto regions_set = copy_map_to_set(pre_regions);
+        /*cout << "regions set " << endl;
+        println(*regions_set);*/
+
+
+        while (output_name[output_name.size() - 1] != '.') {
+            output_name = output_name.substr(0, output_name.size() - 1);
+        }
+        output_name = output_name.substr(0, output_name.size() - 1);
+        int lower = 0;
+        for (int i = static_cast<int>(output_name.size() - 1); i > 0; i--) {
+            if (output_name[i] == '/') {
+                lower = i;
+                break;
+            }
+        }
+        in_dot_name = output_name.substr(lower + 1, output_name.size());
+        std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
+        // cout << "out name: " << in_dot_name << endl;
+
+        output_name += "_component_";
+        output_name+=std::to_string(component_counter);
+        output_name+=".dot";
+
+        //cout << "file output PN: " << output_name << endl;
+
+        ofstream fout(output_name);
+        fout << "digraph ";
+        fout << in_dot_name + "_component_";
+        fout << std::to_string(component_counter);
+
+
+        fout << "{\n";
+        // initial regions
+        //cout << "writing initial regions" << endl;
+        fout << "subgraph initial_place {\n"
+                "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
+                "black, fillcolor = gray, style = filled];\n";
+        if(initial){
+            fout << "\tr" << regions_mapping->at(region) << ";\n";
+        }
+
+        fout << "}\n";
+        // not initial regions
+        fout << "subgraph place {     \n"
+                "\tnode [shape=circle,fixedsize=true, fixedsize = 2];\n";
+        if(!initial){
+            fout << "\tr" << regions_mapping->at(region) << ";\n";
+        }
+        fout << "}\n";
+
+        // transitions (events)
+        fout << "subgraph transitions {\n"
+                "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
+        auto alias_counter = new map<int, int>();
+        for (auto al:*aliases) {
+            (*alias_counter)[al.second] = 0;
+        }
+        for (auto record : *aliases) {
+            bool found = false;
+            if(incoming_events->find(record.first) != incoming_events->end()){
+                found = true;
+            }
+            else if(outgoing_events->find(record.first)!= outgoing_events->end()){
+                found = true;
+            }
+
+            if(found) {
+                //fout << "\t" << record.first << ";\n";
+                int label;
+                label = record.second;
+                (*alias_counter)[label]++;
+                if (g_input) {
+                    fout << "\t" << record.first << " [label = \""
+                         << (*aliases_map_number_name)[label];
+                } else {
+                    fout << "\t" << record.first << " [label = \""
+                         << label;
+                }
+                //cout<<"debug alias counter of "<< record.second << (*alias_counter)[record.second]<<endl;
+                fout << "/" << (*alias_counter)[record.second];
+                /*for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
+                    fout << "'";
+                }*/
+                fout << "\"];\n";
+            }
+            else{
+                (*alias_counter)[record.second]++;
+            }
+        }
+        delete alias_counter;
+        //transition (events) initial
+        for (auto ev : *incoming_events) {
+            if (ev < num_events_before_label_splitting) {
+                if (g_input) {
+                    fout << "\t" << ev << " [label = \""
+                         << (*aliases_map_number_name)[ev];
+                    fout << "\"];\n";
+                } else {
+                    fout << "\t" << ev << ";\n";
+                }
+            }
+        }
+        for (auto ev : *outgoing_events) {
+            if (ev < num_events_before_label_splitting) {
+                if (pre_regions->find(ev) == pre_regions->end()) {
+                    if (g_input) {
+                        fout << "\t" << ev << " [label = \""
+                             << (*aliases_map_number_name)[ev];
+                        fout << "\"];\n";
+                    } else {
+                        fout << "\t" << ev << ";\n";
+                    }
+                }
+            }
+        }
+        fout << "}\n";
+
+        //arcs between transitions and places (events and regions)
+        //region -> event
+        for(auto ev: *outgoing_events){
+            fout << "\t" << "r" << regions_mapping->at(region) << " -> "
+                  << ev << ";\n";
+        }
+        //event -> region
+        for(auto ev: *incoming_events){
+            fout << "\t" << ev << " -> "
+                 << "r" << regions_mapping->at(region) << ";\n";
+        }
+        fout << "}";
+        fout.close();
+        delete regions_mapping;
+        delete incoming_events;
+        delete outgoing_events;
     }
 
     void print_sm_dot_file(map<int, Region  *> *pre_regions,

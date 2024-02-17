@@ -268,6 +268,16 @@ The script runs the approximate algorithm for FCPN decomposition on all benchmar
 
 See FCPN flow (approximated algorithm).
 
+### e) FUNCTION NOT IMPLEMENTED YET: TS to minimal component for conformance checking 
+
+This is the maximal decomposition presented in [[6]](#6) adapted to Transition Systems.
+The algorithm is the following:
+
+1. Creation of minimal regions from TS.
+2. Creation of a single PN from the regions.
+3. Minimization of the PN.
+4. Extraction of single components composed by places and their adjacent transitions.
+
 ```Bash
 ./Seto <file_path> CC <optional_flags>
 ```
@@ -385,3 +395,8 @@ Proceedigs of 25th Euromicro Conference on Digital System Design (DSD), 165-173.
 Viktor Teren, Jordi Cortadella, Tiziano Villa (2021).
 Decomposition of transition systems into sets of synchronizing state machines.
 Proceedigs of 24th Euromicro Conference on Digital System Design (DSD), 77-81.
+
+<a id="6">[6]</a>
+Van der Aalst, W. M. (2013).
+Decomposing Petri nets for process mining: A generic approach.
+Distributed and Parallel Databases, 31, 471-507.

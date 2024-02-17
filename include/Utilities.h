@@ -66,6 +66,7 @@ extern bool composition;
 extern bool bdd_usage;
 extern bool aut_output;
 extern bool ignore_correctness;
+extern bool conformance_checking;
 __attribute__((unused)) extern bool blind_fcpn;
 __attribute__((unused)) extern bool fcpn_modified;
 __attribute__((unused)) extern bool fcpn_with_levels;
@@ -174,6 +175,12 @@ namespace Utilities {
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,
                        const string& file_name);
+    void print_cc_component_dot_file(Region *region,
+                                     map<int, set<Region  *> *> *pre_regions,
+                                     map<int, set<Region *> *> *post_regions,
+                                     map<int, int> *aliases,
+                                     string file_name,
+                                     int component_counter);
     __attribute__((unused)) void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
                          map<int, set<Region *> *> *post_regions,
                          map<int, int>* aliases,
