@@ -1830,6 +1830,8 @@ namespace Utilities {
                                      int component_counter){
         bool initial = is_initial_region(region);
 
+
+
         auto incoming_events = new set<int>();
         for(auto rec: *post_regions){
             if(rec.second->find(region) != rec.second->end()){
@@ -1842,6 +1844,10 @@ namespace Utilities {
             if(rec.second->find(region) != rec.second->end()){
                 outgoing_events->insert(rec.first);
             }
+        }
+
+        if(component_counter == 3){
+            cout << endl;
         }
 
 
@@ -1902,6 +1908,7 @@ namespace Utilities {
         fout << "}\n";
 
         // transitions (events)
+        //todo: often transition definitions are missing
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
         auto alias_counter = new map<int, int>();
@@ -1955,14 +1962,12 @@ namespace Utilities {
         }
         for (auto ev : *outgoing_events) {
             if (ev < num_events_before_label_splitting) {
-                if (pre_regions->find(ev) == pre_regions->end()) {
-                    if (g_input) {
-                        fout << "\t" << ev << " [label = \""
+                if (g_input) {
+                    fout << "\t" << ev << " [label = \""
                              << (*aliases_map_number_name)[ev];
-                        fout << "\"];\n";
-                    } else {
-                        fout << "\t" << ev << ";\n";
-                    }
+                    fout << "\"];\n";
+                } else {
+                    fout << "\t" << ev << ";\n";
                 }
             }
         }

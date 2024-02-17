@@ -268,7 +268,7 @@ The script runs the approximate algorithm for FCPN decomposition on all benchmar
 
 See FCPN flow (approximated algorithm).
 
-### e) FUNCTION NOT IMPLEMENTED YET: TS to minimal component for conformance checking 
+### e) TS to minimal component for conformance checking 
 
 This is the maximal decomposition presented in [[6]](#6) adapted to Transition Systems.
 The algorithm is the following:
