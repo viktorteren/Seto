@@ -1600,13 +1600,6 @@ namespace Utilities {
             delete regions_mapping;
     }
 
-    void print_for_conformance_checking(map<int, set<Region *> *> *pre_regions,
-                           map<int, set<Region *> *> *post_regions,
-                           map<int, int> *aliases, const string& file_name) {
-
-        print_fcpn_dot_file(pre_regions, post_regions, aliases, file_name, -1);
-    }
-
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases, const string& file_name) {
@@ -1837,14 +1830,14 @@ namespace Utilities {
                                      int component_counter){
         bool initial = is_initial_region(region);
 
-        set<int> *incoming_events = new set<int>();
+        auto incoming_events = new set<int>();
         for(auto rec: *post_regions){
             if(rec.second->find(region) != rec.second->end()){
                 incoming_events->insert(rec.first);
             }
         }
 
-        set<int> *outgoing_events = new set<int>();
+        auto outgoing_events = new set<int>();
         for(auto rec: *pre_regions){
             if(rec.second->find(region) != rec.second->end()){
                 outgoing_events->insert(rec.first);
@@ -1866,13 +1859,6 @@ namespace Utilities {
         bool delete_regions_mapping = true;
 
 
-        /*cout << "preregions before print" << endl;
-        print(*pre_regions);*/
-        //auto regions_set = copy_map_to_set(pre_regions);
-        /*cout << "regions set " << endl;
-        println(*regions_set);*/
-
-
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
         }
@@ -1886,13 +1872,10 @@ namespace Utilities {
         }
         in_dot_name = output_name.substr(lower + 1, output_name.size());
         std::replace( in_dot_name.begin(), in_dot_name.end(), '-', '_');
-        // cout << "out name: " << in_dot_name << endl;
 
         output_name += "_component_";
         output_name+=std::to_string(component_counter);
         output_name+=".dot";
-
-        //cout << "file output PN: " << output_name << endl;
 
         ofstream fout(output_name);
         fout << "digraph ";
@@ -1902,7 +1885,6 @@ namespace Utilities {
 
         fout << "{\n";
         // initial regions
-        //cout << "writing initial regions" << endl;
         fout << "subgraph initial_place {\n"
                 "\tnode [shape=doublecircle,fixedsize=true, fixedsize = 2, color = "
                 "black, fillcolor = gray, style = filled];\n";
