@@ -1170,7 +1170,7 @@ namespace Utilities {
         return output_name;
     }
 
-    string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
+    __attribute__((unused)) string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
         cout << "================[DIMACS FILE CREATION]====================" << endl;
         string output_name = file_path;
         string in_name;
@@ -1219,11 +1219,6 @@ namespace Utilities {
                            int PN_number,
                            bool unsafe){
         auto initial_reg = initial_regions(pre_regions);
-        /*
-        if(initial_reg->empty()){
-            cerr << "any initial region found" << endl;
-            exit(1);
-        }*/
         string output_name = file_name;
         string in_dot_name;
         string output;
@@ -1239,8 +1234,7 @@ namespace Utilities {
         auto regions_set = copy_map_to_set(pre_regions);
         /*cout << "regions set " << endl;
         println(*regions_set);*/
-        auto not_initial_regions =
-                region_pointer_difference(regions_set, initial_reg);
+        auto not_initial_regions = region_pointer_difference(regions_set, initial_reg);
 
         while (output_name[output_name.size() - 1] != '.') {
             output_name = output_name.substr(0, output_name.size() - 1);
@@ -1330,9 +1324,6 @@ namespace Utilities {
                 }
                 //cout<<"debug alias counter of "<< record.second << (*alias_counter)[record.second]<<endl;
                 fout << "/" << (*alias_counter)[record.second];
-                /*for (int i = 0; i < (*alias_counter)[record.second]; ++i) {
-                    fout << "'";
-                }*/
                 fout << "\"];\n";
             }
             else{
@@ -1830,8 +1821,6 @@ namespace Utilities {
                                      int component_counter){
         bool initial = is_initial_region(region);
 
-
-
         auto incoming_events = new set<int>();
         for(auto rec: *post_regions){
             if(rec.second->find(region) != rec.second->end()){
@@ -1851,12 +1840,6 @@ namespace Utilities {
         }
 
 
-        //auto initial_reg = initial_regions(pre_regions);
-        /*
-        if(initial_reg->empty()){
-            cerr << "any initial region found" << endl;
-            exit(1);
-        }*/
         string output_name = file_name;
         string in_dot_name;
         string output;
@@ -1908,7 +1891,6 @@ namespace Utilities {
         fout << "}\n";
 
         // transitions (events)
-        //todo: often transition definitions are missing
         fout << "subgraph transitions {\n"
                 "\tnode [shape=rect,height=0.2,width=2, forcelabels = false];\n";
         auto alias_counter = new map<int, int>();
@@ -2244,7 +2226,7 @@ namespace Utilities {
         }
     }
 
-    void print_SM_on_file(set<Region *> &regions, const string& filename) {
+    __attribute__((unused)) void print_SM_on_file(set<Region *> &regions, const string& filename) {
         auto outfile = new ofstream();
         outfile->open(filename, std::ios_base::app);
         *outfile << "SM:" << endl;
