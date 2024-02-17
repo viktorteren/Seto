@@ -2,7 +2,7 @@ Seto: a software for Transition System decomposition based on theory of regions
 ========================
 
 Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD packages.
-
+The presented tool is the result of my work on Transition System and Petri net decomposition [[1]](#1), [[2]](#2), [[3]](#3), [[4]](#4), [[5]](#5).
 
 ## Key principles:
 - Creation of Petri Nets from Transition Systems
@@ -54,8 +54,6 @@ sudo apt-get install mcrl2
 
 
 
-
-## Building
 
 ## Building
 
@@ -270,6 +268,10 @@ The script runs the approximate algorithm for FCPN decomposition on all benchmar
 
 See FCPN flow (approximated algorithm).
 
+```Bash
+./Seto <file_path> CC <optional_flags>
+```
+
 ### Combined flows
 
 The flags SM and AC/FC/KFC can be used together.
@@ -355,3 +357,31 @@ ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file>
 
 [//]: # "Known issues"
 [//]: # "------------------"
+
+
+## References
+
+<a id="1">[1]</a>
+Viktor Teren, Tiziano Villa (2024).
+Decomposition of sequential and concurrent models.
+Ph.D. thesis.
+
+<a id="2">[2]</a>
+Viktor Teren, Jordi Cortadella, Tiziano Villa (2023).
+Generation of Synchronizing State Machines from a Transition System: A Region–Based Approach.
+International Journal of Applied Mathematics and Computer Science, 33, 133-149.
+
+<a id="3">[3]</a>
+Viktor Teren, Jordi Cortadella, Tiziano Villa (2023).
+Seto: a framework for the decomposition of Petri nets and transition systems.
+Proceedigs of 26th Euromicro Conference on Digital System Design (DSD), 669-677.
+
+<a id="4">[4]</a>
+Viktor Teren, Jordi Cortadella, Tiziano Villa (2022).
+Decomposition of transition systems into sets of synchronizing Free-choice Petri Nets.
+Proceedigs of 25th Euromicro Conference on Digital System Design (DSD), 165-173.
+
+<a id="5">[5]</a>
+Viktor Teren, Jordi Cortadella, Tiziano Villa (2021).
+Decomposition of transition systems into sets of synchronizing state machines.
+Proceedigs of 24th Euromicro Conference on Digital System Design (DSD), 77-81.
