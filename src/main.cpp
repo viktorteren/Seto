@@ -3,303 +3,15 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-#include "../include/Label_splitting_module.h"
-#include "../include/Merging_Minimal_Preregions_module.h"
-#include "../include/Regions_generator.h"
-#include "../include/Place_irredundant_pn_creation_module.h"
-#include <algorithm>
-#include <Python.h>
-#include <iomanip>
-#include "../include/Merge.h"
-#include "../include/PN_decomposition.h"
-#include "../include/GreedyRemoval.h"
-#include "../include/FCPN_Merge.h"
-#include "../include/SM_composition.h"
-
-#include <cuddObj.hh>
+#include "../include/main.h"
 
 using namespace PBLib;
 using namespace Minisat;
 
+
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
-    string file;
-    if (argc >= 3) {
-        file = args[1];
-        cout << file << endl;
-        print_step_by_step = false;
-        print_step_by_step_debug = false;
-        decomposition = false;
-        decomposition_debug = false;
-        output = false;
-        benchmark_script = false;
-        no_fcpn_min = true;
-        fcptnet = false;
-        acpn = false;
-        pn_synthesis = false;
-        composition = false;
-        greedy_exact = false;
-        dot_output = false;
-        bdd_usage = false;
-        ignore_correctness = false;
-        check_structure = false;
-        no_bounds = false;
-        mixed_strategy = false;
-        only_safeness_check = false;
-        safe_components = false;
-        safe_components_SM = false;
-        optimal = false;
-        no_reset = false;
-        count_SMs = false;
-        region_counter = false;
-        unsafe_path = false;
-        no_timeout = false;
-        counter_optimized = false;
-        conformance_checking = false;
-        for(int i=2; i < argc; i++) {
-            if(args[i] == "PN")
-                pn_synthesis = true;
-            else if (args[i] == "TS")
-                ts_output = true;
-            else if(args[i]=="FC")
-                fcptnet = true;
-            else if(args[i]=="AC")
-                acpn = true;
-            else if(args[i]=="CC") {
-                conformance_checking = true;
-            }
-            else if(args[i] == "NOMERGE"){
-                no_merge = true;
-            }
-            else if(args[i] == "COMPOSE"){
-                composition = true;
-            }
-            else if(args[i] == "DOT"){
-                dot_output = true;
-            }
-            else if(args[i] == "GE"){
-                greedy_exact = true;
-            }
-            else if(args[i] == "B"){
-                fcptnet = true;
-                decomposition = true;
-            }
-            else if(args[i] == "BDD"){
-                bdd_usage = true;
-            }
-            else if(args[i] == "CHECK"){
-                check_structure = true;
-            }
-            else if(args[i] == "NOBOUNDS"){
-                no_bounds = true;
-            }
-            else if(args[i] == "SC"){
-                only_safeness_check = true;
-            }
-            else if(args[i] == "NOTIMEOUT"){
-                no_timeout = true;
-            }
-            else if(args[i] == "SAFE"){
-                safe_components = true;
-            }
-            else if(args[i] == "SS"){
-                safe_components_SM = true;
-            }
-            else if(args[i] == "NORESET"){
-                no_reset = true;
-            }
-            else if(args[i] == "CS"){
-                count_SMs = true;
-            }
-            /*else if(args[i]=="KFCB") {
-                fcptnet = true;
-                blind_fcpn = true;
-            }
-            else if(args[i]=="KFCL"){
-                fcptnet = true;
-                fcpn_with_levels = true;
-                cerr << "KFCM does not work properly" << endl;
-                exit(1);
-            }
-            else if(args[i]=="KFCM"){
-                fcptnet = true;
-                fcpn_modified = true;
-            }*/
-            else if(args[i] == "ECTS")
-                ects_output = true;
-            else if(args[i] == "SM")
-                decomposition = true;
-            else if (args[i] == "S") {
-                if (decomposition) {
-                    cerr << "A flag for decomposition was previously chosen" << endl;
-                    exit(1);
-                }
-                print_step_by_step = true;
-            }
-            else if (args[i] == "D") {
-                //print_step_by_step = true;
-                //print_step_by_step_debug = true;
-                decomposition_debug = true;
-            }
-            /*if (args[i] == "L"){
-                log_file = true;
-            }*/
-            else if(args[i] == "O"){
-                output = true;
-            }
-            else if(args[i] == "G") {
-                output = true;
-                decomposition_output_sis = true;
-                benchmark_script = true;
-            }
-            else if(args[i] == "-ALL"){
-                python_all = true;
-            }
-            else if(args[i] == "--INFO"){
-                info = true;
-                print_step_by_step = true;
-            }
-            /*
-            else if(args[i] == "MIN"){
-                no_fcpn_min = false;
-            }*/
-            else if(args[i] == "AUT"){
-                aut_output = true;
-            }
-            else if(args[i] == "I"){
-                ignore_correctness = true;
-            }
-            else if(args[i] == "MS"){
-                mixed_strategy = true;
-            }
-            else if(args[i] == "OPTIMAL"){
-                optimal = true;
-            }
-            else if(args[i] == "COUNTER"){
-                region_counter = true;
-            }
-            else if(args[i] == "COUNTER_OPTIMIZED"){
-                region_counter = true;
-                counter_optimized = true;
-            }
-            else if(args[i] == "UNSAFE_PATH"){
-                unsafe_path = true;
-            }
-            else{
-                cerr << "INVALID FLAG " << args[i] << endl;
-                exit(1);
-            }
-        }
-        if(fcptnet && decomposition_output_sis){
-            cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
-            exit(0);
-        }
-        if(optimal && !bdd_usage){
-            cerr << "OPTIAL flag can be used only with BDD flag."<< endl;
-            exit(0);
-        }
-        if(region_counter && !safe_components){
-            cerr << "COUNTER flag can be used only with SAFE flag."<< endl;
-            exit(0);
-        }
-        if(no_bounds && !bdd_usage){
-            cerr << "NOBOUNDS flag can be used only with BDD flag." << endl;
-            exit(0);
-        }
-        if(decomposition && !no_bounds && only_safeness_check){
-            cerr << "SC cannot be used without NOBOUNDS flag if SM decomposition is performed." << endl;
-            exit(0);
-        }
-        if(decomposition && only_safeness_check && !bdd_usage){
-            cerr << "SC cannot be used without BDD flag if SM decomposition is performed." << endl;
-            exit(0);
-        }
-        if(acpn && decomposition_output_sis){
-            cerr << "SIS output not implemented for ACPNs, remove G flag."<< endl;
-            exit(0);
-        }
-        if(pn_synthesis && decomposition){
-            cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
-            exit(0);
-        }
-        if(mixed_strategy && bdd_usage){
-            cerr << "Mixed strategy cannot be performed with BDD flag" << endl;
-            exit(0);
-        }
-        if(mixed_strategy && greedy_exact){
-            cerr << "Mixed strategy cannot be performed with GE flag" << endl;
-            exit(0);
-        }
-        if(decomposition && no_merge && !bdd_usage){
-            cerr << "SM decomposition cannot be performed with NOMERGE flag if BDD flag is not used." << endl; //todo
-            exit(0);
-        }
-        if(pn_synthesis && fcptnet){
-            cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
-            exit(0);
-        }
-        if(pn_synthesis && acpn){
-            cerr << "PN synthesis cannot be done together with ACPN decomposition." << endl;
-            exit(0);
-        }
-        if(bdd_usage && !no_fcpn_min){
-            cerr << "BDD usage cannot be performed with PN minimization (yet)." << endl;
-            exit(0);
-        }
-        if(decomposition && !bdd_usage && check_structure){
-            cerr << "Structure check not yet implemented on SM decomposition without BDD usage" << endl; //TODO
-            exit(1);
-        }
-        if(aut_output){
-            if(!ts_output && !ects_output){
-                cerr << "AUT output flag is compatible only with TS and ECTS flags." << endl;
-                exit(0);
-            }
-        }
-        if(composition){
-            if((!fcptnet && !decomposition && !acpn)){
-                cerr << "Composition works only with FCPN/SM decomposition (excluded k-FCPN decomposition)." << endl;
-                exit(0);
-            }
-        }
-        if(fcptnet && acpn){
-            cerr << "FCPN decomposition and ACPN decomposition cannot be performed on the same run." << endl;
-            exit(0);
-        }
-        if(check_structure && decomposition){
-            cerr << "CHECK flag cannot be used with SM decomposition (including SM decomposition with BDD." << endl;
-            exit(0);
-        }
-        if(check_structure && pn_synthesis){
-            cerr << "CHECK flag cannot be used with PN synthesis." << endl;
-            exit(0);
-        }
-        if(safe_components_SM && decomposition && !fcptnet && !acpn){
-            cerr << "SS flag cannot be used on SMs." << endl;
-            exit(0);
-        }
-        if(safe_components_SM && bdd_usage){
-            cerr << "SS flag cannot be combined with BDD flag." << endl;
-            exit(0);
-        }
-        /*
-        if(only_safeness_check && !fcptnet){
-            cerr << "Safeness check can be done only on FCPNs." << endl;
-            exit(0);
-        }*/
-        if(safe_components && !fcptnet){
-            cerr << "Safeness check can be done only on FCPNs." << endl;
-            exit(0);
-        }
-        if(safe_components && safe_components_SM){
-            cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
-            exit(0);
-        }
-    }
-    else{
-        cerr << "Wrong number of arguments." << endl;
-        exit(1);
-    }
+    string file = parseArguments(argc,args);
 
     TS_parser::parse(file);
 
@@ -1189,4 +901,285 @@ int main(int argc, char **argv) {
         delete aliases_map_state_number_name;
         delete aliases_map_state_name_number;
     }
+}
+
+string parseArguments(int argc, vector<string> args) {
+    string file;
+    if (argc >= 3) {
+        file = args[1];
+        cout << file << endl;
+        print_step_by_step = false;
+        print_step_by_step_debug = false;
+        decomposition = false;
+        decomposition_debug = false;
+        output = false;
+        benchmark_script = false;
+        no_fcpn_min = true;
+        fcptnet = false;
+        acpn = false;
+        pn_synthesis = false;
+        composition = false;
+        greedy_exact = false;
+        dot_output = false;
+        bdd_usage = false;
+        ignore_correctness = false;
+        check_structure = false;
+        no_bounds = false;
+        mixed_strategy = false;
+        only_safeness_check = false;
+        safe_components = false;
+        safe_components_SM = false;
+        optimal = false;
+        no_reset = false;
+        count_SMs = false;
+        region_counter = false;
+        unsafe_path = false;
+        no_timeout = false;
+        counter_optimized = false;
+        conformance_checking = false;
+        for(int i=2; i < argc; i++) {
+            if(args[i] == "PN")
+                pn_synthesis = true;
+            else if (args[i] == "TS")
+                ts_output = true;
+            else if(args[i]=="FC")
+                fcptnet = true;
+            else if(args[i]=="AC")
+                acpn = true;
+            else if(args[i]=="CC") {
+                conformance_checking = true;
+            }
+            else if(args[i] == "NOMERGE"){
+                no_merge = true;
+            }
+            else if(args[i] == "COMPOSE"){
+                composition = true;
+            }
+            else if(args[i] == "DOT"){
+                dot_output = true;
+            }
+            else if(args[i] == "GE"){
+                greedy_exact = true;
+            }
+            else if(args[i] == "B"){
+                fcptnet = true;
+                decomposition = true;
+            }
+            else if(args[i] == "BDD"){
+                bdd_usage = true;
+            }
+            else if(args[i] == "CHECK"){
+                check_structure = true;
+            }
+            else if(args[i] == "NOBOUNDS"){
+                no_bounds = true;
+            }
+            else if(args[i] == "SC"){
+                only_safeness_check = true;
+            }
+            else if(args[i] == "NOTIMEOUT"){
+                no_timeout = true;
+            }
+            else if(args[i] == "SAFE"){
+                safe_components = true;
+            }
+            else if(args[i] == "SS"){
+                safe_components_SM = true;
+            }
+            else if(args[i] == "NORESET"){
+                no_reset = true;
+            }
+            else if(args[i] == "CS"){
+                count_SMs = true;
+            }
+                /*else if(args[i]=="KFCB") {
+                    fcptnet = true;
+                    blind_fcpn = true;
+                }
+                else if(args[i]=="KFCL"){
+                    fcptnet = true;
+                    fcpn_with_levels = true;
+                    cerr << "KFCM does not work properly" << endl;
+                    exit(1);
+                }
+                else if(args[i]=="KFCM"){
+                    fcptnet = true;
+                    fcpn_modified = true;
+                }*/
+            else if(args[i] == "ECTS")
+                ects_output = true;
+            else if(args[i] == "SM")
+                decomposition = true;
+            else if (args[i] == "S") {
+                if (decomposition) {
+                    cerr << "A flag for decomposition was previously chosen" << endl;
+                    exit(1);
+                }
+                print_step_by_step = true;
+            }
+            else if (args[i] == "D") {
+                //print_step_by_step = true;
+                //print_step_by_step_debug = true;
+                decomposition_debug = true;
+            }
+                /*if (args[i] == "L"){
+                    log_file = true;
+                }*/
+            else if(args[i] == "O"){
+                output = true;
+            }
+            else if(args[i] == "G") {
+                output = true;
+                decomposition_output_sis = true;
+                benchmark_script = true;
+            }
+            else if(args[i] == "-ALL"){
+                python_all = true;
+            }
+            else if(args[i] == "--INFO"){
+                info = true;
+                print_step_by_step = true;
+            }
+                /*
+                else if(args[i] == "MIN"){
+                    no_fcpn_min = false;
+                }*/
+            else if(args[i] == "AUT"){
+                aut_output = true;
+            }
+            else if(args[i] == "I"){
+                ignore_correctness = true;
+            }
+            else if(args[i] == "MS"){
+                mixed_strategy = true;
+            }
+            else if(args[i] == "OPTIMAL"){
+                optimal = true;
+            }
+            else if(args[i] == "COUNTER"){
+                region_counter = true;
+            }
+            else if(args[i] == "COUNTER_OPTIMIZED"){
+                region_counter = true;
+                counter_optimized = true;
+            }
+            else if(args[i] == "UNSAFE_PATH"){
+                unsafe_path = true;
+            }
+            else{
+                cerr << "INVALID FLAG " << args[i] << endl;
+                exit(1);
+            }
+        }
+        if(fcptnet && decomposition_output_sis){
+            cerr << "SIS output not implemented for FCPNs, remove G flag."<< endl;
+            exit(0);
+        }
+        if(optimal && !bdd_usage){
+            cerr << "OPTIAL flag can be used only with BDD flag."<< endl;
+            exit(0);
+        }
+        if(region_counter && !safe_components){
+            cerr << "COUNTER flag can be used only with SAFE flag."<< endl;
+            exit(0);
+        }
+        if(no_bounds && !bdd_usage){
+            cerr << "NOBOUNDS flag can be used only with BDD flag." << endl;
+            exit(0);
+        }
+        if(decomposition && !no_bounds && only_safeness_check){
+            cerr << "SC cannot be used without NOBOUNDS flag if SM decomposition is performed." << endl;
+            exit(0);
+        }
+        if(decomposition && only_safeness_check && !bdd_usage){
+            cerr << "SC cannot be used without BDD flag if SM decomposition is performed." << endl;
+            exit(0);
+        }
+        if(acpn && decomposition_output_sis){
+            cerr << "SIS output not implemented for ACPNs, remove G flag."<< endl;
+            exit(0);
+        }
+        if(pn_synthesis && decomposition){
+            cerr << "PN synthesis cannot be done together with SM decomposition." << endl;
+            exit(0);
+        }
+        if(mixed_strategy && bdd_usage){
+            cerr << "Mixed strategy cannot be performed with BDD flag" << endl;
+            exit(0);
+        }
+        if(mixed_strategy && greedy_exact){
+            cerr << "Mixed strategy cannot be performed with GE flag" << endl;
+            exit(0);
+        }
+        if(decomposition && no_merge && !bdd_usage){
+            cerr << "SM decomposition cannot be performed with NOMERGE flag if BDD flag is not used." << endl; //todo
+            exit(0);
+        }
+        if(pn_synthesis && fcptnet){
+            cerr << "PN synthesis cannot be done together with FCPN decomposition." << endl;
+            exit(0);
+        }
+        if(pn_synthesis && acpn){
+            cerr << "PN synthesis cannot be done together with ACPN decomposition." << endl;
+            exit(0);
+        }
+        if(bdd_usage && !no_fcpn_min){
+            cerr << "BDD usage cannot be performed with PN minimization (yet)." << endl;
+            exit(0);
+        }
+        if(decomposition && !bdd_usage && check_structure){
+            cerr << "Structure check not yet implemented on SM decomposition without BDD usage" << endl; //TODO
+            exit(1);
+        }
+        if(aut_output){
+            if(!ts_output && !ects_output){
+                cerr << "AUT output flag is compatible only with TS and ECTS flags." << endl;
+                exit(0);
+            }
+        }
+        if(composition){
+            if((!fcptnet && !decomposition && !acpn)){
+                cerr << "Composition works only with FCPN/SM decomposition (excluded k-FCPN decomposition)." << endl;
+                exit(0);
+            }
+        }
+        if(fcptnet && acpn){
+            cerr << "FCPN decomposition and ACPN decomposition cannot be performed on the same run." << endl;
+            exit(0);
+        }
+        if(check_structure && decomposition){
+            cerr << "CHECK flag cannot be used with SM decomposition (including SM decomposition with BDD." << endl;
+            exit(0);
+        }
+        if(check_structure && pn_synthesis){
+            cerr << "CHECK flag cannot be used with PN synthesis." << endl;
+            exit(0);
+        }
+        if(safe_components_SM && decomposition && !fcptnet && !acpn){
+            cerr << "SS flag cannot be used on SMs." << endl;
+            exit(0);
+        }
+        if(safe_components_SM && bdd_usage){
+            cerr << "SS flag cannot be combined with BDD flag." << endl;
+            exit(0);
+        }
+        /*
+        if(only_safeness_check && !fcptnet){
+            cerr << "Safeness check can be done only on FCPNs." << endl;
+            exit(0);
+        }*/
+        if(safe_components && !fcptnet){
+            cerr << "Safeness check can be done only on FCPNs." << endl;
+            exit(0);
+        }
+        if(safe_components && safe_components_SM){
+            cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
+            exit(0);
+        }
+    }
+    else{
+        cerr << "Wrong number of arguments." << endl;
+        exit(1);
+    }
+    return file;
 }
