@@ -100,8 +100,6 @@ make Seto
 
 **--INFO**: base info related to the time for the generation of the regions are shown, the same for N. of transitions, states, regions etc.
 
-**PARALLEL**: use OpenMP prallelization for the generation of regions.
-
 ### b) TS to Synchronized SMs flow
 
 ```Bash

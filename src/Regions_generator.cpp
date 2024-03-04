@@ -87,7 +87,6 @@ bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
     unsigned int cont;
     Region region;
 
-    //todo: maybe can be parallelized with openMP
     for (unsigned int i = 0; i < regions_vector->size(); i++) {
         region = regions_vector->at(i);
         cont = 0;

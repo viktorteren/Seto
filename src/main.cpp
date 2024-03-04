@@ -993,28 +993,20 @@ string parseArguments(int argc, vector<string> args) {
             else if(args[i] == "CS"){
                 count_SMs = true;
             }
-            else if(args[i] == "PARALLEL"){
-                #ifdef OpenMP_FOUND
-                parallel = true;
-                #else
-                cerr << "PARALLEL flag cannot be used: OpenMP was not found" << endl;
-                exit(1);
-                #endif
+            /*else if(args[i]=="KFCB") {
+                fcptnet = true;
+                blind_fcpn = true;
             }
-                /*else if(args[i]=="KFCB") {
-                    fcptnet = true;
-                    blind_fcpn = true;
-                }
-                else if(args[i]=="KFCL"){
-                    fcptnet = true;
-                    fcpn_with_levels = true;
-                    cerr << "KFCM does not work properly" << endl;
-                    exit(1);
-                }
-                else if(args[i]=="KFCM"){
-                    fcptnet = true;
-                    fcpn_modified = true;
-                }*/
+            else if(args[i]=="KFCL"){
+                fcptnet = true;
+                fcpn_with_levels = true;
+                cerr << "KFCM does not work properly" << endl;
+                exit(1);
+            }
+            else if(args[i]=="KFCM"){
+                fcptnet = true;
+                fcpn_modified = true;
+            }*/
             else if(args[i] == "ECTS")
                 ects_output = true;
             else if(args[i] == "SM")
