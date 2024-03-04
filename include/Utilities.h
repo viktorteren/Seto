@@ -19,7 +19,7 @@
 #include <tuple>
 #include <vector>
 #include <sstream>
-
+#include <omp.h>
 
 
 using namespace std;
@@ -98,6 +98,7 @@ extern bool region_counter;
 extern bool unsafe_path;
 extern bool no_timeout;
 extern bool counter_optimized;
+extern bool parallel;
 
 namespace Utilities {
     __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);

@@ -937,6 +937,7 @@ string parseArguments(int argc, vector<string> args) {
         no_timeout = false;
         counter_optimized = false;
         conformance_checking = false;
+        parallel = false;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -991,6 +992,14 @@ string parseArguments(int argc, vector<string> args) {
             }
             else if(args[i] == "CS"){
                 count_SMs = true;
+            }
+            else if(args[i] == "PARALLEL"){
+                #ifdef OpenMP_FOUND
+                parallel = true;
+                #else
+                cerr << "PARALLEL flag cannot be used: OpenMP was not found" << endl;
+                exit(1);
+                #endif
             }
                 /*else if(args[i]=="KFCB") {
                     fcptnet = true;

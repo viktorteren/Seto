@@ -87,7 +87,7 @@ bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> 
     unsigned int cont;
     Region region;
 
-    #pragma omp parallel
+    //todo: maybe can be parallelized with openMP
     for (unsigned int i = 0; i < regions_vector->size(); i++) {
         region = regions_vector->at(i);
         cont = 0;
@@ -138,7 +138,6 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
     bool exit_add=false;
     bool enter_add=false;
 
-    //todo: maybe can be parallelized
     for (auto t : *list) {
         if (region->find(t->first) != region->end()) { // the state belongs to the region
             if (region->find(t->second) != region->end()) { // also the second state belongs to the region
@@ -148,7 +147,7 @@ int Region_generator::branch_selection(Edges_list *list, Region *region,
             } else {
                 (*trans)[exit]++;
                 exit_tr->push_back(t);
-                 //cout << t->first << "->" << t->second << " EXIT" << endl;
+                //cout << t->first << "->" << t->second << " EXIT" << endl;
                 // for exit is ok
                 // for no cross:
                 states_to_add_nocross->insert(states_to_add_nocross->begin(), t->second);

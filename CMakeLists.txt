@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
+
+find_package(OpenMP)
 
 add_library(libminisat STATIC
         # Impl files
@@ -41,6 +43,10 @@ target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
 target_link_libraries(${PROJECT_NAME} python3.10)   #needed for networkx usage
 target_link_libraries(${PROJECT_NAME} cudd)
+if( OpenMP_FOUND )
+    target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
+    add_compile_definitions(OpenMP_FOUND)
+endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
 
