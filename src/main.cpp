@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
                 if(checked_regions.find(*region) == checked_regions.end()){
                     //cout << "region: ";
                     //println(*region);
-                    if(rg->remove_bigger_regions(*region, vector_regions)){
+                    if(Region_generator::remove_bigger_regions(*region, vector_regions)){
                         it = vector_regions->begin();
                     }
                     checked_regions.insert(*region);

@@ -81,7 +81,11 @@ void Region_generator::basic_delete(){
     delete event_violations;
 }
 
-
+/**
+ * @param new_region Region to compare
+ * @param regions_vector Vector containing the regions from which regions bigger than new_region can be removed
+ * @return true if at least one region was removed from regions_vector, otherwise false
+ */
 bool Region_generator::remove_bigger_regions(Region &new_region, vector<Region> *regions_vector) {
     bool removed_something = false;
     unsigned int cont;
