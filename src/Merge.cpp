@@ -267,7 +267,13 @@ Merge::Merge(set<SM *> *SMs,
                 //merge effettivo tra regioni
                 set<Region *> merged_regions;
                 for (auto regionSet: *regions_to_merge) {
-                    merged_regions.insert(regions_union(regionSet));
+                    if(!regionSet->empty()){
+                        if(decomposition_debug) {
+                            cout << "Regions to merge" << endl;
+                            println(regionSet);
+                        }
+                        merged_regions.insert(regions_union(regionSet));
+                    }
                 }
 
 
@@ -276,11 +282,16 @@ Merge::Merge(set<SM *> *SMs,
                 vector<Region *> to_erase;
                 for (Region *reg: *current_SM) {
                     for (Region *mergedReg: merged_regions) {
-                        if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
-                            //cout << "Adding for removal region ";
-                            //println(*reg);
-                            to_erase.push_back(reg);
-                            //current_SM->erase(reg);
+                        if(reg->size() < mergedReg->size()) {
+                            if (at_least_one_state_from_first_in_second(reg, mergedReg)) {
+                                if (decomposition_debug) {
+                                    cout << "Adding for removal region:  ";
+                                    println(*reg);
+                                    cout << "because of: ";
+                                    println(*mergedReg);
+                                }
+                                to_erase.push_back(reg);
+                            }
                         }
                     }
                 }
