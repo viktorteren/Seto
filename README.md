@@ -128,7 +128,7 @@ make Seto
 
 **NOBOUNDS**: this flag can be used only with BDD flag and it allows the creation of unbounded SMs
 
-**MS**: usage of a mixed strategy which chooses if use the exact algorithm or approximate one for the removal of redundant SMs
+**MS**: use a mixed strategy which chooses if use the exact algorithm or approximate one for the removal of redundant SMs
 
 **SC**: check if the separate SMs are safe (can be used only with BDD and NOBOUNDS flags)
 
@@ -171,7 +171,7 @@ If BDD flag was selected the *'stats.csv'* will contain the following data:
 
 #### Execution using a script
 
-In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*'), since it uses some dependencies of MIS solver:
+In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*), since it uses some dependencies of MIS solver:
 
 ```Bash
 ./Benchmark.sh
@@ -359,7 +359,7 @@ ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file>
 ## Known restrictions
 
 
-1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value has to corrspond to the number of places/labels - 1 (any index can be skipped).
+1) The parser for .ts files allow only the syntax with integers: the places and labels have to start from 0 and the maximum value has to correspond to the number of places/labels - 1 (any index can be skipped).
 
 2) There is no check on .ts inputs.
 
@@ -384,17 +384,17 @@ International Journal of Applied Mathematics and Computer Science, 33, 133-149.
 <a id="3">[3]</a>
 Viktor Teren, Jordi Cortadella, Tiziano Villa (2023).
 Seto: a framework for the decomposition of Petri nets and transition systems.
-Proceedigs of 26th Euromicro Conference on Digital System Design (DSD), 669-677.
+Proceedings of 26th Euromicro Conference on Digital System Design (DSD), 669-677.
 
 <a id="4">[4]</a>
 Viktor Teren, Jordi Cortadella, Tiziano Villa (2022).
 Decomposition of transition systems into sets of synchronizing Free-choice Petri Nets.
-Proceedigs of 25th Euromicro Conference on Digital System Design (DSD), 165-173.
+Proceedings of 25th Euromicro Conference on Digital System Design (DSD), 165-173.
 
 <a id="5">[5]</a>
 Viktor Teren, Jordi Cortadella, Tiziano Villa (2021).
 Decomposition of transition systems into sets of synchronizing state machines.
-Proceedigs of 24th Euromicro Conference on Digital System Design (DSD), 77-81.
+Proceedings of 24th Euromicro Conference on Digital System Design (DSD), 77-81.
 
 <a id="6">[6]</a>
 Van der Aalst, W. M. (2013).
