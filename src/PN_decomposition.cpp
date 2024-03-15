@@ -1645,9 +1645,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             num_FCPNs_try++;
     } while (!solution_found);
 
+    for(auto val: *intersecting_pairs){
+        delete val;
+    }
+    delete intersecting_pairs;
     delete cache;
-
-    delete  results_to_avoid;
+    delete results_to_avoid;
 
     if(!optimal && suboptimal_result_found){
         cout << "Suboptimal result found." << endl;
