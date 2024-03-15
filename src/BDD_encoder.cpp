@@ -347,6 +347,7 @@ void BDD_encoder::encode(set<Region *> *regions, map<Region *, int> *regions_ali
     for(auto node: inodes){
         Cudd_RecursiveDeref(manager, node);
     }
+    //todo: there are still memory leaks regarding DdManager manager and the DdNodes
 }
 
 vector<vector<int32_t> *> *BDD_encoder::get_clauses() {
