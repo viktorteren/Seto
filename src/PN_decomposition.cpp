@@ -1645,10 +1645,12 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
             num_FCPNs_try++;
     } while (!solution_found);
 
-    for(auto val: *intersecting_pairs){
-        delete val;
+    if(decomposition) {
+        for (auto val: *intersecting_pairs) {
+            delete val;
+        }
+        delete intersecting_pairs;
     }
-    delete intersecting_pairs;
     delete cache;
     delete results_to_avoid;
 
