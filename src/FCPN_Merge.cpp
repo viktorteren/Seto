@@ -566,9 +566,9 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
             auto avoided_sets = new set<set<Region *>*>();
             for(auto reg_set: *regions_to_merge){
-                auto ingoing_events = new set<int>();
-                auto outgoing_events = new set<int>();
-                auto internal_events = new set<int>();
+                std::unique_ptr<set<int>> ingoing_events(new set<int>());
+                std::unique_ptr<set<int>> outgoing_events(new set<int>());
+                std::unique_ptr<set<int>> internal_events(new set<int>());
                 for(auto reg: *reg_set){
                     auto events_before_reg = postregion_for->at(current_FCPN)->at(reg);
                     for(auto e: *events_before_reg){
