@@ -240,7 +240,7 @@ int Label_splitting_module::branch_selection(Edges_list *list, Region *region) {
 }
 
 void Label_splitting_module::set_number_of_bad_events(
-        vector<int> *event_type, vector<int> *number_of_bad_events, int pos) {
+                                                vector<int> *event_type, vector<int> *number_of_bad_events, int pos) {
     // count for each set of states the "bad" events
 
     int counter = 0;
@@ -251,8 +251,6 @@ void Label_splitting_module::set_number_of_bad_events(
     }
 
     (*number_of_bad_events)[pos] = counter;
-
-    //cout << "COUNTER: " << counter << endl;
 }
 
 void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candidate_regions,
@@ -265,7 +263,6 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
 
     int best_region_root_event = -1;
     int best_region_id;
-    //map<int, pair<int,Region*>* > *
     for (it = candidate_regions->begin(); it != candidate_regions->end(); ++it) {
         //cout<<"cand region"<<endl;
         //println(*(*it).second->second);
@@ -290,63 +287,52 @@ void Label_splitting_module::split_ts_map(map<int, pair<int, Region *> *> *candi
         regions_vec = Utilities::copy_map_to_vector2(pre_regions);
     }
     vector<Region*>::iterator it2;
-    //Region *violations_region;
     for (it2 = regions_vec->begin(); it2 < regions_vec->end(); ++it2) {
-        //auto reg = (*it2);
-        //if (is_bigger_than(reg, best_region)) {
-            //Region *new_region = region_difference(*it2, *best_region);
-            map<int, int>::iterator it;
 
-            //for the event in violation
-            // delete transitions in violation if the transitions involve the aforementioned event and create new ones
-            // with the alias, otherwise nothing
+        //for the event in violation
+        // delete transitions in violation if the transitions involve the aforementioned event and create new ones
+        // with the alias, otherwise nothing
 
-            auto total_events = static_cast<int>(ts_map->size());
-            //cout << "total events !!!: " << total_events << endl;
-            auto event = (*event_violations)[best_region_root_event]->at(best_region_id);
+        auto total_events = static_cast<int>(ts_map->size());
+        //cout << "total events !!!: " << total_events << endl;
+        auto event = (*event_violations)[best_region_root_event]->at(best_region_id);
 
-            if (ts_map->find(total_events) == ts_map->end()) {
-                (*ts_map)[total_events] = Edges_list();
-            }
+        if (ts_map->find(total_events) == ts_map->end()) {
+            (*ts_map)[total_events] = Edges_list();
+        }
 
-            // create alias and new transitions and after erase
-            //ts size is the new event
-            if (event_alias->find(event) != event_alias->end()) {
-                (*event_alias)[total_events] = event_alias->at(event);
-            } else {
-                (*event_alias)[total_events] = event;
-            }
-            if(print_step_by_step){
-                cout << "event " << event << " split into " << total_events << " and " << event << endl;
-                cout<<""<< endl;
-            }
+        // create alias and new transitions and after erase
+        //ts size is the new event
+        if (event_alias->find(event) != event_alias->end()) {
+            (*event_alias)[total_events] = event_alias->at(event);
+        } else {
+            (*event_alias)[total_events] = event;
+        }
+        if(print_step_by_step){
+            cout << "event " << event << " split into " << total_events << " and " << event << endl;
+            cout<<""<< endl;
+        }
 
-            auto to_erase = new set<Edge *>();
+        auto to_erase = new set<Edge *>();
 
-            auto transitions = trans_violations->at(event)->at(best_region_id);
+        auto transitions = trans_violations->at(event)->at(best_region_id);
 
-            for (auto tr: *transitions) {
-                auto pair = new Edge();
-                pair->first = tr->first;
-                pair->second = tr->second;
-                (*ts_map)[total_events].insert(pair);
-                to_erase->insert(tr);
-            }
+        for (auto tr: *transitions) {
+            auto pair = new Edge();
+            pair->first = tr->first;
+            pair->second = tr->second;
+            (*ts_map)[total_events].insert(pair);
+            to_erase->insert(tr);
+        }
 
-            for (auto el : *to_erase) {
-                delete el;
-                ts_map->at(event).erase(el);
-            }
-            delete to_erase;
-
-            break;
-        //}
+        for (auto el : *to_erase) {
+            ts_map->at(event).erase(el);
+            delete el;
+        }
+        delete to_erase;
+        break;
     }
 
-        delete regions_vec;
-
-        //cout << "ts_map size after the split: " << ts_map->size() << endl;
-   // }
-
+    delete regions_vec;
 }
 
