@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
             aliases_region_pointer = new map<int, Region *>();
             aliases_region_pointer_inverted = new map<Region *, int>();
             set<SM *> *SMs;
-            if(!bdd_usage && decomposition) {
+            if((!bdd_usage && decomposition) || (fcptnet && greedy_exact)) {
                 SMs = new set<SM *>(); //set of SMs, each SM is a set of regions
             }
             if(decomposition && !bdd_usage) {
