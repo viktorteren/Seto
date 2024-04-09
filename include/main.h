@@ -15,9 +15,10 @@
 #include "../include/FCPN_Merge.h"
 #include "../include/SM_composition.h"
 #include <algorithm>
-#include <Python.h>
 #include <iomanip>
-
+#if __has_include(<Python.h>)
+#include <Python.h>
+#endif
 
 #include <cuddObj.hh>
 

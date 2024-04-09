@@ -73,6 +73,7 @@ __attribute__((unused)) extern bool fcpn_with_levels;
 extern bool pn_synthesis;
 extern bool no_fcpn_min;
 extern bool no_bounds;
+extern bool python_available;
 extern map<int, Region*>* aliases_region_pointer;
 extern map<Region*, int>* aliases_region_pointer_inverted;
 extern map<Region*, int>* sm_region_aliases;

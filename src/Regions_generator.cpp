@@ -7,14 +7,13 @@
 
 using namespace Utilities;
 
-Region_generator::Region_generator(int n) {
+Region_generator::Region_generator(int n) : number_of_events(n) {
     ES_set = new map<int, ES>;
     regions = new map<int, vector<Region> *>;
     queue_temp_regions = new vector<Region>;
     map_states_to_add = new map<int, Branches_states_to_add *>();
     middle_set_of_states = new map<int, vector<Region *> *>;
     number_of_bad_events = new map<int, vector<int> *>();
-    number_of_events = n;
     event_violations = new map<int, map<int , int >*>();
     trans_violations = new map<int, map<int, vector<Edge*>* >*>();
 }
@@ -363,7 +362,10 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
     }
    // cout<<"id position reg: " << region_id_position<<endl;
 
+   //TODO: check if pragma works with if condition
+    #if defined(OPENMP)
     #pragma omp parallel for reduction(-:event_types[:number_of_events])
+    #endif
     for (int i = 0; i < number_of_events; i++) {
         event_types[i] = -1;
     }

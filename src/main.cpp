@@ -259,6 +259,7 @@ int main(int argc, char **argv) {
 
                 cout << "==================[START PYTHON]============= " << endl;
 
+                #if __has_include(<Python.h>)
                 string python_code;
                 string python_source;
                 //compute all possible minimal independent sets
@@ -286,6 +287,7 @@ int main(int argc, char **argv) {
 
                 PyRun_SimpleString(python_code.c_str());
                 Py_Finalize();
+                #endif
 
                 cout << "=================[END PYTHON]=================" << endl;
 
@@ -938,6 +940,10 @@ string parseArguments(int argc, vector<string> args) {
         counter_optimized = false;
         conformance_checking = false;
         parallel = false;
+        python_available = false;
+        #if __has_include(<Python.h>)
+            python_available = true;
+        #endif
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -1175,6 +1181,10 @@ string parseArguments(int argc, vector<string> args) {
         }
         if(safe_components && safe_components_SM){
             cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
+            exit(0);
+        }
+        if(decomposition && !python_available && !bdd_usage){
+            cerr << "<Python.h> was not found: SM decomposition without usage of BDDs cannot be performed."  << endl;
             exit(0);
         }
     }

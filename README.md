@@ -26,7 +26,7 @@ sudo apt install g++
 sudo apt install cmake
 ```
 
-- python 3.10
+- python 3.10 (required for networkx installation), the software can work also without networkx avoiding the standard SM decomposition
 ```Bash
 sudo apt install python3.10
 ```
@@ -105,6 +105,8 @@ make Seto
 ```Bash
 ./Seto <file_path> SM <optional_flags>
 ```
+
+If python and networkx are not installed the decomposition can be performed only with BDD flag!
 
 #### Optional flags:
 
