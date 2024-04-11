@@ -26,10 +26,7 @@ public:
                              map<int, ES> *ES,
                              map<int, set<Region *> *> *pre_regions,
                             const string& file);
-    static void minimize_sat_SM(set<set<Region *>*> *SMs,
-                             map<int, ES> *ES,
-                             map<int, set<Region *> *> *pre_regions,
-                             const string& file);
+
     static void minimize_sat_SM_exact(set<set<Region *>*> *SMs,
                                         map<int, ES> *ES,
                                         map<int, set<Region *> *> *pre_regions);
