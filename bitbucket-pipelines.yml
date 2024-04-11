@@ -1,7 +1,6 @@
-${{ if contains(Build.SourceBranch, 'master') }}:
-  pipelines:
-    default:
-      - step:
+pipelines:
+  default:
+    - step:
         name: Sync GitHub Mirror
         image: alpine/git:latest
         clone:
