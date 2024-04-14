@@ -290,22 +290,8 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
 
     Minisat::Solver solver;
 
-    bool sat = true;
+    bool sat;
     vec < lbool > true_model;
-
-    /*
-    int number_of_missing_event_instances = 0;
-    int number_of_missing_region_instances = 0;
-    for(auto FCPN: *FCPNs){
-        int max_reg = map_of_FCPN_pre_regions->at(FCPN)->size();
-        int tmp = map_of_FCPN_post_regions->at(FCPN)->size();
-        if(tmp > max_reg)
-            max_reg = tmp;
-        if(max_reg < number_of_events){
-            number_of_missing_event_instances += number_of_events - max_reg;
-        }
-        number_of_missing_region_instances += N - FCPN->size();
-    }*/
 
     IncPBConstraint constraint(literals_from_events, LEQ,
                                current_value); //the sum have to be less or equal to current_value
@@ -338,8 +324,7 @@ FCPN_Merge::FCPN_Merge(set<SM *> *FCPNs,
             }
             true_model.clear(true);
 
-            for(int i=0;i<solver.model.size();++i){
-                auto val = solver.model[i];
+            for(auto val : solver.model){
                 true_model.push(val);
             }
             current_value--;
