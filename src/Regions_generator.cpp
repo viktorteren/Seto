@@ -514,7 +514,9 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
                 cout << "State of the expanded region NOCROSS " << i << endl;
         }
 
-        if (!region_in_queue(*expanded_regions, init_pos)) {
+        bool reg_not_in_queue = !region_in_queue(*expanded_regions, init_pos);
+
+        if (reg_not_in_queue) {
             queue_temp_regions->push_back(*expanded_regions);
             // cout << "Branch1: region added to the queue" << endl;
         } else {
@@ -538,7 +540,7 @@ void Region_generator::expand(Region *region, int event, bool is_ER,
           cout << "state of the expanded region ENTER " << i << endl;
         }
 
-        if (!region_in_queue(*(expanded_regions + 1), init_pos)) {
+        if (reg_not_in_queue) {
             queue_temp_regions->push_back(*(expanded_regions + 1));
             //cout << "Branch2: region added to the queue" << endl;
         } else {
