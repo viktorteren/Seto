@@ -8,4 +8,4 @@ pipelines:
         script:
           - git clone --bare git@bitbucket.org:pennyleonard/tstopn.git
           - cd tstopn.git
-          - git push --mirror git@github.com:Viktor5061/Seto.git
+          - git push git@github.com:Viktor5061/Seto.git
