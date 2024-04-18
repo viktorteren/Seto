@@ -236,4 +236,6 @@ namespace Utilities {
                         map<int, set<Region*> *> *map_of_pre_regions,
                         map<int, set<Region*> *> *map_of_post_regions,
                         map<Region *, int> *regions_alias_mapping = nullptr);
+    template <typename T>
+    void optimized_open(T& fstream, const string& name);
 }

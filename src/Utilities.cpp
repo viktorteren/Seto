@@ -546,7 +546,8 @@ namespace Utilities {
             output_name = output_name + ".dot";
         }
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         fout << in_name;
         fout << "{\n";
@@ -649,7 +650,8 @@ namespace Utilities {
             output_name = output_name + ".aut";
         }
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "des (";
         fout << initial_state;
         fout << ",";
@@ -747,7 +749,8 @@ namespace Utilities {
 
 
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "des (";
         fout << state_aliases->at(initial_state_TS);
         fout << ",";
@@ -792,7 +795,8 @@ namespace Utilities {
         output_name = output_name + "_composed.dot";
 
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         fout << in_name;
         fout << "{\n";
@@ -846,7 +850,9 @@ namespace Utilities {
         output_name = output_name + ".dimacs";
         //====================== END OF FILE CREATION =====================
 
-        ofstream fout(output_name);
+
+        std::ofstream fout;
+        optimized_open(fout, output_name);
         string temp;
         for(const auto& clause: clauses){
             for(auto lit: clause){
@@ -939,7 +945,8 @@ namespace Utilities {
         }
         //cout << "file output PN: " << output_name << endl;
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         if(PN_number >= 0){
             if(acpn)
@@ -1134,7 +1141,8 @@ namespace Utilities {
         }
         //cout << "file output PN: " << output_name << endl;
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         if(SM_number >= 0){
             if(acpn)
@@ -1324,7 +1332,8 @@ namespace Utilities {
         output_name += ".g";
         //cout << "file output PN: " << output_name << endl;
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
 
         set<string> used_labels;
         for(auto rec: *pre_regions){
@@ -1529,7 +1538,8 @@ namespace Utilities {
         output_name+=std::to_string(component_counter);
         output_name+=".dot";
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         fout << in_dot_name + "_component_";
         fout << std::to_string(component_counter);
@@ -1673,7 +1683,8 @@ namespace Utilities {
         output_name += ".dot";
         //cout << "file output SM: " << output_name << endl;
 
-        ofstream fout(output_name);
+        ofstream fout;
+        optimized_open(fout, output_name);
         fout << "digraph ";
         fout << in_dot_name;
         fout << "{\n";
@@ -1950,7 +1961,7 @@ namespace Utilities {
             for(auto clause: * overlapping_regions_clauses){
                 clauses->push_back(clause);
             }
-            num_clauses+=overlapping_regions_clauses->size();
+            num_clauses += (int) overlapping_regions_clauses->size();
             delete overlapping_regions_clauses;
         }
         delete regions_set;
@@ -2082,11 +2093,9 @@ namespace Utilities {
 
         Minisat::vec<Minisat::Lit> dummy;
         Minisat::lbool ret = solver.solveLimited(dummy);
-        //True return value
         if (ret == Minisat::lbool((uint8_t)0)) {
             return true;
         }
-        //false return value
         else if (ret == Minisat::lbool((uint8_t)1))
             return false;
         else {
@@ -2204,11 +2213,12 @@ namespace Utilities {
     }
 
     int getNumStates(SM* sm){
-        return sm->size();
+        return (int) sm->size();
     }
 
     void create_dimacs_graph(int num_regions, vector<vector<int32_t> *> *clauses){
-        ofstream fout("Graph.dimacs");
+        ofstream fout;
+        optimized_open(fout, "Graph.dimacs");
         fout << "p " << num_regions << " " << clauses->size() << endl;
         for(auto clause: *clauses){
             fout << "a " << clause->at(0)*(-1) << " " << clause->at(1)*(-1) << endl;
@@ -2217,7 +2227,8 @@ namespace Utilities {
     }
 
     void read_SMs(const string& file, set<SM*>* SMs, map<int, Region *> &aliases){
-        ifstream fin(file);
+        ifstream fin;
+        optimized_open(fin,file);
         int num_SMs;
         fin >> num_SMs;
         //cout << "num SMs: " << num_SMs << endl;
@@ -2245,7 +2256,7 @@ namespace Utilities {
     int getTransitionsSum(map<SM*, map<int, Region *>*> *pre_regions){
         int sum = 0;
         for(auto rec: *pre_regions){
-            sum += rec.second->size();
+            sum += (int) rec.second->size();
         }
         return sum;
     }
@@ -2258,7 +2269,7 @@ namespace Utilities {
         int sum = 0;
         int cont = 0;
         for(auto rec: *pre_regions){
-            sum += rec.second->size();
+            sum += (int) rec.second->size();
             cont++;
         }
         return  ((double)sum/cont);
@@ -2274,7 +2285,7 @@ namespace Utilities {
         int cont = 0;
         int current_SM_transitions = 0;
         for(auto rec: *pre_regions){
-            current_SM_transitions = rec.second->size();
+            current_SM_transitions = (int) rec.second->size();
             //cout << "current transitions: " << current_SM_transitions << endl;
             sum += (current_SM_transitions - transitionsAvg)*(current_SM_transitions - transitionsAvg);
             cont++;
@@ -2288,7 +2299,7 @@ namespace Utilities {
         int max = 0;
         for(auto rec: *pre_regions){
             int p = getNumStates(rec.first);
-            int t = rec.second->size();
+            int t = (int) rec.second->size();
             if(p+t > max)
                 max = p+t;
         }
@@ -2298,7 +2309,7 @@ namespace Utilities {
     int getMaxTransitionsNumber(map<SM*, map<int, Region *>*> *pre_regions){
         int max = 0;
         for(auto rec: *pre_regions){
-            int t = rec.second->size();
+            int t = (int) rec.second->size();
             if(t > max)
                 max = t;
         }
@@ -2430,10 +2441,10 @@ namespace Utilities {
         bool end = false;
         int last_size;
         while(!end) {
-            last_size = vector_of_sets->size();
+            last_size = (int) vector_of_sets->size();
             //cout << "vector_of_sets_size: " << vector_of_sets->size() << endl;
             if (vector_of_sets->size() > 1) {
-                for(int i= vector_of_sets->size()-1; i > 0; --i){
+                for(int i= (int) vector_of_sets->size()-1; i > 0; --i){
                     for(int k=i-1; k>=0; --k) {
                         if (are_connected((*vector_of_sets)[i], (*vector_of_sets)[k], connections)) {
                             for (auto reg: (*vector_of_sets)[i]) {
@@ -2448,7 +2459,7 @@ namespace Utilities {
                     }
                 }
             }
-            if(vector_of_sets->size() == last_size) {
+            if(((int) vector_of_sets->size()) == last_size) {
                 end = true;
             }
             //cout << "vector_of_sets_size after: " << vector_of_sets->size() << endl;
@@ -2621,5 +2632,18 @@ namespace Utilities {
                 return false;
         }
         return true;
+    }
+
+    template <typename T>
+    void optimized_open(T& fstream, const string& name){
+        // --------------------------------------------------------
+        std::ios_base::sync_with_stdio(false); // sync disable
+        fstream.tie(nullptr); // flush disable
+        // buffer increase
+        const int BUFFER_SIZE = 1024 * 1024; // 1 MB
+        char buffer[BUFFER_SIZE];
+        fstream.rdbuf()->pubsetbuf(buffer, BUFFER_SIZE);
+        // --------------------------------------------------------
+        fstream.open(name); // Note: open() after optimizations
     }
 }
