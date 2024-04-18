@@ -229,7 +229,6 @@ namespace Utilities {
     void print_clause(vector<int32_t> *clause);
     map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs,
                                                       map<int, set<Region *> *> *pre_regions);
-    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it);
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
     bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections);
     bool is_a_region(set<int> *set_of_states);

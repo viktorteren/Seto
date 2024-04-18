@@ -2418,41 +2418,6 @@ namespace Utilities {
         return new_used_regions_map_tmp;
     }
 
-    set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it){
-        auto new_clauses = new set<set<Region *>*>();
-        auto current_clause = *it;
-        if(next(it) == cl_set->end()){
-            for (auto val: current_clause) {
-                auto tmp_cl = new set<Region *>();
-                tmp_cl->insert(val);
-                new_clauses->insert(tmp_cl);
-            }
-            /*
-            for(auto cl: *new_clauses){
-                println(cl);
-            }
-            cout << endl;*/
-            return new_clauses;
-        }
-        auto next_clauses = dnf_to_cnf_core(cl_set, next(it));
-
-        for (auto val: current_clause) {
-            for (auto cl: *next_clauses) {
-                auto tmp_cl = new set<Region *>();
-                tmp_cl->insert(val);
-                for (auto reg: *cl) {
-                    tmp_cl->insert(reg);
-                }
-                new_clauses->insert(tmp_cl);
-            }
-        }
-        for(auto cl: *next_clauses){
-            delete cl;
-        }
-        delete next_clauses;
-        return new_clauses;
-    }
-
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections){
         auto vector_of_sets = new vector<set<Region *>>();
         //cout << "size: " << pn->size() << endl;
