@@ -2798,6 +2798,10 @@ namespace Utilities {
     }
 
     double getTransitionsAvg(map<SM*, map<int, Region *>*> *pre_regions){
+        if(pre_regions->empty()){
+            cerr << "The function getTransitionsAvg received empty pre-regions map" << endl;
+            exit(1);
+        }
         int sum = 0;
         int cont = 0;
         for(auto rec: *pre_regions){
@@ -2808,6 +2812,10 @@ namespace Utilities {
     }
 
     double getTransitionsVar(map<SM*, map<int, Region *>*> *pre_regions){
+        if(pre_regions->empty()){
+            cerr << "The function getTransitionsVar received empty pre-regions map" << endl;
+            exit(1);
+        }
         double transitionsAvg = getTransitionsAvg(pre_regions);
         double sum = 0;
         int cont = 0;
@@ -2898,6 +2906,10 @@ namespace Utilities {
 
     template <typename T>
     double getAvgAlphabet(T *pre_regions, map<int, int> *label_aliases){
+        if(pre_regions->empty()){
+            cerr << "The function getAvgAlphabet received empty pre-regions map" << endl;
+            exit(1);
+        }
         int sum = 0;
         for(auto rec: *pre_regions){
             auto SM_map = rec.second;
