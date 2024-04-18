@@ -20,7 +20,6 @@ bool no_merge;
 bool dot_output;
 bool composition;
 bool bdd_usage;
-//bool log_file;
 bool info;
 bool fcptnet;
 bool acpn;
@@ -30,23 +29,9 @@ bool no_bounds;
 bool conformance_checking;
 bool parallel;
 bool python_available;
-__attribute__((unused)) bool fcpn_modified;
-__attribute__((unused)) bool blind_fcpn;
-__attribute__((unused)) bool fcpn_with_levels;
 bool pn_synthesis;
 bool no_fcpn_min;
-map<int, Region*>* aliases_region_pointer;
-map<Region*, int>* aliases_region_pointer_inverted;
-map<Region*, int>* sm_region_aliases;
-int max_alias_decomp;
-int num_clauses;
-map<pair<Region*, Region*>, bool> *overlaps_cache;
 bool benchmark_script;
-map<set<Region*>, set<int>*> *intersection_cache;
-int places_after_initial_decomp;
-int places_after_greedy;
-int maxAlphabet;
-double avgAlphabet;
 bool greedy_exact;
 bool check_structure;
 bool mixed_strategy;
@@ -60,74 +45,19 @@ bool region_counter;
 bool unsafe_path;
 bool no_timeout;
 bool counter_optimized;
+int max_alias_decomp;
+int num_clauses;
+int places_after_initial_decomp;
+int places_after_greedy;
+int maxAlphabet;
+double avgAlphabet;
+map<int, Region*>* aliases_region_pointer;
+map<Region*, int>* aliases_region_pointer_inverted;
+map<Region*, int>* sm_region_aliases;
+map<pair<Region*, Region*>, bool> *overlaps_cache;
+map<set<Region*>, set<int>*> *intersection_cache;
 
 namespace Utilities {
-    __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set){
-        auto res = new set<Region *>();
-        for(auto reg_set: *region_set){
-            for(auto reg: *reg_set){
-                res->insert(reg);
-            }
-        }
-        return res;
-    }
-
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*> *region_set1,const set<Region*> *region_set2){
-        auto res = new set<Region *>();
-        for(auto reg: *region_set1){
-            res->insert(reg);
-        }
-        for(auto reg: *region_set2){
-            res->insert(reg);
-        }
-        return res;
-    }
-
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*>& region_set1,const set<Region*>& region_set2){
-        auto res = new set<Region *>();
-        for(auto reg: region_set1){
-            res->insert(reg);
-        }
-        for(auto reg: region_set2){
-            res->insert(reg);
-        }
-        return res;
-    }
-
-    set<Region *> regions_set_union_stack(const set<Region*>& region_set1,const set<Region*>& region_set2){
-        set<Region *> res;
-        for(auto reg: region_set1){
-            res.insert(reg);
-        }
-        for(auto reg: region_set2){
-            res.insert(reg);
-        }
-        return res;
-    }
-
-    __attribute__((unused)) bool regions_set_intersection_is_empty(const set<Region*> *region_set1,const set<Region*> *region_set2){
-        for(auto reg: *region_set1){
-            if(region_set2->find(reg) != region_set2->end()){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    __attribute__((unused)) bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2){
-        for(auto reg: *region_set1){
-            if(region_set2->find(reg) != region_set2->end()){
-                return false;
-            }
-        }
-        for(auto reg: *region_set2){
-            if(region_set1->find(reg) != region_set1->end()){
-                return false;
-            }
-        }
-        return true;
-    }
-
     Region *regions_union(vector<Region *> *vec) {
         auto all_states = new Region();
         int size;
@@ -177,33 +107,6 @@ namespace Utilities {
         }
 
         return all_states;
-    }
-
-    __attribute__((unused)) map<int, set<int> *> *do_regions_intersection(map<int, set<Region *> *> *regions) {
-
-        auto pre_regions_intersection = new map<int, set<int> *>;
-
-        //set<Region*>::iterator it;
-        bool state_in_intersecton = true;
-
-        // for each event
-        for (auto item : *regions) {
-            (*pre_regions_intersection)[item.first] = new Region();
-            for (auto state : **((*item.second).begin())) {
-                state_in_intersecton = true;
-                for (auto set : *item.second) {
-                    if (set->find(state) == set->end()) { // non l'ho trovato
-                        state_in_intersecton = false;
-                        break;
-                    }
-                }
-                if (state_in_intersecton) {
-                    pre_regions_intersection->at(item.first)->insert(state);
-                }
-            }
-        }
-
-        return pre_regions_intersection;
     }
 
     set<int> *regions_intersection(set<Region *> *regions) {
@@ -335,15 +238,8 @@ namespace Utilities {
         *st << endl;
     }
 
-    void print_place(int pos, Region &region) {
-        cout << "r" << pos << ": { ";
-        print(region);
-        cout << " } ";
-    }
-
     bool is_a_region(set<int> *set_of_states){
         for(const auto& rec: *ts_map){
-            auto event = rec.first;
             bool enter = false;
             bool exit = false;
             bool no_cross = false;
@@ -383,15 +279,6 @@ namespace Utilities {
             }
         }
         return true;
-    }
-
-    void print_transactions() {
-        cout << "Transactions: " << endl;
-        for (unsigned int i = 0; i < num_transactions; i++) {
-            cout << "t" << i;
-            if (i != num_transactions - 1)
-                cout << ",";
-        }
     }
 
     set<int> *region_difference(set<int> &first, set<int> &second) {
@@ -490,27 +377,6 @@ namespace Utilities {
         return input;
     }
 
-    __attribute__((unused)) bool is_bigger_than(Region *region, set<int> *region2) {
-        if (region->size() > region2->size()) {
-            for (auto elem : *region2) {
-                // in the region cannot find an elem
-                if (region->find(elem) == region->end()) {
-                    //cout << "****FALSE ";
-                    // print(*region), cout << " is not bigger than ";
-                    //println(*region2);
-                    return false;
-                }
-            }
-        } else if (region->size() <= region2->size())
-            return false;
-
-        // in the region all elements of reg2 are found
-        // cout << "****TRUE";
-        //print(*region), cout << " is bigger than ";
-        //println(*region2);
-        return true;
-    }
-
     bool is_bigger_than_or_equal_to(Region *region, set<int> *intersection) {
 
         if (region->size() >= intersection->size()) {
@@ -591,17 +457,8 @@ namespace Utilities {
         return true;
     }
 
-    bool contains(const set<Region *>& set, const Region& region) {
-        for (auto elem : set) {
-            if (are_equal(elem, region)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    __attribute__((unused)) bool contains_region(const set<Region *>& set, Region *region) {
-        for (auto elem : set) {
+    bool contains(const set<Region *>& container, const Region& region) {
+        for (auto elem : container) {
             if (are_equal(elem, region)) {
                 return true;
             }
@@ -618,7 +475,7 @@ namespace Utilities {
     }
 
     bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set){
-        for(auto elem: *set_of_sets){
+        for(const auto& elem: *set_of_sets){
             if(elem == *reg_set)
                 return true;
         }
@@ -642,14 +499,6 @@ namespace Utilities {
     bool contains(set<int> bigger_set, const set<int>& smaller_set){
         for (auto elem : smaller_set) {
             if(bigger_set.find(elem) == bigger_set.end())
-                return false;
-        }
-        return true;
-    }
-
-    __attribute__((unused)) bool contains(set<int> *bigger_set, set<int> *smaller_set){
-        for (auto elem : *smaller_set) {
-            if(bigger_set->find(elem) == bigger_set->end())
                 return false;
         }
         return true;
@@ -920,51 +769,6 @@ namespace Utilities {
         fout.close();
     }
 
-    void pprint_ts_aut_file(string file_path,
-                           map <map<set<Region *>*, Region *>, int> *state_aliases,
-                           vector<SM_edge> *arcs,
-                           const map<set<Region *>*, Region *>& initial_state_TS){
-        string output_name = std::move(file_path);
-        string in_name;
-        while (output_name[output_name.size() - 1] != '.') {
-            output_name = output_name.substr(0, output_name.size() - 1);
-        }
-        output_name = output_name.substr(0, output_name.size() - 1);
-        unsigned long lower = 0;
-        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
-            if (output_name[i] == '/') {
-                lower = i;
-                break;
-            }
-        }
-        in_name = output_name.substr(lower + 1, output_name.size());
-        std::replace( in_name.begin(), in_name.end(), '-', '_');
-
-
-        output_name = output_name + "_composed_SM.aut";
-
-
-        ofstream fout(output_name);
-        fout << "des (";
-        fout << state_aliases->at(initial_state_TS);
-        fout << ",";
-        fout << arcs->size();
-        fout <<",";
-        fout << state_aliases->size();
-        fout << ")" << endl;
-
-        for(const auto& arc: *arcs){
-            fout << "(";
-            fout << state_aliases->at(arc.start);
-            fout << ",\"";
-            fout << arc.event;
-            fout << "\",";
-            fout << state_aliases->at(arc.end);
-            fout << ")\n";
-        }
-        fout.close();
-    }
-
     void print_ts_dot_file(string file_path,
                            map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
                            vector<edge> *arcs,
@@ -1015,106 +819,6 @@ namespace Utilities {
         fout.close();
     }
 
-    void print_ts_dot_file(string file_path,
-                           map <map<set<Region *>*, Region *>, int> *state_aliases,
-                           vector<SM_edge> *arcs,
-                           const map<set<Region *>*, Region *>& initial_state_TS){
-        string output_name = std::move(file_path);
-        string in_name;
-        while (output_name[output_name.size() - 1] != '.') {
-            output_name = output_name.substr(0, output_name.size() - 1);
-        }
-        output_name = output_name.substr(0, output_name.size() - 1);
-        unsigned long lower = 0;
-        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
-            if (output_name[i] == '/') {
-                lower = i;
-                break;
-            }
-        }
-        in_name = output_name.substr(lower + 1, output_name.size());
-        std::replace( in_name.begin(), in_name.end(), '-', '_');
-
-        output_name = output_name + "_composed_SM.dot";
-
-
-        ofstream fout(output_name);
-        fout << "digraph ";
-        fout << in_name;
-        fout << "{\n";
-        fout << "\tlabel=\"(name=" << in_name << ",n=" << state_aliases->size()
-             << ",m=" << arcs->size() << ")\";\n";
-        fout << "\t_nil [style = \"invis\"];\n";
-        fout << "\tnode [shape = doublecircle]; ";
-        fout << state_aliases->at(initial_state_TS) << ";\n";
-        fout << "\tnode [shape = circle];\n";
-        fout << "\t_nil -> ";
-        fout << state_aliases->at(initial_state_TS) << ";\n";
-
-        for(const auto& arc: *arcs){
-            fout << "\t";
-            fout << state_aliases->at(arc.start);
-            fout << "->";
-            fout << state_aliases->at(arc.end);
-            fout << "[label=\"";
-            fout << arc.event;
-            fout << "\"];\n";
-        }
-
-        fout << "}\n";
-        fout.close();
-    }
-
-
-    __attribute__((unused)) string convert_to_dimacs(string file_path, int num_var, int num_clauses, vector<vector<int>*>* clauses, set<set<int>*>* new_results_to_avoid){
-        cout << "================[DIMACS FILE CREATION]====================" << endl;
-        string output_name = std::move(file_path);
-        string in_name;
-        while (output_name[output_name.size() - 1] != '.') {
-            output_name = output_name.substr(0, output_name.size() - 1);
-        }
-        output_name = output_name.substr(0, output_name.size() - 1);
-        unsigned long lower = 0;
-        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
-            if (output_name[i] == '/') {
-                lower = i;
-                break;
-            }
-        }
-        in_name = output_name.substr(lower + 1, output_name.size());
-
-        output_name = output_name + ".dimacs";
-        //====================== END OF FILE CREATION =====================
-
-        ofstream fout(output_name);
-        string temp;
-        for(auto clause: *clauses){
-            for(auto lit: *clause){
-                temp.append(to_string(lit)+" ");
-            }
-            temp.append("0\n");
-        }
-        //add the new clauses found in the previous iterations
-        if(new_results_to_avoid != nullptr) {
-            for (auto clause: *new_results_to_avoid) {
-                for (auto lit: *clause) {
-                    if(lit > 0)
-                        temp.append("-" + to_string(lit) + " ");
-                    else
-                        temp.append(to_string(-lit) + " ");
-                }
-                temp.append("0\n");
-            }
-        }
-        fout << "p cnf ";
-        if(new_results_to_avoid != nullptr)
-            fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
-        else
-            fout << num_var << " " << num_clauses << endl;
-        fout << temp;
-        fout.close();
-        return output_name;
-    }
 
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
         return convert_to_dimacs(std::move(file_path), num_var, num_clauses, clauses, nullptr);
@@ -1167,41 +871,6 @@ namespace Utilities {
             fout << num_var << " " << num_clauses+new_results_to_avoid->size() << endl;
         else
             fout << num_var << " " << num_clauses << endl;
-        fout << temp;
-        fout.close();
-        return output_name;
-    }
-
-    __attribute__((unused)) string convert_to_dimacs_simplified(const string& file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses){
-        cout << "================[DIMACS FILE CREATION]====================" << endl;
-        string output_name = file_path;
-        string in_name;
-        while (output_name[output_name.size() - 1] != '.') {
-            output_name = output_name.substr(0, output_name.size() - 1);
-        }
-        output_name = output_name.substr(0, output_name.size() - 1);
-        unsigned long lower = 0;
-        for (unsigned long i = output_name.size() - 1; i > 0; i--) {
-            if (output_name[i] == '/') {
-                lower = i;
-                break;
-            }
-        }
-        in_name = output_name.substr(lower + 1, output_name.size());
-
-        output_name = output_name + ".dimacs";
-        //====================== END OF FILE CREATION =====================
-
-        ofstream fout(output_name);
-        string temp;
-        for(const auto& clause: clauses){
-            for(auto lit: clause){
-                temp.append(to_string(lit)+" ");
-            }
-            temp.append("0\n");
-        }
-        fout << "p cnf ";
-        fout << num_var << " " << num_clauses << endl;
         fout << temp;
         fout.close();
         return output_name;
@@ -1597,14 +1266,6 @@ namespace Utilities {
                            map<int, set<Region *> *> *post_regions,
                            map<int, int> *aliases, const string& file_name) {
         print_fcpn_dot_file(pre_regions, post_regions, aliases, file_name, -1);
-    }
-
-    //TODO
-    __attribute__((unused)) void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
-                         map<int, set<Region *> *> *post_regions,
-                         map<int, int> *aliases, const string& file_name){
-        cout << "Code still have to be written" << endl;
-        exit(1);
     }
 
     void print_sm_g_file(map<int, Region  *> *pre_regions,
@@ -2196,47 +1857,11 @@ namespace Utilities {
         return difference;
     }
 
-    __attribute__((unused)) char translate_label(int label) {
-        char base = 'a';
-        base += label;
-        return base;
-    }
-
-    __attribute__((unused)) Region *get_ptr_into(set<Region *> *set, Region *region) {
-        std::set<Region *>::iterator it;
-        for (it = set->begin(); it != set->end(); ++it) {
-            auto elem = *it;
-            if (are_equal(elem, region)) {
-                return *it;
-            }
-        }
-        return nullptr;
-    }
-
-    __attribute__((unused)) bool contains_state(Region *reg, int state) {
-        for (auto el : *reg) {
-            if (el == state)
-                return true;
-        }
-        return false;
-    }
-
     void println(set<Region *> &regions) {
         for (auto reg : regions) {
             println(*reg);
             //cout << "reg. in.: " << reg << endl;
         }
-    }
-
-    __attribute__((unused)) void print_SM_on_file(set<Region *> &regions, const string& filename) {
-        auto outfile = new ofstream();
-        outfile->open(filename, std::ios_base::app);
-        *outfile << "SM:" << endl;
-        for (auto reg : regions) {
-            println(*reg, outfile);
-        }
-        outfile->close();
-        delete outfile;
     }
 
     void println(set<Region *> *regions) {
@@ -2255,11 +1880,6 @@ namespace Utilities {
         }
     }
 
-    __attribute__((unused)) void print_SM(set<Region *>* SM){
-        println(*SM);
-        cout << endl;
-    }
-
     set<Region *> *region_pointer_union(set<Region *> *first,
                                         set<Region *> *second) {
         auto un = new set<Region *>(*first);
@@ -2267,24 +1887,6 @@ namespace Utilities {
             un->insert(reg);
         }
         return un;
-    }
-
-    __attribute__((unused)) void restore_default_labels(map<int, set<Region *> *> *net,
-                                                        map<int, int> &aliases) {
-        int counter = 0;
-        for (auto rec : *net) {
-            // the label rec.first was split
-            if (aliases.find(rec.first) != aliases.end()) {
-                net->at(rec.first) =
-                        region_pointer_union(rec.second, net->at(aliases.at(rec.first)));
-            }
-            counter++;
-            if (counter == num_events_before_label_splitting)
-                break;
-        }
-        for (auto rec : aliases) {
-            net->erase(rec.second);
-        }
     }
 
     void region_mapping(Region* region){
@@ -2321,16 +1923,6 @@ namespace Utilities {
         }
         delete v;
         return clauses;
-    }
-
-    __attribute__((unused)) vector<int>* covering_state_clause(set<Region *> *overlapping_regions){
-        auto clause = new vector<int>();
-        int reg_alias;
-        for(auto reg: *overlapping_regions){
-            reg_alias = (*aliases_region_pointer_inverted)[reg];
-            clause->push_back(reg_alias);
-        }
-        return clause;
     }
 
      vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions){
@@ -2419,63 +2011,6 @@ namespace Utilities {
         return total_pre_regions_map;
     }
 
-    map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, Region *> *second) {
-        //  cout << "MERGING ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
-
-        map<int, set<Region *> *> *total_pre_regions_map = nullptr;
-        total_pre_regions_map = new map<int, set<Region *> *>();
-
-        if (second != nullptr) {
-            for (int event = 0; event < num_events_after_splitting; event++) {
-                // found both events
-                if (first->find(event) != first->end() &&
-                    second->find(event) != second->end()) {
-
-                    auto merged_vector = new vector<Region *>(first->at(event)->size() + 1);
-
-                    for(auto elem: *first->at(event)){
-                        merged_vector->push_back(elem);
-                    }
-                    merged_vector->push_back(second->at(event));
-
-                    (*total_pre_regions_map)[event] =
-                            new set<Region *>(merged_vector->begin(), merged_vector->end());
-                    delete merged_vector;
-                }
-                    // the evnt is only in first(essential)
-                else if (first->find(event) != first->end()) {
-                    auto merged_vector = new vector<Region *>(first->at(event)->size());
-
-                    (*total_pre_regions_map)[event] = new set<Region *>(
-                            first->at(event)->begin(), first->at(event)->end());
-                    delete merged_vector;
-                    /*cout<<"first"<<endl;
-                    for(auto el: *total_pre_regions_map->at(event))
-                            println(*el);*/
-                }
-                    // the event is only in second(irredundant)
-                else if (second->find(event) != second->end()) {
-                    auto merged_vector = new vector<Region *>(1);
-
-                    (*total_pre_regions_map)[event] = new set<Region *>();
-                    (*total_pre_regions_map)[event]->insert(second->at(event));
-                    delete merged_vector;
-                    /* cout<<"second"<<endl;
-                     for(auto el: *total_pre_regions_map->at(event))
-                         println(*el);*/
-                }
-            }
-        } else {
-            for (auto record : *first) {
-                auto event = record.first;
-                (*total_pre_regions_map)[event] =
-                        new set<Region *>(first->at(event)->begin(), first->at(event)->end());
-            }
-        }
-
-        return total_pre_regions_map;
-    }
-
     map<int, set<Region *> *>* merge_2_maps(map<int, Region *> *first, map<int, Region *> *second) {
         //  cout << "MERGING ESSENTIAL AND IRREDUNDANT REGIONS**********" << endl;
 
@@ -2532,11 +2067,6 @@ namespace Utilities {
         return total_pre_regions_map;
     }
 
-
-    __attribute__((unused)) void add_region_to_SM(set<Region*>* SM, Region* region){
-        SM->insert(region);
-    }
-
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path){
         FILE *f;
         f = fopen(file_path.c_str(), "r");
@@ -2565,85 +2095,8 @@ namespace Utilities {
         }
     }
 
-    __attribute__((unused)) bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path){
-        FILE *f;
-        f = fopen(file_path.c_str(), "r");
-        Minisat::parse_DIMACS(f, solver);
-        fclose(f);
-
-        if(decomposition_debug)
-            cout << "=============================[SAT-SOLVER RESOLUTION]=====================" << endl;
-
-        if (!solver.simplify()) {
-            return false;
-        }
-
-        auto ret = solver.solve();
-
-        return ret;
-    }
-
-    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set){
-        auto er = ER_set->at(event);
-        auto intersection = regions_intersection(pre_regions_set);
-        bool res = are_equal(er, intersection);
-        delete intersection;
-        return res;
-    }
-
-    __attribute__((unused)) bool check_ER_intersection_with_mem(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set){
-        if(intersection_cache == nullptr)
-            intersection_cache = new map<set<Region *>, set<int>*>();
-        auto er = ER_set->at(event);
-        set<int> *intersection;
-        if(intersection_cache->find(*pre_regions_set) != intersection_cache->end()){
-            intersection = intersection_cache->at(*pre_regions_set);
-            //cout << "cache used"  << endl;
-        }
-        else{
-            intersection = regions_intersection(pre_regions_set);
-            (*intersection_cache)[*pre_regions_set] = intersection;
-        }
-        bool res = are_equal(er, intersection);
-        return res;
-    }
-
-    bool check_ER_intersection_with_mem(int event, const set<Region*>& pre_regions_set, map<int, ES> *ER_set){
-        if(intersection_cache == nullptr)
-            intersection_cache = new map<set<Region *>, set<int>*>();
-        auto er = ER_set->at(event);
-        set<int> *intersection;
-        if(intersection_cache->find(pre_regions_set) != intersection_cache->end()){
-            intersection = intersection_cache->at(pre_regions_set);
-            //cout << "cache used"  << endl;
-        }
-        else{
-            intersection = regions_intersection(pre_regions_set);
-            (*intersection_cache)[pre_regions_set] = intersection;
-        }
-        bool res = are_equal(er, intersection);
-        return res;
-    }
-
-    bool check_ER_intersection_cache(set<Region*> *pre_regions_set){
-        if(intersection_cache->find(*pre_regions_set) != intersection_cache->end())
-            return true;
-        return false;
-    }
-
-    void clear_ER_intersection_cache(){
-        for(const auto& rec: *intersection_cache){
-            delete rec.second;
-        }
-        delete intersection_cache;
-    }
-
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ES> *ER_set ) {
-
         auto regions_intersection_map = new map<int, set<int> *>() ;
-
-
-
         //for (auto item : *pre_regions) {
         //cout<<"num evens after splitting "<<num_events_after_splitting<<endl;
         for(int event=0;event<num_events_after_splitting;++event){
@@ -2936,224 +2389,7 @@ namespace Utilities {
     template double getAvgAlphabet(map < set<Region *> *, map<int, Region *> * > *pre_regions, map<int, int> *label_aliases);
     template double getAvgAlphabet(map < set<Region *> *, map<int, set<Region *>*> * > *pre_regions, map<int, int> *label_aliases);
 
-
-    __attribute__((unused)) bool checkSMUnionForFCPTNet(set<SM*> *sm_set, map<int, set<Region*> *> *post_regions){
-        cerr << "function checkSMUnionFCPTNet ith set argument not implemented yet" << endl;
-        exit(1);
-        SM *target_PN = new SM();
-        for(auto sm: *sm_set) {
-            for (auto reg: *sm) {
-                target_PN->insert(reg);
-            }
-        }
-
-        /*todo: if I find a couple without common events or places it could be still connected via other SMs
-         * therefore I cannot check in this way, I have to find a way in order to understand if the result
-         * have disconnected subset (it can be split without any violation)
-         * Probably I have to check if there is an SM which haven't any common event/place with all of the other SMs
-         * but in this case we could skip the case where a couple of SMs is disconnected from the others
-         */
-         /*bool common_regions = true;
-        bool temp;
-        for(auto sm1: *sm_set){
-            for(auto sm2: *sm_set){
-                if(sm1 != sm2){
-                    temp = checkCommonRegionsBetweenSMs(sm1, sm2);
-                    if(!temp){
-                        common_regions = false;
-                        break;
-                    }
-                }
-            }
-            if(!common_regions) break;
-        }*/
-
-    }
-
-    bool checkCommonRegionsBetweenSMs(SM *sm1, SM *sm2){
-        for(auto r1: *sm1){
-            for(auto r2: *sm2){
-                if(r1 == r2){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions){
-        SM *target_PN = new SM();
-        for (auto reg: *sm1) {
-            target_PN->insert(reg);
-        }
-        for (auto reg: *sm2) {
-            target_PN->insert(reg);
-        }
-
-        //check if there are common regions
-        bool common_regions = checkCommonRegionsBetweenSMs(sm1, sm2);
-
-        //check common labels
-        bool common_events = false;
-        for(auto rec: *post_regions){
-            auto ev = rec.first;
-            if(have_common_regions(rec.second, sm1)){
-                if(have_common_regions(rec.second, sm2)){
-                    common_events = true;
-                    break;
-                }
-            }
-        }
-
-        if(!common_regions && !common_events){
-            cout << "No common events and no common regions" << endl;
-            delete target_PN;
-            return false;
-        }
-
-        auto PN_post_regions = new map<int, set<Region *> *>();
-
-        //creation of  the map of post-regions of the new PN in order to check on a subset and not all possible regions
-        for (auto rec: *post_regions) {
-            if (PN_post_regions->find(rec.first) == PN_post_regions->end()) {
-                (*PN_post_regions)[rec.first] = new set<Region *>();
-            }
-            for (auto reg: *rec.second) {
-                if (target_PN->find(reg) != target_PN->end()) {
-                    (*PN_post_regions)[rec.first]->insert(reg);
-                }
-            }
-        }
-
-        for (auto rec: *PN_post_regions) {
-            int event = rec.first;
-            //the event have at least 2 post-regions
-            if (rec.second->size() > 1) {
-                for (auto rec2: *PN_post_regions) {
-                    //different events
-                    if (rec.first != rec2.first) {
-                        for (auto region: *rec.second) {
-                            if (rec2.second->find(region) != rec2.second->end()) {
-                                //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
-                                //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
-                                for(auto rec: *PN_post_regions){
-                                    delete rec.second;
-                                }
-                                delete PN_post_regions;
-                                delete target_PN;
-                                return false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if(decomposition_debug)
-            cout << "compatible SMs " << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-        for(auto rec: *PN_post_regions){
-            delete rec.second;
-        }
-        delete PN_post_regions;
-        delete target_PN;
-        return true;
-    }
-
-    //todo: this code probably can be improved, maybe using sat in order to check if the union is possible
-    __attribute__((unused)) SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions) {
-        SM *target_PN = new SM();
-        for (auto reg: *sm1) {
-            target_PN->insert(reg);
-        }
-        for (auto reg: *sm2) {
-            target_PN->insert(reg);
-        }
-
-        //check if there are common regions
-        bool common_regions = false;
-        for(auto r1: *sm1){
-            for(auto r2: *sm2){
-                if(r1 == r2){
-                    common_regions = true;
-                    break;
-                }
-            }
-            if(common_regions) break;
-        }
-
-
-        //check common labels
-        bool common_events = false;
-        for(auto rec: *post_regions){
-            auto ev = rec.first;
-            if(have_common_regions(rec.second, sm1)){
-                if(have_common_regions(rec.second, sm2)){
-                    common_events = true;
-                    break;
-                }
-            }
-        }
-
-        if(!common_regions && !common_events){
-            cout << "No common events and no common regions" << endl;
-            delete target_PN;
-            return nullptr;
-        }
-
-        auto PN_post_regions = new map<int, set<Region *> *>();
-
-        //creation of  the map of post-regions of the new PN in order to check on a subset and not all possible regions
-        for (auto rec: *post_regions) {
-            if (PN_post_regions->find(rec.first) == PN_post_regions->end()) {
-                (*PN_post_regions)[rec.first] = new set<Region *>();
-            }
-            for (auto reg: *rec.second) {
-                if (target_PN->find(reg) != target_PN->end()) {
-                    (*PN_post_regions)[rec.first]->insert(reg);
-                }
-            }
-        }
-
-        for (auto rec: *PN_post_regions) {
-            int event = rec.first;
-            //the event have at least 2 post-regions
-            if (rec.second->size() > 1) {
-                for (auto rec2: *PN_post_regions) {
-                    //different events
-                    if (rec.first != rec2.first) {
-                        for (auto region: *rec.second) {
-                            if (rec2.second->find(region) != rec2.second->end()) {
-                                //cout << "couple of events: " << rec.first << " " << rec2.first << endl;
-                                //cout << "not compatible SMs " << sm1 << " and " << sm2 << endl;
-                                for(auto rec3: *PN_post_regions){
-                                    delete rec3.second;
-                                }
-                                delete PN_post_regions;
-                                delete target_PN;
-                                return nullptr;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if(decomposition_debug)
-            cout << "compatible SMs " << sm1 << " and " << sm2 << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
-        for(auto rec: *PN_post_regions){
-            delete rec.second;
-        }
-        delete PN_post_regions;
-        return target_PN;
-    }
-
     void print_clause(vector<int32_t> *clause){
-        for(auto val: *clause){
-            cout << val << " ";
-        }
-        cout << endl;
-    }
-
-
-    void print_clause(set<int32_t> *clause){
         for(auto val: *clause){
             cout << val << " ";
         }
@@ -3180,31 +2416,6 @@ namespace Utilities {
             }
         }
         return new_used_regions_map_tmp;
-    }
-
-    __attribute__((unused)) void map_of_pre_regions_union(map<int, set<Region *> *> *map1, map<int, set<Region *> *> *output_map){
-        for(auto rec2: *map1){
-            auto ev = rec2.first;
-            auto region_set = rec2.second;
-            if(output_map->find(ev) == output_map->end()){
-                (*output_map)[ev]= new set<Region *>();
-            }
-            for(auto reg: *region_set){
-                (*output_map)[ev]->insert(reg);
-            }
-        }
-    }
-
-    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set){
-        auto cnf_set = new map<int, set<set<Region *>*>*>();
-        for(auto rec: *er_satisfiable_set){
-            //cout  << "EV: " << rec.first << endl;
-            //(*cnf_set)[rec.first] = new set<set<Region *>*>();
-            set<set<Region *>>::iterator it;
-            it = rec.second->begin();
-            (*cnf_set)[rec.first] = dnf_to_cnf_core(rec.second, it);
-        }
-        return cnf_set;
     }
 
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it){

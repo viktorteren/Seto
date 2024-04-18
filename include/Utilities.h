@@ -102,11 +102,6 @@ extern bool counter_optimized;
 extern bool parallel;
 
 namespace Utilities {
-    __attribute__((unused)) set<Region *> *regions_set_union(set<set<Region*>*> *region_set);
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*> *region_set1,
-                                                             const set<Region*> *region_set2);
-    __attribute__((unused)) set<Region *> *regions_set_union(const set<Region*>& region_set1,
-                                                             const set<Region*>& region_set2);
     Region *regions_union(vector<Region *> *vec);
     Region *regions_union(set<Region *> *vec);
     Region *regions_union(Region *first, Region *second);
@@ -114,7 +109,6 @@ namespace Utilities {
     bool empty_regions_intersection(Region *first, Region *second);
     bool at_least_one_state_from_first_in_second(Region *first, Region *second);
     set<int> *regions_intersection(set<Region *> *set);
-    set<int> *regions_intersection(const set<Region *>& regions);
     set<int> *region_difference(set<int> &first, set<int> &second);
     bool empty_region_set_intersection(set<Region *> *first, set<Region *> *second);
     set<Region *> *region_pointer_difference(set<Region *> *first,
@@ -134,14 +128,13 @@ namespace Utilities {
     void print(Region &region, std::ofstream *st);
     void println(set<Region *> *regions);
     void println(set<Region *> &regions);
-    __attribute__((unused)) void print_SM_on_file(set<Region *> &regions, const string& filename);
     void println_simplified(set<Region *> *regions, map<Region*, int> *regions_alias_mapping);
     void print(map<int, set<Region *> *> &net);
     bool is_bigger_than_or_equal_to(Region *, set<int> *);
     bool are_equal(Region *r1, Region *r2);
     bool are_equal(Region *region1, Region region2);
     bool are_equal(const Region& r1, Region r2);
-    __attribute__((unused)) bool contains(const set<Region *>& set, const Region& region);
+    bool contains(const set<Region *>& set, const Region& region);
     bool contains(vector<int32_t> *bigger_clause, vector<int32_t> *smaller_clause);
     bool contains(set<set<Region *>>* set_of_sets, set<Region *> *reg_set);
     bool contains(const set<Region *>& reg_set, Region * reg);
@@ -154,25 +147,16 @@ namespace Utilities {
     bool contains(vector<set<int>> *container, const set<int>& result_to_check);
 
     void print_ts_dot_file(string file_path,map<int, int> *aliases);
-    //todo: use template to merge the two versions of print_ts_dot_file
     void print_ts_dot_file(string file_path,
                            map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
                            vector<edge> *arcs,
                            const map<set<Region *>*, set<Region *>>& initial_state_TS);
-    __attribute__((unused)) void print_ts_dot_file(string file_path,
-                           map <map<set<Region *>*, Region *>, int> *state_aliases,
-                           vector<SM_edge> *arcs,
-                           const map<set<Region *>*, Region *>& initial_state_TS);
+
     void print_ts_aut_file(string file_path, map<int, int> *aliases);
-    //todo: use template to merge the two versions of print_ts_aut_file
     void print_ts_aut_file(string file_path,
                            map <map<set<Region *>*, set<Region *>>, int> *state_aliases,
                            vector<edge> *arcs,
                            const map<set<Region *>*, set<Region *>>& initial_state_TS);
-    __attribute__((unused)) void print_ts_aut_file(string file_path,
-                           map <map<set<Region *>*, Region *>, int> *state_aliases,
-                           vector<SM_edge> *arcs,
-                           const map<set<Region *>*, Region *>& initial_state_TS);
     void print_pn_dot_file(map<int, set<Region *> *> *pre_regions,
                        map<int, set<Region *> *> *post_regions,
                        map<int, int>* aliases,
@@ -183,10 +167,6 @@ namespace Utilities {
                                      map<int, int> *aliases,
                                      string file_name,
                                      int component_counter);
-    __attribute__((unused)) void print_pn_g_file(map<int, set<Region *> *> *pre_regions,
-                         map<int, set<Region *> *> *post_regions,
-                         map<int, int>* aliases,
-                         const string& file_name);
     void print_sm_dot_file(map<int, Region *> *pre_regions,
                            map<int, Region *> *post_regions,
                            map<int, int>* aliases,
@@ -217,40 +197,16 @@ namespace Utilities {
     //s will receive new clauses and uncovered_states the states to cover
     vector<vector<int>*>* add_regions_clauses_to_solver(map<int, set<Region *> *> *regions_map);
     map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first, map<int, set<Region *> *> *second);
-    __attribute__((unused)) map<int, set<Region *> *>* merge_2_maps(map<int, set<Region *> *> *first,
-                                                                    map<int, Region *> *second);
     map<int, set<Region *> *>* merge_2_maps(map<int, Region *> *first, map<int, Region *> *second);
-
-    __attribute__((unused)) string convert_to_dimacs(string file_path,
-                                                     int num_var,
-                                                     int num_clauses,
-                                                     vector<vector<int>*>* clauses,
-                                                     set<set<int>*>* new_results_to_avoid);
     string convert_to_dimacs(string file_path,
                              int num_var,
                              int num_clauses,
                              const vector<vector<int32_t>>& clauses,
                              vector<set<int>>* new_results_to_avoid);
     string convert_to_dimacs(string file_path, int num_var, int num_clauses, const vector<vector<int32_t>>& clauses);
-    __attribute__((unused)) string convert_to_dimacs_simplified(const string& file_path,
-                                                                int num_var,
-                                                                int num_clauses,
-                                                                const vector<vector<int32_t>>& clauses);
     set<vector<int>*>* overlapping_regions_clause(set<Region *> *overlapping_regions);
     void region_mapping(Region* region);
-    __attribute__((unused)) void add_region_to_SM(set<Region*>* SM, Region* region);
-    __attribute__((unused)) void print_SM(set<Region *>* SM);
     bool check_sat_formula_from_dimacs(Minisat::Solver& solver, const string& file_path);
-    __attribute__((unused)) bool check_sat_formula_from_dimacs2(Minisat::Solver& solver, const string& file_path);
-    __attribute__((unused)) bool check_ER_intersection(int event, set<Region*> *pre_regions_set, map<int, ES> *ER_set);
-    __attribute__((unused)) bool check_ER_intersection_with_mem(int event,
-                                                                set<Region*> *pre_regions_set,
-                                                                map<int, ES> *ER_set);
-    __attribute__((unused)) bool check_ER_intersection_with_mem(int event,
-                                                                const set<Region*>& pre_regions_set,
-                                                                map<int, ES> *ER_set);
-    __attribute__((unused)) void clear_ER_intersection_cache();
-    __attribute__((unused)) bool check_ER_intersection_cache(set<Region*> *pre_regions_set);
     bool is_excitation_closed(map<int, set<Region *> *> *pre_regions, map<int, ES> *ER_set );
     string remove_extension(string path);
     bool is_initial_region(Region *);
@@ -270,22 +226,9 @@ namespace Utilities {
     int getMaxAlphabet(map<SM*, map<int, set<Region *>*>*>* pre_regions, map<int, int> *label_aliases);
     template<class T>
     double getAvgAlphabet(T *pre_regions, map<int, int> *label_aliases);
-    __attribute__((unused)) bool checkSMUnionForFCPTNet(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
-    __attribute__((unused)) SM* SMUnionForFCPTNetWithCheck(SM* sm1, SM* sm2, map<int, set<Region*> *> *post_regions);
-    bool have_common_regions(set<Region *> *first, set<Region *> *second);
-    bool checkCommonRegionsBetweenSMs(SM *sm1, SM *sm2);
     void print_clause(vector<int32_t> *clause);
-    __attribute__((unused)) void print_clause(set<int32_t> *clause);
     map<int, set<Region *>*>* get_map_of_used_regions(set<set<Region *> *> *SMs_or_PNs,
                                                       map<int, set<Region *> *> *pre_regions);
-    __attribute__((unused)) void map_of_pre_regions_union(map<int, set<Region *> *> *map1,
-                                                          map<int, set<Region *> *> *output_map);
-    __attribute__((unused)) bool regions_set_intersection_is_empty(const set<Region*> *region_set1,
-                                                                   const set<Region*> *region_set2);
-    __attribute__((unused)) bool equal_sets(const set<Region*> *region_set1,const set<Region*> *region_set2);
-    map<int, set<set<Region *>*>*>* dnf_to_cnf(map<int, set<set<Region *>>*>* er_satisfiable_set);
-    __attribute__((unused)) set<Region *> regions_set_union_stack(const set<Region*>& region_set1,
-                                                                  const set<Region*>& region_set2);
     set<set<Region *>*>* dnf_to_cnf_core(set<set<Region *>>*cl_set, set<set<Region *>>::iterator it);
     vector<set<Region *>> *split_not_connected_regions(set<Region *> *pn, map<int, set<Region *> *> *connections);
     bool are_connected(const set<Region *>& first, const set<Region *>& second, map<int, set<Region *> *> *connections);
@@ -293,7 +236,5 @@ namespace Utilities {
     bool safeness_check(set<Region *> *pn,
                         map<int, set<Region*> *> *map_of_pre_regions,
                         map<int, set<Region*> *> *map_of_post_regions,
-                        map<Region *, int> *regions_alias_mapping = nullptr/*,
-                        map<Region *, set<int> *> *post_events*/);
-
-};
+                        map<Region *, int> *regions_alias_mapping = nullptr);
+}
