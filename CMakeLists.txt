@@ -3,8 +3,6 @@ project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
-find_package(OpenMP)
-
 add_library(libminisat STATIC
         # Impl files
         libs/minisat/core/Solver.cc
@@ -42,9 +40,6 @@ target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
 target_link_libraries(${PROJECT_NAME} python3.10)   #needed for networkx usage
 target_link_libraries(${PROJECT_NAME} cudd)
-if( OpenMP_FOUND )
-    target_link_libraries(${PROJECT_NAME} OpenMP::OpenMP_CXX)
-endif()
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
 

@@ -348,10 +348,6 @@ void Region_generator::expand(Region *region, int event, bool is_ER, int init_po
     }
    // cout<<"id position reg: " << region_id_position<<endl;
 
-   //TODO: check if pragma works with if condition
-    #if defined(OPENMP)
-    #pragma omp parallel for reduction(-:event_types[:number_of_events])
-    #endif
     for (int i = 0; i < number_of_events; i++) {
         event_types[i] = -1;
     }
