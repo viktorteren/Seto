@@ -4,8 +4,10 @@ project (Seto LANGUAGES CXX C)
 include(GNUInstallDirs)
 
 #Python3 needed for networkx usage
-find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development)
-include_directories(${Python3_INCLUDE_DIRS})
+find_package(Python3 3.10 COMPONENTS Interpreter Development QUIET)
+if(Python3_FOUND)
+    include_directories(${Python3_INCLUDE_DIRS})
+endif()
 
 add_library(libminisat STATIC
         # Impl files
@@ -47,7 +49,6 @@ target_link_libraries(${PROJECT_NAME} ${Python3_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} cudd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
-
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
     target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra)
