@@ -259,7 +259,6 @@ int main(int argc, char **argv) {
 
                 cout << "==================[START PYTHON]============= " << endl;
 
-                #if __has_include(<Python.h>)
                 string python_code;
                 string python_source;
                 //compute all possible minimal independent sets
@@ -287,7 +286,6 @@ int main(int argc, char **argv) {
 
                 PyRun_SimpleString(python_code.c_str());
                 Py_Finalize();
-                #endif
 
                 cout << "=================[END PYTHON]=================" << endl;
 
