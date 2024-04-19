@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
@@ -8,9 +8,6 @@ find_package(Python3 3.10 COMPONENTS Interpreter Development QUIET)
 if(Python3_FOUND)
     add_definitions(-DUSE_PYTHON)
     include_directories(${Python3_INCLUDE_DIRS})
-    message(STATUS "Python found: compiling with Python support.")
-else()
-    message(STATUS "Python not found: skipping Python-dependent modules.")
 endif()
 
 add_library(libminisat STATIC
