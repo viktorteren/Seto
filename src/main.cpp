@@ -292,6 +292,10 @@ int main(int argc, char **argv) {
                 cout << "=================[END PYTHON]=================" << endl;
 
                 read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
+                if(SMs->empty()){
+                    cerr << "Python code was not performed or it generated an empty set of SMs." << endl;
+                    exit(1);
+                }
 
                 if (python_all) {
                     cout << "==============REMOVAL OF SETs WHICH ARE NOT SMs====" << endl;
