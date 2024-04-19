@@ -942,8 +942,9 @@ string parseArguments(int argc, vector<string> args) {
         parallel = false;
         python_available = false;
         #if __has_include(<Python.h>)
-            #pragma message("Python package was not found, SM decomposition without the usage of BDD will not be available.")
             python_available = true;
+        #else
+            #pragma message("Python package was not found, SM decomposition without the usage of BDD will not be available.")
         #endif
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
