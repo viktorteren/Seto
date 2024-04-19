@@ -941,11 +941,13 @@ string parseArguments(int argc, vector<string> args) {
         conformance_checking = false;
         parallel = false;
         python_available = false;
+        /*
+        //todo: the following condition is not working properly
         #if __has_include(<Python.h>)
             python_available = true;
-        #else
-            #pragma message("Python package was not found, SM decomposition without the usage of BDD will not be available.")
+            cout << "ok" <<endl;
         #endif
+            */
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -1001,27 +1003,13 @@ string parseArguments(int argc, vector<string> args) {
             else if(args[i] == "CS"){
                 count_SMs = true;
             }
-            /*else if(args[i]=="KFCB") {
-                fcptnet = true;
-                blind_fcpn = true;
-            }
-            else if(args[i]=="KFCL"){
-                fcptnet = true;
-                fcpn_with_levels = true;
-                cerr << "KFCM does not work properly" << endl;
-                exit(1);
-            }
-            else if(args[i]=="KFCM"){
-                fcptnet = true;
-                fcpn_modified = true;
-            }*/
             else if(args[i] == "ECTS")
                 ects_output = true;
             else if(args[i] == "SM")
                 decomposition = true;
             else if (args[i] == "S") {
                 if (decomposition) {
-                    cerr << "A flag for decomposition was previously chosen" << endl;
+                    cerr << "A flag for decomposition was previously chosen." << endl;
                     exit(1);
                 }
                 print_step_by_step = true;
@@ -1172,11 +1160,6 @@ string parseArguments(int argc, vector<string> args) {
             cerr << "SS flag cannot be combined with BDD flag." << endl;
             exit(0);
         }
-        /*
-        if(only_safeness_check && !fcptnet){
-            cerr << "Safeness check can be done only on FCPNs." << endl;
-            exit(0);
-        }*/
         if(safe_components && !fcptnet){
             cerr << "Safeness check can be done only on FCPNs." << endl;
             exit(0);
@@ -1185,10 +1168,11 @@ string parseArguments(int argc, vector<string> args) {
             cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
             exit(0);
         }
+        /*
         if(decomposition && !python_available && !bdd_usage){
             cerr << "<Python.h> was not found: SM decomposition without usage of BDDs cannot be performed."  << endl;
             exit(0);
-        }
+        }*/
     }
     else{
         cerr << "Wrong number of arguments." << endl;
