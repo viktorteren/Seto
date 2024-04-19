@@ -6,7 +6,11 @@ include(GNUInstallDirs)
 #Python3 needed for networkx usage
 find_package(Python3 3.10 COMPONENTS Interpreter Development QUIET)
 if(Python3_FOUND)
+    add_definitions(-DUSE_PYTHON)
     include_directories(${Python3_INCLUDE_DIRS})
+    message(STATUS "Python found: compiling with Python support.")
+else()
+    message(STATUS "Python not found: skipping Python-dependent modules.")
 endif()
 
 add_library(libminisat STATIC
