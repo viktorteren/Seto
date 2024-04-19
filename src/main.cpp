@@ -287,6 +287,7 @@ int main(int argc, char **argv) {
                 PyRun_SimpleString(python_code.c_str());
                 Py_Finalize();
 
+
                 cout << "=================[END PYTHON]=================" << endl;
 
                 read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
