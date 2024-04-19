@@ -1168,11 +1168,10 @@ string parseArguments(int argc, vector<string> args) {
             cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
             exit(0);
         }
-        /*
         if(decomposition && !python_available && !bdd_usage){
             cerr << "<Python.h> was not found: SM decomposition without usage of BDDs cannot be performed."  << endl;
             exit(0);
-        }*/
+        }
     }
     else{
         cerr << "Wrong number of arguments." << endl;
