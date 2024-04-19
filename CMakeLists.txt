@@ -3,6 +3,10 @@ project (Seto LANGUAGES CXX C)
 
 include(GNUInstallDirs)
 
+#Python3 needed for networkx usage
+find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter Development)
+include_directories(${Python3_INCLUDE_DIRS})
+
 add_library(libminisat STATIC
         # Impl files
         libs/minisat/core/Solver.cc
@@ -38,15 +42,16 @@ add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 target_link_libraries(${PROJECT_NAME} libminisat)
 target_link_libraries(${PROJECT_NAME} pblib)
-target_link_libraries(${PROJECT_NAME} python3.10)   #needed for networkx usage
+
+target_link_libraries(${PROJECT_NAME} ${Python3_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} cudd)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDD_INCLUDE_DIR})
 add_dependencies(${PROJECT_NAME} cudd)
 
 
 if ( CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU" )
-    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra  -I/usr/include/python3.10)
+    target_compile_options(${PROJECT_NAME} PRIVATE  -Wall -Wextra)
 endif()
 if ( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267 -I/usr/include/python3.10)
+    target_compile_options(${PROJECT_NAME} PRIVATE /W4 /wd4267)
 endif()
