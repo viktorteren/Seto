@@ -16,10 +16,7 @@
 #include "../include/SM_composition.h"
 #include <algorithm>
 #include <iomanip>
-#if __has_include(<Python.h>)
 #include <Python.h>
-#endif
-
 #include <cuddObj.hh>
 
 string parseArguments(int argc, vector<string> args);
