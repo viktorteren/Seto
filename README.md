@@ -173,13 +173,13 @@ If BDD flag was selected the *'stats.csv'* will contain the following data:
 
 #### Execution using a script
 
-In the root folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*), since it uses some dependencies of MIS solver:
+In *'useful_scripts'* folder the following script can be executed, but firstly it has to be moved into execution folder (usually *'cmake-build-debug'*), since it uses some dependencies of MIS solver:
 
 ```Bash
-./Benchmark.sh
+./Benchmark.sh SM <optional_flags>
 ```
 
-The script runs the decomposition in SMs on all benchmarks of *'auto_benchmark_dir'* folder.
+The script runs the decomposition in SMs on all benchmarks of *'benchmark_dir'* folder.
 
 ### c) TS to interacting FCPNs flow
 
@@ -254,7 +254,7 @@ in order to find the minimal number of FCPNs, indeed this search has very restri
 In the root folder the following script can be executed:
 
 ```Bash
-./FC-benchmark.sh
+./Benchmark.sh FC <optional_flags>
 ```
 
 The script runs the approximate algorithm for FCPN decomposition on all benchmarks of *'auto_benchmark_dir'* folder.
