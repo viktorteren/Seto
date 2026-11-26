@@ -1,0 +1,7 @@
+{
+  "traces": [
+    ["POST /auth/login", "GET /session", "POST /checkout", "POST /pay"],
+    ["POST /auth/login", "GET /session", "GET /session", "POST /logout"],
+    ["POST /auth/login", "POST /checkout", "POST /pay", "POST /logout"]
+  ]
+}

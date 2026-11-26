@@ -5,6 +5,7 @@
 
 #include "../include/GreedyRemoval.h"
 #include "../include/PN_decomposition.h"
+#include "../include/SatSolver.h"
 #include "../include/FCPN_Merge.h"
 #include "../include/BDD_encoder.h"
 #include "../include/Merge.h"
@@ -371,10 +372,9 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
                 formula.addClause(*cl);
             }
         }
-        Minisat::Solver solver;
+        seto::InMemorySatSolver solver;
 
         bool sat;
-        string dimacs_file;
         bool exists_solution = false;
 
         auto last_solution = new set<int>();
@@ -384,38 +384,26 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
         pb2cnf.encodeIncInital(constraint, formula, auxvars);
         //iteration in the search of a correct assignment decreasing the total weight
         do {
-            int num_clauses_formula = formula.getClauses().size();
-            //cout << "formula 1" << endl;
-            //formula.printFormula(cout);
-            dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                            formula.getClauses(), results_to_avoid);
-            sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+            sat = solver.solve(auxvars.getBiggestReturnedAuxVar(), formula.getClauses(), results_to_avoid);
             if (sat) {
-                //cout << "SAT" << endl;
                 exists_solution = true;
 
                 if (decomposition_debug) {
                     cout << "SAT with value " << current_value << ": representing the number of new covered regions"
                          << endl;
-                    //cout << "Model: ";
                 }
                 last_solution->clear();
-                for (int i = 0; i < solver.nVars(); ++i) {
-                    if (solver.model[i] != l_Undef) {
-                        if (i < k) {
-                            if (solver.model[i] == l_True) {
-                                last_solution->insert(i + 1);
-                            } else {
-                                last_solution->insert(-i - 1);
-                            }
-                        }
+                for (int i = 0; i < k && i < solver.n_vars(); ++i) {
+                    int8_t val = solver.model_value(i + 1);
+                    if (val == 1) {
+                        last_solution->insert(i + 1);
+                    } else if (val == -1) {
+                        last_solution->insert(-i - 1);
                     }
                 }
                 min = current_value;
             } else {
                 if (decomposition_debug) {
-                    //cout << "----------" << endl;
-
                     cout << "UNSAT with value " << current_value << endl;
                 }
                 max = current_value;
@@ -434,7 +422,6 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             for(auto rec: *region_counter_map){
                 max2+=rec.second;
             }
-            //cout << "MAX2: " << max2 << endl;
             int current_value2 = (max2+min2)/2;
 
             PBConstraint constraint2(literals_from_regions, BOTH,
@@ -443,34 +430,20 @@ set<set<Region *> *> *PN_decomposition::search(int number_of_events,
             PBConstraint constraint3(regions_used_in_unsafe_results, LEQ,
                                        current_value2); //the sum has to be greater or equal to current_value
             pb2cnf.encode(constraint3, formula, auxvars);
-            //pb2cnf.encodeIncInital(constraint2, constraint3, formula, auxvars);
-            //iteration in the search of a correct assignment decreasing the total weight
             do {
-                int num_clauses_formula = formula.getClauses().size();
-                //cout << "formula 1" << endl;
-                //formula.printFormula(cout);
-                dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                                formula.getClauses(), results_to_avoid);
-                sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+                sat = solver.solve(auxvars.getBiggestReturnedAuxVar(), formula.getClauses(), results_to_avoid);
                 if (sat) {
-                    //cout << "SAT" << endl;
-                    //exists_solution = true;
-
                     if (decomposition_debug) {
                         cout << "optimization SAT with value " << current_value2 << ": representing the sum of regions used in UNSAFE FCPNs"
                              << endl;
-                        //cout << "Model: ";
                     }
                     last_solution->clear();
-                    for (int i = 0; i < solver.nVars(); ++i) {
-                        if (solver.model[i] != l_Undef) {
-                            if (i < k) {
-                                if (solver.model[i] == l_True) {
-                                    last_solution->insert(i + 1);
-                                } else {
-                                    last_solution->insert(-i - 1);
-                                }
-                            }
+                    for (int i = 0; i < k && i < solver.n_vars(); ++i) {
+                        int8_t val = solver.model_value(i + 1);
+                        if (val == 1) {
+                            last_solution->insert(i + 1);
+                        } else if (val == -1) {
+                            last_solution->insert(-i - 1);
                         }
                     }
                     max2 = current_value;
@@ -1485,23 +1458,9 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
         for (auto cl: *splitting_constraint_clauses) {
             formula.addClause(*cl);
         }*/
-        Minisat::Solver solver;
+        seto::InMemorySatSolver solver;
 
-        bool sat;
-        string dimacs_file;
-
-        //iteration in the search of a correct assignment decreasing the total weight
-
-        int num_clauses_formula = formula.getClauses().size();
-        /*
-        if (decomposition_debug) {
-            cout << "formula:" << endl;
-            formula.printFormula(cout);
-        }*/
-
-        dimacs_file = convert_to_dimacs(file, (k + m) * (num_FCPNs_try+1), num_clauses_formula,
-                                        formula.getClauses());
-        sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+        bool sat = solver.solve((k + m) * (num_FCPNs_try + 1), formula.getClauses());
         if (sat) {
             solution->clear();
             solution_found = true;
@@ -1513,25 +1472,23 @@ set<set<Region *> *> *PN_decomposition::search_k(int number_of_events,
                     cout << "SAT with " << num_FCPNs_try << " FCPNs!!!!" << endl;
                 }
 
-                cout << "solver n vars: " << solver.nVars() << endl;
+                cout << "solver n vars: " << solver.n_vars() << endl;
             }
-            for (int i = 0; i < solver.nVars(); ++i) {
-                if (solver.model[i] != l_Undef) {
-
+            for (int i = 0; i < solver.n_vars(); ++i) {
+                int8_t val = solver.model_value(i + 1);
+                if (val != 0) {
                     if (decomposition_debug) {
-                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
+                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (val == 1) ? "" : "-",
                                 i + 1);
                     }
-                    if (solver.model[i] == l_True) {
+                    if (val == 1) {
                         solution->push_back(i + 1);
                     } else {
                         solution->push_back(-i - 1);
                     }
-
                 } else {
                     cerr << "undef" << endl;
                 }
-
             }
             if(decomposition_debug)
                 cout << endl;

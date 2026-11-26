@@ -140,7 +140,18 @@ namespace Utilities {
     bool contains(const set<Region *>& reg_set, Region * reg);
     bool contains(set<Region *> *bigger_set, set<Region *> *smaller_set);
     template <typename T>
-    bool contains(T, Region *);
+    bool contains(T container, Region *region) {
+        if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
+            cerr << "wrong parameter type" << endl;
+            exit(1);
+        }
+        for (auto elem : *container) {
+            if (are_equal(elem, region)) {
+                return true;
+            }
+        }
+        return false;
+    }
     bool contains(set<Region *> bigger_set, const set<Region *>& smaller_set);
     bool contains(set<int> bigger_set, const set<int>& smaller_set);
     bool contains(set<int> *bigger_set, set<int> *smaller_set);

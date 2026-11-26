@@ -425,19 +425,7 @@ namespace Utilities {
         return false;
     }
 
-    template<typename T>
-    bool contains(T container, Region *region) {
-        if (!is_same<T, set<Region *>*>::value && !is_same<T, vector<Region *>*>::value){
-            cerr << "wrong parameter type" << endl;
-            exit(1);
-        }
-        for (auto elem : *container) {
-            if (are_equal(elem, region)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // Template contains(T, Region *) moved to Utilities.h
 
     template<typename T, typename T2>
     inline bool contains(T bigger_set, T2 smaller_set) {

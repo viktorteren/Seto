@@ -4,6 +4,11 @@
  */
 
 #include "../include/main.h"
+#include "../include/MISSolver.h"
+#include "../include/SatSolver.h"
+#include <chrono>
+#include <filesystem>
+#include <random>
 
 using namespace PBLib;
 using namespace Minisat;
@@ -11,6 +16,43 @@ using namespace Minisat;
 
 int main(int argc, char **argv) {
     vector<string> args(argv, argv + argc);
+    if (argc >= 2 && args[1].rfind("--bench-mis=", 0) == 0) {
+        string spec = args[1].substr(12);
+        auto comma = spec.find(',');
+        int n = std::stoi(spec.substr(0, comma));
+        int deg = (comma != string::npos) ? std::stoi(spec.substr(comma + 1)) : 10;
+        std::mt19937 rng(42);
+        std::uniform_int_distribution<int> dist(1, n);
+        vector<vector<int32_t>> storage;
+        vector<vector<int32_t>*> clauses;
+        storage.reserve(static_cast<size_t>(n) * deg / 2);
+        clauses.reserve(static_cast<size_t>(n) * deg / 2);
+        for (int i = 0; i < n * deg / 2; ++i) {
+            int u = dist(rng), v = dist(rng);
+            if (u != v) {
+                storage.push_back({-u, -v});
+                clauses.push_back(&storage.back());
+            }
+        }
+        auto csr = seto::build_csr_from_clauses(n, clauses);
+        auto t0 = std::chrono::high_resolution_clock::now();
+        auto cpu_res = seto::solve_mis_cover(csr, seto::MisBackend::Cpu);
+        auto t1 = std::chrono::high_resolution_clock::now();
+        bool has_gpu = seto::is_cuda_mis_available();
+        auto t2 = std::chrono::high_resolution_clock::now();
+        auto gpu_res = seto::solve_mis_cover(csr, seto::MisBackend::Gpu);
+        auto t3 = std::chrono::high_resolution_clock::now();
+        double cpu_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        double gpu_ms = std::chrono::duration<double, std::milli>(t3 - t2).count();
+        cout << "MIS_BENCH N=" << n << " E=" << (csr.col_idx.size() / 2)
+             << " cuda=" << (has_gpu ? "yes" : "no")
+             << " cpu_ms=" << cpu_ms << " cpu_sets=" << cpu_res.size()
+             << " cpu_first=" << (cpu_res.empty() ? 0 : cpu_res[0].size())
+             << " gpu_ms=" << gpu_ms << " gpu_sets=" << gpu_res.size()
+             << " gpu_first=" << (gpu_res.empty() ? 0 : gpu_res[0].size())
+             << endl;
+        return 0;
+    }
     string file = parseArguments(argc,args);
 
     TS_parser::parse(file);
@@ -71,22 +113,7 @@ int main(int argc, char **argv) {
                         "-------------------------------------------"
                      << endl;
             }
-            //cout << "vector regions size: " << vector_regions->size() << endl;
-            vector<Region>::iterator it;
-            set<Region> checked_regions;
-            for (it = vector_regions->begin(); it < vector_regions->end(); ++it) {
-                Region *region = &(*it);
-                if(checked_regions.find(*region) == checked_regions.end()){
-                    //cout << "region: ";
-                    //println(*region);
-                    if(Region_generator::remove_bigger_regions(*region, vector_regions)){
-                        it = vector_regions->begin();
-                    }
-                    checked_regions.insert(*region);
-                    //cout << "CONT: " << cont << endl;
-                }
-            }
-            //cout << "vector regions size after: " << vector_regions->size() << endl;
+            Region_generator::prune_non_minimal_regions(vector_regions);
 
 
             if (print_step_by_step && !info) {
@@ -255,45 +282,20 @@ int main(int argc, char **argv) {
                          << endl;
                 overlaps_cache = new map<pair<Region *, Region *>, bool>();
                 vector<vector<int32_t> *> *clauses = add_regions_clauses_to_solver(pre_regions);
-                create_dimacs_graph(numRegions, clauses);
 
-                cout << "==================[START PYTHON]============= " << endl;
-
-                #ifdef USE_PYTHON
-                string python_code;
-                string python_source;
-                //compute all possible minimal independent sets
-                if (python_all) {
-                    if (benchmark_script) {
-                        python_source = "src/AllMISSolver.py";
-                    } else {
-                        python_source = "../src/AllMISSolver.py";
+                auto csr = seto::build_csr_from_clauses(numRegions, *clauses);
+                auto mis_list = python_all
+                                    ? seto::enumerate_all_mis(csr)
+                                    : seto::solve_mis_cover(csr);
+                for (const auto& fsm_vec : mis_list) {
+                    auto* new_sm = new SM();
+                    for (int reg_id : fsm_vec) {
+                        new_sm->insert(aliases_region_pointer->at(reg_id));
                     }
+                    SMs->insert(new_sm);
                 }
-                    //faster approximated solution
-                else {
-                    if (benchmark_script) {
-                        python_source = "src/MIS-Solver.py";
-                    } else {
-                        python_source = "../src/MIS-Solver.py";
-                    }
-                }
-                std::ifstream t(python_source);
-                std::stringstream buffer;
-                buffer << t.rdbuf();
-                python_code = buffer.str();
-
-                Py_Initialize();
-
-                PyRun_SimpleString(python_code.c_str());
-                Py_Finalize();
-                #endif
-
-                cout << "=================[END PYTHON]=================" << endl;
-
-                read_SMs("final_FSMs.txt", SMs, *aliases_region_pointer);
-                if(SMs->empty()){
-                    cerr << "Python code was not performed or it generated an empty set of SMs." << endl;
+                if (SMs->empty()) {
+                    cerr << "In-memory MIS solver generated an empty set of SMs." << endl;
                     exit(1);
                 }
 
@@ -944,10 +946,7 @@ string parseArguments(int argc, vector<string> args) {
         counter_optimized = false;
         conformance_checking = false;
         parallel = false;
-        python_available = false;
-        #ifdef USE_PYTHON
-            python_available = true;
-        #endif
+        python_available = true;
         for(int i=2; i < argc; i++) {
             if(args[i] == "PN")
                 pn_synthesis = true;
@@ -1005,8 +1004,24 @@ string parseArguments(int argc, vector<string> args) {
             }
             else if(args[i] == "ECTS")
                 ects_output = true;
-            else if(args[i] == "SM")
+            else if (args[i] == "SM")
                 decomposition = true;
+            else if (args[i] == "--sat=minisat")
+                seto::InMemorySatSolver::set_default_backend(seto::SatBackend::MiniSat);
+            else if (args[i] == "--sat=cadical")
+                seto::InMemorySatSolver::set_default_backend(seto::SatBackend::CaDiCaL);
+            else if (args[i] == "--mis=auto")
+                seto::set_default_mis_backend(seto::MisBackend::Auto);
+            else if (args[i] == "--mis=cpu")
+                seto::set_default_mis_backend(seto::MisBackend::Cpu);
+            else if (args[i] == "--mis=gpu")
+                seto::set_default_mis_backend(seto::MisBackend::Gpu);
+            else if (args[i].rfind("--work-dir=", 0) == 0) {
+                std::filesystem::path wd = args[i].substr(11);
+                std::filesystem::create_directories(wd);
+                file = std::filesystem::absolute(file).string();
+                std::filesystem::current_path(wd);
+            }
             else if (args[i] == "S") {
                 if (decomposition) {
                     cerr << "A flag for decomposition was previously chosen." << endl;
@@ -1166,10 +1181,6 @@ string parseArguments(int argc, vector<string> args) {
         }
         if(safe_components && safe_components_SM){
             cerr << "SS and SAFE flags cannot be used at the same time."<< endl;
-            exit(0);
-        }
-        if(decomposition && !python_available && !bdd_usage){
-            cerr << "<Python.h> was not found: SM decomposition without usage of BDDs cannot be performed."  << endl;
             exit(0);
         }
     }

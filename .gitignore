@@ -10,3 +10,13 @@ cmake-build-debug
 /petrify.log
 /libs/minisat/tests/
 /libs/cudd-3.0.0/
+build/
+build_*/
+cmake-build-*/
+*.dimacs
+*.tmp
+final_FSMs.txt
+seto_output/
+__pycache__/
+*.pyc
+/libs/cadical/

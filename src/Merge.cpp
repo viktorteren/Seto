@@ -4,6 +4,7 @@
  */
 
 #include "../include/Merge.h"
+#include "../include/SatSolver.h"
 
 using namespace PBLib;
 using namespace Minisat;
@@ -147,67 +148,34 @@ Merge::Merge(set<SM *> *SMs,
         formula.printFormula(cout);
     }*/
 
-    Minisat::Solver solver;
+    seto::InMemorySatSolver solver;
 
     bool sat = true;
-    vec < lbool > true_model;
 
     IncPBConstraint constraint(literals_from_events, LEQ,
                                current_value); //the sum have to be less or equal to current_value
     pb2cnf.encodeIncInital(constraint, formula, auxvars);
     //iteration in the search of a correct assignment decreasing the total weight
     do {
-        int num_clauses_formula = formula.getClauses().size();
-        dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                        formula.getClauses(), nullptr);
-        sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+        sat = solver.solve(auxvars.getBiggestReturnedAuxVar(), formula.getClauses());
         if (sat) {
             if (decomposition_debug) {
-                //cout << "----------" << endl;
                 cout << "SAT with value " << current_value << endl;
-                //cout << "formula: " << endl;
-                //formula.printFormula(cout);
-                /*cout << "Model: ";
-                for (int i = 0; i < solver.nVars(); ++i) {
-                    if (solver.model[i] != l_Undef) {
-                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
-                                i + 1);
-                    }
-                }*/
-                cout << endl;
             }
-            true_model.clear(true);
-            for(int i=0;i<solver.model.size();++i){
-                auto val = solver.model[i];
-                true_model.push(val);
-            }
-            //maxValueToCheck--;
             max = current_value;
         } else {
             if (decomposition_debug) {
-                //cout << "----------" << endl;
                 cout << "UNSAT with value " << current_value << endl;
             }
             min = current_value;
         }
         current_value = (min + max) / 2;
     } while ((max - min) > 1);
-    //if(decomposition_debug)
-    //   cout << "UNSAT with value " << maxValueToCheck << endl;
-
-    //STEP 8:
-    //new decode algorithm:
-    //take all negated events
-    //given a negated event check the two connected regions, at least one of them will be negated
-    //take it and remove the region and event connecting to other parts of the SM
 
     vector<int> to_remove;
     for (auto rec: encoded_events_map) {
         auto encoded_event = rec.first;
-        if (solver.model[encoded_event - 1] == l_False) {
-            /*
-            if (decomposition_debug)
-                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
+        if (solver.model_value(encoded_event) == -1) {
             to_remove.push_back(encoded_event);
         }
     }

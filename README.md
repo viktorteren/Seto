@@ -1,7 +1,7 @@
-Seto: a software for Transition System decomposition based on theory of regions
+Seto 2.0: a software for Transition System decomposition based on theory of regions
 ========================
 
-Part of code is based on PBLib (a fork of MiniSAT 2.2), NetworkX and CUDD packages.
+Part of code is based on PBLib (MiniSat 2.2), CaDiCaL (optional in-memory SAT backend), CUDD, and optional CUDA PTX kernels.
 The presented tool is the result of my work on Transition System and Petri net decomposition [[1]](#1), [[2]](#2), [[3]](#3), [[4]](#4), [[5]](#5).
 
 ## Key principles:
@@ -26,19 +26,9 @@ sudo apt install g++
 sudo apt install cmake
 ```
 
-- python 3.10 (required for networkx installation), the software can work also without networkx avoiding the standard SM decomposition
+- python 3.10+ (Optional, only for `wrapper/seto_wrapper.py`; zero external Python dependencies)
 ```Bash
-sudo apt install python3.10
-```
-
-- pip
-```Bash
-sudo apt install python3-pip
-```
-
-- networkx
-```Bash
-pip install networkx
+sudo apt install python3
 ```
 
 - boost (necessary for the installation of mCRL2)
@@ -71,13 +61,28 @@ Second method: download the repository "as is" and update the dependencies:
 git submodule update --init --recursive
 ```
 
-Once all dependencies are downloaded, the project can be built:
+Once all dependencies are downloaded, the project can be built (C++20, with optional `libs/cadical` and `nvcc` for CUDA PTX):
 
 ```bash
 mkdir build
 cd build
-cmake ..
-make Seto
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . -j
+```
+
+## What's new in Seto 2.0
+
+- **Complete removal of NetworkX & embedded Python**: `SM` and `SM -ALL` decompositions now run natively in C++20/CUDA with zero Python runtime or `networkx` dependency.
+- **In-memory incremental SAT solving (`--sat=cadical | --sat=minisat`)**: clauses are fed directly in memory without writing/parsing temporary `.dimacs` files (`CaDiCaL` is used by default if `libs/cadical` is present, with automatic fallback to `MiniSat`).
+- **In-memory C++ & CUDA MIS / All-MIS solver (`--mis=auto | --mis=cpu | --mis=gpu`)**:
+  - `SM` mode: CSR greedy-degree on CPU and multi-start Luby on NVIDIA GPU (`src/mis_kernels.cu` -> `mis_kernels.ptx`, loaded via `nvcuda.dll`). `auto` uses CPU for small/medium graphs and GPU for very large/dense graphs (`n >= 20000`, `>= 500k` edges); `--mis=gpu` forces GPU execution.
+  - `SM -ALL` mode: C++20 bitset Bron–Kerbosch with pivoting on CPU (`9×–217×` faster than legacy NetworkX) and parallel CUDA BFS over bitmask frontiers on GPU (`n <= 64`).
+- **Optimized `Region_generator`**: $O(1)$ bitmap membership checks, stack-allocated counters, and `std::includes`-based minimal-region pruning (3×–41× end-to-end speedup on `benchmark_dir/`).
+- **Parallel-safe execution (`--work-dir=<dir>`)**: isolates any output/working files into a per-worker directory.
+- **Backward-compatible Python trace wrapper (`wrapper/seto_wrapper.py`)**: accepts `.json` (generic / HTTP / OpenTelemetry spans) and `.xes` logs, supports upstream noise reduction (`--collapse-consecutive`, `--drop`), maps labels to `e0..e{N-1}`, runs `Seto` in an isolated temporary directory, and remaps output `.dot` files back to the original labels:
+
+```bash
+python wrapper/seto_wrapper.py wrapper/example_api_trace.json --seto-bin build/Seto --mode SM O --collapse-consecutive --out-dir seto_output
 ```
 
 ## Execution
@@ -365,7 +370,7 @@ ltscompare --equivalence=bisim <TS_aut_file> <composed_PN_aut_file>
 
 2) There is no check on .ts inputs.
 
-3) It is not possible to run two parallel instances of the program on the same input file since there is a file dependency used by the SAT solver therefore the results could result wrong.
+3) When running parallel instances, pass `--work-dir=<dir>` (or use `wrapper/seto_wrapper.py`) so output files do not collide; SAT and standard `SM` MIS solving now run fully in memory.
 
 [//]: # "Known issues"
 [//]: # "------------------"

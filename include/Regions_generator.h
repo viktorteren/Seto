@@ -29,6 +29,7 @@ public:
     map<int, vector<Region *> *> *get_middle_set_of_states();
     map<int, vector<int> *> *get_number_of_bad_events();
     static bool remove_bigger_regions(Region &new_region,vector<Region>* regions);
+    static void prune_non_minimal_regions(vector<Region>* regions_vector);
     map<int, map<int, int >*>* get_violations_event();
     map<int, map< int , vector<Edge*> *>* >* get_violations_trans();
 
@@ -47,6 +48,10 @@ private:
 
     map<int, map<int, int >*>* event_violations;
     map<int, map<int, vector<Edge*> *>* >* trans_violations;
+
+    std::vector<uint8_t> region_membership_;
+    int max_state_id_ = -1;
+    std::vector<int> event_types_buf_;
 
     int branch_selection(Edges_list *list, Region *region, int event,int region_id_position);
     bool region_in_queue(Region &new_region, int init_pos);

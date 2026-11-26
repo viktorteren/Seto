@@ -5,6 +5,7 @@
 
 #include "../include/Pre_and_post_regions_generator.h"
 #include "../include/GreedyRemoval.h"
+#include "../include/SatSolver.h"
 
 using namespace Utilities;
 using namespace Minisat;
@@ -361,9 +362,8 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
     for (auto cl: *clauses) {
         formula.addClause(*cl);
     }
-    Minisat::Solver solver;
+    seto::InMemorySatSolver solver;
     bool sat;
-    string dimacs_file;
 
     int current_value = K;
     auto last_solution = new set<int>();
@@ -372,12 +372,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
     pb2cnf.encodeIncInital(constraint, formula, auxvars);
     //iteration in the search of a correct assignment decreasing the total weight
     do {
-        int num_clauses_formula = formula.getClauses().size();
-        //cout << "formula 1" << endl;
-        //formula.printFormula(cout);
-        dimacs_file = convert_to_dimacs(file, auxvars.getBiggestReturnedAuxVar(), num_clauses_formula,
-                                        formula.getClauses());
-        sat = check_sat_formula_from_dimacs(solver, dimacs_file);
+        sat = solver.solve(auxvars.getBiggestReturnedAuxVar(), formula.getClauses());
         if (sat) {
             if (decomposition_debug) {
                 cout << "SAT with value " << current_value << ": representing the number of PNs"
@@ -385,38 +380,18 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
                 cout << "Model: ";
             }
             last_solution->clear();
-            for (int i = 0; i < solver.nVars(); ++i) {
-                if (solver.model[i] != l_Undef) {
-                    /*
-                    if (decomposition_debug) {
-                        fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
-                                i + 1);
-                    }*/
-                    if (i < K) {
-                        if (solver.model[i] == l_True) {
-                            last_solution->insert(i + 1);
-                        } else {
-                            last_solution->insert(-i - 1);
-                        }
-                    }
+            for (int i = 0; i < K && i < solver.n_vars(); ++i) {
+                int8_t val = solver.model_value(i + 1);
+                if (val == 1) {
+                    last_solution->insert(i + 1);
+                } else if (val == -1) {
+                    last_solution->insert(-i - 1);
                 }
             }
             current_value--;
         } else {
             if (decomposition_debug) {
-                //cout << "----------" << endl;
-
-                cout << "UNSAT with value " << current_value << endl;/*
-                    if (exists_solution) {
-                        cout << "Model: ";
-                        for (int i = 0; i < solver.nVars(); ++i) {
-                            if (solver.model[i] != l_Undef) {
-                                fprintf(stdout, "%s%s%d", (i == 0) ? "" : " ", (solver.model[i] == l_True) ? "" : "-",
-                                        i + 1);
-                            }
-                        }
-                        cout << endl;
-                    }*/
+                cout << "UNSAT with value " << current_value << endl;
             }
             break;
         }
@@ -427,9 +402,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
 
     for(auto PN: *FCPNs){
         int encoded_value = FCPNs_map[PN];
-        if (solver.model[encoded_value - 1] == l_False) {
-            /*if (decomposition_debug)
-                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
+        if (solver.model_value(encoded_value) == -1) {
             to_remove.push_back(PN);
         }
     }
@@ -440,9 +413,7 @@ void GreedyRemoval::minimize_sat(set<set<Region *>*> *FCPNs,
 
     for(auto PN: *SMs){
         int encoded_value = FCPNs_map[PN];
-        if (solver.model[encoded_value - 1] == l_True) {
-            /*if (decomposition_debug)
-                cout << "add encoding " << encoded_event << " to removal events" << endl;*/
+        if (solver.model_value(encoded_value) == 1) {
             FCPNs->insert(PN);
         }
     }
